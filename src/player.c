@@ -1384,7 +1384,6 @@ void player_end_play( bool_t rem_cur_song )
 	player_plist->m_cur_song = -1;
 	player_end_track = TRUE;
 //	player_status = PLAYER_STATUS_STOPPED;
-	util_log("waiting\n");
 	while (player_timer_tid)
 		util_wait();
 	if (!rem_cur_song)
@@ -2310,7 +2309,7 @@ void player_pmng_dialog( void )
 	iter = pmng_start_iteration(player_pmng, PLUGIN_TYPE_ALL);
 	for ( ;; )
 	{
-		int index = 0;
+		int index = 0, pos;
 		plugin_t *p = pmng_iterate(&iter);
 		if (p == NULL)
 			break;
@@ -2323,7 +2322,10 @@ void player_pmng_dialog( void )
 			index = PLAYER_PMNG_EFFECT;
 		else if (p->m_type == PLUGIN_TYPE_CHARSET)
 			index = PLAYER_PMNG_CHARSET;
-		listbox_add(views[index].m_list, p->m_name, p);
+		pos = listbox_add(views[index].m_list, p->m_name, p);
+		if (p->m_type == PLUGIN_TYPE_OUTPUT && 
+				p == (plugin_t *)player_pmng->m_cur_out)
+			listbox_sel_item(views[index].m_list, pos);
 	}
 
 	/* Set plugins info controls */
