@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG Konsamp. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 3.07.2003
+ * LAST UPDATE : 6.07.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -457,8 +457,17 @@ void player_display( wnd_t *wnd, dword data )
 				"version 0.1\n");
 	else
 	{
+		char title[80];
+		
 		s = player_plist->m_list[player_plist->m_cur_song];
-		wnd_printf(wnd, "%s\n%i:%02i/%i:%02i\n", s->m_title, 
+		if (strlen(s->m_title) >= wnd->m_width - 1)
+		{
+			memcpy(title, s->m_title, wnd->m_width - 4);
+			strcpy(&title[wnd->m_width - 4], "...");
+		}
+		else
+			strcpy(title, s->m_title);
+		wnd_printf(wnd, "%s\n%i:%02i/%i:%02i\n", title, 
 				player_cur_time / 60, player_cur_time % 60,
 				s->m_len / 60, s->m_len % 60);
 	}
@@ -875,7 +884,7 @@ void player_info_dialog( void )
 {
 	dlgbox_t *dlg;
 	song_t *s;
-	editbox_t *name, *album, *artist, *year, *comments;
+	editbox_t *name, *album, *artist, *year, *comments, *track;
 	listbox_t *genre;
 	genre_list_t *glist;
 	int i;
@@ -898,16 +907,18 @@ void player_info_dialog( void )
 			cfg_get_var_int(cfg_list, "info_editor_show_full_name") ? 
 			s->m_file_name : util_get_file_short_name(s->m_file_name));
 	name = ebox_new((wnd_t *)dlg, 2, 1, wnd_root->m_width - 10, 1, 
-			30, _("Song name: "), s->m_info->m_name);
+			256, _("Song name: "), s->m_info->m_name);
 	artist = ebox_new((wnd_t *)dlg, 2, 2, wnd_root->m_width - 10, 1, 
-			30, _("Artist name: "), s->m_info->m_artist);
+			256, _("Artist name: "), s->m_info->m_artist);
 	album = ebox_new((wnd_t *)dlg, 2, 3, wnd_root->m_width - 10, 1, 
-			30, _("Album name: "), s->m_info->m_album);
+			256, _("Album name: "), s->m_info->m_album);
 	year = ebox_new((wnd_t *)dlg, 2, 4, wnd_root->m_width - 10, 1, 
 			4, _("Year: "), s->m_info->m_year);
-	comments = ebox_new((wnd_t *)dlg, 2, 5, wnd_root->m_width - 10, 1, 
-			4, _("Comments: "), s->m_info->m_comments);
-	genre = lbox_new((wnd_t *)dlg, 2, 6, wnd_root->m_width - 10, 13,
+	track = ebox_new((wnd_t *)dlg, 2, 5, wnd_root->m_width - 10, 1, 
+			4, _("Track No: "), s->m_info->m_track);
+	comments = ebox_new((wnd_t *)dlg, 2, 6, wnd_root->m_width - 10, 1, 
+			256, _("Comments: "), s->m_info->m_comments);
+	genre = lbox_new((wnd_t *)dlg, 2, 7, wnd_root->m_width - 10, 12,
 			_("Genre: "));
 	glist = s->m_inp->m_fl.m_glist;
 	for ( i = 0; glist != NULL && i < glist->m_size; i ++ )
@@ -928,6 +939,7 @@ void player_info_dialog( void )
 		strcpy(s->m_info->m_album, album->m_text);
 		strcpy(s->m_info->m_year, year->m_text);
 		strcpy(s->m_info->m_comments, comments->m_text);
+		strcpy(s->m_info->m_track, track->m_text);
 		s->m_info->m_genre = genre->m_cursor;
 	
 		/* Get song length and information at first */

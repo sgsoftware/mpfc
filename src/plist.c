@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Play list manipulation
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 13.05.2003
+ * LAST UPDATE : 6.07.2003
  * NOTE        : Module prefix 'plist'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -569,9 +569,17 @@ void plist_display( plist_t *pl, wnd_t *wnd )
 		{
 			song_t *s = pl->m_list[j];
 			char len[10];
+			char title[80];
 			int x;
 			
-			wnd_printf(wnd, "%i. %s", j + 1, s->m_title);
+			if (strlen(s->m_title) >= wnd->m_width - 10)
+			{
+				memcpy(title, s->m_title, wnd->m_width - 13);
+				strcpy(&title[wnd->m_width - 13], "...");
+			}
+			else
+				strcpy(title, s->m_title);
+			wnd_printf(wnd, "%i. %s", j + 1, title);
 			sprintf(len, "%i:%02i", s->m_len / 60, s->m_len % 60);
 			x = wnd->m_width - strlen(len) - 1;
 			while (wnd_getx(wnd) != x)

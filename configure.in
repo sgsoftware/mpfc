@@ -6,6 +6,9 @@ AC_PROG_LIBTOOL
 AM_CONFIG_HEADER(config.h)
 AC_CHECK_LIB(ncurses, initscr)
 AC_CHECK_LIB(pthread, pthread_create)
+AC_CHECK_LIB(z, compress)
+AC_CHECK_LIB(id3tag, id3_file_open)
+AC_CHECK_LIB(mad, mad_stream_init)
 AC_CHECK_LIB(mad, mad_stream_init)
 AC_CHECK_LIB(dl, dlopen)
 

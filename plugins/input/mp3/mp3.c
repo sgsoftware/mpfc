@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. MP3 input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 3.07.2003
+ * LAST UPDATE : 6.07.2003
  * NOTE        : Module prefix 'mp3'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -25,6 +25,7 @@
  * MA 02111-1307, USA.
  */
 
+#include <id3tag.h>
 #include <mad.h>
 #include <stdio.h>
 #include <string.h>
@@ -38,6 +39,9 @@
 #include "util.h"
 
 #define MP3_IN_BUF_SIZE (5*8192)
+
+/* Declate some functions */
+struct id3_frame *id3_frame_new(char const *);
 
 /* libmad structures */
 struct mad_stream mp3_stream;
@@ -68,14 +72,11 @@ dword mp3_fmt = 0;
 char mp3_file_name[128] = "";
 
 /* ID3 tag scheduled for saving */
-char mp3_tag[128];
-bool mp3_tag_present = TRUE;
+byte *mp3_tag = NULL;
+int mp3_tag_size = 0;
 
 /* Current song information */
 song_info_t mp3_cur_info;
-
-/* Flag of whether we must save tag */
-bool mp3_need_save = FALSE;
 
 /* Genres list */
 genre_list_t *mp3_glist = NULL;
@@ -85,6 +86,9 @@ int mp3_len = 0;
 
 /* This is pointer to global variables list */
 cfg_list_t *mp3_var_list = NULL;
+
+/* Is ID3 tag present */
+bool mp3_tag_present = FALSE;
 
 /* Start play function */
 bool mp3_start( char *filename )
@@ -127,10 +131,12 @@ void mp3_end( void )
 		fclose(mp3_fd);
 
 		/* Save tag */
-		if (mp3_need_save)
+		if (mp3_tag != NULL)
 		{
-			mp3_save_tag(mp3_file_name, mp3_tag);
-			mp3_need_save = FALSE;
+			mp3_save_tag(mp3_file_name, mp3_tag, mp3_tag_size);
+			free(mp3_tag);
+			mp3_tag = NULL;
+			mp3_tag_size = 0;
 		}
 		
 		strcpy(mp3_file_name, "");
@@ -299,67 +305,209 @@ short mp3_mad_fixed_to_short( mad_fixed_t sample )
 	return(sample >> (MAD_F_FRACBITS + 1 - 16));
 } /* End of 'mp3_mad_fixed_to_short' function */
 
-/* Save ID3 tag */
-void mp3_save_tag( char *filename, char *tag )
+/* Set value of ID3 tag frame */
+void mp3_set_tag_frame( struct id3_tag *tag, char *id, char *val )
+{
+	struct id3_frame *f;
+	id3_ucs4_t *ucs4;
+
+	/* Find frame with specified ID and convert value to ucs4 */
+	f = id3_tag_findframe(tag, id, 0);
+	ucs4 = (id3_ucs4_t *)malloc((strlen(val) + 1) * sizeof(*ucs4));
+	id3_latin1_decode(val, ucs4);
+
+	/* Write frame data */
+	if (f == NULL)
+	{
+		f = id3_frame_new(id);
+		id3_field_settextencoding(&f->fields[0], 
+				ID3_FIELD_TEXTENCODING_ISO_8859_1);
+		id3_field_setstrings(&f->fields[1], 1, &ucs4);
+		id3_tag_attachframe(tag, f);
+	}
+	else
+	{
+		id3_field_settextencoding(&f->fields[0], 
+				ID3_FIELD_TEXTENCODING_ISO_8859_1);
+		id3_field_setstrings(&f->fields[1], 1, &ucs4);
+	}
+	free(ucs4);
+} /* End of 'mp3_set_tag_frame' function */
+
+/* Save tag to file */
+void mp3_save_tag( char *filename, byte *tag, int size )
 {
 	FILE *fd;
-	char buf[10];
-	bool has_tag = TRUE;
-	
+	int file_size;
+	byte *data;
+	byte magic[4];
+	int prev_size;
+
 	/* Open file */
-	fd = fopen(filename, "a+b");
+	fd = fopen(filename, "rb");
 	if (fd == NULL)
 		return;
 
-	/* Check if we have ID3 tag in this file */
-	fseek(fd, -128, SEEK_END);
-	fread(buf, 1, 3, fd);
-	if (buf[0] != 'T' || buf[1] != 'A' || buf[2] != 'G')
-		has_tag = FALSE;
+	/* Get information about current tag */
+	fread(magic, 1, 3, fd);
+	prev_size = 0;
+	if (magic[0] == 'I' && magic[1] == 'D' && magic[2] == '3')
+	{
+		byte s[4];
+		byte f;
+		fseek(fd, 5, SEEK_SET);
+		fread(&f, 1, 1, fd);
+		fread(&s, 1, 4, fd);
+		prev_size = s[3] | (s[2] << 7) | (s[1] << 14) | (s[0] << 21);
+		prev_size += 10;
+		if (f & 16)
+			prev_size += 10;
+	}
 
-	/* Save tag */
-	if (has_tag)
-		fseek(fd, -128, SEEK_END);
-	else
-		fseek(fd, 0, SEEK_END);
-	fwrite(tag, 1, 128, fd);
+	/* Get file size */
+	fseek(fd, 0, SEEK_END);
+	file_size = ftell(fd) - prev_size;
+	data = (byte *)malloc(file_size + size + 10);
+	if (data == NULL)
+	{
+		fclose(fd);
+		return;
+	}
 
-	/* Close file */
+	/* Fill data */
+	fseek(fd, prev_size, SEEK_SET);
+	fread(&data[size], 1, file_size, fd);
+	memcpy(data, tag, size);
 	fclose(fd);
+
+	/* Write file */
+	fd = fopen(filename, "wb");
+	if (fd == NULL)
+	{
+		free(data);
+		return;
+	}
+	fwrite(data, 1, file_size + size, fd);
+	fclose(fd);
+	free(data);
 } /* End of 'mp3_save_tag' function */
 
 /* Save song information */
 void mp3_save_info( char *filename, song_info_t *info )
 {
-	char id3_tag[128];
+	struct id3_file *file;
+	struct id3_tag *tag;
+	byte *data = NULL;
+	int size;
+	char str[80];
 
-	/* Create ID3 tag */
-	strncpy(&id3_tag[0], "TAG", 3);
-	strncpy(&id3_tag[3], info->m_name, 30);
-	strncpy(&id3_tag[33], info->m_artist, 30);
-	strncpy(&id3_tag[63], info->m_album, 30);
-	strncpy(&id3_tag[93], info->m_year, 4);
-	strncpy(&id3_tag[97], info->m_comments, 30);
-	id3_tag[127] = (info->m_genre == GENRE_ID_UNKNOWN) ?
-		info->m_genre_data : mp3_glist->m_list[info->m_genre].m_data;
+	/* Open file and read current tag */
+	file = id3_file_open(filename, ID3_FILE_MODE_READONLY);
+	if (file == NULL)
+		return;
+	tag = id3_file_tag(file);
+	if (tag == NULL)
+	{
+		id3_file_close(file);
+		return;
+	}
+
+	/* Update tag fields */
+	mp3_set_tag_frame(tag, ID3_FRAME_TITLE, info->m_name);
+	mp3_set_tag_frame(tag, ID3_FRAME_ARTIST, info->m_artist);
+	mp3_set_tag_frame(tag, ID3_FRAME_ALBUM, info->m_album);
+	mp3_set_tag_frame(tag, ID3_FRAME_COMMENT, info->m_comments);
+	mp3_set_tag_frame(tag, ID3_FRAME_YEAR, info->m_year);
+	mp3_set_tag_frame(tag, ID3_FRAME_TRACK, info->m_track);
+	sprintf(str, "%i", (info->m_genre == GENRE_ID_UNKNOWN) ? 
+			info->m_genre_data : mp3_glist->m_list[info->m_genre].m_data);
+	mp3_set_tag_frame(tag, ID3_FRAME_GENRE, str);
+
+	/* Get tag raw data */
+	size = id3_tag_render(tag, NULL);
+	if (size)
+	{
+		data = (byte *)malloc(size);
+		id3_tag_render(tag, data);
+	}
+
+	/* Close file */
+	id3_file_close(file);
 
 	/* Save tag or save it later */
 	if (!strcmp(filename, mp3_file_name))
 	{
-		mp3_need_save = TRUE;
-		mp3_tag_present = TRUE;
-		memcpy(mp3_tag, id3_tag, 128);
+		mp3_tag = data;
+		mp3_tag_size = size;
 		memcpy(&mp3_cur_info, info, sizeof(song_info_t));
 	}
 	else
-		mp3_save_tag(filename, id3_tag);
+	{
+		mp3_save_tag(filename, data, size);
+		free(data);
+	}
 } /* End of 'mp3_save_info' function */
+
+/* Extract a string from frame */
+void mp3_extract_str_from_frame( char *str, struct id3_frame *f )
+{
+	char *dup_str;
+	int pos;
+
+	/* Get text encoding information */
+	if (f->fields[0].type == ID3_FIELD_TYPE_TEXTENCODING)
+	{
+		if (f->fields[0].number.value != ID3_FIELD_TEXTENCODING_ISO_8859_1)
+		{
+			strcpy(str, "");
+			return;
+		}
+		pos = 1;
+	}
+	else
+		pos = 0;
+
+	/* Fill string */
+	switch (f->fields[pos].type)
+	{
+	case ID3_FIELD_TYPE_LATIN1:
+	case ID3_FIELD_TYPE_LATIN1FULL:
+		strcpy(str, f->fields[pos].latin1.ptr);
+		break;
+	case ID3_FIELD_TYPE_LATIN1LIST:
+		if (!f->fields[pos].latin1list.nstrings)
+			strcpy(str, "");
+		else
+			strcpy(str, f->fields[pos].latin1list.strings[0]);
+		break;
+	case ID3_FIELD_TYPE_STRING:
+	case ID3_FIELD_TYPE_STRINGFULL:
+		dup_str = id3_ucs4_latin1duplicate(f->fields[pos].string.ptr);
+		strcpy(str, dup_str);
+		free(dup_str);
+		break;
+	case ID3_FIELD_TYPE_STRINGLIST:
+		if (!f->fields[pos].stringlist.nstrings)
+			strcpy(str, "");
+		else
+		{
+			dup_str = id3_ucs4_latin1duplicate(
+				f->fields[pos].stringlist.strings[0]);
+			strcpy(str, dup_str);
+			free(dup_str);
+		}
+		break;
+	default:
+		strcpy(str, "");
+		break;
+	}
+} /* End of 'mp3_extract_str_from_frame' function */
 
 /* Get song information */
 bool mp3_get_info( char *filename, song_info_t *info )
 {
-	char id3_tag[128];
-	FILE *fd;
+	struct id3_file *file;
+	struct id3_tag *tag;
 	int i;
 
 	/* Return temporary tag if we request for current playing song tag */
@@ -374,40 +522,59 @@ bool mp3_get_info( char *filename, song_info_t *info )
 			return FALSE;
 	}
 
-	/* Read ID3 tag */
-	fd = fopen(filename, "rb");
-	if (fd == NULL)
+	/* Open file */
+	file = id3_file_open(filename, ID3_FILE_MODE_READONLY);
+	if (file == NULL)
 	{
 		memset(info, 0, sizeof(*info));
 		return FALSE;
 	}
-	fseek(fd, -128, SEEK_END);
-	fread(id3_tag, sizeof(id3_tag), 1, fd);
-	fclose(fd);
 
-	/* Parse tag */
-	if (id3_tag[0] != 'T' || id3_tag[1] != 'A' || id3_tag[2] != 'G')
+	/* Read tag */
+	tag = id3_file_tag(file);
+	if (tag == NULL || !tag->nframes)
 	{
+		id3_file_close(file);
 		memset(info, 0, sizeof(*info));
 		return FALSE;
 	}
-	strncpy(info->m_name, &id3_tag[3], 30);
-	for ( i = 29; i >= 0 && info->m_name[i] == ' '; i -- );
-	info->m_name[i + 1] = 0;
-	strncpy(info->m_artist, &id3_tag[33], 30);
-	for ( i = 29; i >= 0 && info->m_artist[i] == ' '; i -- );
-	info->m_artist[i + 1] = 0;
-	strncpy(info->m_album, &id3_tag[63], 30);
-	for ( i = 29; i >= 0 && info->m_album[i] == ' '; i -- );
-	info->m_album[i + 1] = 0;
-	strncpy(info->m_year, &id3_tag[93], 4);
-	for ( i = 3; i >= 0 && info->m_year[i] == ' '; i -- );
-	info->m_year[i + 1] = 0;
-	strncpy(info->m_comments, &id3_tag[97], 30);
-	for ( i = 3; i >= 0 && info->m_comments[i] == ' '; i -- );
-	info->m_comments[i + 1] = 0;
-	info->m_genre = glist_get_id(mp3_glist, id3_tag[127]);
-	info->m_genre_data = id3_tag[127];
+
+	/* Initialize info fields with empty values first */
+	strcpy(info->m_name, "");
+	strcpy(info->m_artist, "");
+	strcpy(info->m_album, "");
+	strcpy(info->m_year, "");
+	strcpy(info->m_comments, "");
+	info->m_genre = GENRE_ID_UNKNOWN;
+	info->m_genre_data = 0;
+
+	/* Scan tag frames */
+	for ( i = 0; i < tag->nframes; i ++ )
+	{
+		struct id3_frame *f = tag->frames[i];
+		if (!strcmp(f->id, ID3_FRAME_TITLE))
+			mp3_extract_str_from_frame(info->m_name, f);
+		else if (!strcmp(f->id, ID3_FRAME_ARTIST))
+			mp3_extract_str_from_frame(info->m_artist, f);
+		else if (!strcmp(f->id, ID3_FRAME_ALBUM))
+			mp3_extract_str_from_frame(info->m_album, f);
+		else if (!strcmp(f->id, ID3_FRAME_YEAR))
+			mp3_extract_str_from_frame(info->m_year, f);
+		else if (!strcmp(f->id, ID3_FRAME_TRACK))
+			mp3_extract_str_from_frame(info->m_track, f);
+		else if (!strcmp(f->id, ID3_FRAME_COMMENT))
+			mp3_extract_str_from_frame(info->m_comments, f);
+		else if (!strcmp(f->id, ID3_FRAME_GENRE))
+		{
+			char str[80];
+			mp3_extract_str_from_frame(str, f);
+			info->m_genre_data = atoi(str);
+			info->m_genre = glist_get_id(mp3_glist, info->m_genre_data);
+		}
+	}
+
+	/* Close file */
+	id3_file_close(file);
 	return TRUE;
 } /* End of 'mp3_get_info' function */
 
