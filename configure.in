@@ -1,0 +1,18 @@
+AC_INIT(src/main.c)
+AM_INIT_AUTOMAKE(mpfc, 0.1)
+AC_PROG_CC
+AC_PROG_LIBTOOL
+
+AM_CONFIG_HEADER(config.h)
+AC_CHECK_LIB(ncurses, initscr)
+AC_CHECK_LIB(pthread, pthread_create)
+AC_CHECK_LIB(mad, mad_stream_init)
+AC_CHECK_LIB(smpeg, SMPEG_new)
+AC_CHECK_LIB(dl, dlopen)
+
+AM_GNU_GETTEXT
+
+AC_OUTPUT(Makefile src/Makefile \
+			plugins/Makefile plugins/input/Makefile plugins/output/Makefile \
+			plugins/input/mp3/Makefile plugins/input/wav/Makefile 
+			plugins/output/oss/Makefile)

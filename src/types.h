@@ -1,0 +1,57 @@
+/******************************************************************
+ * Copyright (C) 2003 by SG Software.
+ ******************************************************************/
+
+/* FILE NAME   : types.h
+ * PURPOSE     : SG Konsamp. Basic types declaration.
+ * PROGRAMMER  : Sergey Galanov
+ * LAST UPDATE : 7.02.2003
+ * NOTE        : None.
+ *
+ * This program is free software; you can redistribute it and/or 
+ * modify it under the terms of the GNU General Public License 
+ * as published by the Free Software Foundation; either version 2 
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *  
+ * You should have received a copy of the GNU General Public 
+ * License along with this program; if not, write to the Free 
+ * Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, 
+ * MA 02111-1307, USA.
+ */
+
+#ifndef __SG_KONSAMP_TYPES_H__
+#define __SG_KONSAMP_TYPES_H__
+
+#include <libintl.h>
+#include "config.h"
+
+/* Some useful types */
+typedef unsigned char byte;
+typedef unsigned short word;
+typedef unsigned long dword;
+
+/* Define boolean type and values for it */
+#ifndef bool
+  #define bool byte
+#endif
+#ifndef TRUE
+  #define TRUE 1
+#endif
+#ifndef FALSE
+  #define FALSE 0
+#endif
+
+/* Stuff needed for GNU gettext */
+#define _(str) gettext (str)
+#define gettext_noop(str) str
+#define N_(str) gettext_noop(str)
+
+#endif
+
+/* End of 'types.h' file */
+
