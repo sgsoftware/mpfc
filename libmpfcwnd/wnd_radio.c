@@ -64,7 +64,7 @@ bool_t radio_construct( radio_t *r, wnd_t *parent, char *title, char *id,
 		return FALSE;
 
 	/* Set message map */
-	wnd_msg_add_handler(WND_OBJ(r), "keydown", radio_on_keydown);
+	wnd_msg_add_handler(WND_OBJ(r), "action", radio_on_action);
 	wnd_msg_add_handler(WND_OBJ(r), "display", radio_on_display);
 	wnd_msg_add_handler(WND_OBJ(r), "mouse_ldown", radio_on_mouse);
 
@@ -73,28 +73,26 @@ bool_t radio_construct( radio_t *r, wnd_t *parent, char *title, char *id,
 	return TRUE;
 } /* End of 'radio_construct' function */
 
-/* 'keydown' message handler */
-wnd_msg_retcode_t radio_on_keydown( wnd_t *wnd, wnd_key_t key )
+/* 'action' message handler */
+wnd_msg_retcode_t radio_on_action( wnd_t *wnd, char *action )
 {
 	/* Check radio button */
-	if (key == ' ')
+	if (!strcasecmp(action, "check"))
 	{
 		radio_check(RADIO_OBJ(wnd));
 	}
 	/* Move to the next item */
-	else if (key == 'k' || key == KEY_CTRL_P || key == KEY_UP)
+	else if (!strcasecmp(action, "move_to_prev"))
 	{
 		wnd_prev_focus(wnd->m_parent);
 	}
 	/* Move to the previous item */
-	else if (key == 'j' || key == KEY_CTRL_N || key == KEY_DOWN)
+	else if (!strcasecmp(action, "move_to_next"))
 	{
 		wnd_next_focus(wnd->m_parent);
 	}
-	else
-		return WND_MSG_RETCODE_PASS_TO_PARENT;
 	return WND_MSG_RETCODE_OK;
-} /* End of 'radio_on_keydown' function */
+} /* End of 'radio_on_action' function */
 
 /* 'display' message handler */
 wnd_msg_retcode_t radio_on_display( wnd_t *wnd )
@@ -156,6 +154,11 @@ void radio_class_set_default_styles( cfg_node_t *list )
 	cfg_set_var(list, "focus-text-style", "white:blue:bold");
 	cfg_set_var(list, "label-style", "white:black");
 	cfg_set_var(list, "focus-label-style", "white:black");
+
+	/* Set kbinds */
+	cfg_set_var(list, "kbind.check", "<Space>");
+	cfg_set_var(list, "kbind.move_to_next", "<Down>;<Ctrl-n>;j");
+	cfg_set_var(list, "kbind.move_to_prev", "<Up>;<Ctrl-p>;k");
 } /* End of 'radio_class_set_default_styles' function */
 
 /* End of 'wnd_radio.c' file */

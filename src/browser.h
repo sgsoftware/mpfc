@@ -96,6 +96,9 @@ wnd_msg_retcode_t fb_on_display( wnd_t *wnd );
 /* Handle key pressing */
 wnd_msg_retcode_t fb_on_keydown( wnd_t *wnd, wnd_key_t key );
 
+/* 'action' message handler */
+wnd_msg_retcode_t fb_on_action( wnd_t *wnd, char *action );
+
 /* Handle mouse left button */
 wnd_msg_retcode_t fb_on_mouse_ldown( wnd_t *wnd, int x, int y,
 		wnd_mouse_button_t btn, wnd_mouse_event_t type );

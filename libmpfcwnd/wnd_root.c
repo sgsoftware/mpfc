@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Root window functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 9.08.2004
+ * LAST UPDATE : 29.09.2004
  * NOTE        : Module prefix 'wnd_root'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -118,6 +118,7 @@ void wnd_root_destructor( wnd_t *wnd )
 
 	/* Free modules */
 	wnd_mouse_free(WND_MOUSE_DATA(wnd));
+	wnd_kbind_free(WND_KBIND_DATA(wnd));
 	wnd_kbd_free(WND_KBD_DATA(wnd));
 	wnd_msg_queue_free(WND_MSG_QUEUE(wnd));
 

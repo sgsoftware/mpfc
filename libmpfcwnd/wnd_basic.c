@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. 'basic' window class
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 10.09.2004
+ * LAST UPDATE : 29.09.2004
  * NOTE        : Module prefix 'wnd_basic'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -25,6 +25,8 @@
  * MA 02111-1307, USA.
  */
 
+#include <string.h>
+#include <stdlib.h>
 #include "types.h"
 #include "wnd.h"
 
@@ -59,6 +61,12 @@ wnd_msg_handler_t **wnd_basic_get_msg_info( wnd_t *wnd, char *name,
 		if (callback != NULL)
 			(*callback) = wnd_basic_callback_key;
 		return &wnd->m_on_keydown;
+	}
+	else if (!strcmp(name, "action"))
+	{
+		if (callback != NULL)
+			(*callback) = wnd_basic_callback_action;
+		return &wnd->m_on_action;
 	}
 	else if (!strcmp(name, "erase_back"))
 	{
@@ -171,6 +179,34 @@ wnd_msg_retcode_t wnd_basic_callback_key( wnd_t *wnd,
 	wnd_msg_key_t *d = (wnd_msg_key_t *)(msg_data->m_data);
 	return WND_MSG_KEY_HANDLER(handler)(wnd, d->m_key);
 } /* End of 'wnd_basic_callback_key' function */
+
+/* Create data for action message */
+wnd_msg_data_t wnd_msg_action_new( char *action )
+{
+	wnd_msg_data_t msg_data;
+	wnd_msg_action_t *data;
+
+	data = (wnd_msg_action_t *)malloc(sizeof(*data));
+	data->m_action = strdup(action);
+	msg_data.m_data = data;
+	msg_data.m_destructor = wnd_msg_action_free;
+	return msg_data;
+} /* End of 'wnd_msg_action_new' function */
+
+/* Action message data destructor */
+void wnd_msg_action_free( void *data )
+{
+	wnd_msg_action_t *da = (wnd_msg_action_t *)data;
+	free(da->m_action);
+} /* End of 'wnd_msg_action_free' function */
+
+/* Callback function for action message */
+wnd_msg_retcode_t wnd_basic_callback_action( wnd_t *wnd,
+		wnd_msg_handler_t *handler, wnd_msg_data_t *msg_data )
+{
+	wnd_msg_action_t *d = (wnd_msg_action_t *)(msg_data->m_data);
+	return WND_MSG_ACTION_HANDLER(handler)(wnd, d->m_action);
+} /* End of 'wnd_basic_callback_action' function */
 
 /* Create data for parent reposition message */
 wnd_msg_data_t wnd_msg_parent_repos_new( int px, int py, int pw, int ph,

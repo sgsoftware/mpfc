@@ -60,7 +60,6 @@ enum tag_wnd_msg_retcode_t
 {
 	WND_MSG_RETCODE_OK = 0,
 	WND_MSG_RETCODE_STOP,
-	WND_MSG_RETCODE_PASS_TO_PARENT,
 	WND_MSG_RETCODE_EXIT,
 };
 

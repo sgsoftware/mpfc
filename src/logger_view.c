@@ -67,7 +67,7 @@ bool_t logview_construct( logger_view_t *lv, wnd_t *parent, logger_t *logger )
 
 	/* Set message map */
 	wnd_msg_add_handler(WND_OBJ(lv), "display", logview_on_display);
-	wnd_msg_add_handler(WND_OBJ(lv), "keydown", logview_on_keydown);
+	wnd_msg_add_handler(WND_OBJ(lv), "action", logview_on_action);
 	wnd_msg_add_handler(WND_OBJ(lv), "scrolled", logview_on_scrolled);
 
 	/* Set fields */
@@ -89,8 +89,6 @@ wnd_msg_retcode_t logview_on_display( wnd_t *wnd )
 	{
 		logger_msg_type_t type = msg->m_type;
 		int level = msg->m_level;
-		util_log("message %s has level %d and type %d\n", msg->m_message,
-				level, type);
 		if (level == LOGGER_LEVEL_DEBUG)
 			wnd_apply_style(wnd, "logger-debug-style");
 		else if (type == LOGGER_MSG_NORMAL)
@@ -108,42 +106,44 @@ wnd_msg_retcode_t logview_on_display( wnd_t *wnd )
 	return WND_MSG_RETCODE_OK;
 } /* End of 'logview_on_display' function */
 
-/* 'keydown' message handler */
-wnd_msg_retcode_t logview_on_keydown( wnd_t *wnd, wnd_key_t key )
+/* 'action' message handler */
+wnd_msg_retcode_t logview_on_action( wnd_t *wnd, char *action )
 {
 	scrollable_t *scr = SCROLLABLE_OBJ(wnd);
 
-	switch (key)
-	{
 	/* Scroll */
-	case 'j':
+	if (!strcasecmp(action, "scroll_down"))
+	{
 		scrollable_scroll(scr, 1, FALSE);
-		break;
-	case 'k':
+	}
+	else if (!strcasecmp(action, "scroll_up"))
+	{
 		scrollable_scroll(scr, -1, FALSE);
-		break;
-	case 'd':
-	case ' ':
+	}
+	else if (!strcasecmp(action, "screen_down"))
+	{
 		logview_move_pages(scr, 1);
-		break;
-	case 'u':
+	}
+	else if (!strcasecmp(action, "screen_up"))
+	{
 		logview_move_pages(scr, -1);
-		break;
-	case 'g':
+	}
+	else if (!strcasecmp(action, "scroll_to_start"))
+	{
 		scrollable_scroll(scr, 0, TRUE);
-		break;
-	case 'G':
+	}
+	else if (!strcasecmp(action, "scroll_to_end"))
+	{
 		scrollable_scroll(scr, LOGGER_VIEW(wnd)->m_logger->m_num_messages,
 				TRUE);
-		break;
-
+	}
 	/* Close window */
-	case 'q':
+	else if (!strcasecmp(action, "quit"))
+	{
 		wnd_close(wnd);
-		break;
 	}
 	return WND_MSG_RETCODE_OK;
-} /* End of 'logview_on_keydown' function */
+} /* End of 'logview_on_action' function */
 
 /* 'scrolled' message handler */
 wnd_msg_retcode_t logview_on_scrolled( wnd_t *wnd, int offset )
@@ -241,6 +241,15 @@ void logview_class_set_default_styles( cfg_node_t *list )
 	cfg_set_var(list, "logger-error-style", "red:black:bold");
 	cfg_set_var(list, "logger-fatal-style", "red:black:bold,blink");
 	cfg_set_var(list, "logger-debug-style", "yellow:black");
+
+	/* Set kbinds */
+	cfg_set_var(list, "kbind.quit", "q;<Escape>");
+	cfg_set_var(list, "kbind.scroll_up", "k;<Up>;<Ctrl-p>");
+	cfg_set_var(list, "kbind.scroll_down", "j;<Down>;<Ctrl-n>");
+	cfg_set_var(list, "kbind.screen_up", "u;<PageUp>;<Alt-v>");
+	cfg_set_var(list, "kbind.screen_down", "d;<PageDown>;<Ctrl-v>");
+	cfg_set_var(list, "kbind.scroll_to_start", "g;<Ctrl-a>;<Home>");
+	cfg_set_var(list, "kbind.scroll_to_end", "G;<Ctrl-e>;<End>");
 } /* End of 'logview_class_set_default_styles' function */
 
 /* End of 'logger_view.c' file */

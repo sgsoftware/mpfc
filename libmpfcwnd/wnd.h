@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Interface for basic window
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 22.09.2004
+ * LAST UPDATE : 29.09.2004
  * NOTE        : Module prefix 'wnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -36,6 +36,7 @@
 #include "wnd_basic.h"
 #include "wnd_def_handlers.h"
 #include "wnd_kbd.h"
+#include "wnd_kbind.h"
 #include "wnd_mouse.h"
 #include "wnd_msg.h"
 #include "wnd_print.h"
@@ -115,6 +116,9 @@ struct tag_wnd_global_data_t
 
 	/* Message queue */
 	wnd_msg_queue_t *m_msg_queue;
+
+	/* 'kbind' module data */
+	wnd_kbind_data_t *m_kbind_data;
 
 	/* Display buffer */
 	struct wnd_display_buf_t
@@ -197,6 +201,7 @@ struct tag_wnd_t
 	 * previous-level handler has stopped handling message */
 	wnd_msg_handler_t *m_on_display,
 					  *m_on_keydown,
+					  *m_on_action,
 					  *m_on_close,
 					  *m_on_erase_back,
 					  *m_on_parent_repos,
@@ -285,6 +290,7 @@ struct tag_wnd_t
 	(WND_DISPLAY_BUF(wnd).m_data[(y) * WND_DISPLAY_BUF(wnd).m_width + (x)])
 #define WND_MSG_QUEUE(wnd)		(WND_GLOBAL(wnd)->m_msg_queue)
 #define WND_KBD_DATA(wnd)		(WND_GLOBAL(wnd)->m_kbd_data)
+#define WND_KBIND_DATA(wnd)		(WND_GLOBAL(wnd)->m_kbind_data)
 #define WND_MOUSE_DATA(wnd)		(WND_GLOBAL(wnd)->m_mouse_data)
 #define WND_STATES_STACK(wnd)	(WND_GLOBAL(wnd)->m_states_stack)
 #define WND_STATES_POS(wnd)		(WND_GLOBAL(wnd)->m_states_stack_pos)
@@ -458,6 +464,9 @@ void wnd_regen_zvalue_list( wnd_t *wnd );
 
 /* Set the default styles */
 void wnd_set_default_styles( cfg_node_t *list );
+
+/* Get window's top-level ancestor */
+wnd_t *wnd_get_top_level_ancestor( wnd_t *wnd );
 
 #endif
 

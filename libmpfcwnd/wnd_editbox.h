@@ -76,6 +76,9 @@ typedef struct
 
 	/* Should non-modified text be displayed as grayed? */
 	bool_t m_gray_non_modified;
+
+	/* Edit box state changed */
+	bool_t m_state_changed;
 } editbox_t;
 
 /* Convert window object to edit box type */
@@ -120,6 +123,9 @@ wnd_msg_retcode_t editbox_on_display( wnd_t *wnd );
 
 /* 'keydown' message handler */
 wnd_msg_retcode_t editbox_on_keydown( wnd_t *wnd, wnd_key_t key );
+
+/* 'action' message handler */
+wnd_msg_retcode_t editbox_on_action( wnd_t *wnd, char *action );
 
 /* 'mouse_ldown' message handler */
 wnd_msg_retcode_t editbox_on_mouse( wnd_t *wnd, int x, int y,

@@ -82,7 +82,6 @@ bool_t dialog_construct( dialog_t *dlg, wnd_t *parent, char *title )
 		return FALSE;
 
 	/* Install handlers */
-	wnd_msg_add_handler(wnd, "keydown", dialog_on_keydown);
 	wnd_msg_add_handler(wnd, "ok_clicked", dialog_on_ok);
 	wnd_msg_add_handler(wnd, "cancel_clicked", dialog_on_cancel);
 
@@ -188,54 +187,6 @@ dlgitem_t *dialog_iterate_items( dialog_t *dlg, dlgitem_t *di, bool_t cycle )
 		return DLGITEM_OBJ(WND_OBJ(dlg)->m_child);
 	return NULL;
 } /* End of 'dialog_iterate_items' function */
-
-/* Handle 'keydown' message */
-wnd_msg_retcode_t dialog_on_keydown( wnd_t *wnd, wnd_key_t key )
-{
-	int without_alt = WND_KEY_IS_WITH_ALT(key);
-
-	/* Jumping to child */
-	if (without_alt != 0)
-	{
-		dlgitem_t *child;
-		for ( child = DLGITEM_OBJ(WND_OBJ(wnd)->m_child);
-				child != NULL; child = dialog_iterate_items(DIALOG_OBJ(wnd),
-					child, FALSE) )
-		{
-			if (!(child->m_flags & DLGITEM_NOTABSTOP) &&
-					(child->m_letter == without_alt))
-				break;
-		}
-		if (child != NULL)
-		{
-			wnd_set_focus(WND_OBJ(child));
-			return WND_MSG_RETCODE_OK;
-		}
-	}
-	
-	/* Tab jumps to the next window */
-	if (key == '\t')
-	{
-		dlgitem_t *starting = DLGITEM_OBJ(WND_FOCUS(wnd)), *child;
-		child = starting;
-		do
-		{
-			child = dialog_iterate_items(DIALOG_OBJ(wnd), child, TRUE);
-		} while (child != starting && (child->m_flags & DLGITEM_NOTABSTOP));
-		wnd_set_focus(WND_OBJ(child));
-	}
-	/* Enter initiates 'ok_clicked' message sending */
-	else if (key == '\n')
-	{
-		wnd_msg_send(wnd, "ok_clicked", dialog_msg_ok_new());
-	}
-	/* Escape initiates 'cancel_clicked' message sending */
-	else if (key == KEY_ESCAPE || key == KEY_CTRL_G)
-	{
-		wnd_msg_send(wnd, "cancel_clicked", dialog_msg_cancel_new());
-	}
-	return WND_MSG_RETCODE_OK;
-} /* End of 'dialog_on_keydown' function */
 
 /* Handle 'ok_clicked' message */
 wnd_msg_retcode_t dialog_on_ok( wnd_t *wnd )

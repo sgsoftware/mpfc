@@ -71,7 +71,7 @@ bool_t help_construct( help_screen_t *help, wnd_t *parent, int type )
 
 	/* Register handlers */
 	wnd_msg_add_handler(wnd, "display", help_on_display);
-	wnd_msg_add_handler(wnd, "keydown", help_on_keydown);
+	wnd_msg_add_handler(wnd, "action", help_on_action);
 	wnd_msg_add_handler(wnd, "destructor", help_destructor);
 
 	/* Set fields */
@@ -137,24 +137,21 @@ wnd_msg_retcode_t help_on_display( wnd_t *wnd )
 	return WND_MSG_RETCODE_OK;
 } /* End of 'help_display' function */
 
-/* Handle key message */
-wnd_msg_retcode_t help_on_keydown( wnd_t *wnd, wnd_key_t key )
+/* Handle 'action' message */
+wnd_msg_retcode_t help_on_action( wnd_t *wnd, char *action )
 {
 	help_screen_t *h = (help_screen_t *)wnd;
 
-	switch (key)
+	if (!strcasecmp(action, "quit"))
 	{
-	case 'q':
-	case KEY_ESCAPE:
 		wnd_close(wnd);
-		break;
-	case ' ':
-	case '\n':
+	}
+	else if (!strcasecmp(action, "next_page"))
+	{
 		h->m_screen ++;
 		if ((h->m_screen) * HELP_SCREEN_SIZE(h) - 1 >= h->m_num_items)
 			h->m_screen = 0;
 		wnd_invalidate(wnd);
-		break;
 	}
 	return WND_MSG_RETCODE_OK;
 } /* End of 'help_handle_key' function */
@@ -286,6 +283,8 @@ void help_class_set_default_styles( cfg_node_t *list )
 {
 	cfg_set_var(list, "item-style", "white:black");
 	cfg_set_var(list, "prompt-style", "red:black");
+	cfg_set_var(list, "kbind.quit", "q;<Escape>");
+	cfg_set_var(list, "kbind.next_page", "<Enter>;<Space>");
 } /* End of 'help_class_set_default_styles' function */
 
 /* End of 'help_screen.c' file */

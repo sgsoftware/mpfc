@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Default message handlers
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 24.07.2004
+ * LAST UPDATE : 29.09.2004
  * NOTE        : Module prefix 'wnd_default'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -29,6 +29,7 @@
 #include "types.h"
 #include "wnd.h"
 #include "wnd_def_handlers.h"
+#include "wnd_kbind.h"
 #include "wnd_msg.h"
 
 /* Default WND_MSG_DISPLAY message handler */
@@ -42,29 +43,42 @@ wnd_msg_retcode_t wnd_default_on_display( wnd_t *wnd )
 /* Default WND_MSG_KEYDOWN message handler */
 wnd_msg_retcode_t wnd_default_on_keydown( wnd_t *wnd, wnd_key_t key )
 {
-	/* Top-level windows focus switch */
-	if (key == WND_KEY_WITH_ALT('.'))
-		wnd_next_focus(WND_ROOT(wnd));
-	else if (key == WND_KEY_WITH_ALT(','))
-		wnd_prev_focus(WND_ROOT(wnd));
-	/* Start window change position/size modes */
-	else if (key == WND_KEY_WITH_ALT('p'))
-		wnd_set_mode(wnd, WND_MODE_REPOSITION);
-	else if (key == WND_KEY_WITH_ALT('s'))
-		wnd_set_mode(wnd, WND_MODE_RESIZE);
-	/* Close window */
-	else if (key == WND_KEY_WITH_ALT('c') && 
-			(WND_FLAGS(wnd) & WND_FLAG_CLOSE_BOX))
-		wnd_close(wnd);
-	/* Maximize/minimize window */
-	else if (key == WND_KEY_WITH_ALT('m') && 
-			(WND_FLAGS(wnd) & WND_FLAG_MAX_BOX))
-		wnd_toggle_maximize(wnd);
-	/* Redisplay screen */
-	else if (key == KEY_CTRL_L)
-		wnd_redisplay(wnd);
+	wnd_kbind_key2buf(wnd, key);
 	return WND_MSG_RETCODE_STOP;
 } /* End of 'wnd_default_on_keydown' function */
+
+/* Default 'action' message handler */
+wnd_msg_retcode_t wnd_default_on_action( wnd_t *wnd, char *action )
+{
+	/* Top-level windows focus switch */
+	if (!strcasecmp(action, "next_focus"))
+		wnd_next_focus(WND_ROOT(wnd));
+	else if (!strcasecmp(action, "prev_focus"))
+		wnd_prev_focus(WND_ROOT(wnd));
+	/* Start window change position/size modes */
+	else if (!strcasecmp(action, "move_window"))
+		wnd_set_mode(wnd, WND_MODE_REPOSITION);
+	else if (!strcasecmp(action, "resize_window"))
+		wnd_set_mode(wnd, WND_MODE_RESIZE);
+	/* Close window */
+	else if (!strcasecmp(action, "close_window"))
+	{
+		wnd_t *anc = wnd_get_top_level_ancestor(wnd);
+		if (WND_FLAGS(anc) & WND_FLAG_CLOSE_BOX)
+			wnd_close(anc);
+	}
+	/* Maximize/minimize window */
+	else if (!strcasecmp(action, "maximize_window"))
+	{
+		wnd_t *anc = wnd_get_top_level_ancestor(wnd);
+		if (WND_FLAGS(anc) & WND_FLAG_MAX_BOX)
+			wnd_toggle_maximize(anc);
+	}
+	/* Redisplay screen */
+	else if (!strcasecmp(action, "refresh_screen"))
+		wnd_redisplay(wnd);
+	return WND_MSG_RETCODE_OK;
+} /* End of 'wnd_default_on_action' function */
 
 /* Default WND_MSG_CLOSE message handler */
 wnd_msg_retcode_t wnd_default_on_close( wnd_t *wnd )

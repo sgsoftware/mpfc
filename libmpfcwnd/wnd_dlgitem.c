@@ -28,6 +28,7 @@
 #include <string.h>
 #include "types.h"
 #include "wnd.h"
+#include "wnd_dialog.h"
 #include "wnd_dlgitem.h"
 
 /* Construct dialog item */
@@ -46,6 +47,7 @@ bool_t dlgitem_construct( dlgitem_t *di, wnd_t *parent, char *title, char *id,
 
 	/* Initialize message map */
 	wnd_msg_add_handler(wnd, "keydown", dlgitem_on_keydown);
+	wnd_msg_add_handler(wnd, "action", dlgitem_on_action);
 	wnd_msg_add_handler(wnd, "destructor", dlgitem_destructor);
 
 	/* Initialize dialog item fields */
@@ -94,12 +96,58 @@ void dlgitem_set_pos( dlgitem_t *di, int x, int y, int width, int height )
 /* 'keydown' message handler */
 wnd_msg_retcode_t dlgitem_on_keydown( wnd_t *wnd, wnd_key_t key )
 {
-	/* Pass key to parent if it is in reposition mode */
-	wnd_mode_t mode = wnd->m_parent->m_mode;
-	if (mode == WND_MODE_REPOSITION || mode == WND_MODE_RESIZE)
-		return WND_MSG_RETCODE_PASS_TO_PARENT;
+	int without_alt = WND_KEY_IS_WITH_ALT(key);
+	wnd_t *dlg = DLGITEM_OBJ(wnd)->m_dialog;
+
+	/* Jumping to child */
+	if (without_alt != 0)
+	{
+		dlgitem_t *child;
+		for ( child = DLGITEM_OBJ(dlg->m_child);
+				child != NULL; child = dialog_iterate_items(DIALOG_OBJ(dlg),
+					child, FALSE) )
+		{
+			if (!(child->m_flags & DLGITEM_NOTABSTOP) &&
+					(child->m_letter == without_alt))
+				break;
+		}
+		if (child != NULL)
+		{
+			wnd_set_focus(WND_OBJ(child));
+			return WND_MSG_RETCODE_STOP;
+		}
+	}
 	return WND_MSG_RETCODE_OK;
 } /* End of 'dlgitem_on_keydown' function */
+
+/* 'action' message handler */
+wnd_msg_retcode_t dlgitem_on_action( wnd_t *wnd, char *action )
+{
+	wnd_t *dlg = DLGITEM_OBJ(wnd)->m_dialog;
+
+	/* Jump to the next window */
+	if (!strcasecmp(action, "next"))
+	{
+		dlgitem_t *starting = DLGITEM_OBJ(WND_FOCUS(wnd)), *child;
+		child = starting;
+		do
+		{
+			child = dialog_iterate_items(DIALOG_OBJ(dlg), child, TRUE);
+		} while (child != starting && (child->m_flags & DLGITEM_NOTABSTOP));
+		wnd_set_focus(WND_OBJ(child));
+	}
+	/* Send 'ok_clicked' */
+	else if (!strcasecmp(action, "ok"))
+	{
+		wnd_msg_send(dlg, "ok_clicked", dialog_msg_ok_new());
+	}
+	/* Send 'cancel_clicked' */
+	else if (!strcasecmp(action, "cancel"))
+	{
+		wnd_msg_send(dlg, "cancel_clicked", dialog_msg_cancel_new());
+	}
+	return WND_MSG_RETCODE_OK;
+} /* End of 'dlgitem_on_action' function */
 
 /* Display a label-like text */
 void dlgitem_display_label_text( wnd_t *wnd, char *text )
@@ -157,6 +205,9 @@ wnd_class_t *dlgitem_class_init( wnd_global_data_t *global )
 void dlgitem_class_set_default_styles( cfg_node_t *list )
 {
 	cfg_set_var(list, "letter-color", "red");
+	cfg_set_var(list, "kbind.next", "<Tab>");
+	cfg_set_var(list, "kbind.ok", "<Enter>");
+	cfg_set_var(list, "kbind.cancel", "<Escape>;<Ctrl-g>");
 } /* End of 'dlgitem_class_set_default_styles' function */
 
 /* End of 'wnd_dlgitem.c' file */

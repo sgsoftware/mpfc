@@ -65,7 +65,7 @@ bool_t checkbox_construct( checkbox_t *cb, wnd_t *parent, char *title,
 		return FALSE;
 
 	/* Set message map */
-	wnd_msg_add_handler(WND_OBJ(cb), "keydown", checkbox_on_keydown);
+	wnd_msg_add_handler(WND_OBJ(cb), "action", checkbox_on_action);
 	wnd_msg_add_handler(WND_OBJ(cb), "display", checkbox_on_display);
 	wnd_msg_add_handler(WND_OBJ(cb), "mouse_ldown", checkbox_on_mouse);
 
@@ -74,20 +74,18 @@ bool_t checkbox_construct( checkbox_t *cb, wnd_t *parent, char *title,
 	return TRUE;
 } /* End of 'checkbox_construct' function */
 
-/* 'keydown' message handler */
-wnd_msg_retcode_t checkbox_on_keydown( wnd_t *wnd, wnd_key_t key )
+/* 'action' message handler */
+wnd_msg_retcode_t checkbox_on_action( wnd_t *wnd, char *action )
 {
 	checkbox_t *cb = CHECKBOX_OBJ(wnd);
 
 	/* Change state */
-	if (key == ' ')
+	if (!strcasecmp(action, "toggle"))
 	{
 		checkbox_toggle(cb);
 	}
-	else
-		return WND_MSG_RETCODE_PASS_TO_PARENT;
 	return WND_MSG_RETCODE_OK;
-} /* End of 'checkbox_on_keydown' function */
+} /* End of 'checkbox_on_action' function */
 
 /* 'display' message handler */
 wnd_msg_retcode_t checkbox_on_display( wnd_t *wnd )
@@ -142,6 +140,7 @@ void checkbox_class_set_default_styles( cfg_node_t *list )
 	cfg_set_var(list, "focus-text-style", "white:blue:bold");
 	cfg_set_var(list, "label-style", "white:black");
 	cfg_set_var(list, "focus-label-style", "white:black");
+	cfg_set_var(list, "kbind.toggle", "<Space>");
 } /* End of 'checkbox_class_set_default_styles' function */
 
 /* Get message information */

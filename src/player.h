@@ -165,11 +165,8 @@ void player_on_log_msg( logger_t *log, void *data,
 /* Play list window closing handler */
 wnd_msg_retcode_t player_on_close( wnd_t *wnd );
 
-/* Handle key function */
-wnd_msg_retcode_t player_on_keydown( wnd_t *wnd, wnd_key_t key );
-
 /* Handle action */
-void player_handle_action( int action );
+wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action );
 
 /* Handle left-button click */
 wnd_msg_retcode_t player_on_mouse_ldown( wnd_t *wnd, int x, int y,

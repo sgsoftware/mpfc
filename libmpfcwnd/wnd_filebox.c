@@ -73,7 +73,7 @@ bool_t filebox_construct( filebox_t *fb, wnd_t *parent, char *id, char *text,
 		return FALSE;
 
 	/* Set message map */
-	wnd_msg_add_handler(wnd, "keydown", filebox_on_keydown);
+	wnd_msg_add_handler(wnd, "action", filebox_on_action);
 	wnd_msg_add_handler(wnd, "destructor", filebox_destructor);
 	return TRUE;
 } /* End of 'filebox_construct' function */
@@ -94,24 +94,25 @@ void filebox_destructor( wnd_t *wnd )
 	filebox_free_names(FILEBOX_OBJ(wnd));
 } /* End of 'filebox_destructor' function */
 
-/* 'keydown' message handler */
-wnd_msg_retcode_t filebox_on_keydown( wnd_t *wnd, wnd_key_t key )
+/* 'action' message handler */
+wnd_msg_retcode_t filebox_on_action( wnd_t *wnd, char *action )
 {
 	filebox_t *fb = FILEBOX_OBJ(wnd);
 
-	/* Handle only TAB */
-	if (key != KEY_TAB)
+	/* Do completion */
+	if (!strcasecmp(action, "complete"))
 	{
-		filebox_free_names(fb);
-		return WND_MSG_RETCODE_OK;
-	}
+		/* Free if something has changed */
+		if (EDITBOX_OBJ(wnd)->m_state_changed)
+			filebox_free_names(fb);
 
-	/* Insert the next name */
-	filebox_insert_next(fb);
-	wnd_msg_send(wnd, "changed", editbox_changed_new());
-	wnd_invalidate(wnd);
-	return WND_MSG_RETCODE_STOP;
-} /* End of 'filebox_on_keydown' function */
+		/* Insert next name */
+		filebox_insert_next(fb);
+		wnd_msg_send(wnd, "changed", editbox_changed_new());
+		wnd_invalidate(wnd);
+	}
+	return WND_MSG_RETCODE_OK;
+} /* End of 'filebox_on_action' function */
 
 /* Load names list */
 void filebox_load_names( filebox_t *fb )
@@ -233,6 +234,7 @@ void filebox_insert_next( filebox_t *fb )
 		for ( ch = fb->m_names->m_name; (*ch) != 0; ch ++ )
 			editbox_addch(eb, *ch);
 		fb->m_names = fb->m_names->m_next;
+		eb->m_state_changed = FALSE;
 	}
 } /* End of 'filebox_insert_next' function */
 
@@ -303,8 +305,14 @@ void filebox_glob_handler( vfs_file_t *file, void *data )
 wnd_class_t *filebox_class_init( wnd_global_data_t *global )
 {
 	return wnd_class_new(global, "filebox", editbox_class_init(global), NULL,
-			NULL);
+			filebox_class_set_default_styles);
 } /* End of 'filebox_class_init' function */
+
+/* Set file box class default styles */
+void filebox_class_set_default_styles( cfg_node_t *list )
+{
+	cfg_set_var(list, "kbind.complete", "<Tab>");
+} /* End of 'filebox_class_set_default_styles' function */
 
 /* End of 'filebox.c' file */
 

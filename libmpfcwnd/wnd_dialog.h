@@ -68,9 +68,6 @@ void dialog_arrange_children( dialog_t *dlg );
 /* Dialog items iterator */
 dlgitem_t *dialog_iterate_items( dialog_t *dlg, dlgitem_t *di, bool_t cycle );
 
-/* Handle 'keydown' message */
-wnd_msg_retcode_t dialog_on_keydown( wnd_t *wnd, wnd_key_t key );
-
 /* Handle 'ok_clicked' message */
 wnd_msg_retcode_t dialog_on_ok( wnd_t *wnd );
 

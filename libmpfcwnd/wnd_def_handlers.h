@@ -31,36 +31,33 @@
 #include "types.h"
 #include "wnd_kbd.h"
 #include "wnd_msg.h"
+#include "wnd_types.h"
 
-/* Further declarations */
-struct tag_wnd_t;
+/* Default 'display' message handler */
+wnd_msg_retcode_t wnd_default_on_display( wnd_t *wnd );
 
-/* Default WND_MSG_DISPLAY message handler */
-wnd_msg_retcode_t wnd_default_on_display( struct tag_wnd_t *wnd );
+/* Default 'keydown' message handler */
+wnd_msg_retcode_t wnd_default_on_keydown( wnd_t *wnd, wnd_key_t key );
 
-/* Default WND_MSG_KEYDOWN message handler */
-wnd_msg_retcode_t wnd_default_on_keydown( struct tag_wnd_t *wnd, 
-		wnd_key_t key );
+/* Default 'action' message handler */
+wnd_msg_retcode_t wnd_default_on_action( wnd_t *wnd, char *action );
 
-/* Default WND_MSG_CLOSE message handler */
-wnd_msg_retcode_t wnd_default_on_close( struct tag_wnd_t *wnd );
+/* Default 'close' message handler */
+wnd_msg_retcode_t wnd_default_on_close( wnd_t *wnd );
 
-/* Default WND_MSG_ERASE_BACK message handler */
-wnd_msg_retcode_t wnd_default_on_erase_back( struct tag_wnd_t *wnd );
+/* Default 'erase_back' message handler */
+wnd_msg_retcode_t wnd_default_on_erase_back( wnd_t *wnd );
 
-/* Default WND_MSG_UPDATE_SCREEN message handler */
-wnd_msg_retcode_t wnd_default_on_update_screen( struct tag_wnd_t *wnd );
-
-/* Default WND_MSG_PARENT_REPOS message handler */
-wnd_msg_retcode_t wnd_default_on_parent_repos( struct tag_wnd_t *wnd,
+/* Default 'parent_repos' message handler */
+wnd_msg_retcode_t wnd_default_on_parent_repos( wnd_t *wnd,
 		int px, int py, int pw, int ph, int nx, int ny, int nw, int nh );
 
 /* Default mouse messages handler */
-wnd_msg_retcode_t wnd_default_on_mouse( struct tag_wnd_t *wnd,
+wnd_msg_retcode_t wnd_default_on_mouse( wnd_t *wnd,
 		int x, int y, wnd_mouse_button_t btn, wnd_mouse_event_t type );
 
 /* Default window destructor */
-void wnd_default_destructor( struct tag_wnd_t *wnd );
+void wnd_default_destructor( wnd_t *wnd );
 
 #endif
 

@@ -62,8 +62,8 @@ void button_get_desired_size( dlgitem_t *di, int *width, int *height );
 /* 'display' message handler */
 wnd_msg_retcode_t button_on_display( wnd_t *wnd );
 
-/* 'keydown' message handler */
-wnd_msg_retcode_t button_on_keydown( wnd_t *wnd, wnd_key_t key );
+/* 'action' message handler */
+wnd_msg_retcode_t button_on_action( wnd_t *wnd, char *action );
 
 /* 'mouse_ldown' message handler */
 wnd_msg_retcode_t button_on_mouse( wnd_t *wnd, int x, int y, 

@@ -80,6 +80,7 @@ bool_t editbox_construct( editbox_t *eb, wnd_t *parent, char *id, char *text,
 	/* Initialize message map */
 	wnd_msg_add_handler(wnd, "display", editbox_on_display);
 	wnd_msg_add_handler(wnd, "keydown", editbox_on_keydown);
+	wnd_msg_add_handler(wnd, "action", editbox_on_action);
 	wnd_msg_add_handler(wnd, "mouse_ldown", editbox_on_mouse);
 	wnd_msg_add_handler(wnd, "destructor", editbox_destructor);
 
@@ -134,7 +135,7 @@ void editbox_set_text( editbox_t *eb, char *text )
 	assert(eb);
 	assert(text);
 	str_copy_cptr(eb->m_text, text);
-	editbox_move(eb, EDITBOX_LEN(eb));
+	editbox_move(eb, /*EDITBOX_LEN(eb)*/0);
 	eb->m_modified = TRUE;
 	wnd_msg_send(WND_OBJ(eb), "changed", editbox_changed_new());
 	wnd_invalidate(WND_OBJ(eb));
@@ -212,28 +213,38 @@ wnd_msg_retcode_t editbox_on_keydown( wnd_t *wnd, wnd_key_t key )
 	{
 		editbox_addch(eb, key);
 		wnd_msg_send(WND_OBJ(eb), "changed", editbox_changed_new());
+		wnd_invalidate(wnd);
 	}
+	return WND_MSG_RETCODE_OK;
+} /* End of 'editbox_on_keydown' function */
+
+/* 'action' message handler */
+wnd_msg_retcode_t editbox_on_action( wnd_t *wnd, char *action )
+{
+	bool_t not_changed = FALSE;
+	editbox_t *eb = EDITBOX_OBJ(wnd);
+
 	/* Delete previous char */
-	else if (key == KEY_BACKSPACE)
+	if (!strcasecmp(action, "del_left"))
 	{
 		editbox_delch(eb, eb->m_cursor - 1);
 		wnd_msg_send(WND_OBJ(eb), "changed", editbox_changed_new());
 	}
 	/* Delete current character */
-	else if (key == KEY_DC || key == KEY_CTRL_D)
+	else if (!strcasecmp(action, "del_right"))
 	{
 		editbox_delch(eb, eb->m_cursor);
 		wnd_msg_send(WND_OBJ(eb), "changed", editbox_changed_new());
 	}
 	/* Kill text from current position to the start */
-	else if (key == KEY_CTRL_U)
+	else if (!strcasecmp(action, "kill_to_start"))
 	{
 		while (eb->m_cursor != 0)
 			editbox_delch(eb, eb->m_cursor - 1);
 		wnd_msg_send(WND_OBJ(eb), "changed", editbox_changed_new());
 	}
 	/* Kill text from current position to the end */
-	else if (key == KEY_CTRL_K)
+	else if (!strcasecmp(action, "kill_to_end"))
 	{
 		int count = EDITBOX_LEN(eb) - eb->m_cursor;
 		int was_cursor = eb->m_cursor;
@@ -243,40 +254,44 @@ wnd_msg_retcode_t editbox_on_keydown( wnd_t *wnd, wnd_key_t key )
 		wnd_msg_send(WND_OBJ(eb), "changed", editbox_changed_new());
 	}
 	/* Move cursor right */
-	else if (key == KEY_RIGHT || key == KEY_CTRL_F)
+	else if (!strcasecmp(action, "move_right"))
 	{
 		editbox_move(eb, eb->m_cursor + 1);
 		wnd_msg_send(WND_OBJ(eb), "changed", editbox_changed_new());
 	}
 	/* Move cursor left */
-	else if (key == KEY_LEFT || key == KEY_CTRL_B)
+	else if (!strcasecmp(action, "move_left"))
 	{
 		editbox_move(eb, eb->m_cursor - 1);
 	}
 	/* Move cursor to text start */
-	else if (key == KEY_HOME || key == KEY_CTRL_A)
+	else if (!strcasecmp(action, "move_to_start"))
 	{
 		editbox_move(eb, 0);
 	}
 	/* Move cursor to text end */
-	else if (key == KEY_END || key == KEY_CTRL_E)
+	else if (!strcasecmp(action, "move_to_end"))
 	{
 		editbox_move(eb, EDITBOX_LEN(eb));
 	}
 	/* History stuff */
-	else if (key == KEY_UP || key == KEY_CTRL_P)
+	else if (!strcasecmp(action, "history_prev"))
 	{
 		editbox_hist_move(eb, TRUE);
 	}
-	else if (key == KEY_DOWN || key == KEY_CTRL_N)
+	else if (!strcasecmp(action, "history_next"))
 	{
 		editbox_hist_move(eb, FALSE);
 	}
 	else
-		return WND_MSG_RETCODE_PASS_TO_PARENT;
-	wnd_invalidate(wnd);
+		not_changed = TRUE;
+	if (!not_changed)
+	{
+		eb->m_state_changed = TRUE;
+		wnd_invalidate(wnd);
+	}
 	return WND_MSG_RETCODE_OK;
-} /* End of 'editbox_on_keydown' function */
+} /* End of 'editbox_on_action' function */
 
 /* 'mouse_ldown' message handler */
 wnd_msg_retcode_t editbox_on_mouse( wnd_t *wnd, int x, int y,
@@ -399,6 +414,20 @@ wnd_class_t *editbox_class_init( wnd_global_data_t *global )
 void editbox_class_set_default_styles( cfg_node_t *list )
 {
 	cfg_set_var(list, "gray-style", "black:black:bold");
+
+	/* Set kbinds */
+	cfg_set_var(list, "kbind.move_left", "<Left>;<Ctrl-b>");
+	cfg_set_var(list, "kbind.move_right", "<Right>;<Ctrl-f>");
+	cfg_set_var(list, "kbind.word_left", "<Alt-b>");
+	cfg_set_var(list, "kbind.word_right", "<Alt-f>");
+	cfg_set_var(list, "kbind.del_left", "<Backspace>");
+	cfg_set_var(list, "kbind.del_right", "<Del>;<Ctrl-d>");
+	cfg_set_var(list, "kbind.kill_to_start", "<Ctrl-u>");
+	cfg_set_var(list, "kbind.kill_to_end", "<Ctrl-k>");
+	cfg_set_var(list, "kbind.move_to_start", "<Home>;<Ctrl-a>");
+	cfg_set_var(list, "kbind.move_to_end", "<End>;<Ctrl-e>");
+	cfg_set_var(list, "kbind.history_prev", "<Up>;<Ctrl-p>");
+	cfg_set_var(list, "kbind.history_next", "<Down>;<Ctrl-n>");
 } /* End of 'editbox_class_set_default_styles' function */
 
 /* Get message information */

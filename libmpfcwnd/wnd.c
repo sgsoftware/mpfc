@@ -43,6 +43,7 @@ wnd_t *wnd_init( cfg_node_t *cfg_list, logger_t *log )
 	cfg_node_t *cfg_wnd = NULL;
 	wnd_global_data_t *global = NULL;
 	wnd_kbd_data_t *kbd_data = NULL;
+	wnd_kbind_data_t *kbind_data = NULL;
 	wnd_mouse_data_t *mouse_data = NULL;
 	wnd_msg_queue_t *msg_queue = NULL;
 	wnd_class_t *klass = NULL;
@@ -137,6 +138,12 @@ wnd_t *wnd_init( cfg_node_t *cfg_list, logger_t *log )
 		goto failed;
 	global->m_kbd_data = kbd_data;
 
+	/* Initialize kbind module */
+	kbind_data = wnd_kbind_init(global);
+	if (kbind_data == NULL)
+		goto failed;
+	global->m_kbind_data = kbind_data;
+
 	/* Initialize mouse */
 	mouse_data = wnd_mouse_init(global);
 	if (mouse_data == NULL)
@@ -151,6 +158,8 @@ wnd_t *wnd_init( cfg_node_t *cfg_list, logger_t *log )
 failed:
 	if (mouse_data != NULL)
 		wnd_mouse_free(mouse_data);
+	if (kbind_data != NULL)
+		wnd_kbind_free(kbind_data);
 	if (kbd_data != NULL)
 		wnd_kbd_free(kbd_data);
 	if (msg_queue != NULL)
@@ -324,6 +333,7 @@ bool_t wnd_construct( wnd_t *wnd, wnd_t *parent, char *title, int x, int y,
 	/* Initialize message map */
 	wnd_msg_add_handler(wnd, "display", wnd_default_on_display);
 	wnd_msg_add_handler(wnd, "keydown", wnd_default_on_keydown);
+	wnd_msg_add_handler(wnd, "action", wnd_default_on_action);
 	wnd_msg_add_handler(wnd, "close", wnd_default_on_close);
 	wnd_msg_add_handler(wnd, "erase_back", wnd_default_on_erase_back);
 	wnd_msg_add_handler(wnd, "parent_repos", wnd_default_on_parent_repos);
@@ -1030,13 +1040,6 @@ wnd_msg_retcode_t wnd_call_handler( wnd_t *wnd, char *msg_name,
 		/* Stop handling */
 		if (ret == WND_MSG_RETCODE_STOP || ret == WND_MSG_RETCODE_EXIT)
 			return ret;
-		/* Switch message handling to the parent */
-		else if (ret == WND_MSG_RETCODE_PASS_TO_PARENT && wnd->m_parent != NULL)
-		{
-			wnd = wnd->m_parent;
-			handler = *wnd_class_get_msg_info(wnd, msg_name, &callback);
-		}
-		/* Use next handler */
 		else
 			handler = handler->m_next;
 	}
@@ -1065,22 +1068,27 @@ wnd_msg_retcode_t wnd_callback_destructor( wnd_t *wnd, wnd_msg_handler_t *h,
 /* Set window mode */
 void wnd_set_mode( wnd_t *wnd, wnd_mode_t mode )
 {
+	wnd_t *real_wnd;
+
 	assert(wnd);
+	real_wnd = wnd_get_top_level_ancestor(wnd);
+	assert(real_wnd);
 
 	/* Only windows with border may change position or size */
 	if ((mode == WND_MODE_REPOSITION || mode == WND_MODE_RESIZE) &&
-			!(wnd->m_flags & WND_FLAG_BORDER) ||
-			(mode == WND_MODE_RESIZE && (wnd->m_flags & WND_FLAG_NORESIZE)))
+			!(real_wnd->m_flags & WND_FLAG_BORDER) ||
+			(mode == WND_MODE_RESIZE && 
+			 (real_wnd->m_flags & WND_FLAG_NORESIZE)))
 		return;
 	
 	/* Set new mode */
-	wnd->m_mode = mode;
+	real_wnd->m_mode = mode;
 
 	/* Install new key handler for window parameters changing */
 	wnd_msg_add_handler(wnd, "keydown", wnd_repos_on_key);
 	
 	/* Repaint window */
-	wnd_invalidate(wnd);
+	wnd_invalidate(real_wnd);
 } /* End of 'wnd_set_mode' function */
 
 /* Handler for key pressing when in reposition or resize window mode */
@@ -1088,16 +1096,18 @@ wnd_msg_retcode_t wnd_repos_on_key( wnd_t *wnd, wnd_key_t key )
 {
 	int x, y, w, h;
 	bool_t not_changed = FALSE;
+	wnd_t *real_wnd = wnd_get_top_level_ancestor(wnd);
 
 	assert(wnd);
-	assert(wnd->m_mode != WND_MODE_NORMAL);
+	assert(real_wnd);
+	assert(real_wnd->m_mode != WND_MODE_NORMAL);
 
 	/* Choose new window parameters */
-	x = wnd->m_x;
-	y = wnd->m_y;
-	w = wnd->m_width;
-	h = wnd->m_height;
-	if (wnd->m_mode == WND_MODE_REPOSITION)
+	x = real_wnd->m_x;
+	y = real_wnd->m_y;
+	w = real_wnd->m_width;
+	h = real_wnd->m_height;
+	if (real_wnd->m_mode == WND_MODE_REPOSITION)
 	{
 		if (key == KEY_UP)
 			y --;
@@ -1110,7 +1120,7 @@ wnd_msg_retcode_t wnd_repos_on_key( wnd_t *wnd, wnd_key_t key )
 		else
 			not_changed = TRUE;
 	}
-	else if (wnd->m_mode == WND_MODE_RESIZE)
+	else if (real_wnd->m_mode == WND_MODE_RESIZE)
 	{
 		if (key == KEY_UP)
 			h --;
@@ -1127,24 +1137,24 @@ wnd_msg_retcode_t wnd_repos_on_key( wnd_t *wnd, wnd_key_t key )
 		not_changed = TRUE;
 
 	/* Unmaximize window */
-	if (WND_FLAGS(wnd) & WND_FLAG_MAXIMIZED)
+	if (WND_FLAGS(real_wnd) & WND_FLAG_MAXIMIZED)
 	{
-		WND_FLAGS(wnd) &= ~WND_FLAG_MAXIMIZED;
+		WND_FLAGS(real_wnd) &= ~WND_FLAG_MAXIMIZED;
 	}
 
 	/* Return back to normal mode */
 	if (not_changed && key == '\n')
 	{
-		wnd->m_mode = WND_MODE_NORMAL;
+		real_wnd->m_mode = WND_MODE_NORMAL;
 		wnd_msg_rem_handler(wnd, "keydown");
-		wnd_invalidate(wnd);
+		wnd_invalidate(real_wnd);
 		return WND_MSG_RETCODE_STOP;
 	}
 
 	/* Move window */
 	if (!not_changed)
 	{
-		wnd_repos(wnd, x, y, w, h);
+		wnd_repos(real_wnd, x, y, w, h);
 		return WND_MSG_RETCODE_STOP;
 	}
 	return WND_MSG_RETCODE_OK;
@@ -1458,6 +1468,7 @@ void wnd_regen_zvalue_list( wnd_t *wnd )
 /* Set the default styles */
 void wnd_set_default_styles( cfg_node_t *list )
 {
+	/* Set styles */
 	cfg_set_var(list, "caption-style", "green:black:bold");
 	cfg_set_var(list, "border-style", "white:black:bold");
 	cfg_set_var(list, "repos-border-style", "green:black:bold");
@@ -1467,7 +1478,25 @@ void wnd_set_default_styles( cfg_node_t *list )
 	cfg_set_var(list, "wndbar-focus-style", "black:green");
 	cfg_set_var(list, "text-style", "white:black");
 	cfg_set_var(list, "focus-text-style", "white:black");
+
+	/* Set default kbinds */
+	cfg_set_var(list, "kbind.refresh_screen", "<Ctrl-l>");
+	cfg_set_var(list, "kbind.close_window", "<Alt-c>");
+	cfg_set_var(list, "kbind.maximize_window", "<Alt-m>");
+	cfg_set_var(list, "kbind.move_window", "<Alt-p>");
+	cfg_set_var(list, "kbind.resize_window", "<Alt-s>");
+	cfg_set_var(list, "kbind.next_focus", "<Alt-.>");
+	cfg_set_var(list, "kbind.prev_focus", "<Alt-,>");
 } /* End of 'wnd_set_default_styles' function */
+
+/* Get window's top-level ancestor */
+wnd_t *wnd_get_top_level_ancestor( wnd_t *wnd )
+{
+	assert(wnd);
+	while (wnd->m_parent != NULL && wnd->m_parent->m_parent != NULL)
+		wnd = wnd->m_parent;
+	return wnd;
+} /* End of 'wnd_get_top_level_ancestor' function */
 
 /* End of 'wnd.c' file */
 

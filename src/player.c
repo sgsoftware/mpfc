@@ -41,7 +41,6 @@
 #include "file.h"
 #include "help_screen.h"
 #include "iwt.h"
-#include "key_bind.h"
 #include "logger.h"
 #include "logger_view.h"
 #include "player.h"
@@ -237,9 +236,6 @@ bool_t player_init( int argc, char *argv[] )
 	}
 	logger_attach_handler(player_log, player_on_log_msg, NULL);
 
-	/* Initialize key bindings */
-	kbind_init();
-
 	/* Initialize colors */
 	col_init();
 
@@ -356,7 +352,7 @@ wnd_t *player_wnd_new( wnd_t *parent )
 
 	/* Set message map */
 	wnd_msg_add_handler(wnd, "display", player_on_display);
-	wnd_msg_add_handler(wnd, "keydown", player_on_keydown);
+	wnd_msg_add_handler(wnd, "action", player_on_action);
 	wnd_msg_add_handler(wnd, "close", player_on_close);
 	wnd_msg_add_handler(wnd, "mouse_ldown", player_on_mouse_ldown);
 	wnd_msg_add_handler(wnd, "mouse_mdown", player_on_mouse_mdown);
@@ -416,11 +412,6 @@ void player_deinit( wnd_t *wnd_root )
 			"Doing pmng_free");
 	pmng_free(player_pmng);
 	player_pmng = NULL;
-
-	/* Uninitialize key bindings */
-	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-			"Doing kbind_free");
-	kbind_free();
 
 	/* Uninitialize history lists */
 	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
@@ -777,15 +768,8 @@ wnd_msg_retcode_t player_on_close( wnd_t *wnd )
 	return WND_MSG_RETCODE_OK;
 } /* End of 'player_on_close' function */
 
-/* Handle key function */
-wnd_msg_retcode_t player_on_keydown( wnd_t *wnd, wnd_key_t key )
-{
-	kbind_key2buf(key);
-	return WND_MSG_RETCODE_OK;
-} /* End of 'player_handle_key' function */
-
 /* Handle action */
-void player_handle_action( int action )
+wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action )
 {
 	int was_pos;
 	int was_song, was_time;
@@ -797,83 +781,99 @@ void player_handle_action( int action )
 	was_pos = player_plist->m_sel_end;
 	was_song = player_plist->m_cur_song;
 	was_time = player_cur_time;
-	switch (action)
-	{
+
 	/* Exit MPFC */
-	case KBIND_QUIT:
+	if (!strcasecmp(action, "quit"))
+	{
 		wnd_close(wnd_root);
-		break;
-
+	}
 	/* Show help screen */
-	case KBIND_HELP:
+	else if (!strcasecmp(action, "help"))
+	{
 		help_new(wnd_root, HELP_PLAYER);
-		break;
-
-	/* Move cursor */
-	case KBIND_MOVE_DOWN:
+	}
+	/* Move cursor down */
+	else if (!strcasecmp(action, "move_down"))
+	{
 		plist_move(player_plist, (player_repval == 0) ? 1 : player_repval, 
 				TRUE);
-		break;
-	case KBIND_MOVE_UP:
+	}
+	/* Move cursor up */
+	else if (!strcasecmp(action, "move_up"))
+	{
 		plist_move(player_plist, (player_repval == 0) ? -1 : -player_repval, 
 				TRUE);
-		break;
-	case KBIND_SCREEN_DOWN:
+	}
+	/* Move cursor screen down */
+	else if (!strcasecmp(action, "screen_down"))
+	{
 		plist_move(player_plist, (player_repval == 0) ? 
 				PLIST_HEIGHT : 
 				PLIST_HEIGHT * player_repval, TRUE);
-		break;
-	case KBIND_SCREEN_UP:
+	}
+	/* Move cursor screen up */
+	else if (!strcasecmp(action, "screen_up"))
+	{
 		plist_move(player_plist, (player_repval == 0) ? 
 				-PLIST_HEIGHT : 
 				-PLIST_HEIGHT * player_repval, TRUE);
-		break;
-	case KBIND_MOVE:
+	}
+	/* Move cursor to any position */
+	else if (!strcasecmp(action, "move"))
+	{
 		plist_move(player_plist, (player_repval == 0) ? 
 				player_plist->m_len - 1 : player_repval - 1, FALSE);
 		long_jump = TRUE;
-		break;
-
-	/* Seek song */
-	case KBIND_TIME_FW:
+	}
+	/* Seek song forward */
+	else if (!strcasecmp(action, "time_fw"))
+	{
 		player_seek((player_repval == 0) ? 10 : 10 * player_repval, TRUE);
-		break;
-	case KBIND_TIME_BW:
+	}
+	/* Seek song backwards */
+	else if (!strcasecmp(action, "time_bw"))
+	{
 		player_seek((player_repval == 0) ? -10 : -10 * player_repval, TRUE);
-		break;
-	case KBIND_TIME_MOVE:
+	}
+	/* Seek to any position */
+	else if (!strcasecmp(action, "time_move"))
+	{
 		player_seek((player_repval == 0) ? 0 : player_repval, FALSE);
-		break;
-
-	/* Increase/decrease volume */
-	case KBIND_VOL_FW:
+	}
+	/* Increase volume */
+	else if (!strcasecmp(action, "vol_fw"))
+	{
 		player_set_vol((player_repval == 0) ? 5 : 5 * player_repval, TRUE);
-		break;
-	case KBIND_VOL_BW:
+	}
+	/* Decrease volume */
+	else if (!strcasecmp(action, "vol_bw"))
+	{
 		player_set_vol((player_repval == 0) ? -5 : -5 * player_repval, TRUE);
-		break;
-
-	/* Increase/decrease balance */
-	case KBIND_BAL_FW:
+	}
+	/* Increase balance */
+	else if (!strcasecmp(action, "bal_fw"))
+	{
 		player_set_bal((player_repval == 0) ? 5 : 5 * player_repval, TRUE);
-		break;
-	case KBIND_BAL_BW:
+	}
+	/* Decrease balance */
+	else if (!strcasecmp(action, "bal_bw"))
+	{
 		player_set_bal((player_repval == 0) ? -5 : -5 * player_repval, TRUE);
-		break;
-
+	}
 	/* Centrize view */
-	case KBIND_CENTRIZE:
+	else if (!strcasecmp(action, "centrize"))
+	{
 		plist_centrize(player_plist, -1);
 		long_jump = TRUE;
-		break;
-
+	}
 	/* Enter visual mode */
-	case KBIND_VISUAL:
+	else if (!strcasecmp(action, "visual"))
+	{
 		player_plist->m_visual = !player_plist->m_visual;
-		break;
-
+	}
 	/* Resume playing */
-	case KBIND_PLAY:
+	else if (!strcasecmp(action, "play"))
+	{
 		if (player_status == PLAYER_STATUS_PAUSED)
 		{
 			inp_resume(player_inp);
@@ -882,10 +882,10 @@ void player_handle_action( int action )
 		else
 			player_play(player_plist->m_cur_song, 0);
 		player_status = PLAYER_STATUS_PLAYING;
-		break;
-
+	}
 	/* Pause */
-	case KBIND_PAUSE:
+	else if (!strcasecmp(action, "pause"))
+	{
 		if (player_status == PLAYER_STATUS_PLAYING)
 		{
 			player_status = PLAYER_STATUS_PAUSED;
@@ -898,73 +898,74 @@ void player_handle_action( int action )
 			inp_resume(player_inp);
 			outp_resume(player_pmng->m_cur_out);
 		}
-		break;
-
+	}
 	/* Stop */
-	case KBIND_STOP:
+	else if (!strcasecmp(action, "stop"))
+	{
 		player_status = PLAYER_STATUS_STOPPED;
 		player_end_play(FALSE);
 		player_plist->m_cur_song = was_song;
-		break;
-
+	}
 	/* Play song */
-	case KBIND_START_PLAY:
-		if (!player_plist->m_len)
-			break;
-		player_status = PLAYER_STATUS_PLAYING;
-		player_play(player_plist->m_sel_end, 0);
-		break;
-
+	else if (!strcasecmp(action, "start_play"))
+	{
+		if (player_plist->m_len > 0)
+		{
+			player_status = PLAYER_STATUS_PLAYING;
+			player_play(player_plist->m_sel_end, 0);
+		}
+	}
 	/* Go to next song */
-	case KBIND_NEXT:
+	else if (!strcasecmp(action, "next"))
+	{
 		player_skip_songs((player_repval) ? player_repval : 1, TRUE);
-		break;
-
+	}
 	/* Go to previous song */
-	case KBIND_PREV:
+	else if (!strcasecmp(action, "prev"))
+	{
 		player_skip_songs(-((player_repval) ? player_repval : 1), TRUE);
-		break;
-
+	}
 	/* Add a file */
-	case KBIND_ADD:
+	else if (!strcasecmp(action, "add"))
+	{
 		player_add_dialog();
-		break;
-
+	}
 	/* Save play list */
-	case KBIND_SAVE:
+	else if (!strcasecmp(action, "save"))
+	{
 		player_save_dialog();
-		break;
-
+	}
 	/* Remove song(s) */
-	case KBIND_REM:
+	else if (!strcasecmp(action, "rem"))
+	{
 		player_rem_dialog();
-		break;
-
+	}
 	/* Sort play list */
-	case KBIND_SORT:
+	else if (!strcasecmp(action, "sort"))
+	{
 		player_sort_dialog();
-		break;
-
+	}
 	/* Song info dialog */
-	case KBIND_INFO:
+	else if (!strcasecmp(action, "info"))
+	{
 		player_info_dialog();
-		break;
-
+	}
 	/* Search */
-	case KBIND_SEARCH:
+	else if (!strcasecmp(action, "search"))
+	{
 		player_search_dialog();
-		break;
-
+	}
 	/* Advanced search */
-	case KBIND_ADVANCED_SEARCH:
+	else if (!strcasecmp(action, "advanced_search"))
+	{
 		player_advanced_search_dialog();
-		break;
-
+	}
 	/* Find next/previous search match */
-	case KBIND_NEXT_MATCH:
-	case KBIND_PREV_MATCH:
+	else if (!strcasecmp(action, "next_match") ||
+			!strcasecmp(action, "prev_match"))
+	{
 		if (!plist_search(player_plist, player_search_string, 
-					(action == KBIND_NEXT_MATCH) ? 1 : -1, 
+					(action[0] == 'n' || action[0] == 'N') ? 1 : -1, 
 					player_search_criteria))
 			logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
 					_("String `%s' not found"), 
@@ -974,192 +975,142 @@ void player_handle_action( int action )
 					_("String `%s' found at position %d"), player_search_string,
 					player_plist->m_sel_end);
 		long_jump = TRUE;
-		break;
-
+	}
 	/* Show equalizer dialog */
-	case KBIND_EQUALIZER:
+	else if (!strcasecmp(action, "equalizer"))
+	{
 		eqwnd_new(wnd_root);
-		break;
-
+	}
 	/* Set/unset shuffle mode */
-	case KBIND_SHUFFLE:
+	else if (!strcasecmp(action, "shuffle"))
+	{
 		cfg_set_var_int(cfg_list, "shuffle-play",
 				!cfg_get_var_int(cfg_list, "shuffle-play"));
-		break;
-		
+	}
 	/* Set/unset loop mode */
-	case KBIND_LOOP:
+	else if (!strcasecmp(action, "loop"))
+	{
 		cfg_set_var_int(cfg_list, "loop-play",
 				!cfg_get_var_int(cfg_list, "loop-play"));
-		break;
-
+	}
 	/* Variables manager */
-	case KBIND_VAR_MANAGER:
-//		player_var_manager();
-		break;
-	case KBIND_VAR_MINI_MANAGER:
+	else if (!strcasecmp(action, "var_mini_manager"))
+	{
 		player_var_mini_manager();
-		break;
-
-	/* Move play list */
-	case KBIND_PLIST_DOWN:
+	}
+	/* Move play list down */
+	else if (!strcasecmp(action, "plist_down"))
+	{
 		plist_move_sel(player_plist, (player_repval == 0) ? 1 : player_repval, 
 				TRUE);
-		break;
-	case KBIND_PLIST_UP:
+	}
+	/* Move play list up */
+	else if (!strcasecmp(action, "plist_up"))
+	{
 		plist_move_sel(player_plist, (player_repval == 0) ? -1 : 
 				-player_repval, TRUE);
-		break;
-	case KBIND_PLIST_MOVE:
+	}
+	/* Move play list */
+	else if (!strcasecmp(action, "plist_move"))
+	{
 		plist_move_sel(player_plist, (player_repval == 0) ? 
 				1 : player_repval - 1, FALSE);
-		break;
-
-	/* Undo/redo */
-	case KBIND_UNDO:
+	}
+	/* Undo */
+	else if (!strcasecmp(action, "undo"))
+	{
 		undo_bw(player_ul);
-		break;
-	case KBIND_REDO:
+	}
+	/* Redo */
+	else if (!strcasecmp(action, "redo"))
+	{
 		undo_fw(player_ul);
-		break;
-
+	}
 	/* Reload info */
-	case KBIND_RELOAD_INFO:
+	else if (!strcasecmp(action, "reload_info"))
+	{
 		player_info_reload_dialog();
-		break;
-
+	}
 	/* Set play boundaries */
-	case KBIND_SET_PLAY_BOUNDS:
+	else if (!strcasecmp(action, "set_play_bounds"))
+	{
 		PLIST_GET_SEL(player_plist, player_start, player_end);
-		break;
-
+	}
 	/* Clear play boundaries */
-	case KBIND_CLEAR_PLAY_BOUNDS:
+	else if (!strcasecmp(action, "clear_play_bounds"))
+	{
 		player_start = player_end = -1;
-		break;
-
+	}
 	/* Set play boundaries and play from area beginning */
-	case KBIND_PLAY_BOUNDS:
+	else if (!strcasecmp(action, "play_bounds"))
+	{
 		PLIST_GET_SEL(player_plist, player_start, player_end);
-		if (!player_plist->m_len)
-			break;
-		player_status = PLAYER_STATUS_PLAYING;
-		player_play(player_start, 0);
-		break;
-
+		if (player_plist->m_len > 0)
+		{
+			player_status = PLAYER_STATUS_PLAYING;
+			player_play(player_start, 0);
+		}
+	}
 	/* Execute outer command */
-	case KBIND_EXEC:
+	else if (!strcasecmp(action, "exec"))
+	{
 		player_exec_dialog();
-		break;
-
+	}
 	/* Go back */
-	case KBIND_TIME_BACK:
+	else if (!strcasecmp(action, "time_back"))
+	{
 		player_time_back();
-		break;
-
+	}
 	/* Set mark */
-	case KBIND_MARKA:
-	case KBIND_MARKB:
-	case KBIND_MARKC:
-	case KBIND_MARKD:
-	case KBIND_MARKE:
-	case KBIND_MARKF:
-	case KBIND_MARKG:
-	case KBIND_MARKH:
-	case KBIND_MARKI:
-	case KBIND_MARKJ:
-	case KBIND_MARKK:
-	case KBIND_MARKL:
-	case KBIND_MARKM:
-	case KBIND_MARKN:
-	case KBIND_MARKO:
-	case KBIND_MARKP:
-	case KBIND_MARKQ:
-	case KBIND_MARKR:
-	case KBIND_MARKS:
-	case KBIND_MARKT:
-	case KBIND_MARKU:
-	case KBIND_MARKV:
-	case KBIND_MARKW:
-	case KBIND_MARKX:
-	case KBIND_MARKY:
-	case KBIND_MARKZ:
-		player_set_mark(action - KBIND_MARKA + 'a');
-		break;
-
-	/* Go to mark */
-	case KBIND_GOA:
-	case KBIND_GOB:
-	case KBIND_GOC:
-	case KBIND_GOD:
-	case KBIND_GOE:
-	case KBIND_GOF:
-	case KBIND_GOG:
-	case KBIND_GOH:
-	case KBIND_GOI:
-	case KBIND_GOJ:
-	case KBIND_GOK:
-	case KBIND_GOL:
-	case KBIND_GOM:
-	case KBIND_GON:
-	case KBIND_GOO:
-	case KBIND_GOP:
-	case KBIND_GOQ:
-	case KBIND_GOR:
-	case KBIND_GOS:
-	case KBIND_GOT:
-	case KBIND_GOU:
-	case KBIND_GOV:
-	case KBIND_GOW:
-	case KBIND_GOX:
-	case KBIND_GOY:
-	case KBIND_GOZ:
-		player_goto_mark(action - KBIND_GOA + 'a');
-		break;
-
+	else if (!strncasecmp(action, "mark", 4))
+	{
+		char letter = action[4];
+		if (letter >= 'a' && letter <= 'z')
+			player_set_mark(letter);
+	}
 	/* Go back */
-	case KBIND_GOBACK:
+	else if (!strcasecmp(action, "goback"))
+	{
 		player_go_back();
-		break;
-
+	}
+	/* Go to mark */
+	else if (!strncasecmp(action, "go", 2))
+	{
+		char letter = action[2];
+		if (letter >= 'a' && letter <= 'z')
+			player_goto_mark(letter);
+	}
 	/* Reload plugins */
-	case KBIND_RELOAD_PLUGINS:
+	else if (!strcasecmp(action, "reload_plugins"))
+	{
 		pmng_load_plugins(player_pmng);
-		break;
-
+	}
 	/* Launch file browser */
-	case KBIND_FILE_BROWSER:
+	else if (!strcasecmp(action, "file_browser"))
+	{
 		fb_new(wnd_root, player_fb_dir);
-		break;
-
+	}
 	/* Launch test dialog */
-	case KBIND_TEST:
+	else if (!strcasecmp(action, "test"))
+	{
 		player_test_dialog();
-		break;
-
+	}
 	/* Launch logger view */
-	case KBIND_LOG:
+	else if (!strcasecmp(action, "log"))
+	{
 		if (player_logview == NULL)
 		{
 			player_logview = logview_new(wnd_root, player_log);
 			wnd_msg_add_handler(WND_OBJ(player_logview), "close", 
 					player_logview_on_close);
 		}
-		break;
-
+	}
 	/* Digit means command repeation value edit */
-	case KBIND_DIG_1:
-	case KBIND_DIG_2:
-	case KBIND_DIG_3:
-	case KBIND_DIG_4:
-	case KBIND_DIG_5:
-	case KBIND_DIG_6:
-	case KBIND_DIG_7:
-	case KBIND_DIG_8:
-	case KBIND_DIG_9:
-	case KBIND_DIG_0:
-		player_repval_dialog(action - KBIND_DIG_0);
-		break;
+	else if (!strncasecmp(action, "dig_", 4))
+	{
+		char dig = action[4];
+		if (dig >= '0' && dig <= '9')
+			player_repval_dialog(dig - '0');
 	}
 
 	/* Flush repeat value */
@@ -1178,6 +1129,7 @@ void player_handle_action( int action )
 
 	/* Repaint */
 	wnd_invalidate(player_wnd);
+	return WND_MSG_RETCODE_OK;
 } /* End of 'player_handle_action' function */
 
 /* Handle left-button click */
@@ -2802,6 +2754,10 @@ wnd_class_t *player_wnd_class_init( wnd_global_data_t *global )
 /* Set player class default styles */
 void player_class_set_default_styles( cfg_node_t *list )
 {
+	char letter;
+	int dig;
+
+	/* Initialize styles */
 	cfg_set_var(list, "plist-style", "white:black");
 	cfg_set_var(list, "plist-playing-style", "red:black:bold");
 	cfg_set_var(list, "plist-selected-style", "white:blue:bold");
@@ -2814,6 +2770,80 @@ void player_class_set_default_styles( cfg_node_t *list )
 	cfg_set_var(list, "slider-style", "cyan:black:bold");
 	cfg_set_var(list, "play-modes-style", "green:black:bold");
 	cfg_set_var(list, "status-style", "red:black");
+
+	/* Initialize kbinds */
+	cfg_set_var(list, "kbind.quit", "q;Q");
+	cfg_set_var(list, "kbind.move_down", "j;<Ctrl-n>;<Down>");
+	cfg_set_var(list, "kbind.move_up", "k;<Ctrl-p>;<Up>");
+	cfg_set_var(list, "kbind.screen_down", "d;<Ctrl-v>;<PageDown>");
+	cfg_set_var(list, "kbind.screen_up", "u;<Alt-v>;<PageUp>");
+	cfg_set_var(list, "kbind.move", "G");
+	cfg_set_var(list, "kbind.start_play", "<Return>");
+	cfg_set_var(list, "kbind.play", "x");
+	cfg_set_var(list, "kbind.pause", "c");
+	cfg_set_var(list, "kbind.stop", "v");
+	cfg_set_var(list, "kbind.next", "b");
+	cfg_set_var(list, "kbind.prev", "z");
+	cfg_set_var(list, "kbind.time_fw", "\\>;lt");
+	cfg_set_var(list, "kbind.time_bw", "\\<;ht");
+	cfg_set_var(list, "kbind.time_move", "t");
+	cfg_set_var(list, "kbind.vol_fw", "+;lv");
+	cfg_set_var(list, "kbind.vol_bw", "-;hv");
+	cfg_set_var(list, "kbind.bal_fw", "[;lb");
+	cfg_set_var(list, "kbind.bal_bw", "];hb");
+	cfg_set_var(list, "kbind.info", "i");
+	cfg_set_var(list, "kbind.add", "a");
+	cfg_set_var(list, "kbind.rem", "r");
+	cfg_set_var(list, "kbind.save", "s");
+	cfg_set_var(list, "kbind.sort", "S");
+	cfg_set_var(list, "kbind.visual", "V");
+	cfg_set_var(list, "kbind.centrize", "C");
+	cfg_set_var(list, "kbind.search", "/");
+	cfg_set_var(list, "kbind.advanced_search", "\\\\");
+	cfg_set_var(list, "kbind.next_match", "n");
+	cfg_set_var(list, "kbind.prev_match", "N");
+	cfg_set_var(list, "kbind.help", "?");
+	cfg_set_var(list, "kbind.equalizer", "e");
+	cfg_set_var(list, "kbind.shuffle", "R");
+	cfg_set_var(list, "kbind.var_mini_manager", "o");
+	cfg_set_var(list, "kbind.plist_down", "J");
+	cfg_set_var(list, "kbind.plist_up", "K");
+	cfg_set_var(list, "kbind.plist_move", "M");
+	cfg_set_var(list, "kbind.undo", "U");
+	cfg_set_var(list, "kbind.redo", "D");
+	cfg_set_var(list, "kbind.reload_info", "I");
+	cfg_set_var(list, "kbind.set_play_bounds", "ps");
+	cfg_set_var(list, "kbind.clear_play_bounds", "pc");
+	cfg_set_var(list, "kbind.play_bounds", "p<Return>");
+	cfg_set_var(list, "kbind.exec", "!");
+	cfg_set_var(list, "kbind.goback", "``");
+	cfg_set_var(list, "kbind.time_back", "<Backspace>");
+	cfg_set_var(list, "kbind.reload_plugins", "P");
+	cfg_set_var(list, "kbind.file_browser", "B");
+	cfg_set_var(list, "kbind.test", "T");
+	cfg_set_var(list, "kbind.log", "O");
+	for ( letter = 'a'; letter <= 'z'; letter ++ )
+	{
+		char mark[12];
+		char go[10];
+		char mark_val[3] = {'m', 0, 0};
+		char go_val[3] = {'`', 0, 0};
+
+		sprintf(mark, "kbind.mark%c", letter);
+		sprintf(go, "kbind.go%c", letter);
+		mark_val[1] = letter;
+		go_val[1] = letter;
+		cfg_set_var(list, mark, mark_val);
+		cfg_set_var(list, go, go_val);
+	}
+	for ( dig = 0; dig <= 9; dig ++ )
+	{
+		char d[12];
+		char val[2] = {0, 0};
+		sprintf(d, "kbind.dig_%c", dig + '0');
+		val[0] = dig + '0';
+		cfg_set_var(list, d, val);
+	}
 } /* End of 'player_class_set_default_styles' function */
 
 /*****

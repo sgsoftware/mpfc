@@ -63,19 +63,10 @@ bool_t vbox_construct( vbox_t *vbox, wnd_t *parent, char *title, int dist )
 				DLGITEM_NOTABSTOP | (title != NULL ? DLGITEM_BORDER : 0)))
 		return FALSE;
 
-	/* Set message handlers */
-	wnd_msg_add_handler(WND_OBJ(vbox), "keydown", vbox_on_keydown);
-
 	/* Initialize box fields */
 	vbox->m_dist = dist;
 	return TRUE;
 } /* End of 'vbox_construct' function */
-
-/* 'keydown' message handler */
-wnd_msg_retcode_t vbox_on_keydown( wnd_t *wnd, wnd_key_t key )
-{
-	return WND_MSG_RETCODE_PASS_TO_PARENT;
-} /* End of 'vbox_on_keydown' function */
 
 /* Get the desired size */
 void vbox_get_desired_size( dlgitem_t *di, int *width, int *height )

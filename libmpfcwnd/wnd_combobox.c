@@ -76,7 +76,7 @@ bool_t combo_construct( combo_t *combo, wnd_t *parent, char *id,
 		return FALSE;
 
 	/* Set message map */
-	wnd_msg_add_handler(WND_OBJ(combo), "keydown", combo_on_keydown);
+	wnd_msg_add_handler(WND_OBJ(combo), "action", combo_on_action);
 	wnd_msg_add_handler(WND_OBJ(combo), "display", combo_on_display);
 	wnd_msg_add_handler(WND_OBJ(combo), "mouse_ldown", combo_on_mouse);
 	wnd_msg_add_handler(WND_OBJ(combo), "changed", combo_on_changed);
@@ -143,42 +143,42 @@ void combo_move_cursor( combo_t *combo, int pos, bool_t synchronize_text )
 	wnd_invalidate(WND_OBJ(combo));
 } /* End of 'combo_move_cursor' function */
 
-/* 'keydown' message handler */
-wnd_msg_retcode_t combo_on_keydown( wnd_t *wnd, wnd_key_t key )
+/* 'action' message handler */
+wnd_msg_retcode_t combo_on_action( wnd_t *wnd, char *action )
 {
 	combo_t *combo = COMBO_OBJ(wnd);
 
 	/* Move cursor up */
-	if (key == KEY_UP || key == KEY_CTRL_P)
+	if (!strcasecmp(action, "move_up"))
 	{
 		combo_expand(combo);
 		combo_move_cursor(combo, combo->m_cursor - 1, TRUE);
 	}
 	/* Move cursor down */
-	else if (key == KEY_DOWN || key == KEY_CTRL_N)
+	else if (!strcasecmp(action, "move_down"))
 	{
 		combo_expand(combo);
 		combo_move_cursor(combo, combo->m_cursor + 1, TRUE);
 	}
 	/* Move cursor one screen up */
-	else if (key == KEY_PPAGE || key == WND_KEY_WITH_ALT('v'))
+	else if (!strcasecmp(action, "screen_up"))
 	{
 		combo_expand(combo);
 		combo_move_cursor(combo, combo->m_cursor - combo->m_height, TRUE);
 	}
 	/* Move cursor one screen down */
-	else if (key == KEY_NPAGE || key == KEY_CTRL_V)
+	else if (!strcasecmp(action, "screen_down"))
 	{
 		combo_expand(combo);
 		combo_move_cursor(combo, combo->m_cursor + combo->m_height, TRUE);
 	}
 	/* Toggle expansion mode */
-	else if (key == KEY_CTRL_E)
+	else if (!strcasecmp(action, "toggle_expansion"))
 	{
 		combo->m_expanded ? combo_unexpand(combo) : combo_expand(combo);
 	}
 	return WND_MSG_RETCODE_OK;
-} /* End of 'combo_on_keydown' function */
+} /* End of 'combo_on_action' function */
 
 /* 'display' message handler */
 wnd_msg_retcode_t combo_on_display( wnd_t *wnd )
@@ -296,6 +296,13 @@ void combo_class_set_default_styles( cfg_node_t *list )
 {
 	cfg_set_var(list, "list-color", "white:green");
 	cfg_set_var(list, "focus-list-color", "white:blue");
+
+	/* Set kbinds */
+	cfg_set_var(list, "kbind.move_down", "<Down>;<Ctrl-n>");
+	cfg_set_var(list, "kbind.move_up", "<Up>;<Ctrl-p>");
+	cfg_set_var(list, "kbind.screen_down", "<PageDown>;<Ctrl-v>");
+	cfg_set_var(list, "kbind.screen_up", "<PageUp>;<Alt-v>");
+	cfg_set_var(list, "kbind.toggle_expansion", "<Ctrl-e>");
 } /* End of 'combo_class_set_default_styles' function */
 
 /* End of 'wnd_combobox.c' file */

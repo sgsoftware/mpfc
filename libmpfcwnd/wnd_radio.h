@@ -53,8 +53,8 @@ radio_t *radio_new( wnd_t *parent, char *title, char *id,
 bool_t radio_construct( radio_t *r, wnd_t *parent, char *title, char *id, 
 		char letter, bool_t checked );
 
-/* 'keydown' message handler */
-wnd_msg_retcode_t radio_on_keydown( wnd_t *wnd, wnd_key_t key );
+/* 'action' message handler */
+wnd_msg_retcode_t radio_on_action( wnd_t *wnd, char *action );
 
 /* 'display' message handler */
 wnd_msg_retcode_t radio_on_display( wnd_t *wnd );

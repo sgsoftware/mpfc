@@ -99,6 +99,7 @@ bool_t fb_construct( browser_t *fb, wnd_t *parent, char *dir )
 	/* Register handlers */
 	wnd_msg_add_handler(wnd, "display", fb_on_display);
 	wnd_msg_add_handler(wnd, "keydown", fb_on_keydown);
+	wnd_msg_add_handler(wnd, "action", fb_on_action);
 	wnd_msg_add_handler(wnd, "mouse_ldown", fb_on_mouse_ldown);
 	wnd_msg_add_handler(wnd, "mouse_mdown", fb_on_mouse_mdown);
 	wnd_msg_add_handler(wnd, "mouse_rdown", fb_on_mouse_rdown);
@@ -190,166 +191,167 @@ wnd_msg_retcode_t fb_on_keydown( wnd_t *wnd, wnd_key_t key )
 	int i;
 	browser_t *fb = (browser_t *)wnd;
 	char str[MAX_FILE_NAME];
-
+	wnd_msg_retcode_t ret = WND_MSG_RETCODE_STOP;
 	assert(fb);
 
 	/* Handle key in search mode */
-	if (fb->m_search_mode)
+	if (!fb->m_search_mode)
+		return WND_MSG_RETCODE_OK;
+
+	if (key == 27 || key == KEY_CTRL_G)
 	{
-		bool_t dont_exit = FALSE;
-
-		if (key == 27 || key == KEY_CTRL_G)
-		{
-			fb->m_search_mode = FALSE;
-			fb->m_search_str[fb->m_search_str_len = 0] = 0;
-		}
-		else if (key >= ' ' && key <= 0xFF)
-		{
-			struct browser_list_item *item;
-			char *str;
-
-			fb->m_search_str[fb->m_search_str_len ++] = key;
-			fb->m_search_str[fb->m_search_str_len] = 0;
-
-			for ( i = 0; i < fb->m_num_files; i ++ )
-			{
-				item = &fb->m_files[i];
-				if (fb->m_info_mode && !(item->m_type & 
-							(FB_ITEM_DIR | FB_ITEM_UPDIR)) && 
-						item->m_info != NULL && item->m_info->m_name != NULL)
-					str = item->m_info->m_name;
-				else 
-					str = item->m_name;
-				if (!strncasecmp(str, fb->m_search_str, fb->m_search_str_len))
-					break;
-			}
-
-			if (i < fb->m_num_files)
-				fb_move_cursor(fb, i, FALSE);
-			else
-				fb->m_search_str[--fb->m_search_str_len] = 0;
-		}
-		else if (key == KEY_BACKSPACE)
-		{
-			if (fb->m_search_str_len > 0)
-				fb->m_search_str[--fb->m_search_str_len] = 0;
-			else
-			{
-				fb->m_search_mode = FALSE;
-				fb->m_search_str[fb->m_search_str_len = 0] = 0;
-			}
-		}
-		else if (key == '\n' || key == KEY_IC || key == KEY_RIGHT ||
-					key == KEY_LEFT || key == KEY_DOWN || key == KEY_UP ||
-					key == KEY_NPAGE || key == KEY_PPAGE || key == KEY_HOME ||
-					key == KEY_END)
-		{
-			fb->m_search_mode = FALSE;
-			fb->m_search_str[fb->m_search_str_len = 0] = 0;
-			dont_exit = TRUE;
-		}
-		wnd_invalidate(WND_OBJ(fb));
-		if (!dont_exit)
-			return WND_MSG_RETCODE_OK;
+		fb->m_search_mode = FALSE;
+		fb->m_search_str[fb->m_search_str_len = 0] = 0;
 	}
-
-	switch (key)
+	else if (key >= ' ' && key <= 0xFF)
 	{
+		struct browser_list_item *item;
+		char *str;
+
+		fb->m_search_str[fb->m_search_str_len ++] = key;
+		fb->m_search_str[fb->m_search_str_len] = 0;
+
+		for ( i = 0; i < fb->m_num_files; i ++ )
+		{
+			item = &fb->m_files[i];
+			if (fb->m_info_mode && !(item->m_type & 
+						(FB_ITEM_DIR | FB_ITEM_UPDIR)) && 
+					item->m_info != NULL && item->m_info->m_name != NULL)
+				str = item->m_info->m_name;
+			else 
+				str = item->m_name;
+			if (!strncasecmp(str, fb->m_search_str, fb->m_search_str_len))
+				break;
+		}
+
+		if (i < fb->m_num_files)
+			fb_move_cursor(fb, i, FALSE);
+		else
+			fb->m_search_str[--fb->m_search_str_len] = 0;
+	}
+	else if (key == KEY_BACKSPACE)
+	{
+		if (fb->m_search_str_len > 0)
+			fb->m_search_str[--fb->m_search_str_len] = 0;
+		else
+		{
+			fb->m_search_mode = FALSE;
+			fb->m_search_str[fb->m_search_str_len = 0] = 0;
+		}
+	}
+	else
+	{
+		fb->m_search_mode = FALSE;
+		fb->m_search_str[fb->m_search_str_len = 0] = 0;
+		ret = WND_MSG_RETCODE_OK;
+	}
+	wnd_invalidate(WND_OBJ(fb));
+	return ret;
+} /* End of 'fb_handle_key' function */
+
+/* 'action' message handler */
+wnd_msg_retcode_t fb_on_action( wnd_t *wnd, char *action )
+{
+	browser_t *fb = (browser_t *)wnd;
+
 	/* Exit */
-	case 'q':
+	if (!strcasecmp(action, "quit"))
+	{
 		wnd_close(wnd);
-		break;
-
+	}
 	/* Move cursor */
-	case 'j':
-	case KEY_DOWN:
+	else if (!strcasecmp(action, "move_down"))
+	{
 		fb_move_cursor(fb, 1, TRUE);
-		break;
-	case 'k':
-	case KEY_UP:
+	}
+	else if (!strcasecmp(action, "move_up"))
+	{
 		fb_move_cursor(fb, -1, TRUE);
-		break;
-	case 'd':
-	case KEY_NPAGE:
+	}
+	else if (!strcasecmp(action, "screen_down"))
+	{
 		fb_move_cursor(fb, FB_HEIGHT(fb), TRUE);
-		break;
-	case 'u':
-	case KEY_PPAGE:
+	}
+	else if (!strcasecmp(action, "screen_up"))
+	{
 		fb_move_cursor(fb, -FB_HEIGHT(fb), TRUE);
-		break;
-	case KEY_HOME:
+	}
+	else if (!strcasecmp(action, "move_to_start"))
+	{
 		fb_move_cursor(fb, 0, FALSE);
-		break;
-	case KEY_END:
+	}
+	else if (!strcasecmp(action, "move_to_end"))
+	{
 		fb_move_cursor(fb, fb->m_num_files - 1, FALSE);
-		break;
-
+	}
 	/* Go to directory */
-	case '\n':
+	else if (!strcasecmp(action, "go_to_dir"))
+	{
 		fb_go_to_dir(fb);
-		break;
-
+	}
 	/* Go to home directory */
-	case 'h':
+	else if (!strcasecmp(action, "go_to_home"))
+	{
 		fb_change_dir(fb, getenv("HOME"));
-		break;
-
+	}
 	/* Go to parent directory */
-	case KEY_BACKSPACE:
+	else if (!strcasecmp(action, "go_to_parent"))
+	{
 		if (fb->m_num_files && (fb->m_files[0].m_type & FB_ITEM_UPDIR))
 		{
 			fb->m_cursor = fb->m_scrolled = 0;
 			fb_go_to_dir(fb);
 		}
-		break;
-
+	}
 	/* Add selected files to playlist */
-	case 'a':
+	else if (!strcasecmp(action, "add_to_playlist"))
+	{
 		fb_add2plist(fb);
-		break;
-
+	}
 	/* Replace files in playlist with select files */
-	case 'r':
+	else if (!strcasecmp(action, "replace_playlist"))
+	{
 		fb_replace_plist(fb);
-		break;
- 
+	}
 	/* Toggle song info mode */
-	case 'i':
+	else if (!strcasecmp(action, "toggle_info"))
+	{
 		fb_toggle_info(fb);
-		break;
-
+	}
 	/* Toggle search mode */
-	case 's':
-	case KEY_CTRL_S:
+	else if (!strcasecmp(action, "toggle_search"))
+	{
 		fb->m_search_mode = !fb->m_search_mode;
-		break;
-
+	}
 	/* Change directory */
-	case 'c':
+	else if (!strcasecmp(action, "change_dir"))
+	{
 		fb_cd_dialog(fb);
-		break;
-
+	}
 	/* Select/deselect files */
-	case KEY_IC:
+	else if (!strcasecmp(action, "select"))
+	{
 		if (fb->m_num_files)
 		{
 			fb_change_sel(fb, fb->m_cursor);
 			fb_move_cursor(fb, 1, TRUE);
 		}
-		break;
-	case '+':
-	case '-':
-		fb_select_pattern_dialog(fb, key == '+');
-		break;
-
+	}
+	else if (!strcasecmp(action, "select_pattern"))
+	{
+		fb_select_pattern_dialog(fb, TRUE);
+	}
+	else if (!strcasecmp(action, "deselect_pattern"))
+	{
+		fb_select_pattern_dialog(fb, FALSE);
+	}
 	/* Show help */
-	case '?':
+	else if (!strcasecmp(action, "help"))
+	{
 		fb_help(fb);
-		break;
 	}
 	wnd_invalidate(wnd);
-	return WND_MSG_RETCODE_OK;
-} /* End of 'fb_handle_key' function */
+} /* End of 'fb_on_action' function */
 
 /* Handle mouse left button */
 wnd_msg_retcode_t fb_on_mouse_ldown( wnd_t *wnd, int x, int y, 
@@ -898,6 +900,27 @@ void fb_class_set_default_styles( cfg_node_t *list )
 	cfg_set_var(list, "search-string-style", "white:black");
 	cfg_set_var(list, "title-style", "green:black:bold");
 	cfg_set_var(list, "header-style", "green:black:bold");
+
+	/* Set kbinds */
+	cfg_set_var(list, "kbind.quit", "q;<Escape>");
+	cfg_set_var(list, "kbind.move_up", "k;<Up>;<Ctrl-p>");
+	cfg_set_var(list, "kbind.move_down", "j;<Down>;<Ctrl-n>");
+	cfg_set_var(list, "kbind.screen_up", "u;<PageUp>;<Alt-v>");
+	cfg_set_var(list, "kbind.screen_down", "d;<PageDown>;<Ctrl-v>");
+	cfg_set_var(list, "kbind.move_to_start", "<Ctrl-a>;<Home>");
+	cfg_set_var(list, "kbind.move_to_end", "<Ctrl-e>;<End>");
+	cfg_set_var(list, "kbind.go_to_dir", "<Enter>");
+	cfg_set_var(list, "kbind.go_to_home", "h");
+	cfg_set_var(list, "kbind.go_to_parent", "<Backspace>");
+	cfg_set_var(list, "kbind.add_to_playlist", "a");
+	cfg_set_var(list, "kbind.replace_playlist", "r");
+	cfg_set_var(list, "kbind.toggle_info", "i");
+	cfg_set_var(list, "kbind.toggle_search", "s;<Ctrl-s>");
+	cfg_set_var(list, "kbind.change_dir", "c");
+	cfg_set_var(list, "kbind.select", "<Insert>");
+	cfg_set_var(list, "kbind.select_pattern", "+");
+	cfg_set_var(list, "kbind.deselect_pattern", "-");
+	cfg_set_var(list, "kbind.help", "?");
 } /* End of 'fb_class_set_default_styles' function */
 
 /* Handle glob */

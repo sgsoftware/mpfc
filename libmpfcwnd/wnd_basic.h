@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Interface for 'basic' window
  *               class.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 10.09.2004
+ * LAST UPDATE : 29.09.2004
  * NOTE        : Module prefix 'wnd_msg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -99,6 +99,30 @@ wnd_msg_retcode_t wnd_basic_callback_key( wnd_t *wnd,
 /* Convert handler pointer to the proper type */
 #define WND_MSG_KEY_HANDLER(h)	\
 	((wnd_msg_retcode_t (*)(wnd_t *, wnd_key_t))(h->m_func))
+
+/*
+ * Action message
+ */
+
+/* Message data */
+typedef struct
+{
+	char *m_action;
+} wnd_msg_action_t;
+
+/* Create data for action message */
+wnd_msg_data_t wnd_msg_action_new( char *action );
+
+/* Action message data destructor */
+void wnd_msg_action_free( void *data );
+
+/* Callback function for action message */
+wnd_msg_retcode_t wnd_basic_callback_action( wnd_t *wnd,
+		wnd_msg_handler_t *handler, wnd_msg_data_t *msg_data );
+
+/* Convert handler pointer to the proper type */
+#define WND_MSG_ACTION_HANDLER(h)	\
+	((wnd_msg_retcode_t (*)(wnd_t *, char *))(h->m_func))
 
 /*
  * Parent reposition message

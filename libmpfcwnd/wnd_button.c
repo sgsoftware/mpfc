@@ -79,7 +79,7 @@ bool_t button_construct( button_t *btn, wnd_t *parent, char *title, char *id,
 
 	/* Set message handlers */
 	wnd_msg_add_handler(wnd, "display", button_on_display);
-	wnd_msg_add_handler(wnd, "keydown", button_on_keydown);
+	wnd_msg_add_handler(wnd, "action", button_on_action);
 	wnd_msg_add_handler(wnd, "mouse_ldown", button_on_mouse);
 	return TRUE;
 } /* End of 'button_construct' function */
@@ -102,16 +102,14 @@ wnd_msg_retcode_t button_on_display( wnd_t *wnd )
 	return WND_MSG_RETCODE_OK;
 } /* End of 'button_on_display' function */
 
-/* 'keydown' message handler */
-wnd_msg_retcode_t button_on_keydown( wnd_t *wnd, wnd_key_t key )
+/* 'action' message handler */
+wnd_msg_retcode_t button_on_action( wnd_t *wnd, char *action )
 {
 	/* Button clicked */
-	if (key == ' ')
+	if (!strcasecmp(action, "click"))
 		wnd_msg_send(wnd, "clicked", button_msg_clicked_new());
-	else
-		return WND_MSG_RETCODE_PASS_TO_PARENT;
 	return WND_MSG_RETCODE_OK;
-} /* End of 'button_on_keydown' function */
+} /* End of 'button_on_action' function */
 
 /* 'mouse_ldown' message handler */
 wnd_msg_retcode_t button_on_mouse( wnd_t *wnd, int x, int y, 
@@ -135,6 +133,7 @@ void button_class_set_default_styles( cfg_node_t *node )
 {
 	cfg_set_var(node, "text-style", "white:green:bold");
 	cfg_set_var(node, "focus-text-style", "white:blue:bold");
+	cfg_set_var(node, "kbind.click", "<Space>");
 } /* End of 'button_class_set_default_styles' function */
 
 /* Get message information */

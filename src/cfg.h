@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for configuration handling
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 12.09.2004
+ * LAST UPDATE : 29.09.2004
  * NOTE        : Module prefix 'cfg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -186,6 +186,29 @@ bool_t cfg_call_var_handler( bool_t after, cfg_node_t *node, char *value );
 
 /* Calculate string hash value */
 int cfg_calc_hash( char *str, int table_size );
+
+/*
+ * Configuration list iteration functions
+ */
+
+/* Iterator type */
+typedef struct
+{
+	/* List being iterated */
+	cfg_node_t *m_list;
+
+	/* Current node */
+	struct cfg_list_hash_item_t *m_cur_node;
+
+	/* Current hash value */
+	int m_hash_value;
+} cfg_list_iterator_t;
+
+/* Begin iteration */
+cfg_list_iterator_t cfg_list_begin_iteration( cfg_node_t *list );
+
+/* Make an iteration */
+cfg_node_t *cfg_list_iterate( cfg_list_iterator_t *iter );
 
 #endif
 

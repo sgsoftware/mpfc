@@ -89,8 +89,8 @@ filebox_t *filebox_new_with_label( wnd_t *parent, char *title, char *id,
 /* Destructor */
 void filebox_destructor( wnd_t *wnd );
 
-/* 'keydown' message handler */
-wnd_msg_retcode_t filebox_on_keydown( wnd_t *wnd, wnd_key_t key );
+/* 'action' message handler */
+wnd_msg_retcode_t filebox_on_action( wnd_t *wnd, char *action );
 
 /* Load names list */
 void filebox_load_names( filebox_t *fb );
@@ -110,6 +110,9 @@ void filebox_glob_handler( vfs_file_t *file, void *data );
 
 /* Initialize file box class */
 wnd_class_t *filebox_class_init( wnd_global_data_t *global );
+
+/* Set file box class default styles */
+void filebox_class_set_default_styles( cfg_node_t *list );
 
 #endif
 

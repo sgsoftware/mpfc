@@ -87,8 +87,8 @@ void combo_unexpand( combo_t *combo );
 /* Synchronize list cursor with text */
 void combo_synch_list( combo_t *combo );
 
-/* 'keydown' message handler */
-wnd_msg_retcode_t combo_on_keydown( wnd_t *wnd, wnd_key_t key );
+/* 'action' message handler */
+wnd_msg_retcode_t combo_on_action( wnd_t *wnd, char *action );
 
 /* 'display' message handler */
 wnd_msg_retcode_t combo_on_display( wnd_t *wnd );

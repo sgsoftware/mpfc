@@ -28,6 +28,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#define __USE_GNU
 #include <string.h>
 #include "types.h"
 #include "cfg.h"
@@ -307,6 +308,7 @@ cfg_node_t *cfg_find_real_parent( cfg_node_t *parent, char *name,
 		char **real_name )
 {
 	cfg_node_t *real_parent;
+	char *item_name;
 
 	assert(parent);
 	assert(name);
@@ -323,15 +325,15 @@ cfg_node_t *cfg_find_real_parent( cfg_node_t *parent, char *name,
 			break;
 
 		/* Extract child list name */
-		*next_name = 0;
-		real_parent = cfg_search_list(real_parent, name);
+		item_name = strndup(name, next_name - name);
+		real_parent = cfg_search_list(real_parent, item_name);
 
 		/* Create temporary list if it does not exist */
 		if (real_parent == NULL)
-			real_parent = cfg_new_list(was_real, name, NULL, 0, 0);
+			real_parent = cfg_new_list(was_real, item_name, NULL, 0, 0);
 
 		/* Move to next child name */
-		*next_name = '.';
+		free(item_name);
 		name = next_name + 1;
 	}
 
@@ -415,6 +417,46 @@ void cfg_set_var_handler( cfg_node_t *parent, char *name,
 	else if (node == NULL)
 		cfg_new_var_full(parent, name, 0, NULL, handler, handler_data);
 } /* End of 'cfg_set_var_handler' function */
+
+/* Begin iteration */
+cfg_list_iterator_t cfg_list_begin_iteration( cfg_node_t *list )
+{
+	cfg_list_iterator_t iter;
+	iter.m_list = list;
+	iter.m_cur_node = NULL;
+	iter.m_hash_value = -1;
+	return iter;
+} /* End of 'cfg_list_begin_iteration' function */
+
+/* Make an iteration */
+cfg_node_t *cfg_list_iterate( cfg_list_iterator_t *iter )
+{
+	struct cfg_list_data_t *list;
+	cfg_node_t *node;
+
+	if (iter->m_list == NULL)
+		return NULL;
+	list = CFG_LIST(iter->m_list);
+
+	/* Move to next hash item */
+	if (iter->m_cur_node == NULL)
+	{
+		do
+		{
+			iter->m_hash_value ++;
+		} while (iter->m_hash_value < list->m_hash_size && 
+				(iter->m_cur_node = 
+						 list->m_children[iter->m_hash_value]) == NULL);
+
+		/* No record found */
+		if (iter->m_hash_value >= list->m_hash_size)
+			return NULL;
+	}
+
+	node = iter->m_cur_node->m_node;
+	iter->m_cur_node = iter->m_cur_node->m_next;
+	return node;
+} /* End of 'cfg_list_iterate' function */
 
 /* End of 'cfg.c' file */
 

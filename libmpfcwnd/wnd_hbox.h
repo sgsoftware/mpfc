@@ -51,9 +51,6 @@ hbox_t *hbox_new( wnd_t *parent, char *title, int dist );
 /* Horizontal box constructor */
 bool_t hbox_construct( hbox_t *hbox, wnd_t *parent, char *title, int dist );
 
-/* 'keydown' message handler */
-wnd_msg_retcode_t hbox_on_keydown( wnd_t *wnd, wnd_key_t key );
-
 /* Get the desired size */
 void hbox_get_desired_size( dlgitem_t *di, int *width, int *height );
 

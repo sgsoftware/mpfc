@@ -51,9 +51,6 @@ vbox_t *vbox_new( wnd_t *parent, char *title, int dist );
 /* Vertical box constructor */
 bool_t vbox_construct( vbox_t *vbox, wnd_t *parent, char *title, int dist );
 
-/* 'keydown' message handler */
-wnd_msg_retcode_t vbox_on_keydown( wnd_t *wnd, wnd_key_t key );
-
 /* Get the desired size */
 void vbox_get_desired_size( dlgitem_t *di, int *width, int *height );
 

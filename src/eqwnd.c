@@ -72,7 +72,7 @@ bool_t eqwnd_construct( eq_wnd_t *eq, wnd_t *parent )
 
 	/* Register handlers */
 	wnd_msg_add_handler(wnd, "display", eqwnd_on_display);
-	wnd_msg_add_handler(wnd, "keydown", eqwnd_on_keydown);
+	wnd_msg_add_handler(wnd, "action", eqwnd_on_action);
 	wnd_msg_add_handler(wnd, "mouse_ldown", eqwnd_on_mouse_ldown);
 
 	/* Set fields */
@@ -115,53 +115,52 @@ wnd_msg_retcode_t eqwnd_on_display( wnd_t *wnd )
 	return WND_MSG_RETCODE_OK;
 } /* End of 'eqwnd_display' function */
 
-/* Handle key message */
-wnd_msg_retcode_t eqwnd_on_keydown( wnd_t *wnd, wnd_key_t key )
+/* Handle action message */
+wnd_msg_retcode_t eqwnd_on_action( wnd_t *wnd, char *action )
 {
 	eq_wnd_t *eq = (eq_wnd_t *)wnd;
 
-	switch (key)
+	if (!strcasecmp(action, "quit"))
 	{
-	case 'q':
-	case KEY_ESCAPE:
 		/* Save parameters */
 		eqwnd_save_params();
 
 		/* Close window */
 		wnd_close(wnd);
-		break;
-	case 'h':
-	case KEY_LEFT:
+	}
+	else if (!strcasecmp(action, "move_left"))
+	{
 		eq->m_pos --;
 		if (eq->m_pos < 0)
 			eq->m_pos = 10;
 		wnd_invalidate(wnd);
-		break;
-	case 'l':
-	case KEY_RIGHT:
+	}
+	else if (!strcasecmp(action, "move_right"))
+	{
 		eq->m_pos ++;
 		if (eq->m_pos > 10)
 			eq->m_pos = 0;
 		wnd_invalidate(wnd);
-		break;
-	case 'j':
-	case KEY_DOWN:
+	}
+	else if (!strcasecmp(action, "decrease"))
+	{
 		eqwnd_set_var(eq->m_pos, -2., TRUE);
 		player_eq_changed = TRUE;
 		wnd_invalidate(wnd);
-		break;
-	case 'k':
-	case KEY_UP:
+	}
+	else if (!strcasecmp(action, "increase"))
+	{
 		eqwnd_set_var(eq->m_pos, 2., TRUE);
 		player_eq_changed = TRUE;
 		wnd_invalidate(wnd);
-		break;
-	case 'p':
+	}
+	else if (!strcasecmp(action, "load_eqf"))
+	{
 		eqwnd_load_eqf_dlg();
-		break;
-	case '?':
+	}
+	else if (!strcasecmp(action, "help"))
+	{
 		eqwnd_help(eq);
-		break;
 	}
 	return WND_MSG_RETCODE_OK;
 } /* End of 'eqwnd_handle_key' function */
@@ -372,6 +371,15 @@ void eqwnd_class_set_default_styles( cfg_node_t *list )
 	cfg_set_var(list, "focus-band-style", "cyan:black:bold");
 	cfg_set_var(list, "label-style", "white:black");
 	cfg_set_var(list, "focus-label-style", "white:black:bold");
+
+	/* Set kbinds */
+	cfg_set_var(list, "kbind.quit", "q;<Escape>");
+	cfg_set_var(list, "kbind.move_left", "h;<Left>;<Ctrl-b>");
+	cfg_set_var(list, "kbind.move_right", "l;<Right>;<Ctrl-f>");
+	cfg_set_var(list, "kbind.increase", "k;<Up>;<Ctrl-p>");
+	cfg_set_var(list, "kbind.decrease", "j;<Down>;<Ctrl-n>");
+	cfg_set_var(list, "kbind.load_eqf", "p");
+	cfg_set_var(list, "kbind.help", "?");
 } /* End of 'eqwnd_class_set_default_styles' function */
 
 /* End of 'eqwnd.c' file */

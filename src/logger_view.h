@@ -61,8 +61,8 @@ void logview_destructor( wnd_t *wnd );
 /* Display logger window */
 wnd_msg_retcode_t logview_on_display( wnd_t *wnd );
 
-/* 'keydown' message handler */
-wnd_msg_retcode_t logview_on_keydown( wnd_t *wnd, wnd_key_t key );
+/* 'action' message handler */
+wnd_msg_retcode_t logview_on_action( wnd_t *wnd, char *action );
 
 /* 'scrolled' message handler */
 wnd_msg_retcode_t logview_on_scrolled( wnd_t *wnd, int offset );

@@ -64,8 +64,8 @@ void help_destructor( wnd_t *wnd );
 /* Handle display message */
 wnd_msg_retcode_t help_on_display( wnd_t *wnd );
 
-/* Handle key message */
-wnd_msg_retcode_t help_on_keydown( wnd_t *wnd, wnd_key_t key );
+/* Handle 'action' message */
+wnd_msg_retcode_t help_on_action( wnd_t *wnd, char *action );
 
 /* Add item */
 void help_add( help_screen_t *h, char *name );
