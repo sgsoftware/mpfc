@@ -125,6 +125,10 @@ bool player_init( int argc, char *argv[] )
 	for ( i = 0; i < player_num_files; i ++ )
 		plist_add(player_plist, player_files[i]);
 
+	/* Load saved play list if files list is empty */
+	if (!player_num_files)
+		plist_add(player_plist, "~/mpfc.m3u");
+
 	/* Initialize playing thread */
 	pthread_create(&player_tid, NULL, player_thread, NULL);
 
@@ -158,9 +162,16 @@ void player_deinit( void )
 	/* Destroy all objects */
 	if (player_plist != NULL)
 	{
+		/* Save play list */
+		if (cfg_get_var_int(cfg_list, "save_playlist_on_exit"))
+			plist_save(player_plist, "~/mpfc.m3u");
+		
 		plist_free(player_plist);
 		player_plist = NULL;
 	}
+
+	/* Uninitialize configuration manager */
+	cfg_free();
 } /* End of 'player_deinit' function */
 
 /* Run player */
