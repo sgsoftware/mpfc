@@ -5,7 +5,7 @@
 /* FILE NAME   : help_screen.c
  * PURPOSE     : SG MPFC. Help screen functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 25.05.2003
+ * LAST UPDATE : 27.07.2003
  * NOTE        : Module prefix 'help'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -104,6 +104,9 @@ bool help_init( help_screen_t *help, wnd_t *parent, int x, int y,
 	help_add(help, _("/:\t\t Search"));
 	help_add(help, _("n:\t\t Go to next search match"));
 	help_add(help, _("N:\t\t Go to previous search match"));
+	help_add(help, _("e:\t\t Launch equalizer window"));
+	help_add(help, _("R:\t\t Set/unset shuffle play mode"));
+	help_add(help, _("L:\t\t Set/unset loop play mode"));
 	help_add(help, _("?:\t\t This help screen"));
 	return TRUE;
 } /* End of 'help_init' function */

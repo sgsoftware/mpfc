@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG Konsamp. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 26.07.2003
+ * LAST UPDATE : 27.07.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -330,30 +330,13 @@ void player_handle_key( wnd_t *wnd, dword data )
 
 	/* Go to next song */
 	case 'b':
-		player_plist->m_cur_song += ((player_repval) ? player_repval : 1);
-		if (player_plist->m_cur_song >= player_plist->m_len)
-		{
-			player_plist->m_cur_song = -1;
-			player_end_play();
-		}
-		else
-		{
-			player_play();
-		}
+		player_skip_songs((player_repval) ? player_repval : 1);
 		break;
 
 	/* Go to previous song */
 	case 'z':
-		player_plist->m_cur_song -= ((player_repval) ? player_repval : 1);
-		if (player_plist->m_cur_song < 0)
-		{
-			player_plist->m_cur_song = -1;
-			player_end_play();
-		}
-		else
-		{
-			player_play();
-		}
+		player_skip_songs(-((player_repval) ? player_repval : 1));
+		break;
 		break;
 
 	/* Add a file */
@@ -399,6 +382,18 @@ void player_handle_key( wnd_t *wnd, dword data )
 	/* Show equalizer dialog */
 	case 'e':
 		player_eq_dialog();
+		break;
+
+	/* Set/unset shuffle mode */
+	case 'R':
+		cfg_set_var_int(cfg_list, "shuffle_play",
+				!cfg_get_var_int(cfg_list, "shuffle_play"));
+		break;
+		
+	/* Set/unset loop mode */
+	case 'L':
+		cfg_set_var_int(cfg_list, "loop_play",
+				!cfg_get_var_int(cfg_list, "loop_play"));
 		break;
 		
 	/* Digit means command repeation value edit */
@@ -479,6 +474,18 @@ void player_display( wnd_t *wnd, dword data )
 		wnd_printf(wnd, "%s\n%i:%02i/%i:%02i\n", title, 
 				player_cur_time / 60, player_cur_time % 60,
 				s->m_len / 60, s->m_len % 60);
+	}
+
+	/* Display play modes */
+	if (cfg_get_var_int(cfg_list, "shuffle_play"))
+	{
+		wnd_move(wnd, wnd->m_width - 13, 1);
+		wnd_printf(wnd, "Shuffle");
+	}
+	if (cfg_get_var_int(cfg_list, "loop_play"))
+	{
+		wnd_move(wnd, wnd->m_width - 5, 1);
+		wnd_printf(wnd, "Loop");
 	}
 
 	/* Display different slidebars */
@@ -980,11 +987,7 @@ void player_help( void )
 /* Start next track */
 void player_next_track( void )
 {
-	player_plist->m_cur_song ++;
-	if (player_plist->m_cur_song >= player_plist->m_len)
-		player_plist->m_cur_song = -1;
-	else
-		player_play();
+	player_skip_songs(1);
 } /* End of 'player_next_track' function */
 
 /* Handle non-digit key (place it to buffer) */
@@ -1034,6 +1037,41 @@ void player_eq_dialog( void )
 	wnd_run(wnd);
 	wnd_destroy(wnd);
 } /* End of 'player_eq_dialog' function */
+
+/* Skip some songs */
+void player_skip_songs( int num )
+{
+	if (player_plist == NULL || !player_plist->m_len)
+		return;
+	
+	/* Change current song */
+	if (cfg_get_var_int(cfg_list, "shuffle_play"))
+	{
+		int initial = player_plist->m_cur_song;
+
+		while (player_plist->m_cur_song == initial)
+			player_plist->m_cur_song = rand() % player_plist->m_len;
+	}
+	else 
+	{
+		player_plist->m_cur_song += num;
+		if (cfg_get_var_int(cfg_list, "loop_play"))
+		{
+			while (player_plist->m_cur_song < 0)
+				player_plist->m_cur_song += player_plist->m_len;
+			player_plist->m_cur_song %= player_plist->m_len;
+		}
+		else if (player_plist->m_cur_song < 0 || 
+					player_plist->m_cur_song >= player_plist->m_len)
+			player_plist->m_cur_song = -1;
+	}
+
+	/* Start or end play */
+	if (player_plist->m_cur_song == -1)
+		player_end_play();
+	else
+		player_play();
+} /* End of 'player_skip_songs' function */
 
 /* End of 'player.c' file */
 

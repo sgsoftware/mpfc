@@ -5,7 +5,7 @@
 /* FILE NAME   : player.h
  * PURPOSE     : SG Konsamp. Interface for main player functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 12.07.2003
+ * LAST UPDATE : 27.07.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -133,6 +133,9 @@ void player_exec_key_action( void );
 /* Display slider */
 void player_display_slider( wnd_t *wnd, int x, int y, int width, 
 	   int pos, int range );
+
+/* Skip some songs */
+void player_skip_songs( int num );
 
 #endif
 
