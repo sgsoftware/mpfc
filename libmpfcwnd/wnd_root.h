@@ -77,6 +77,10 @@ wnd_msg_retcode_t wnd_root_on_close( wnd_t *wnd );
 /* 'update_screen' message handler */
 wnd_msg_retcode_t wnd_root_on_update_screen( wnd_t *wnd );
 
+/* 'mouse_ldown' message handler */
+wnd_msg_retcode_t wnd_root_on_mouse( wnd_t *wnd, int x, int y, 
+		wnd_mouse_button_t btn, wnd_mouse_event_t type );
+
 /* Destructor */
 void wnd_root_destructor( wnd_t *wnd );
 

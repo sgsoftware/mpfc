@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Window functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 18.08.2004
+ * LAST UPDATE : 11.09.2004
  * NOTE        : Module prefix 'wnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -68,6 +68,7 @@ wnd_t *wnd_init( cfg_node_t *cfg_list )
 	global->m_last_id = -1;
 	global->m_states_stack_pos = 0;
 	global->m_lib_active = TRUE;
+	global->m_invalid_exist = TRUE;
 
 	/* Initialize display buffer */
 	len = COLS * LINES;
@@ -83,6 +84,7 @@ wnd_t *wnd_init( cfg_node_t *cfg_list )
 	global->m_display_buf.m_width = COLS;
 	global->m_display_buf.m_height = LINES;
 	global->m_display_buf.m_data = db_data;
+	pthread_mutex_init(&global->m_display_buf.m_mutex, NULL);
 
 	/* Initialize configuration */
 	cfg_wnd = cfg_new_list(cfg_list, "windows", CFG_NODE_MEDIUM_LIST |
@@ -127,6 +129,7 @@ wnd_t *wnd_init( cfg_node_t *cfg_list )
 	wnd_msg_add_handler(wnd_root, "display", wnd_root_on_display);
 	wnd_msg_add_handler(wnd_root, "close", wnd_root_on_close);
 	wnd_msg_add_handler(wnd_root, "update_screen", wnd_root_on_update_screen);
+	wnd_msg_add_handler(wnd_root, "mouse_ldown", wnd_root_on_mouse);
 	wnd_msg_add_handler(wnd_root, "destructor", wnd_root_destructor);
 
 	/* Initialize message queue */
@@ -297,19 +300,6 @@ bool_t wnd_construct( wnd_t *wnd, wnd_t *parent, char *title, int x, int y,
 		wnd->m_client_h --;
 	}
 
-	/* Set z-value and focus information */
-	if (parent != NULL)
-	{
-		wnd->m_zval = parent->m_num_children;
-		wnd->m_lower_sibling = parent->m_focus_child;
-		parent->m_focus_child = wnd;
-	}
-	else
-	{
-		wnd->m_zval = 0;
-		wnd->m_lower_sibling = NULL;
-	}
-
 	/* Write information of us into the windows hierarchy */
 	if (parent != NULL)
 	{
@@ -323,6 +313,19 @@ bool_t wnd_construct( wnd_t *wnd, wnd_t *parent, char *title, int x, int y,
 			wnd->m_prev = child;
 		}
 		parent->m_num_children ++;
+	}
+
+	/* Set z-value and focus information */
+	if (parent != NULL)
+	{
+		wnd->m_zval = parent->m_num_children - 1;
+		wnd_regen_zvalue_list(parent);
+	}
+	else
+	{
+		wnd->m_zval = 0;
+		wnd->m_lower_sibling = NULL;
+		wnd->m_higher_sibling = NULL;
 	}
 
 	/* Initialize message map */
@@ -384,6 +387,7 @@ void wnd_main( wnd_t *wnd_root )
 			resizeterm(winsz.ws_row, winsz.ws_col);
 
 			/* Reallocate display buffer */
+			wnd_display_buf_lock(buf);
 			buf->m_dirty = TRUE;
 			buf->m_width = wnd_root->m_width;
 			buf->m_height = wnd_root->m_height;
@@ -391,6 +395,7 @@ void wnd_main( wnd_t *wnd_root )
 			size = buf->m_width * buf->m_height * sizeof(*buf->m_data);
 			buf->m_data = (struct wnd_display_buf_symbol_t *)malloc(size);
 			memset(buf->m_data, 0, size);
+			wnd_display_buf_unlock(buf);
 		}
 
 		/* Get message from queue */
@@ -427,8 +432,10 @@ void wnd_main( wnd_t *wnd_root )
 		else
 		{
 			if (wnd_check_invalid(wnd_root))
+			{
 				wnd_msg_send(wnd_root, "update_screen",
 						wnd_msg_update_screen_new());
+			}
 			util_wait();
 		}
 	}
@@ -488,20 +495,29 @@ bool_t wnd_check_invalid( wnd_t *wnd )
 	bool_t need_update = FALSE;
 	wnd_t *child;
 
+	/* Do nothing if we have no invalid windows at all */
+	if (!WND_GLOBAL(wnd)->m_invalid_exist)
+		return FALSE;
+
 	/* Invalidate this window */
 	if (wnd->m_is_invalid)
 	{
 		wnd_msg_send(wnd, "erase_back", wnd_msg_erase_back_new());
 		wnd_send_repaint(wnd, TRUE);
-		return TRUE;
+		need_update = TRUE;
 	}
-
-	/* Check children */
-	for ( child = wnd->m_child; child != NULL; child = child->m_next )
+	else
 	{
-		if (wnd_check_invalid(child))
-			need_update = TRUE;
+		/* Check children */
+		for ( child = wnd->m_child; child != NULL; child = child->m_next )
+		{
+			if (wnd_check_invalid(child))
+				need_update = TRUE;
+		}
 	}
+	/* If this is the first-level call, we have no invalid windows */
+	if (wnd == WND_ROOT(wnd))
+		WND_GLOBAL(wnd)->m_invalid_exist = FALSE;
 	return need_update;
 } /* End of 'wnd_check_invalid' function */
 
@@ -661,13 +677,14 @@ void wnd_display_wnd_bar( wnd_t *wnd_root )
 	else
 	{
 		wnd_t *child;
-		int right_pos = 0;
+		int right_pos = 0, i;
 
 		/* Print items for children */
 		wnd_move(wnd_root, WND_MOVE_ABSOLUTE, 0, wnd_root->m_height - 1);
-		for ( child = wnd_root->m_child; child != NULL; child = child->m_next )
+		for ( child = wnd_root->m_child, i = 0; child != NULL; 
+				child = child->m_next, i ++ )
 		{
-			right_pos += wnd_root->m_width / wnd_root->m_num_children;
+			right_pos = (i + 1) * wnd_root->m_width / wnd_root->m_num_children;
 
 			/* Print focus child with another style */
 			wnd_push_state(wnd_root, WND_STATE_COLOR | WND_STATE_ATTRIB);
@@ -862,19 +879,22 @@ void wnd_set_focus( wnd_t *wnd )
 		for ( child = parent->m_child; child != NULL; child = child->m_next )
 		{
 			if (child->m_zval > cur->m_zval)
-			{
-				if (child->m_zval == cur->m_zval + 1)
-					prev = child;
 				child->m_zval --;
-			}
 		}
 		cur->m_zval = parent->m_num_children - 1;
-		if (prev != NULL)
-			prev->m_lower_sibling = cur->m_lower_sibling;
-		cur->m_lower_sibling = parent->m_focus_child;
+		if (cur->m_lower_sibling != NULL)
+			cur->m_lower_sibling->m_higher_sibling = cur->m_higher_sibling;
+		if (cur->m_higher_sibling != NULL)
+			cur->m_higher_sibling->m_lower_sibling = cur->m_lower_sibling;
+		if (parent->m_focus_child != NULL)
+			parent->m_focus_child->m_higher_sibling = cur;
 
 		/* Set focus to this window */
+		if (cur == parent->m_lower_child)
+			parent->m_lower_child = cur->m_higher_sibling;
+		cur->m_lower_sibling = parent->m_focus_child;
 		parent->m_focus_child = cur;
+		cur->m_higher_sibling = NULL;
 	}
 
 	/* Set the global focus */
@@ -931,7 +951,10 @@ void wnd_invalidate( wnd_t *wnd )
 {
 	/* Mark window as invalid */
 	if (wnd != NULL)
+	{
 		wnd->m_is_invalid = TRUE;
+		WND_GLOBAL(wnd)->m_invalid_exist = TRUE;
+	}
 } /* End of 'wnd_invalidate' function */
 
 /* Send repainting messages to a window */
@@ -959,6 +982,7 @@ void wnd_sync_screen( wnd_t *wnd )
 		clear();
 
 	/* Copy buffer to screen */
+	wnd_display_buf_lock(buf);
 	for ( pos = buf->m_data;; pos ++ )
 	{
 		/* Set symbol */
@@ -975,6 +999,7 @@ void wnd_sync_screen( wnd_t *wnd )
 		else
 			x ++;
 	}
+	wnd_display_buf_unlock(buf);
 
 	/* Synchronize cursor */
 	wnd_focus = WND_FOCUS(wnd);
@@ -1262,14 +1287,16 @@ void wnd_global_update_visibility( wnd_t *wnd_root )
 	assert(wnd_root);
 
 	/* Clear current information */
+	wnd_display_buf_lock(db);
 	pos = db->m_data;
 	for ( i = db->m_width * db->m_height; i > 0; i --, pos ++ )
 		pos->m_wnd = wnd_root;
 
 	/* Fill information */
-	for ( child = wnd_root->m_focus_child; child != NULL; 
-			child = child->m_lower_sibling )
+	for ( child = wnd_root->m_lower_child; child != NULL; 
+			child = child->m_higher_sibling )
 		wnd_update_visibility(child);
+	wnd_display_buf_unlock(db);
 } /* End of 'wnd_global_update_visibility' function */
 
 /* Update the visibility information for a window and its descendants */
@@ -1287,19 +1314,7 @@ void wnd_update_visibility( wnd_t *wnd )
 	{
 		for ( j = wnd->m_real_left; j < wnd->m_real_right; j ++ )
 		{
-			/* Check that currently visible window is this window's 
-			 * ancestor. If not, this position is not visible because
-			 * currently it is holded by a window from a more top-level
-			 * branch. Otherwise, overwrite it (parent is always below
-			 * the child) */
-			cur = pos->m_wnd;
-			for ( parent = wnd->m_parent; parent != NULL; 
-					parent = parent->m_parent )
-				if (parent == cur)
-				{
-					pos->m_wnd = wnd;
-					break;
-				}
+			pos->m_wnd = wnd;
 
 			/* Move to the next position */
 			pos ++;
@@ -1310,8 +1325,8 @@ void wnd_update_visibility( wnd_t *wnd )
 	}
 
 	/* Set visibility for the children */
-	for ( child = wnd->m_focus_child; child != NULL; 
-			child = child->m_lower_sibling )
+	for ( child = wnd->m_lower_child; child != NULL; 
+			child = child->m_higher_sibling )
 		wnd_update_visibility(child);
 } /* End of 'wnd_update_visibility' function */
 
@@ -1392,6 +1407,49 @@ void wnd_set_title( wnd_t *wnd, char *title )
 	free(wnd->m_title);
 	wnd->m_title = strdup(title);
 } /* End of 'wnd_set_title' function */
+
+/* Lock the display buffer */
+void wnd_display_buf_lock( struct wnd_display_buf_t *db )
+{
+	pthread_mutex_lock(&db->m_mutex);
+} /* End of 'wnd_display_buf_lock' function */
+
+/* Unlock the display buffer */
+void wnd_display_buf_unlock( struct wnd_display_buf_t *db )
+{
+	pthread_mutex_unlock(&db->m_mutex);
+} /* End of 'wnd_display_buf_unlock' function */
+
+/* Regenerate the window's children list sorted by zvalue */
+void wnd_regen_zvalue_list( wnd_t *wnd )
+{
+	wnd_t *child, *sibling;
+	assert(wnd);
+
+	/* Set links in each of the children */
+	wnd->m_lower_child = wnd->m_focus_child = NULL;
+	for ( child = wnd->m_child; child != NULL; child = child->m_next )
+	{
+		int zval = child->m_zval;
+
+		/* Set list begin and end pointers */
+		if (zval == 0)
+			wnd->m_lower_child = child;
+		if (zval == wnd->m_num_children - 1)
+			wnd->m_focus_child = child;
+
+		/* Search for next and previous siblings */
+		child->m_lower_sibling = child->m_higher_sibling = NULL;
+		for ( sibling = wnd->m_child; sibling != NULL; 
+				sibling = sibling->m_next )
+		{
+			if (sibling->m_zval == zval - 1)
+				child->m_lower_sibling = sibling;
+			else if (sibling->m_zval == zval + 1)
+				child->m_higher_sibling = sibling;
+		}
+	}
+} /* End of 'wnd_regen_zvalue_list' function */
 
 /* End of 'wnd.c' file */
 

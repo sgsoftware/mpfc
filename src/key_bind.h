@@ -146,7 +146,8 @@
 #define KBIND_TIME_BACK			113
 #define KBIND_RELOAD_PLUGINS	114
 #define KBIND_FILE_BROWSER		115
-#define KBIND_NUM_ACTIONS		116
+#define KBIND_TEST				116
+#define KBIND_NUM_ACTIONS		117
 
 /* The maximal key sequence length */
 #define KBIND_MAX_SEQ_LEN 10

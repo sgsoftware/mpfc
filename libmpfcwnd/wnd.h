@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Interface for basic window
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 15.08.2004
+ * LAST UPDATE : 11.09.2004
  * NOTE        : Module prefix 'wnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -135,6 +135,9 @@ struct tag_wnd_global_data_t
 		/* Dirtyness flag. If TRUE then the entire screen should be
 		 * repainted discarding all the optimization information */
 		bool_t m_dirty;
+
+		/* Buffer mutex */
+		pthread_mutex_t m_mutex;
 	} m_display_buf;
 
 	/* Mouse data */
@@ -149,6 +152,9 @@ struct tag_wnd_global_data_t
 
 	/* Is library active now? */
 	bool_t m_lib_active;
+
+	/* Do any invalid windows exist now? */
+	bool_t m_invalid_exist;
 };
 
 /* Window type */
@@ -169,14 +175,17 @@ struct tag_wnd_t
 	/* First child and next and siblings */
 	wnd_t *m_child, *m_next, *m_prev;
 
-	/* Sibling with next z value */
-	wnd_t *m_lower_sibling;
+	/* Sibling with next and previous z value */
+	wnd_t *m_lower_sibling, *m_higher_sibling;
 
 	/* The number of children */
 	byte m_num_children;
 
 	/* Focus child */
-	struct tag_wnd_t *m_focus_child;
+	wnd_t *m_focus_child;
+
+	/* The lowest child */
+	wnd_t *m_lower_child;
 
 	/* Message handlers. Chain for each message doesn't contain
 	 * default handler (so respective field is NULL if only default
@@ -194,7 +203,8 @@ struct tag_wnd_t
 					  *m_on_mouse_mdouble,
 					  *m_on_mouse_rdouble,
 					  *m_on_loose_focus,
-					  *m_on_get_focus;
+					  *m_on_get_focus,
+					  *m_on_user;
 
 	/* Window destructors chain. It is implemented like message handlers,
 	 * though it is not called by dispatcher. */
@@ -257,6 +267,7 @@ struct tag_wnd_t
 #define WND_FLAGS(wnd)		(WND_OBJ(wnd)->m_flags)
 #define WND_WIDTH(wnd)		(WND_OBJ(wnd)->m_client_w)
 #define WND_HEIGHT(wnd)		(WND_OBJ(wnd)->m_client_h)
+#define WND_PARENT(wnd)		(WND_OBJ(wnd)->m_parent)
 #define WND_IS_ROOT(wnd)	(WND_FLAGS(wnd) & WND_FLAG_ROOT)
 
 /* Access global data */
@@ -296,7 +307,8 @@ struct tag_wnd_t
 #define wnd_postinit(wnd) \
 	WND_FLAGS(wnd) |= WND_FLAG_INITIALIZED;	\
 	wnd_set_global_focus(WND_GLOBAL(wnd)); \
-	wnd_global_update_visibility(WND_ROOT(wnd)); 
+	wnd_global_update_visibility(WND_ROOT(wnd)); \
+	wnd_invalidate(WND_PARENT(wnd) == NULL ? WND_OBJ(wnd) : WND_PARENT(wnd))
 
 /* Initialize window system */
 wnd_t *wnd_init( cfg_node_t *cfg_list );
@@ -429,6 +441,15 @@ void wnd_update_visibility( wnd_t *wnd );
 
 /* Calculate window real area */
 void wnd_calc_real_pos( wnd_t *wnd );
+
+/* Lock the display buffer */
+void wnd_display_buf_lock( struct wnd_display_buf_t *db );
+
+/* Unlock the display buffer */
+void wnd_display_buf_unlock( struct wnd_display_buf_t *db );
+
+/* Regenerate the window's children list sorted by zvalue */
+void wnd_regen_zvalue_list( wnd_t *wnd );
 
 #endif
 

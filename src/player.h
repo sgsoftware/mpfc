@@ -63,6 +63,10 @@
 #define PLAYER_SLIDER_BAL_X  (WND_WIDTH(player_wnd) - 22)
 #define PLAYER_SLIDER_BAL_W  20
 
+/* Player window user messages IDs */
+#define PLAYER_MSG_INFO			0
+#define PLAYER_MSG_NEXT_FOCUS	1
+
 /***
  * Global variables
  ***/
@@ -169,6 +173,9 @@ wnd_msg_retcode_t player_on_mouse_mdown( wnd_t *wnd, int x, int y,
 wnd_msg_retcode_t player_on_mouse_ldouble( wnd_t *wnd, int x, int y,
 		wnd_mouse_button_t btn, wnd_mouse_event_t type );
 
+/* Handle user message */
+wnd_msg_retcode_t player_on_user( wnd_t *wnd, int id, void *data );
+
 /***
  * Playing-related functions
  ***/
@@ -258,6 +265,9 @@ void player_var_manager( void );
 /* Launch repeat value dialog */
 void player_repval_dialog( int dig );
 
+/* Launch test management dialog */
+void player_test_dialog( void );
+
 /***
  * Dialog message handlers
  ***/
@@ -312,6 +322,12 @@ wnd_msg_retcode_t player_repval_on_keydown( wnd_t *wnd, wnd_key_t key );
 
 /* Handle 'ok_clicked' for repeat value dialog box */
 wnd_msg_retcode_t player_repval_on_ok( wnd_t *wnd );
+
+/* Handle 'clicked' for stop test button */
+wnd_msg_retcode_t player_on_test_stop( wnd_t *wnd );
+
+/* Handle 'ok_clicked' for test dialog box */
+wnd_msg_retcode_t player_on_test( wnd_t *wnd );
 
 /***
  * Variables change handlers

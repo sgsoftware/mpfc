@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Interface for 'basic' window
  *               class.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 13.08.2004
+ * LAST UPDATE : 10.09.2004
  * NOTE        : Module prefix 'wnd_msg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -161,6 +161,31 @@ wnd_msg_retcode_t wnd_basic_callback_mouse( wnd_t *wnd,
 #define WND_MSG_MOUSE_HANDLER(h)	\
 	((wnd_msg_retcode_t (*)(wnd_t *, int, int, wnd_mouse_button_t, \
 							wnd_mouse_event_t))(h->m_func))
+
+/*
+ * User message
+ */
+
+/* User message data */
+typedef struct
+{
+	/* User message ID */
+	int m_id;
+
+	/* Additional data */
+	void *m_data;
+} wnd_msg_user_t;
+
+/* Create user message data */
+wnd_msg_data_t wnd_msg_user_new( int id, void *data );
+
+/* Callback function */
+wnd_msg_retcode_t wnd_basic_callback_user( wnd_t *wnd,
+		wnd_msg_handler_t *handler, wnd_msg_data_t *msg_data );
+
+/* Convert handler pointer to the proper type */
+#define WND_MSG_USER_HANDLER(h)	\
+	((wnd_msg_retcode_t (*)(wnd_t *, int, void *))(h->m_func))
 
 #endif
 

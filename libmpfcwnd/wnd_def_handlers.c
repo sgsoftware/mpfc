@@ -74,6 +74,7 @@ wnd_msg_retcode_t wnd_default_on_close( wnd_t *wnd )
 	int pos, size;
 
 	/* Remove this window chars from the display buffer */
+	wnd_display_buf_lock(db);
 	size = db->m_width * db->m_height;
 	for ( pos = 0; pos < size; pos ++ )
 	{
@@ -84,6 +85,7 @@ wnd_msg_retcode_t wnd_default_on_close( wnd_t *wnd )
 				db->m_data[pos].m_wnd = NULL;
 		}
 	}
+	wnd_display_buf_unlock(db);
 
 	/* Remove the window from the parent */
 	parent = wnd->m_parent;
@@ -108,8 +110,7 @@ wnd_msg_retcode_t wnd_default_on_close( wnd_t *wnd )
 			if (child->m_zval == parent->m_num_children - 1)
 				new_focus = child;
 		}
-		if (parent->m_focus_child == wnd)
-			parent->m_focus_child = new_focus;
+		wnd_regen_zvalue_list(parent);
 		wnd_set_global_focus(WND_GLOBAL(wnd));
 		wnd_invalidate(parent);
 	}
@@ -134,6 +135,7 @@ wnd_msg_retcode_t wnd_default_on_erase_back( wnd_t *wnd )
 	wnd_t *owning;
 
 	/* Clear each window's position */
+	wnd_display_buf_lock(db);
 	pos = &db->m_data[wnd->m_real_top * db->m_width + wnd->m_real_left];
 	dist = db->m_width - (wnd->m_real_right - wnd->m_real_left);
 	for ( i = wnd->m_real_bottom - wnd->m_real_top; i != 0; i -- )
@@ -160,6 +162,7 @@ wnd_msg_retcode_t wnd_default_on_erase_back( wnd_t *wnd )
 		/* Move to the next line */
 		pos += dist;
 	}
+	wnd_display_buf_unlock(db);
 	return WND_MSG_RETCODE_OK;
 } /* End of 'wnd_default_on_erase_back' function */
 

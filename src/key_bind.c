@@ -179,6 +179,7 @@ void kbind_init( void )
 	kbind_add(KBIND_TIME_BACK, 1, KEY_BACKSPACE);
 	kbind_add(KBIND_RELOAD_PLUGINS, 1, 'P');
 	kbind_add(KBIND_FILE_BROWSER, 1, 'B');
+	kbind_add(KBIND_TEST, 1, 'T');
 
 	/* Read bindings from configuration */
 	kbind_read_from_cfg();

@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. 'basic' window class
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 13.08.2004
+ * LAST UPDATE : 10.09.2004
  * NOTE        : Module prefix 'wnd_basic'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -126,6 +126,12 @@ wnd_msg_handler_t **wnd_basic_get_msg_info( wnd_t *wnd, char *name,
 			(*callback) = wnd_basic_callback_noargs;
 		return &wnd->m_on_get_focus;
 	}
+	else if (!strcmp(name, "user"))
+	{
+		if (callback != NULL)
+			(*callback) = wnd_basic_callback_user;
+		return &wnd->m_on_user;
+	}
 	return NULL;
 } /* End of 'wnd_basic_get_msg_info' function */
 
@@ -230,6 +236,28 @@ wnd_msg_retcode_t wnd_basic_callback_destructor( wnd_t *wnd,
 	WND_MSG_DESTRUCTOR_HANDLER(handler)(wnd);
 	return WND_MSG_RETCODE_OK;
 } /* End of 'wnd_basic_callback_destructor' function */
+
+/* Create user message data */
+wnd_msg_data_t wnd_msg_user_new( int id, void *additional_data )
+{
+	wnd_msg_data_t msg_data;
+	wnd_msg_user_t *data;
+
+	data = (wnd_msg_user_t *)malloc(sizeof(*data));
+	data->m_id = id;
+	data->m_data = additional_data;
+	msg_data.m_data = data;
+	msg_data.m_destructor = NULL;
+	return msg_data;
+} /* End of 'wnd_msg_user_new' function */
+
+/* Callback function */
+wnd_msg_retcode_t wnd_basic_callback_user( wnd_t *wnd,
+		wnd_msg_handler_t *handler, wnd_msg_data_t *msg_data )
+{
+	wnd_msg_user_t *d = (wnd_msg_user_t *)(msg_data->m_data);
+	return WND_MSG_USER_HANDLER(handler)(wnd, d->m_id, d->m_data);
+} /* End of 'wnd_basic_callback_user' function */
 
 /* End of 'wnd_basic.h' file */
 

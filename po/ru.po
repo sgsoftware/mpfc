@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: mpfc 1.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-09-04 21:21+0400\n"
+"POT-Creation-Date: 2004-09-06 11:28+0400\n"
 "PO-Revision-Date: 2003-02-13 09:15+0300\n"
 "Last-Translator: Sergey E. Galanov <sgsoftware@mail.ru>\n"
 "Language-Team: Russian <sgsoftware@mail.ru>\n"
@@ -401,37 +401,37 @@ msgstr "p:\t\t Загрузить пресет Winamp EQF"
 msgid "Initialization error : %s\n"
 msgstr "Ошибка инициализии : %s\n"
 
-#: src/player.c:890 src/player.c:2409 src/player.c:2444
+#: src/player.c:889 src/player.c:2423 src/player.c:2458
 msgid "String not found"
 msgstr "Строка не найдена"
 
-#: src/player.c:892 src/player.c:2411 src/player.c:2446
+#: src/player.c:891 src/player.c:2425 src/player.c:2460
 msgid "String found"
 msgstr "Строка найдена"
 
-#: src/player.c:1201
+#: src/player.c:1200
 msgid "SG Software Media Player For Console"
 msgstr "Плейер для консоли от SG Software"
 
-#: src/player.c:1222
+#: src/player.c:1221
 #, c-format
 msgid "version %s"
 msgstr "версия %s"
 
-#: src/player.c:1610
+#: src/player.c:1609
 msgid "Unable to initialize output plugin"
 msgstr "Не могу инициализировать выходной плагин"
 
-#: src/player.c:2116
+#: src/player.c:2130
 #, c-format
 msgid "Removed %i songs"
 msgstr "Удалено %i песен"
 
-#: src/player.c:2184
+#: src/player.c:2198
 msgid "Play list saved"
 msgstr "Плей-лист сохранен"
 
-#: src/player.c:2185
+#: src/player.c:2199
 msgid "Unable to save play list"
 msgstr "Не могу сохранить плей-лист"
 

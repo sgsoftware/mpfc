@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG MPFC. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 18.08.2004
+ * LAST UPDATE : 11.09.2004
  * NOTE        : Module prefix 'player'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -46,6 +46,7 @@
 #include "plist.h"
 #include "pmng.h"
 #include "sat.h"
+#include "test.h"
 #include "undo.h"
 #include "util.h"
 #include "wnd.h"
@@ -322,6 +323,7 @@ wnd_t *player_wnd_new( wnd_t *parent )
 	wnd_msg_add_handler(wnd, "mouse_ldown", player_on_mouse_ldown);
 	wnd_msg_add_handler(wnd, "mouse_mdown", player_on_mouse_mdown);
 	wnd_msg_add_handler(wnd, "mouse_ldouble", player_on_mouse_ldouble);
+	wnd_msg_add_handler(wnd, "user", player_on_user);
 
 	/* Set fields */
 	wnd->m_cursor_hidden = TRUE;
@@ -1047,6 +1049,11 @@ void player_handle_action( int action )
 		fb_new(wnd_root, player_fb_dir);
 		break;
 
+	/* Launch test dialog */
+	case KBIND_TEST:
+		player_test_dialog();
+		break;
+
 	/* Digit means command repeation value edit */
 	case KBIND_DIG_1:
 	case KBIND_DIG_2:
@@ -1182,6 +1189,22 @@ wnd_msg_retcode_t player_on_mouse_ldouble( wnd_t *wnd, int x, int y,
 	}
 	return WND_MSG_RETCODE_OK;
 } /* End of 'player_on_mouse_ldouble' function */
+
+/* Handle user message */
+wnd_msg_retcode_t player_on_user( wnd_t *wnd, int id, void *data )
+{
+	switch (id)
+	{
+	case PLAYER_MSG_INFO:
+		plist_move(player_plist, (int)data, FALSE);
+		player_info_dialog();
+		break;
+	case PLAYER_MSG_NEXT_FOCUS:
+		wnd_next_focus(wnd_root);
+		break;
+	}
+	return WND_MSG_RETCODE_OK;
+} /* End of 'player_on_user' function */
 
 /* Display player function */
 wnd_msg_retcode_t player_on_display( wnd_t *wnd )
@@ -2164,6 +2187,23 @@ void player_repval_dialog( int dig )
 	dialog_arrange_children(dlg);
 } /* End of 'player_repval_dialog' function */
 
+/* Launch test management dialog */
+void player_test_dialog( void )
+{
+	dialog_t *dlg;
+	vbox_t *vbox;
+	button_t *btn;
+
+	dlg = dialog_new(wnd_root, "Run/stop test");
+	vbox = vbox_new(WND_OBJ(dlg->m_vbox), "Tests", 0);
+	radio_new(WND_OBJ(vbox), "Test &1. Window library perfomance", "1", '1', 
+			TRUE);
+	btn = button_new(WND_OBJ(dlg->m_hbox), "&Stop job", "stop", 's');
+	wnd_msg_add_handler(WND_OBJ(btn), "clicked", player_on_test_stop);
+	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_test);
+	dialog_arrange_children(dlg);
+} /* End of 'player_test_dialog' function */
+
 /*****
  *
  * Dialog messages handlers
@@ -2514,6 +2554,32 @@ wnd_msg_retcode_t player_repval_on_ok( wnd_t *wnd )
 	return WND_MSG_RETCODE_OK;
 } /* End of 'player_repval_on_ok' function */
 
+/* Handle 'clicked' for stop test button */
+wnd_msg_retcode_t player_on_test_stop( wnd_t *wnd )
+{
+	test_stop();
+	return WND_MSG_RETCODE_OK;
+} /* End of 'player_on_test_stop' function */
+
+/* Handle 'ok_clicked' for test dialog box */
+wnd_msg_retcode_t player_on_test( wnd_t *wnd )
+{
+	radio_t *r;
+	int sel = -1;
+
+	/* Get selection */
+	r = RADIO_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "1"));
+	assert(r);
+	if (r->m_checked)
+		sel = TEST_WNDLIB_PERFOMANCE;
+	if (sel < 0)
+		return WND_MSG_RETCODE_OK;
+
+	/* Start the test */
+	test_start(sel);
+	return WND_MSG_RETCODE_OK;
+} /* End of 'player_on_test' function */
+
 /*****
  *
  * Variables change handlers
@@ -2598,7 +2664,7 @@ wnd_class_t *player_wnd_class_init( wnd_global_data_t *global )
 	cfg_set_var(klass->m_cfg_list, "about-style", "green:black:bold");
 	cfg_set_var(klass->m_cfg_list, "slider-style", "cyan:black:bold");
 	cfg_set_var(klass->m_cfg_list, "play-modes-style", "green:black:bold");
-	cfg_set_var(klass->m_cfg_list, "status-style", "red:black:bold");
+	cfg_set_var(klass->m_cfg_list, "status-style", "red:black");
 	return klass;
 } /* End of 'player_wnd_class_init' function */
 

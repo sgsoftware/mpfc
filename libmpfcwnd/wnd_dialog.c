@@ -129,7 +129,7 @@ void dialog_arrange_children( dialog_t *dlg )
 	assert(dlg);
 	if (wnd->m_child == NULL)
 		return;
-	
+
 	/* Get the desired window size */
 	child = DLGITEM_OBJ(wnd->m_child);
 	dlgitem_get_size(child, &width, &height);
