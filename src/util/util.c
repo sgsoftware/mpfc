@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Various utility functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 3.09.2003
+ * LAST UPDATE : 27.09.2003
  * NOTE        : Module prefix 'util'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -28,6 +28,8 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/types.h>
+#include <regex.h>
 #include <time.h>
 #include "types.h"
 #include "util.h"
@@ -190,6 +192,20 @@ void util_under2spaces( char *str )
 		if (*str == '_')
 			*str = ' ';
 } /* End of 'util_under2spaces' function */
+
+/* Search for regexp */
+bool_t util_search_regexp( char *ptext, char *text )
+{
+	regex_t preg;
+	regmatch_t pmatch;
+	int res;
+
+	if (regcomp(&preg, ptext, 0))
+		return FALSE;
+	res = regexec(&preg, text, 1, &pmatch, 0);
+	regfree(&preg);
+	return !res;
+} /* End of 'util_search_regexp' function */
 
 /* End of 'util.c' file */
 

@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for different utility
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 3.09.2003
+ * LAST UPDATE : 27.09.2003
  * NOTE        : Module prefix 'util'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -60,6 +60,9 @@ int util_get_file_size( char *filename );
 
 /* Convert underscores in a string to spaces */
 void util_under2spaces( char *str );
+
+/* Search for regexp */
+bool_t util_search_regexp( char *ptext, char *text );
 
 #endif
 

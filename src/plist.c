@@ -644,7 +644,7 @@ bool_t plist_search( plist_t *pl, char *str, int dir )
 			i = 0;
 
 		/* Search for specified string in song title */
-		found = util_search_str(str, pl->m_list[i]->m_title);
+		found = util_search_regexp(str, pl->m_list[i]->m_title);
 		if (found)
 			plist_move(pl, i, FALSE);
 	} 
