@@ -1,11 +1,11 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : editbox.c
  * PURPOSE     : SG MPFC. Edit box functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 17.11.2003
+ * LAST UPDATE : 14.01.2004
  * NOTE        : Module prefix 'ebox'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -170,7 +170,7 @@ void ebox_handle_key( wnd_t *wnd, dword data )
 /* Add a character to edit box */
 void ebox_add( editbox_t *box, char c )
 {
-	if (box->m_len >= box->m_max_len)
+	if (box->m_len >= box->m_max_len - 1)
 		return;
 	
 	memmove(&box->m_text[box->m_cursor + 1], 

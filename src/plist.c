@@ -123,12 +123,7 @@ bool_t plist_add( plist_t *pl, char *filename )
 	num = find_do(fname, "*", plist_find_handler, pl);
 
 	/* Set info */
-/*	for ( i = 0; i < pl->m_len; i ++ )
-		if (pl->m_list[i]->m_flags & SONG_SCHEDULE)
-		{
-			sat_push(pl, i);
-			pl->m_list[i]->m_flags &= (~SONG_SCHEDULE);
-		}*/
+	plist_flush_scheduled(pl);
 	
 	/* Store undo information */
 	if (player_store_undo && num)
@@ -225,8 +220,7 @@ int plist_add_song( plist_t *pl, char *filename, char *title, int len,
 
 	/* Schedule song for setting its info and length */
 	if (title == NULL)
-//		pl->m_list[where]->m_flags |= SONG_SCHEDULE;
-		sat_push(pl, where);
+		pl->m_list[where]->m_flags |= SONG_SCHEDULE;
 	return 1;
 } /* End of 'plist_add_song' function */
 
@@ -1141,6 +1135,19 @@ bool_t plist_is_obj( char *filename )
 	else
 		return FALSE;
 } /* End of 'plist_is_obj' function */
+
+/* Set info for all scheduled songs */
+void plist_flush_scheduled( plist_t *pl )
+{
+	int i;
+
+	for ( i = 0; i < pl->m_len; i ++ )
+		if (pl->m_list[i]->m_flags & SONG_SCHEDULE)
+		{
+			sat_push(pl, i);
+			pl->m_list[i]->m_flags &= (~SONG_SCHEDULE);
+		}
+} /* End of 'plist_flush_scheduled' function */
 
 /* End of 'plist.c' file */
 

@@ -1,12 +1,12 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : plist.h
  * PURPOSE     : SG MPFC. Interface for play list manipulation
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 14.11.2003
+ * LAST UPDATE : 7.01.2004
  * NOTE        : Module prefix 'plist'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -173,6 +173,9 @@ int plist_find_handler( char *name, void *data );
 
 /* Check if specified file name belongs to an object */
 bool_t plist_is_obj( char *filename );
+
+/* Set info for all scheduled songs */
+void plist_flush_scheduled( plist_t *pl );
 
 #endif
 
