@@ -7,52 +7,9 @@ MPFC \- Music Player For Console
 .SH DESCRIPTION
 \fIMPFC\fR is the Music Player For Console. It is used to play audio files
 in console text mode. 
-.SH OPTIONS
-MPFC options are variables that you may set to any values. If variable
-is not set it is assumed to be equal to "0". If variable exists (is declared),
-but has no value its value is assumed to be equal to "1" (e.g. you may
-write 'silent_mode=1' or simply 'silent_mode' - the result would be the same).
-You may set variables in three places: in file \fI~/.mpfcrc\fR, in file 
-\fI./.mpfcrc\fR or in command line (e.g. mpfc --silent_mode=1). They are read
-in the same order (so if you write "silent_mode" in \fI~/.mpfcrc\fR and 
-set this variable to "0" in command line, its value will be "0").
-Options supported now are:
-.TP
-\fBoutput_plugin\fR	
-The output plugin. Default is "oss".
-.TP
-\fBsilent_mode\fR
-Play silently (i.e. don't make any audio output). Default is "0".
-.TP
-\fBequalizer_off\fR
-Turn off equalizer. Default is "0".
-.TP
-\fBeq_preamp, eq_band<NUM>\fR
-Preamp and bands values for equalizer.
-.TP
-\fBenable_effect_<NAME>\fR
-Enable effect plugin <NAME>.
-.TP
-\fBmp3_quick_get_len\fR
-Get mp3 song length quickly but not very correctly (the result will
-be improper for files with variable bitrate; in other cases - more or less
-correct). Default value is "1".
-.TP
-\fBecho_surround_enable, echo_volume, echo_delay, echo_feedback\fR
-Variables for echo effect plugin. Volume and feedback are in percents,
-delay - in milliseconds. Initial values are: "0", "50", "500" and "50"
-respectively.
-.TP
-\fBlib_dir\fR
-Directory with plugins. Default is "/usr/local/lib/mpfc".
-.SH NOTE ON OBJECTS
-\fBObjects\fR represent objects which are not regular files (e.g. Audio-CD
-tracks). To add object type \fBA\fR and then object name in the following
-format: <plugin_name>[:obj_name]. For example, to add the whole
-Audio-CD name is \fBaudiocd\fR, to add radio station (using \fBradio\fR)
-plugin name is something like \fBradio:102\fR. If you whish to add an object
-from the command line you use something like \fBmpfc --obj audiocd\fR. Note
-that objects specification must be before regular file names.
+.br
+The complete documentation on MPFC is maintained in Texinfo format, so refer
+to it if you want to know more (type \fIinfo mpfc\fR). 
 .SH FILES
 .TP
 ~/.mpfcrc

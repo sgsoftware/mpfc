@@ -1,0 +1,763 @@
+\input texinfo @c -*-texinfo-*-
+@c %**start of header
+@setfilename mpfc.info
+@settitle MPFC 1.0
+@c %**end of header
+
+@copying
+This manual describes the SG Music Player For Linux Console, version 1.0.
+
+Copyright @copyright{} 2003 SG Software.
+@end copying
+
+@titlepage
+@title SG MPFC
+@subtitle Music Player For Linux Console
+@author Sergey E. Galanov
+
+@c The following two commands start the copyright page
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+
+@end titlepage
+
+@c Output the table of contents at the beginning
+@contents
+
+@ifinfo
+@node Top, Introduction, (dir), (dir)
+@top MPFC 1.0
+
+This manual documents version 1.0 of SG MPFC, media player for Linux console.
+
+Copyright @copyright{} 2003 SG Software
+
+@menu
+* Introduction::		
+* Getting Started::	
+* Using Variables::
+* Plugins::		
+* Copying::	
+@end menu
+@end ifinfo
+
+@node Introduction, Getting Started, Top, Top
+@chapter Introduction to MPFC
+
+MPFC is an abbrevation for Music Player For Console. It is a full-featured
+curses-based playlist-oriented player.
+
+MPFC supports a number of input file formats. This support is organised through
+input plugins model. It means that the formats list is expandable---you
+must simply add a new plugin. Also there are plugins for output and effects.
+
+To get a brief help on MPFC commands you may press @kbd{?} key in MPFC 
+main window.
+
+Turn to the following sections to learn about MPFC features in greater detail.
+
+Note that the commands that are given further are named by the keys you type
+to enter them but you may change these keys (@pxref{Key bindings}).
+
+@node Getting Started, Using Variables, Introduction, Top
+@chapter Getting started with MPFC
+
+@menu
+* Launching MPFC::
+* Moving around::
+* Playing::
+* Playlist management::
+* Other features::
+@end menu
+
+@node Launching MPFC, Moving around, Getting Started, Getting Started
+@section Launching MPFC
+To launch MPFC type:
+
+@example
+mpfc [options] [files]
+@end example
+
+Here [options]
+is a list of variables you set directly (@pxref{Using Variables}) and [files]
+is a list of files you want to play. For example, to play file song.mp3 type:
+
+@example
+mpfc file.mp3
+@end example
+
+Files list may be empty, this means
+you will either continue playing the previous play list (if the respective
+option is set), or start with an empty play list.
+
+To play an object (@pxref{Objects}) place @option{--obj} before its name. For example,
+to play an Audio-CD type:
+
+@example
+mpfc --obj audiocd
+@end example
+
+If you want to exit MPFC use command @kbd{q}.
+
+@node Moving around, Playing, Launching MPFC, Getting Started
+@section Moving around
+As soon as you have launched MPFC you will notice that the largest part of 
+the screen is occupied by the play list. This is a list of all songs you can
+play. Also you will notice a long line from left side of the screen to the
+right side that selects one of the songs. This is cursor. It is used to 
+select songs for various manipulations (e.g. playing them). Here are methods
+you can use to move cursor within playlist.
+
+@menu
+* Basic cursor movement operations::
+* Search::
+* Marks::
+@end menu
+
+@node Basic cursor movement operations, Search, Moving around, Moving around
+@subsection Basic cursor movement operations
+Basic operations are the following:
+
+@kbd{j} or @kbd{@key{Down}}: move cursor one line lower;
+
+@kbd{k} or @kbd{@key{Up}}: move cursor one line higher;
+
+@kbd{d} or @kbd{@key{PageDown}}: move cursor one screen lower;
+
+@kbd{u} or @kbd{@key{PageUp}}: move cursor one screen higher;
+
+@kbd{G}: move cursor to any specified line (see further);
+
+@kbd{C}: move cursor to the currently playing song.
+
+There is a feature with these commands. You may specify a repeat value before
+any of them (except for C of course) and it will result in repeating the
+command this number of times. For G command this value has a slightly different
+meaning---it is the number of line you want to move to (without repeat value
+@kbd{G} moves to the playlist end). 
+To specify this value simply print it before the
+command. As soon as you start entering digits, a prompt will appear and you
+will be able to correct your input or even cancel entering this value by 
+pressing ESC. For example, to move 5 lines down type: @kbd{5j}, and to 
+move to the 30-th line of playlist type: @kbd{30G}.
+
+@node Search, Marks, Basic cursor movement operations, Moving around
+@subsection Search
+You can move to a position in playlist also by searching by a string. There
+are two types of search: simple and advanced. Simple search is invoked by
+@kbd{/} command. You will be prompted for the string. When you enter a string
+MPFC will search for a song with title containing this string and move 
+cursor to the first match. 
+
+Advanced search is invoked by @kbd{\} command. It allows searching not only
+by the song title but also by other song information parameters 
+(@pxref{Song Info}), so you will be prompted for the search criteria and then
+for the string.
+
+After doing search you can move to the next or previous match by using
+commands @kbd{n} and @kbd{N} respectively.
+
+To make search case-insensitive set variable ``search-nocase'' 
+(0 by default).
+
+@node Marks,, Search, Moving around
+@subsection Marks
+What if you have a large playlist and move periodically between some places
+in its different parts? That's where marks are used.
+
+You can store cursor position in any of 26 marks by using command 
+@kbd{m<Letter>}, where <Letter> is a letter from a to z naming the mark. To 
+move to mark <Letter> command @kbd{`<Letter>} is used. Also there is a special
+mark---`. You can't set it directly but it always points to your last position
+so if you want to return to it type: @kbd{``}.
+
+@node Playing, Playlist management, Moving around, Getting Started
+@section Playing
+@menu
+* Play/pause/stop::
+* Play modes::
+* Boundaries::
+* Time back::
+* Volume and balance::
+* Equalizer::
+@end menu
+
+@node Play/pause/stop, Play modes, Playing, Playing
+@subsection Play/pause/stop
+There are four basic playing commands:
+
+@kbd{@key{RET}}: starts playing currently selected song;
+
+@kbd{x}: plays currently playing song from beginning (if it is playing now) or 
+resumes playing after a pause or a stop;
+
+@kbd{c}: pause/unpause;
+
+@kbd{v}: stops playing.
+
+Also you can jump to the next or previous songs. This is done by commands
+@kbd{b} (next) and @kbd{z} (previous).
+
+If you want to move within currently playing song use commands @kbd{<} and 
+@kbd{>} 
+for moving 10 seconds back or forth and command @kbd{gt} to move to any 
+specified position (these commands support repeat values, for @kbd{gt} its
+meaning is the same as for @kbd{G}, @pxref{Basic cursor movement operations}).
+
+@node Play modes, Boundaries, Play/pause/stop, Playing
+@subsection Play modes
+Normally after the song you specified to play finishes MPFC begins to play 
+the next song in playlist and so on until it reaches the playlist end when it
+stops. 
+
+This behaviour may be changed by setting any of two play modes: shuffle or 
+loop. In shuffle mode (@kbd{R} command) the next song to play is selected by
+random. In loop mode (@kbd{L} command) the play order is as in the normal mode
+but MPFC begins playing from the beginning when it reaches end. Also you may
+set these modes by variables ``shuffle-play'' and ``loop-play'' 
+(@pxref{Using Variables}).
+ 
+@node Boundaries, Time back, Play modes, Playing
+@subsection Boundaries
+Normally the beginning of playlist is the first song and the end is the last 
+one. But you can change them by setting boundaries. First select a playlist
+area in visual mode (@pxref{Visual mode}). Then you can use one of two commands:
+
+@kbd{ps}: sets the boundaries respectively to your selection;
+
+@kbd{p@key{RET}}: the same as previous but also begins playing the selection.
+
+To clear boundaries use command @kbd{pc}.
+
+@node Time back, Volume and balance, Boundaries, Playing
+@subsection Time back
+Time back is a feature in MPFC that helps you to return to the place in song
+where you have been the last time before jump (not that here manual jump is
+meant, e.g. with a @kbd{@key{RET}} command). To do it use command 
+@kbd{@key{BS}}.
+
+@node Volume and balance, Equalizer, Time back, Playing
+@subsection Volume and balance
+You can see current volume and balance in the top right corner of the screen
+as two slidebars (the upper is volume). To increase or decrease volume and 
+balance levels use @kbd{-} and @kbd{+} commands for volume and @kbd{[} and 
+@kbd{]} commands for balance.
+
+@node Equalizer,, Volume and balance, Playing
+@subsection Equalizer
+MPFC supports equalizer. To launch equalizer panel use command @kbd{e}. Here
+you are able to adjust equalizer band levels. To exit panel press @kbd{q} or
+@kbd{@key{ESC}}. To move between bands press @kbd{h} or @kbd{@key{Left}} and 
+@kbd{l} or @kbd{@key{Right}}, to change level press @kbd{j} or @kbd{@key{Down}}
+and @kbd{k} or @kbd{@key{Up}}.
+
+You are able also to load preset from a Winamp EQF file. To do this press
+@kbd{@key{p}} and enter file name.
+
+You can control equalizer parameters using variables. These variables are
+``eq-band1'', @dots{}, ``eq-band10'' and ``eq-preamp''.
+
+Note that equalizer may be disabled by setting ``equalizer-off'' variable.
+
+@node Playlist management, Other features, Playing, Getting Started
+@section Playlist management
+@menu
+* Visual mode::
+* Add/remove::
+* Save::
+* Sort::
+* Move::
+* Undo::
+* Song Info::
+@end menu
+
+@node Visual mode, Add/remove, Playlist management, Playlist management
+@subsection Visual mode
+Many commands (e.g. sort) may affect a group of songs. MPFC allows you to
+make continuous selections (starting from one song and ending with another).
+To make such a selection place cursor in one of the selection boundaries, then
+switch to the visual mode (by @kbd{V} command) and move cursor to another bound.
+You can use any of the cursor movement commands. After the selection is made 
+you can switch back to normal mode (by entering this command one more time).
+
+@node Add/remove, Save, Visual mode, Playlist management
+@subsection Add/remove
+There are three commands for add/remove purposes. To add song use @kbd{a} or 
+@kbd{A} command. The difference between them is that @kbd{a} adds a file (or
+directory) and @kbd{A} adds an object (@pxref{Objects}). After you enter any of
+these commands the edit box will appear where you are able to enter file or 
+object name. For files autocomplete is supported (by @kbd{@key{TAB}} key). 
+Note that MPFC allows you to play streaming audio. To do it place ``http://''
+in the beginning of file name.
+
+Remove command (@kbd{r}) removes the currently selected group of files.
+
+@node Save, Sort, Add/remove, Playlist management
+@subsection Save
+To save playlist use @kbd{s} command. You will be prompted for file name.
+It must end with ``.m3u'' or ``.pls'' extension, so you can save playlist
+in any of these two formats.
+
+@node Sort, Move, Save, Playlist management
+@subsection Sort
+To sort playlist use command @kbd{S}. First you will be asked whether to sort
+globally or not. If you choose global sorting the entire playlist will be
+sorted, otherwise---only the current selection. Then you specify the sort 
+criteria (by title, file name or path and file name) and the sorting is done.
+
+@node Move, Undo, Sort, Playlist management
+@subsection Move 
+You may move a part of playlist. To do this select this part and use one of
+the three movement commands:
+
+@kbd{J}: move selection one line down;
+
+@kbd{K}: move selection one line up;
+
+@kbd{M}: move selection to any specified poisition.
+
+Note that these commands support repeation value specification 
+(@pxref{Basic cursor movement operations}). For @kbd{M} command this value
+meaning is the same as for @kbd{G}.
+
+@node Undo, Song Info, Move, Playlist management
+@subsection Undo
+MPFC supports undo playlist management actions history. Undoable actions are
+the following: add/remove songs, sort and move playlist. To undo action use
+@kbd{U} command and to redo---@kbd{D} command.
+
+@node Song Info,, Undo, Playlist management
+@subsection Song Info
+Each song may have some information associated with it. This information
+include: song, artist and album names, year, track number, song genre and 
+comments. The song format must support setting these fields in order you
+can make advantage of them (e.g. for MP3 this information is written in its
+ID3 tag). 
+
+You can view and edit this information using song info editor dialog. To 
+call it place cursor to the respective song and use @kbd{i} command. The dialog
+will appear (if the format allows you). Then you will be able to change its
+contents by setting focus to the respective edit box (press @kbd{@key{TAB}}
+several times to reach it). If you want to save changes press @kbd{@key{RET}},
+otherwise press @kbd{@key{ESC}}.
+
+You may change songs title accordingly to their info. To do it you must change
+``title-format'' variable value (@pxref{Using Variables}). Its value may be any
+string including some format sequences:
+
+%p means artist name;
+
+%a means album name;
+
+%f means file name;
+
+%F means full file name (with path);
+
+%e means file extension;
+
+%t means song name;
+
+%n means track number;
+
+%y means song year;
+
+%g means song genre;
+
+%c means song comments.
+
+The default value is ``%p - %t'' that means that title contains artist and 
+song names divided by dash sign.
+
+Also there is a command that reloads all playlist songs information---@kbd{I}.
+
+@node Other features,, Playlist management, Getting Started
+@section Other features
+@menu
+* Command execution::
+* History::
+* Objects::
+@end menu
+
+@node Command execution, History, Other features, Other features
+@subsection Command execution
+You are able to execute an external command when you are in MPFC. To do this
+use @kbd{!} command. You will be prompted for the command. After you finish
+press @kbd{@key{RET}} to return to MPFC.
+
+@node History, Objects, Command execution, Other features
+@subsection History
+Some edit boxes when you do input support history so that you can restore
+any of the strings you have entered there before. To jump between these
+strings press @kbd{@key{Up}} for going back and @kbd{@key{Down}} for going 
+forth.
+
+@node Objects,, History, Other features
+@subsection Objects
+Some input plugins operate not with the real files but with ``virtual''
+files. These ``virtual'' files are called objects. For example, Audio CD 
+is such an object. To add object you should use not ``add file'' but
+``add object'' command. Note that one object may expand to many songs 
+(e.g. Audio CD expands to songs, each for one track).
+
+@node Using Variables, Plugins, Getting Started, Top
+@chapter Variables usage
+
+MPFC supports variables that allow you to control some of its options. Each
+variable has a value associated with it. This value is a string. If variable
+is not set its value is considered to be ``0''. Also you can simply ``set''
+variable so that its value becomes ``1''. These two values are often used
+when specifying a choice result. ``0'' means ``no'' and ``1'' means ``yes''.
+So when variable is not set, its value respects to ``no'' and when it is
+set---to ``yes''.
+
+@menu
+* Setting variables::
+* Colors::
+* Key bindings::
+@end menu
+
+@node Setting variables, Colors, Using Variables, Using Variables
+@section Setting variables
+You may set a variable in three different places.
+
+The first is MPFC configuration file (@file{~/.mpfcrc}). 
+In this file each variable
+is specified in its own line in the format: <variable>[=value], where
+``variable'' is variable name and ``value'' is variable value. You may skip
+the second part of this expression, then variable will be set to ``1''.
+``#'' in the line beginning starts a comment.
+Besides main configuration file you can use a local configuration file in 
+the current directory. Its name is also @file{.mpfcrc} but settings from it
+override the settings from the main file. Here is a short example of MFPC
+configuration file:
+
+@example
+# MPFC configuration file
+lib-dir=/usr/local/lib/mpfc
+output-plugin=oss
+play-from-stop
+@end example
+
+The second place where you can set variable is command line when you invoke
+MPFC (@pxref{Launching MPFC}). The format is the same with the configuration
+file but you must add prefix ``@verb{--}'' before each definition. 
+Here is an example analogous to the previous:
+
+@example
+mpfc --lib-dir=/usr/local/lib/mpfc --output-plugin=oss --play-from-stop list.m3u
+@end example
+
+The third place is inside running MPFC window using one of two variables 
+managers. First is called ``mini-manager'' and is invoked by @kbd{o} command.
+You enter variable name and value and it is set. Also there is an 
+advanced variables manager that is invoked by @kbd{O} command. When you
+execute this command a dialog will appear. In this dialog you can move through
+variables list, set value of each of them, create a new variable, save 
+variables list to the main configuration file and restore value of changed
+variable. Note that buttons are pressed by @kbd{@key{SPC}} key. To exit the
+manager press @kbd{@key{RET}} or @kbd{@key{ESC}}.
+
+@node Colors, Key bindings, Setting variables, Using Variables
+@section Colors
+You can completely change MPFC window elements colors. To do it use special
+variables starting with ``col-el-''. Here is a list of these variables:
+
+@itemize @bullet
+@item
+col-el-plist-title: common playlist song title;
+@item
+col-el-plist-title-cur: title of the currently playing song in playlist;
+@item
+col-el-plist-title-sel: title of a selected song in playlist;
+@item
+col-el-plist-title-cur-sel: title of a currently playing song that is selected;
+@item
+col-el-cur-title: title of the currently playing song in the top of the window;
+@item 
+col-el-cur-time: current time;
+@item
+col-el-plist-time: total time and other information in the bottom of the window;
+@item
+col-el-about: about label in the top of the window;
+@item
+col-el-slider: slider color;
+@item 
+col-el-play-modes: play modes labels;
+@item
+col-el-status: status bar (where messages appear);
+@item
+col-el-help-title: help window title;
+@item
+col-el-help-string: help window items;
+@item
+col-el-dlg-title: dialog box title;
+@item
+col-el-dlg-item-title: dialog box item title;
+@item
+col-el-dlg-item-content: dialog box item content;
+@item
+col-el-lbox-cur-focused: focused list box current selection;
+@item
+col-el-lbox-cur: unfocused list box current selection;
+@item
+col-el-btn-focused: focused button;
+@item
+col-el-btn: unfocused button;
+@item
+col-el-default: default
+@end itemize
+
+The format of variable value is the following: <color>[:background[:bold]]. 
+Color and background may be the following: black, red, green, yellow, blue,
+magenta, cyan and white. If color is not specified it is white. Also you can
+set modifier ``bold'', so foreground color becomes brighter.
+
+You can save groups of these settings as color schemes. Schemes are stored in
+directory @file{~/.mpfc/colors}. Each scheme is a file with syntax same with
+MPFC configuration file where these variables are set.
+
+@node Key bindings,, Colors, Using Variables
+@section Key bindings
+There are standard key bindings for every MPFC action but you can change these
+bindings. Bindings are controlled by special variables starting with ``kbind-''
+prefix. Here are these variables with their default values:
+
+@itemize
+@item
+kbind-quit: quit MPFC (q);
+@item
+kbind-move-down: move one line down (j or <Down>);
+@item
+kbind-move-up: move one line up (k or <Up>);
+@item
+kbind-screen-down: move one screen down (d or <PageDown>);
+@item
+kbind-screen-up: move one screen up (u or <PageUp>);
+@item
+kbind-move: move to any position (G);
+@item
+kbind-start-play: start playing (<Enter>);
+@item
+kbind-play: resume playing (x);
+@item
+kbind-pause: pause (c):
+@item
+kbind-stop: stop (v):
+@item
+kbind-next: go to the next song (b);
+@item
+kbind-prev: go to the previous song (z);
+@item
+kbind-time-fw: go forth inside the song (>);
+@item
+kbind-time-bw: go back inside the song (<);
+@item
+kbind-time-move: move inside the song (gt);
+@item
+kbind-vol-bw: decrease volume (-);
+@item
+kbind-vol-fw: increase volume (+);
+@item
+kbind-bal-bw: decrease balance ([);
+@item
+kbind-bal-fw: increase balance (]);
+@item
+kbind-info: song info editor (i);
+@item
+kbind-add: add file (a);
+@item
+kbind-add-obj: add object (A);
+@item
+kbind-rem: remove songs (r);
+@item
+kbind-save: save playlist (s);
+@item 
+kbind-sort: sort playlist (S);
+@item
+kbind-visual: set/unset visual mode (V);
+@item
+kbind-centrize: centrize view (C);
+@item
+kbind-search: search (/);
+@item
+kbind-next-match: go to the next search match (n);
+@item
+kbind-prev-match: go to the previous search match (N);
+@item
+kbind-help: lauch help window (?);
+@item
+kbind-equalizer: launch equalizer window (e);
+@item
+kbind-shuffle: set shuffle mode (R);
+@item
+kbind-loop: set loop mode (L);
+@item
+kbind-var-manager: launch variables manager (O);
+@item
+kbind-var-mini-manager: variables mini-manager (o);
+@item
+kbind-plist-down: move play list down (J);
+@item
+kbind-plist-up: move play list up (K);
+@item
+kbind-plist-move: move play list part to another place (M);
+@item
+kbind-undo: undo action (U);
+@item
+kbind-redo: redo action (D);
+@item
+kbind-reload-info: reload playlist songs information (I);
+@item
+kbind-set-play-bounds: set play boundaries (ps);
+@item
+kbind-clear-play-bounds: clear play boundaries (pc);
+@item
+kbind-play-bounds: set play boundaries and play (p<Enter>);
+@item
+kbind-exec: execute an external command (!);
+@item
+from ``kbind-marka'' to ``kbind-markz'': set respective mark (ma@dots{}mz);
+@item
+from ``kbind-goa'' to ``kbind-goz'': go to the respective mark (`a@dots{}`z);
+@item
+kbind-goback: go back (@``);
+@item
+kbind-time-back: time back (<Backspace>);
+@item
+kbind-reload-plugins: reload plugins (P).
+@end itemize
+
+Values for these variables contain keys specifications divided by ``;'' (if
+you specify several bindings). Key may be a usual character or one of the
+following sequences: <Up>, <Down>, <Right>, <Left>, <PageUp>, <PageDn>, <Home>,
+<End>, <BS> (backspace), <Del>, <Ret> and <Tab> (including brackets). If you
+want to specify one of the special symbols (e.g. ``<'') place ``\'' before 
+such symbol.
+
+You can save groups of these settings as key binding schemes. 
+Schemes are stored in
+directory @file{~/.mpfc/kbinds}. Each scheme is a file with syntax same with
+MPFC configuration file where these variables are set.
+
+@node Plugins, Copying, Using Variables, Top
+@chapter Plugins usage
+
+Plugins are used to expand MPFC functionality. There are three kinds of
+plugins: input, output and effect. Input plugins are used to play files of
+some kind of format. Output plugins are used to work with sound output
+devices. Effect plugins are used to add effects to playing.
+
+Plugins are stored commonly in @file{/usr/lib/mpfc/} or 
+@file{/usr/local/lib/mpfc}.
+There are three directories for each of these plugins types: @file{input},
+@file{output} and @file{effect}. Each plugin is a shared library (.so file). To
+install plugin simply copy it to the respective directory.
+
+Here these types are described in a greater detail and also some standard
+plugins are considered.
+
+@menu
+* Input::
+* Output::
+* Effect::
+@end menu
+
+@node Input, Output, Plugins, Plugins
+@section Input plugins
+@menu
+* Common formats::
+* Audio CD::
+* Radio::
+@end menu
+
+@node Common formats, Audio CD, Input, Input
+@subsection Common formats
+MPFC has three built-in plugins for common formats: MP3, Ogg Vorbis and WAV.
+These plugins have nothing special. The only aspect to note is connected 
+with MP3 plugin. 
+
+There are two methods to calculate MP3 song length: quick 
+and correct. In most cases quick method works correctly but for songs with
+variable bitrate their length would be improper. Correct method calculates
+all songs length absolutely correctly but it is rather long. It is quick
+method that is turned on by default. To change this set variable
+``mp3-quick-get-len'' to ``0''.
+
+@node Audio CD, Radio, Common formats, Input
+@subsection Audio CD
+Audio CD plugin supports Audio CDs. This support is done through objects
+(@pxref{Objects}). To add a CD contents to playlist add object named 
+``audiocd''. The object name part has no meaning for this plugin.
+
+Song info for Audio CD is supported through CDDB. If you want to obtain
+this information you must be connected to the Internet. After MPFC gets this
+information it stores it on your local machine and further loads it from this
+machine. Alternatively you may specify info by your own and store it. CDDB
+submission is not supported yet. Note that to use info for Audio CD you must
+have @file{cddb} directory in your @file{~/.mpfc}.
+
+@node Radio,, Audio CD, Input
+@subsection Radio
+MPFC has one special plugin for listening to radio. Note that to use it you
+must have radio card installed as a Video4Linux device. The name part of 
+the object name is the radio station frequency (in MHz). So full object 
+name has the following format: ``radio:<freq>'' (e.g. ``radio:91.5''). 
+
+@node Output, Effect, Input, Plugins
+@section Output plugins
+There may be only one active output plugin at the time. This name is set
+using variable ``output-plugin'' where the plugin name is stored (by default
+``oss'').
+
+Here is description for standard MPFC plugins.
+
+@menu
+* OSS::
+* Disk Writer::
+@end menu
+
+@node OSS, Disk Writer, Output, Output
+@subsection OSS
+OSS is a standard output plugin that you should use to listen music.
+
+@node Disk Writer,, OSS, Output
+@subsection Disk Writer
+Disk Writer plugin is used to save the audio output to disk. Each song that 
+you play is stored in a WAV file. The name of this file is same with the file
+name of the song you play and path is read from ``disk-writer-path'' variable.
+
+Note that this plugin is usable only with songs that actually interact with
+the output plugin, so you won't be able to record songs of such plugins 
+as ``Audio CD'' or ``Radio''.
+
+@node Effect,, Output, Plugins
+@section Effect plugins
+To enable effect plugin ``plugin'' set variable ``enable-effect-plugin''.
+
+@menu
+* Echo::
+@end menu
+
+@node Echo,, Effect, Effect
+@subsection Echo effect plugin
+MPFC includes one effect plugin---plugin producing echo. Its behaviour is
+controlled by four variables:
+
+@itemize 
+@item
+echo-delay: echo delay in milliseconds (0@dots{}1000), by default 500;
+@item
+echo-volume: echo volume in percents, by default 50;
+@item
+echo-feedback: echo feedback in percents, by default 50;
+@item
+echo-surround-enable: flag of whether surround effect is enables, by default 0.
+@end itemize
+
+@node Copying,, Plugins, Top
+@chapter Copying information
+MPFC is licensed under GNU GPL license. To read it view @file{COPYING} file in
+MPFC distribution.
+
+@bye
