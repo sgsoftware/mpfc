@@ -5,7 +5,7 @@
 /* FILE NAME   : help_screen.c
  * PURPOSE     : SG MPFC. Help screen functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 18.08.2004
+ * LAST UPDATE : 12.09.2004
  * NOTE        : Module prefix 'help'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -228,7 +228,19 @@ void help_init_player( help_screen_t *help )
 	help_add(help, _("`<Letter>:\t Go to mark <Letter>"));
 	help_add(help, _("``:\t\t Go to previous position"));
 	help_add(help, _("<Backspace>:\t Go to previous time"));
+	help_add(help, "");
+	help_add(help, _("Window library bindings"));
 	help_add(help, _("^l:\t\t Redisplay screen"));
+	help_add(help, _("<Alt>-,:\t Set focus to previous window"));
+	help_add(help, _("<Alt>-.:\t Set focus to next window"));
+	help_add(help, _("<Alt>-c:\t Close window"));
+	help_add(help, _("<Alt>-m:\t Maximize/minimize window"));
+	help_add(help, _("<Alt>-p:\t Change window position"));
+	help_add(help, _("<Alt>-s:\t Change window size"));
+	help_add(help, _("<Alt>-<letter>:\t Set focus to a dialog item marked by"
+				" letter"));
+	help_add(help, _("<Ctrl>-g:\t Close dialog window"));
+	help_add(help, "");
 	help_add(help, _("?:\t\t This help screen"));
 } /* End of 'help_init_player' function */
 

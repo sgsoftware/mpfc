@@ -309,7 +309,7 @@ wnd_t *player_wnd_new( wnd_t *parent )
 	wnd->m_class = player_wnd_class_init(WND_GLOBAL(parent));
 
 	/* Initialize the window */
-	if (!wnd_construct(wnd, parent, "Play list", 0, 0, 10, 10,
+	if (!wnd_construct(wnd, parent, _("Play list"), 0, 0, 10, 10,
 				WND_FLAG_MAXIMIZED))
 	{
 		free(wnd);
@@ -1217,25 +1217,30 @@ wnd_msg_retcode_t player_on_display( wnd_t *wnd )
 	wnd_move(wnd, 0, 0, 0);
 	if (player_plist->m_cur_song == -1)
 	{
+		char *shuffle_str, *loop_str;
+
 		/* Print about */
 		wnd_move(wnd, 0, 0, 0);
 		wnd_apply_style(wnd, "about-style");
 		wnd_printf(wnd, 0, 0, _("SG Software Media Player For Console"));
 		
 		/* Print shuffle mode */
+		shuffle_str = _("Shuffle");
+		loop_str = _("Loop");
 		if (cfg_get_var_int(cfg_list, "shuffle-play"))
 		{
-			wnd_move(wnd, 0, WND_WIDTH(wnd) - 13, 0);
+			wnd_move(wnd, 0, WND_WIDTH(wnd) - strlen(shuffle_str) - 
+					strlen(loop_str) - 2, 0);
 			wnd_apply_style(wnd, "play-modes-style");
-			wnd_printf(wnd, 0, 0, "Shuffle");
+			wnd_printf(wnd, 0, 0, shuffle_str);
 		}
 		
 		/* Print loop mode */
 		if (cfg_get_var_int(cfg_list, "loop-play"))
 		{
-			wnd_move(wnd, 0, WND_WIDTH(wnd) - 5, 0);
+			wnd_move(wnd, 0, WND_WIDTH(wnd) - strlen(loop_str) - 1, 0);
 			wnd_apply_style(wnd, "play-modes-style");
-			wnd_printf(wnd, 0, 0, "Loop");
+			wnd_printf(wnd, 0, 0, loop_str);
 		}
 
 		/* Print version */
@@ -1247,6 +1252,7 @@ wnd_msg_retcode_t player_on_display( wnd_t *wnd )
 	{
 		int t;
 		bool_t show_rem;
+		char *shuffle_str, *loop_str;
 		
 		/* Print current song title */
 		s = player_plist->m_list[player_plist->m_cur_song];
@@ -1256,19 +1262,22 @@ wnd_msg_retcode_t player_on_display( wnd_t *wnd )
 				STR_TO_CPTR(s->m_title));
 
 		/* Print shuffle mode */
+		shuffle_str = _("Shuffle");
+		loop_str = _("Loop");
 		if (cfg_get_var_int(cfg_list, "shuffle-play"))
 		{
-			wnd_move(wnd, 0, WND_WIDTH(wnd) - 13, 0);
+			wnd_move(wnd, 0, WND_WIDTH(wnd) - strlen(shuffle_str) - 
+					strlen(loop_str) - 2, 0);
 			wnd_apply_style(wnd, "play-modes-style");
-			wnd_printf(wnd, 0, 0, "Shuffle");
+			wnd_printf(wnd, 0, 0, shuffle_str);
 		}
-
+		
 		/* Print loop mode */
 		if (cfg_get_var_int(cfg_list, "loop-play"))
 		{
-			wnd_move(wnd, 0, WND_WIDTH(wnd) - 5, 0);
+			wnd_move(wnd, 0, WND_WIDTH(wnd) - strlen(loop_str) - 1, 0);
 			wnd_apply_style(wnd, "play-modes-style");
-			wnd_printf(wnd, 0, 0, "Loop");
+			wnd_printf(wnd, 0, 0, loop_str);
 		}
 
 		/* Print current time */
@@ -1775,8 +1784,8 @@ void player_add_dialog( void )
 	dialog_t *dlg;
 	filebox_t *eb;
 
-	dlg = dialog_new(wnd_root, "Add songs");
-	eb = filebox_new_with_label(WND_OBJ(dlg->m_vbox), "File &name: ", 
+	dlg = dialog_new(wnd_root, _("Add songs"));
+	eb = filebox_new_with_label(WND_OBJ(dlg->m_vbox), _("File &name: "), 
 			"name", "", 'n', 50);
 	EDITBOX_OBJ(eb)->m_history = player_hist_lists[PLAYER_HIST_LIST_ADD];
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_add);
@@ -1789,8 +1798,8 @@ void player_add_obj_dialog( void )
 	dialog_t *dlg;
 	editbox_t *eb;
 
-	dlg = dialog_new(wnd_root, "Add object");
-	eb = editbox_new_with_label(WND_OBJ(dlg->m_vbox), "Object &name: ",
+	dlg = dialog_new(wnd_root, _("Add object"));
+	eb = editbox_new_with_label(WND_OBJ(dlg->m_vbox), _("Object &name: "),
 			"name", "", 'n', 50);
 	eb->m_history = player_hist_lists[PLAYER_HIST_LIST_ADD_OBJ];
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_add_obj);
@@ -1803,8 +1812,8 @@ void player_save_dialog( void )
 	dialog_t *dlg;
 	filebox_t *eb;
 
-	dlg = dialog_new(wnd_root, "Save play list");
-	eb = filebox_new_with_label(WND_OBJ(dlg->m_vbox), "File &name: ", 
+	dlg = dialog_new(wnd_root, _("Save play list"));
+	eb = filebox_new_with_label(WND_OBJ(dlg->m_vbox), _("File &name: "), 
 			"name", "", 'n', 50);
 	EDITBOX_OBJ(eb)->m_history = player_hist_lists[PLAYER_HIST_LIST_SAVE];
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_save);
@@ -1817,8 +1826,8 @@ void player_exec_dialog( void )
 	dialog_t *dlg;
 	filebox_t *eb;
 
-	dlg = dialog_new(wnd_root, "Execute external command");
-	eb = filebox_new_with_label(WND_OBJ(dlg->m_vbox), "C&ommand: ", 
+	dlg = dialog_new(wnd_root, _("Execute external command"));
+	eb = filebox_new_with_label(WND_OBJ(dlg->m_vbox), _("C&ommand: "), 
 			"command", "", 'o', 50);
 	EDITBOX_OBJ(eb)->m_history = player_hist_lists[PLAYER_HIST_LIST_EXEC];
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_exec);
@@ -1831,13 +1840,13 @@ void player_sort_dialog( void )
 	dialog_t *dlg;
 	vbox_t *vbox;
 
-	dlg = dialog_new(wnd_root, "Sort play list");
-	vbox = vbox_new(WND_OBJ(dlg->m_vbox), "Sort by", 0);
-	radio_new(WND_OBJ(vbox), "&Title", "title", 't', TRUE);
-	radio_new(WND_OBJ(vbox), "&File name", "file", 'f', FALSE);
-	radio_new(WND_OBJ(vbox), "P&ath and file name", "path", 'a', FALSE);
-	radio_new(WND_OBJ(vbox), "T&rack", "track", 'r', FALSE);
-	checkbox_new(WND_OBJ(dlg->m_vbox), "&Only selected area", 
+	dlg = dialog_new(wnd_root, _("Sort play list"));
+	vbox = vbox_new(WND_OBJ(dlg->m_vbox), _("Sort by"), 0);
+	radio_new(WND_OBJ(vbox), _("&Title"), "title", 't', TRUE);
+	radio_new(WND_OBJ(vbox), _("&File name"), "file", 'f', FALSE);
+	radio_new(WND_OBJ(vbox), _("P&ath and file name"), "path", 'a', FALSE);
+	radio_new(WND_OBJ(vbox), _("T&rack"), "track", 'r', FALSE);
+	checkbox_new(WND_OBJ(dlg->m_vbox), _("&Only selected area"), 
 			"only_sel", 'o', FALSE);
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_sort);
 	dialog_arrange_children(dlg);
@@ -1866,22 +1875,22 @@ void player_info_dialog( void )
 	dlg = dialog_new(wnd_root, "");
 	hbox = hbox_new(WND_OBJ(dlg->m_vbox), NULL, 1);
 	vbox = WND_OBJ(vbox_new(WND_OBJ(hbox), NULL, 0));
-	editbox_new_with_label(vbox, "&Name: ", "name", "", 'n', 
+	editbox_new_with_label(vbox, _("&Name: "), "name", "", 'n', 
 			PLAYER_EB_WIDTH);
-	editbox_new_with_label(vbox, "&Artist: ", "artist", "", 'a', 
+	editbox_new_with_label(vbox, _("&Artist: "), "artist", "", 'a', 
 			PLAYER_EB_WIDTH);
-	editbox_new_with_label(vbox, "A&lbum: ", "album", "", 'l',
+	editbox_new_with_label(vbox, _("A&lbum: "), "album", "", 'l',
 			PLAYER_EB_WIDTH);
-	editbox_new_with_label(vbox, "&Year: ", "year", "", 'y',
+	editbox_new_with_label(vbox, _("&Year: "), "year", "", 'y',
 			PLAYER_EB_WIDTH);
-	editbox_new_with_label(vbox, "&Track No: ", "track", "", 't',
+	editbox_new_with_label(vbox, _("&Track No: "), "track", "", 't',
 			PLAYER_EB_WIDTH);
-	editbox_new_with_label(vbox, "C&omments: ", "comments", "", 'o',
+	editbox_new_with_label(vbox, _("C&omments: "), "comments", "", 'o',
 			PLAYER_EB_WIDTH);
-	combo_new_with_label(vbox, "&Genre: ", "genre", "", 'g',
+	combo_new_with_label(vbox, _("&Genre: "), "genre", "", 'g',
 			PLAYER_EB_WIDTH, 10);
 	label_new(WND_OBJ(hbox), "", "own_data", LABEL_NOBOLD);
-	reload = button_new(WND_OBJ(dlg->m_hbox), "&Reload info", "reload", 'r');
+	reload = button_new(WND_OBJ(dlg->m_hbox), _("&Reload info"), "reload", 'r');
 
 	/* Fill items with values */
 	if (!player_info_dialog_fill(dlg, TRUE))
@@ -1944,7 +1953,7 @@ bool_t player_info_dialog_fill( dialog_t *dlg, bool_t first_call )
 		if (start != end)
 		{
 			checkbox_t *cb = checkbox_new(WND_OBJ(dlg->m_vbox), 
-					"Write info in &all the selected songs",
+					_("Write info in &all the selected songs"),
 					"write_in_all", 'a', TRUE);
 			wnd_msg_add_handler(WND_OBJ(cb), "clicked", 
 					player_on_info_cb_clicked);
@@ -2095,8 +2104,8 @@ void player_search_dialog( void )
 	dialog_t *dlg;
 	editbox_t *eb;
 
-	dlg = dialog_new(wnd_root, "Search");
-	eb = editbox_new_with_label(WND_OBJ(dlg->m_vbox), "S&tring: ", 
+	dlg = dialog_new(wnd_root, _("Search"));
+	eb = editbox_new_with_label(WND_OBJ(dlg->m_vbox), _("S&tring: "), 
 			"string", "", 't', PLAYER_EB_WIDTH);
 	eb->m_history = player_hist_lists[PLAYER_HIST_LIST_SEARCH];
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_search);
@@ -2109,11 +2118,11 @@ void player_var_mini_manager( void )
 	dialog_t *dlg;
 	editbox_t *eb;
 
-	dlg = dialog_new(wnd_root, "Mini variables manager");
-	eb = editbox_new_with_label(WND_OBJ(dlg->m_vbox), "&Name: ",
+	dlg = dialog_new(wnd_root, _("Mini variables manager"));
+	eb = editbox_new_with_label(WND_OBJ(dlg->m_vbox), _("&Name: "),
 			"name", "", 'n', PLAYER_EB_WIDTH);
 	eb->m_history = player_hist_lists[PLAYER_HIST_LIST_VAR_NAME];
-	eb = editbox_new_with_label(WND_OBJ(dlg->m_vbox), "&Value: ",
+	eb = editbox_new_with_label(WND_OBJ(dlg->m_vbox), _("&Value: "),
 			"value", "", 'v', PLAYER_EB_WIDTH);
 	eb->m_history = player_hist_lists[PLAYER_HIST_LIST_VAR_VAL];
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_mini_var);
@@ -2127,19 +2136,19 @@ void player_advanced_search_dialog( void )
 	editbox_t *eb;
 	vbox_t *vbox;
 
-	dlg = dialog_new(wnd_root, "Advanced search");
-	eb = editbox_new_with_label(WND_OBJ(dlg->m_vbox), "S&tring: ",
+	dlg = dialog_new(wnd_root, _("Advanced search"));
+	eb = editbox_new_with_label(WND_OBJ(dlg->m_vbox), _("S&tring: "),
 			"string", "", 't', PLAYER_EB_WIDTH);
 	eb->m_history = player_hist_lists[PLAYER_HIST_LIST_SEARCH];
-	vbox = vbox_new(WND_OBJ(dlg->m_vbox), "Search in", 0);
-	radio_new(WND_OBJ(vbox), "&Title", "title", 't', TRUE);
-	radio_new(WND_OBJ(vbox), "&Name", "name", 'n', FALSE);
-	radio_new(WND_OBJ(vbox), "&Artist", "artist", 'a', FALSE);
-	radio_new(WND_OBJ(vbox), "A&lbum", "album", 'l', FALSE);
-	radio_new(WND_OBJ(vbox), "&Year", "year", 'y', FALSE);
-	radio_new(WND_OBJ(vbox), "&Genre", "genre", 'g', FALSE);
-	radio_new(WND_OBJ(vbox), "T&rack", "track", 'r', FALSE);
-	radio_new(WND_OBJ(vbox), "C&omment", "comment", 'o', FALSE);
+	vbox = vbox_new(WND_OBJ(dlg->m_vbox), _("Search in"), 0);
+	radio_new(WND_OBJ(vbox), _("&Title"), "title", 't', TRUE);
+	radio_new(WND_OBJ(vbox), _("&Name"), "name", 'n', FALSE);
+	radio_new(WND_OBJ(vbox), _("&Artist"), "artist", 'a', FALSE);
+	radio_new(WND_OBJ(vbox), _("A&lbum"), "album", 'l', FALSE);
+	radio_new(WND_OBJ(vbox), _("&Year"), "year", 'y', FALSE);
+	radio_new(WND_OBJ(vbox), _("&Genre"), "genre", 'g', FALSE);
+	radio_new(WND_OBJ(vbox), _("T&rack"), "track", 'r', FALSE);
+	radio_new(WND_OBJ(vbox), _("C&omment"), "comment", 'o', FALSE);
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_adv_search);
 	dialog_arrange_children(dlg);
 } /* End of 'player_advanced_search_dialog' function */
@@ -2158,8 +2167,8 @@ void player_info_reload_dialog( void )
 {
 	dialog_t *dlg;
 
-	dlg = dialog_new(wnd_root, "Reload info");
-	checkbox_new(WND_OBJ(dlg->m_vbox), "&Only in selected area", 
+	dlg = dialog_new(wnd_root, _("Reload info"));
+	checkbox_new(WND_OBJ(dlg->m_vbox), _("&Only in selected area"), 
 			"only_sel", 'o', FALSE);
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_info_reload);
 	dialog_arrange_children(dlg);
@@ -2174,9 +2183,9 @@ void player_repval_dialog( int dig )
 	char text[2];
 	assert(dig >= 0 && dig <= 9);
 
-	dlg = dialog_new(wnd_root, "Repeat value");
+	dlg = dialog_new(wnd_root, _("Repeat value"));
 	hbox = hbox_new(WND_OBJ(dlg->m_vbox), NULL, 0);
-	label_new(WND_OBJ(hbox), "Enter count &value for the next command: ",
+	label_new(WND_OBJ(hbox), _("Enter count &value for the next command: "),
 			NULL, 0);
 	text[0] = dig + '0';
 	text[1] = 0;
@@ -2194,11 +2203,11 @@ void player_test_dialog( void )
 	vbox_t *vbox;
 	button_t *btn;
 
-	dlg = dialog_new(wnd_root, "Run/stop test");
-	vbox = vbox_new(WND_OBJ(dlg->m_vbox), "Tests", 0);
-	radio_new(WND_OBJ(vbox), "Test &1. Window library perfomance", "1", '1', 
+	dlg = dialog_new(wnd_root, _("Run/stop test"));
+	vbox = vbox_new(WND_OBJ(dlg->m_vbox), _("Tests"), 0);
+	radio_new(WND_OBJ(vbox), _("Test &1. Window library perfomance"), "1", '1', 
 			TRUE);
-	btn = button_new(WND_OBJ(dlg->m_hbox), "&Stop job", "stop", 's');
+	btn = button_new(WND_OBJ(dlg->m_hbox), _("&Stop job"), "stop", 's');
 	wnd_msg_add_handler(WND_OBJ(btn), "clicked", player_on_test_stop);
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_test);
 	dialog_arrange_children(dlg);
@@ -2245,7 +2254,7 @@ wnd_msg_retcode_t player_on_exec( wnd_t *wnd )
 {
 	int fd;
 	editbox_t *eb = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "command"));
-	char text[] = "\n\033[0;32;40mPress enter to continue";
+	char *text = _("\n\033[0;32;40mPress enter to continue");
 	assert(eb);
 
 	/* Close curses for a while */
@@ -2256,7 +2265,7 @@ wnd_msg_retcode_t player_on_exec( wnd_t *wnd )
 
 	/* Display text (mere printf doesn't work) */
 	fd = open("/dev/tty", O_WRONLY);
-	write(fd, text, sizeof(text));
+	write(fd, text, strlen(text));
 	close(fd);
 	getchar();
 

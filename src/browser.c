@@ -96,7 +96,7 @@ bool_t fb_construct( browser_t *fb, wnd_t *parent, char *dir )
 	wnd_t *wnd = (wnd_t *)fb;
 
 	/* Initialize window part */
-	if (!wnd_construct(wnd, parent, "File browser", 0, 0, 0, 0, 
+	if (!wnd_construct(wnd, parent, _("File browser"), 0, 0, 0, 0, 
 				WND_FLAG_FULL_BORDER | WND_FLAG_MAXIMIZED))
 		return FALSE;
 
@@ -181,7 +181,7 @@ wnd_msg_retcode_t fb_on_display( wnd_t *wnd )
 	{
 		wnd_move(wnd, 0, 0, WND_HEIGHT(wnd) - 1);
 		wnd_apply_style(wnd, "search-prompt-style");
-		wnd_printf(wnd, 0, 0, "Enter name you want to search: ");
+		wnd_printf(wnd, 0, 0, _("Enter name you want to search: "));
 		wnd_apply_style(wnd, "search-string-style");
 		wnd_printf(wnd, 0, 0, "%s", fb->m_search_str);
 	}
@@ -628,10 +628,10 @@ void fb_select_pattern_dialog( browser_t *fb, bool_t sel )
 	dialog_t *dlg;
 	hbox_t *hbox;
 	
-	dlg = dialog_new(WND_OBJ(fb), sel ? "Select files matching pattern" :
-			"Deselect files matching pattern");
+	dlg = dialog_new(WND_OBJ(fb), sel ? _("Select files matching pattern") :
+			_("Deselect files matching pattern"));
 	cfg_set_var_int(WND_OBJ(dlg)->m_cfg_list, "select", sel);
-	editbox_new_with_label(WND_OBJ(dlg->m_vbox), "P&attern: ", 
+	editbox_new_with_label(WND_OBJ(dlg->m_vbox), _("P&attern: "), 
 			"pattern", "*", 'a', 50);
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", fb_on_sel_pattern);
 	dialog_arrange_children(dlg);

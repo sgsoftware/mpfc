@@ -92,9 +92,9 @@ bool_t dialog_construct( dialog_t *dlg, wnd_t *parent, char *title )
 	DLGITEM_FLAGS(dlg->m_hbox) |= DLGITEM_PACK_END;
 
 	/* Create OK and Cancel buttons */
-	ok_btn = button_new(WND_OBJ(dlg->m_hbox), "OK", "", 0);
+	ok_btn = button_new(WND_OBJ(dlg->m_hbox), _("OK"), "", 0);
 	wnd_msg_add_handler(WND_OBJ(ok_btn), "clicked", dialog_ok_on_clicked);
-	cancel_btn = button_new(WND_OBJ(dlg->m_hbox), "Cancel", "", 0);
+	cancel_btn = button_new(WND_OBJ(dlg->m_hbox), _("Cancel"), "", 0);
 	wnd_msg_add_handler(WND_OBJ(cancel_btn), "clicked", 
 			dialog_cancel_on_clicked);
 	return TRUE;

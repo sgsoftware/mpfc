@@ -663,7 +663,7 @@ void wnd_display_wnd_bar( wnd_t *wnd_root )
 	/* Print items for top-level windows */
 	if (wnd_root->m_child == NULL)
 	{
-		wnd_printf(wnd_root, WND_PRINT_NONCLIENT, 0, "No children\n");
+		wnd_printf(wnd_root, WND_PRINT_NONCLIENT, 0, _("No children\n"));
 	}
 	else
 	{
