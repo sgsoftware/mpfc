@@ -35,7 +35,6 @@
 #include "types.h"
 #include "file.h"
 #include "genre_list.h"
-#include "getlen.h"
 #include "inp.h"
 #include "mp3.h"
 #include "myid3.h"
@@ -85,6 +84,9 @@ static genre_list_t *mp3_glist = NULL;
 /* Current song length */
 static int mp3_len = 0;
 
+/* Current song number of frames */
+static int mp3_total_num_frames = 0;
+
 /* Multipliers for equalizer */
 static mad_fixed_t mp3_eq_mul[32];
 
@@ -103,11 +105,14 @@ struct mad_header mp3_head;
 /* Message printer */
 void (*mp3_print_msg)( char *fmt, ... );
 
+/* Get song information */
+static song_info_t *mp3_read_info( char *filename, int *len, int *nf );
+	
 /* Start play function */
 bool_t mp3_start( char *filename )
 {
 	/* Remember tag */
-	mp3_cur_info = mp3_get_info(filename, &mp3_len);
+	mp3_cur_info = mp3_read_info(filename, &mp3_len, &mp3_total_num_frames);
 
 	/* Open file */
 	mp3_fd = file_open(filename, "rb", mp3_print_msg);
@@ -182,7 +187,7 @@ void mp3_get_formats( char *extensions, char *content_type )
 } /* End of 'mp3_get_formats' function */
 
 /* Correct though long version of get_len function */
-static int mp3_get_len_correct( char *filename )
+static int mp3_get_len_correct( char *filename, int *num_frames )
 {
 	struct mad_stream stream;
 	struct mad_header header;
@@ -194,7 +199,10 @@ static int mp3_get_len_correct( char *filename )
 
 	/* Check if we want to get current song length */
 	if (!strcmp(filename, mp3_file_name))
+	{
+		*num_frames = mp3_total_num_frames;
 		return mp3_len;
+	}
 	
 	/* Open file */
 	fd = file_open(filename, "rb", mp3_print_msg);
@@ -207,7 +215,7 @@ static int mp3_get_len_correct( char *filename )
 	timer = mad_timer_zero;
 
 	/* Scan file */
-	for ( ;; )
+	for ( *num_frames = 0;; )
 	{
 		/* Read data */
 		if (buflen < sizeof(buffer))
@@ -224,10 +232,12 @@ static int mp3_get_len_correct( char *filename )
 		mad_stream_buffer(&stream, buffer, buflen);
 
 		/* Decode frame header */
-		mad_header_decode(&header, &stream);
-
-		/* Increase length */
-		mad_timer_add(&timer, header.duration);
+		if (mad_header_decode(&header, &stream) >= 0)
+		{
+			/* Gather statistics */
+			mad_timer_add(&timer, header.duration);
+			(*num_frames) ++;
+		}
 
 		/* Move rest data (not decoded) to buffer start */
 		memmove(buffer, stream.next_frame, &buffer[buflen] - stream.next_frame);
@@ -244,92 +254,6 @@ static int mp3_get_len_correct( char *filename )
 	/* Return */
 	return mad_timer_count(timer, MAD_UNITS_SECONDS);
 } /* End of 'mp3_get_len_correct' function */
-
-/* Quick though not very correct version of get_len function */
-static int mp3_get_len_quick( char *filename )
-{
-	struct mad_stream stream;
-	struct mad_header header;
-	unsigned char buffer[8192];
-	unsigned int buflen = 0, file_size = 0, bitrate = 0;
-	file_t *fd;
-	int i = 0;
-
-	/* Check if we want to get current song length */
-	if (!strcmp(filename, mp3_file_name))
-		return mp3_len;
-	
-	/* Open file */
-	fd = file_open(filename, "rb", mp3_print_msg);
-	if (fd == NULL)
-		return 0;
-
-	/* Initialize our structures */
-	mad_stream_init(&stream);
-	mad_header_init(&header);
-
-	/* Find first frame with non-zero bitrate */
-	for ( ;; )
-	{
-		/* Read data */
-		if (buflen < sizeof(buffer))
-		{
-			dword bytes;
-			
-			bytes = file_read(buffer + buflen, 1, sizeof(buffer) - buflen, fd);
-			if (bytes <= 0)
-				break;
-			buflen += bytes;
-		}
-
-		/* Pipe data to MAD stream */
-		mad_stream_buffer(&stream, buffer, buflen);
-
-		/* Decode frame header */
-		mad_header_decode(&header, &stream);
-
-		/* Check bitrate */
-		if (header.bitrate)
-		{
-			bitrate = header.bitrate;
-			break;
-		}
-
-		/* Move rest data (not decoded) to buffer start */
-		memmove(buffer, stream.next_frame, &buffer[buflen] - stream.next_frame);
-		buflen -= (stream.next_frame - &buffer[0]);
-	} 
-
-	/* Finish process */
-	mad_header_finish(&header);
-	mad_stream_finish(&stream);
-
-	/* Get total file size */
-	file_seek(fd, 0, SEEK_END);
-	file_size = file_tell(fd);
-
-	/* Close file */
-	file_close(fd);
-
-	/* Calculate song length */
-	return (bitrate ? ((float)file_size / bitrate) * 8 : 0);
-} /* End of 'mp3_get_len_quick' function */
-
-#if 0
-/* Get length */
-int mp3_get_len( char *filename )
-{
-	/* Supported only for regular files */
-	if (file_get_type(filename) != FILE_TYPE_REGULAR)
-		return 0;
-	
-	/* See what user wants */
-	if (cfg_get_var_int(mp3_var_list, "mp3-quick-get-len"))
-		return mp3_get_len_quick(filename);
-	else
-		return mp3_get_len_correct(filename);
-} /* End of 'mp3_get_len' function */
-#endif
 
 /* Convert MAD fixed point sample to 16-bit */
 static short mp3_mad_fixed_to_short( mad_fixed_t sample )
@@ -392,8 +316,99 @@ void mp3_save_info( char *filename, song_info_t *info )
 	}
 } /* End of 'mp3_save_info' function */
 
+/* Check if given buffer is frame header */
+bool_t mp3_check_header( dword head )
+{
+	if ((head & 0xffe00000) != 0xffe00000)
+		return FALSE;
+	if (!((head >> 17) & 3))
+		return FALSE;
+	if (((head >> 12) & 0xf) == 0xf)
+		return FALSE;
+	if (!((head >> 12) & 0xf))
+		return FALSE;
+	if (((head >> 10) & 0x3) == 0x3)
+		return FALSE;
+	if (((head >> 19) & 1) == 1 && ((head >> 17) & 3) == 3 && 
+			((head >> 16) & 1) == 1)
+		return FALSE;
+	if ((head & 0xffff0000) == 0xfffe0000)
+		return FALSE;
+	
+	return TRUE;
+} /* End of 'mp3_check_header' function */
+
+/* Find frame start in mp3 file */
+bool_t mp3_find_frame( file_t *fd )
+{
+	byte buf[4];
+	dword head;
+
+	if (file_read(buf, 1, 4, fd) != 4)
+		return FALSE;
+	head = ((byte)buf[0] << 24) | ((byte)buf[1] << 16) | 
+		((byte)buf[2] << 8) | ((byte)buf[3]);
+	for ( ; !mp3_check_header(head); )
+	{
+		byte buf[1];
+		if (file_read(buf, 1, 1, fd) != 1)
+			return FALSE;
+		head <<= 8;
+		head |= (byte)buf[0];
+	}
+	file_seek(fd, -4, SEEK_CUR);
+	return TRUE;
+} /* End of 'mp3_find_frame' function */
+
+/* Get number of frames from XING header (if it exists) */
+int mp3_get_xing_frames( char *filename )
+{
+	file_t *fd;
+	int i, nf = 0, buflen;
+	byte buf[8192], *xing;
+	bool_t found = FALSE;
+	
+	/* Open file */
+	fd = file_open(filename, "rb", mp3_print_msg);
+	if (fd == NULL)
+		goto end;
+
+	/* Find first frame */
+	if (!mp3_find_frame(fd))
+		goto end;
+
+	/* Find XING header in this frame */
+	buflen = file_read(buf, 1, sizeof(buf), fd);
+	for ( i = 0, xing = buf; i < buflen - 12; i ++, xing ++ )
+	{
+		if (!strncmp(xing, "Xing", 4))
+		{
+			found = TRUE;
+			break;
+		}
+	}
+	if (!found)
+		goto end;
+
+	/* Extract number of frames */
+	xing += 7;
+	if ((*xing) & 0x01)
+	{
+		xing ++;
+		nf |= ((byte)(*xing) << 24); xing ++;
+		nf |= ((byte)(*xing) << 16); xing ++;
+		nf |= ((byte)(*xing) << 8); xing ++;
+		nf |= ((byte)(*xing)); 
+	}
+
+end:
+	/* Close file */
+	file_close(fd);
+	return nf;
+} /* End of 'mp3_get_xing_frames' function */
+
 /* Get song information */
-song_info_t *mp3_get_info( char *filename, int *len )
+static song_info_t *mp3_read_info( char *filename, int *len, int *nf )
 {
 	struct mad_header head;
 	int i, filesize;
@@ -411,6 +426,8 @@ song_info_t *mp3_get_info( char *filename, int *len )
 		if (strcmp(filename, mp3_file_name))
 		{
 			*len = 0;
+			if (nf != NULL)
+				*nf = 0;
 			return NULL;
 		}
 
@@ -442,6 +459,8 @@ song_info_t *mp3_get_info( char *filename, int *len )
 		  		(mp3_head.emphasis == MAD_EMPHASIS_50_15_US ? 
 				 _("50/15 microseconds") : _("CCITT J.17")));
 		si_set_own_data(si, own_data);
+		if (nf != NULL)
+			*nf = 0;
 		return si;
 	}
 	
@@ -449,6 +468,8 @@ song_info_t *mp3_get_info( char *filename, int *len )
 	if (!strcmp(filename, mp3_file_name))
 	{
 		*len = mp3_len;
+		if (nf != NULL)
+			*nf = mp3_total_num_frames;
 		return si_dup(mp3_cur_info);
 	}
 
@@ -456,7 +477,6 @@ song_info_t *mp3_get_info( char *filename, int *len )
 	si = si_new();
 	si->m_glist = mp3_glist;
 	tag = id3_read(filename);
-
 	if (tag != NULL)
 	{
 		/* Scan tag frames */
@@ -504,11 +524,37 @@ song_info_t *mp3_get_info( char *filename, int *len )
 	mp3_read_header(filename, &head);
 	if (head.bitrate)
 	{
-		int count;
+		int tpf;
+		bool_t frames_exact = FALSE;
+		int num_frames = 0;
 		
 		filesize = util_get_file_size(filename);
-		*len = mp3_get_len(filename);
-		count = mad_timer_count(head.duration, MAD_UNITS_MILLISECONDS);
+		tpf = mad_timer_count(head.duration, MAD_UNITS_MILLISECONDS);
+
+		/* Obtain length */
+		if (cfg_get_var_int(pmng_get_cfg(mp3_pmng), "mp3-quick-get-len"))
+		{
+			/* Get number of frames from XING header and calculate 
+			 * song length */
+			if (num_frames = mp3_get_xing_frames(filename))
+			{
+				frames_exact = TRUE;
+				*len = (tpf * num_frames) / 1000;
+			}
+			else if (head.bitrate)
+			{
+				*len = filesize / (head.bitrate >> 3);
+				num_frames = (tpf == 0 ? 0 : (*len) * 1000 / tpf);
+			}
+		}
+		else
+		{
+			*len = mp3_get_len_correct(filename, &num_frames);
+			frames_exact = TRUE;
+		}
+		if (nf != NULL)
+			*nf = num_frames;
+		
 		sprintf(own_data, 
 			_("MPEG %s, layer %i\n"
 			"Bitrate: %i kb/s\n"
@@ -518,7 +564,7 @@ song_info_t *mp3_get_info( char *filename, int *len )
 			"Copyright: %s\n"
 			"Original: %s\n"
 			"Emphasis: %s\n"
-			"approx. %i frames\n"
+			"%s%i frames\n"
 			"Length: %i seconds\n"
 			"File size: %i bytes"),
 			(head.flags & MAD_FLAG_MPEG_2_5_EXT) ? "2.5" : "1",
@@ -536,12 +582,18 @@ song_info_t *mp3_get_info( char *filename, int *len )
 			head.emphasis == MAD_EMPHASIS_NONE ? _("None") :
 		  		(head.emphasis == MAD_EMPHASIS_50_15_US ? 
 				 _("50/15 microseconds") : _("CCITT J.17")),
-			count == 0 ? 0 : (*len) * 1000 / count, *len,
+			frames_exact ? "" : _("approx. "), num_frames, *len,
 			filesize);
 			si_set_own_data(si, own_data);
 	}
 	mad_header_finish(&head);
 	return si;
+} /* End of 'mp3_read_info' function */
+
+/* Get song information (exported) */
+song_info_t *mp3_get_info( char *filename, int *len )
+{
+	return mp3_read_info(filename, len, NULL);
 } /* End of 'mp3_get_info' function */
 
 /* Get stream function */
@@ -1049,7 +1101,7 @@ static void mp3_read_header( char *filename, struct mad_header *head )
 		if (head->bitrate)
 			break;
 	} 
-	
+
 	/* Unitialize all */
 	mad_stream_finish(&stream);
 	file_close(fd);

@@ -44,7 +44,7 @@ int mp3_get_stream( void *buf, int size );
 /* Seek song */
 void mp3_seek( int seconds );
 
-/* Get song information */
+/* Get song information (exported) */
 song_info_t *mp3_get_info( char *filename, int *len );
 
 /* Set equalizer parameters */
