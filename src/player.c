@@ -609,7 +609,7 @@ void *player_thread( void *arg )
 				(!cfg_get_var_int(cfg_list, "silent_mode") && 
 					!pmng_cur_out->m_fl.m_start()))
 		{
-			strcpy(player_msg, "Unable to initialize output plugin");
+			strcpy(player_msg, _("Unable to initialize output plugin"));
 //			wnd_send_msg(wnd_root, WND_MSG_USER, PLAYER_MSG_END_TRACK);
 			ifl.m_end();
 			player_status = PLAYER_STATUS_STOPPED;
