@@ -1,9 +1,12 @@
+/******************************************************************
+ * Copyright (C) 2003 by SG Software.
+ ******************************************************************/
 
 /* FILE NAME   : mp3.c
  * PURPOSE     : SG Konsamp. MP3 input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 2.09.2003
+ * LAST UPDATE : 10.09.2003
  * NOTE        : Module prefix 'mp3'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -606,9 +609,11 @@ bool mp3_get_info( char *filename, song_info_t *info )
 	/* Obtain additional song parameters */
 	mad_header_init(&head);
 	mp3_read_header(filename, &head);
-	filesize = util_get_file_size(filename);
-	len = filesize / (head.bitrate >> 3);
-	sprintf(info->m_own_data, 
+	if (head.bitrate)
+	{
+		filesize = util_get_file_size(filename);
+		len = filesize / (head.bitrate >> 3);
+		sprintf(info->m_own_data, 
 			"MPEG %s, layer %i\n"
 			"Bitrate: %i kb/s\n"
 			"Samplerate: %i Hz\n"
@@ -637,6 +642,7 @@ bool mp3_get_info( char *filename, song_info_t *info )
 				 "50/15 microseconds" : "CCITT J.17"),
 			len * 1000 / mad_timer_count(head.duration, MAD_UNITS_MILLISECONDS),
 			len, filesize);
+	}
 	mad_header_finish(&head);
 	return TRUE;
 } /* End of 'mp3_get_info' function */

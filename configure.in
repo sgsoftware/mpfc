@@ -14,6 +14,8 @@ AC_CHECK_LIB(dl, dlopen)
 AC_CHECK_LIB(vorbis, vorbis_dsp_clear)
 AC_CHECK_LIB(vorbisfile, ov_open)
 AC_CHECK_LIB(ogg, ogg_stream_init)
+AC_CHECK_LIB(socket, socket)
+AC_CHECK_LIB(resolv, gethostbyname)
 
 AM_GNU_GETTEXT
 

@@ -55,6 +55,9 @@ bool wnd_end_kbd_thread = FALSE;
 /* Number of initialized color pairs */
 int wnd_num_pairs = 0;
 
+/* Whether we have temporarily exited curses */
+bool wnd_curses_closed = FALSE;
+
 /* Create a new root window */
 wnd_t *wnd_new_root( void )
 {
@@ -505,7 +508,7 @@ void wnd_display( wnd_t *wnd )
 		wnd_display(focus_child);
 
 	/* Refresh screen in case of root window */
-	if (wnd->m_parent == NULL)
+	if (wnd->m_parent == NULL && !wnd_curses_closed)
 		doupdate();
 } /* End of 'wnd_display' function */
 
@@ -662,6 +665,22 @@ bool wnd_is_focused( void *wnd )
 {
 	return ((wnd_t *)wnd == wnd_focus);
 } /* End of 'wnd_is_focused' function */
+
+/* Temporarily exit curses */
+void wnd_close_curses( void )
+{
+	wnd_curses_closed = TRUE;
+	wnd_clear(wnd_root, FALSE);
+	refresh();
+	endwin();
+} /* End of 'wnd_close_curses' function */
+
+/* Restore curses */
+void wnd_restore_curses( void )
+{
+	wnd_curses_closed = FALSE;
+	refresh();
+} /* End of 'wnd_restore_curses' function */
 
 /* End of 'window.c' file */
 

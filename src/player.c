@@ -1691,12 +1691,10 @@ void player_exec( void )
 		/* Execute if enter was pressed */
 		if (ebox->m_last_key == '\n')
 		{
-			wnd_clear(wnd_root, FALSE);
-			refresh();
-			endwin();
+			wnd_close_curses();
 			system(ebox->m_text);
 			getchar();
-			refresh();
+			wnd_restore_curses();
 		}
 
 		/* Destroy edit box */

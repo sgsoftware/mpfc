@@ -146,7 +146,10 @@ void song_update_info( song_t *song )
 		song_set_info(song, &si);
 	}
 	else
+	{
 		song_set_info(song, NULL);
+		song->m_info->m_not_own_present = si.m_not_own_present;
+	}
 } /* End of 'song_update_info' function */
 
 /* Initialize song info and length */

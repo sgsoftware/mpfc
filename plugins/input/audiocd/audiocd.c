@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Audio CD input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 8.08.2003
+ * LAST UPDATE : 11.09.2003
  * NOTE        : Module prefix 'acd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -32,14 +32,13 @@
 #include <sys/fcntl.h>
 #include <sys/soundcard.h>
 #include "types.h"
+#include "audiocd.h"
+#include "cddb.h"
 #include "cfg.h"
 #include "inp.h"
 #include "song.h"
 #include "song_info.h"
 #include "util.h"
-
-/* The maximal number of tracks */
-#define ACD_MAX_TRACKS 100
 
 /* Get track number from filename */
 #define acd_fname2trk(name) (atoi(&name[6]) - 1)
@@ -54,16 +53,10 @@
 cfg_list_t *acd_var_list = NULL;
 
 /* Tracks information array */
-static struct acd_trk_info_t
-{
-	int m_start_min, m_start_sec, m_start_frm;
-	int m_end_min, m_end_sec, m_end_frm;
-	int m_len;
-	int m_number;
-	bool m_data;
-} acd_tracks_info[ACD_MAX_TRACKS];
-static int acd_num_tracks = 0;
-static int acd_cur_track = -1;
+struct acd_trk_info_t acd_tracks_info[ACD_MAX_TRACKS];
+int acd_num_tracks = 0;
+int acd_cur_track = -1;
+bool acd_info_read = FALSE;
 
 /* Current time */
 int acd_time = 0;
@@ -117,6 +110,7 @@ bool acd_start( char *filename )
 		return FALSE;
 	}
 	acd_time = 0;
+	acd_info_read = FALSE;
 
 	/* Close device */
 	close(fd);
@@ -130,6 +124,7 @@ void acd_end( void )
 
 	/* Open device */
 	acd_time = 0;
+	acd_info_read = FALSE;
 	if ((fd = acd_prepare_cd()) < 0)
 		return;
 
@@ -138,6 +133,7 @@ void acd_end( void )
 
 	/* Close device */
 	close(fd);
+	cddb_free();
 } /* End of 'acd_end' function */
 
 /* Get length */
@@ -178,6 +174,9 @@ song_t **acd_init_obj_songs( char *name, int *num_songs )
 	int fd, i, j;
 	struct cdrom_tochdr toc;
 	struct cdrom_tocentry entry;
+
+	/* Free CDDB data */
+	cddb_free();
 
 	/* Open cdrom device */
 	(*num_songs) = 0;
@@ -321,6 +320,43 @@ int acd_get_cur_time( void )
 	return acd_time;
 } /* End of 'acd_get_cur_time' function */
 
+/* Get song info */
+bool acd_get_info( char *filename, song_info_t *info )
+{
+	int track;
+
+	/* Get track number from filename */
+	track = acd_fname2trk(filename);
+	if (track < 0 || track >= acd_num_tracks || 
+			track > acd_tracks_info[acd_num_tracks - 1].m_number)
+		return FALSE;
+
+	/* Read whole disc info */
+	info->m_not_own_present = TRUE;
+	if (!cddb_read())
+		return FALSE;
+
+	/* Save info for specified track */
+	if (!cddb_get_trk_info(track, info))
+		return FALSE;
+	return TRUE;
+} /* End of 'acd_get_info' function */
+
+/* Save song info */
+void acd_save_info( char *filename, song_info_t *info )
+{
+	int track;
+
+	/* Get track number from filename */
+	track = acd_fname2trk(filename);
+	if (track < 0 || track >= acd_num_tracks || 
+			track > acd_tracks_info[acd_num_tracks - 1].m_number)
+		return;
+
+	/* Save info */
+	cddb_save_trk_info(track, info);
+} /* End of 'acd_save_info' function */
+
 /* Get functions list */
 void inp_get_func_list( inp_func_list_t *fl )
 {
@@ -335,6 +371,8 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_pause = acd_pause;
 	fl->m_resume = acd_resume;
 	fl->m_get_cur_time = acd_get_cur_time;
+	fl->m_get_info = acd_get_info;
+	fl->m_save_info = acd_save_info;
 } /* End of 'inp_get_func_list' function */
 
 /* Save variables list */

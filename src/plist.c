@@ -812,7 +812,10 @@ void plist_add_obj( plist_t *pl, char *name )
 	memcpy(&pl->m_list[was_len], s, 
 			sizeof(song_t *) * num_songs);
 	for ( i = was_len; i < pl->m_len; i ++ )
+	{
 		pl->m_list[i]->m_inp = inp;
+		sat_push(pl, i);
+	}
 	plist_unlock(pl);
 
 	/* If list was empty - put cursor to the first song */
@@ -935,10 +938,7 @@ void plist_reload_info( plist_t *pl )
 
 	/* Update info */
 	for ( i = 0; i < pl->m_len; i ++ )
-		song_update_info(pl->m_list[i]);
-
-	/* Redisplay */
-	wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
+		sat_push(pl, i);
 } /* End of 'plist_reload_info' function */
 
 /* End of 'plist.c' file */

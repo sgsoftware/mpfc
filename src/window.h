@@ -179,6 +179,12 @@ int wnd_init_pair( int fg, int bg );
 /* Check that window is focused */
 bool wnd_is_focused( void *wnd );
 
+/* Temporarily exit curses */
+void wnd_close_curses( void );
+
+/* Restore curses */
+void wnd_restore_curses( void );
+
 #endif
 
 /* End of 'window.h' file */
