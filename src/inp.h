@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Interface for input plugin management
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 28.07.2003
+ * LAST UPDATE : 1.08.2003
  * NOTE        : Module prefix 'inp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -77,6 +77,12 @@ typedef struct
 
 	/* Initialize songs array that respects to the object */
 	song_t **(*m_init_obj_songs)( char *name, int *num_songs );
+
+	/* Pause playing */
+	void (*m_pause)( void );
+
+	/* Resume playing */
+	void (*m_resume)( void );
 } inp_func_list_t;
 
 /* Input plugin type */
@@ -137,6 +143,12 @@ dword inp_get_flags( in_plugin_t *p );
 
 /* Initialize songs array that respects to the object */
 song_t **inp_init_obj_songs( in_plugin_t *p, char *name, int *num_songs );
+
+/* Pause playing */
+void inp_pause( in_plugin_t *p );
+
+/* Resume playing */
+void inp_resume( in_plugin_t *p );
 
 #endif
 

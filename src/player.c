@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG Konsamp. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 29.07.2003
+ * LAST UPDATE : 1.08.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -313,7 +313,12 @@ void player_handle_key( wnd_t *wnd, dword data )
 	/* Resume playing */
 	case 'x':
 		if (player_status == PLAYER_STATUS_PAUSED)
+		{
 			player_status = PLAYER_STATUS_PLAYING;
+			if (player_plist->m_cur_song != -1)
+				inp_resume(player_plist->m_list[
+						player_plist->m_cur_song]->m_inp);
+		}
 		else
 			player_play();
 		break;
@@ -321,9 +326,19 @@ void player_handle_key( wnd_t *wnd, dword data )
 	/* Pause */
 	case 'c':
 		if (player_status == PLAYER_STATUS_PLAYING)
+		{
 			player_status = PLAYER_STATUS_PAUSED;
+			if (player_plist->m_cur_song != -1)
+				inp_pause(player_plist->m_list[
+						player_plist->m_cur_song]->m_inp);
+		}
 		else if (player_status == PLAYER_STATUS_PAUSED)
+		{
 			player_status = PLAYER_STATUS_PLAYING;
+			if (player_plist->m_cur_song != -1)
+				inp_resume(player_plist->m_list[
+						player_plist->m_cur_song]->m_inp);
+		}
 		break;
 
 	/* Stop */

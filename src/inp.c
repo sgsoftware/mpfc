@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Input plugin management functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 28.07.2003
+ * LAST UPDATE : 1.08.2003
  * NOTE        : Module prefix 'inp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -183,6 +183,20 @@ song_t **inp_init_obj_songs( in_plugin_t *p, char *name, int *num_songs )
 		return p->m_fl.m_init_obj_songs(name, num_songs);
 	return NULL;
 } /* End of 'inp_init_obj_songs' function */
+
+/* Pause playing */
+void inp_pause( in_plugin_t *p )
+{
+	if (p != NULL && (p->m_fl.m_pause != NULL))
+		p->m_fl.m_pause();
+} /* End of 'inp_pause' function */
+
+/* Resume playing */
+void inp_resume( in_plugin_t *p )
+{
+	if (p != NULL && (p->m_fl.m_resume != NULL))
+		p->m_fl.m_resume();
+} /* End of 'inp_resume' function */
 
 /* End of 'inp.c' file */
 

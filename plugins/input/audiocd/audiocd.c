@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Audio CD input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 28.07.2003
+ * LAST UPDATE : 1.08.2003
  * NOTE        : Module prefix 'acd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -62,7 +62,8 @@ static struct acd_trk_info_t
 	int m_number;
 	bool m_data;
 } acd_tracks_info[ACD_MAX_TRACKS];
-static acd_num_tracks = 0;
+static int acd_num_tracks = 0;
+static int acd_cur_track = -1;
 
 /* Prepare cdrom for ioctls */
 int acd_prepare_cd( void )
@@ -94,6 +95,7 @@ bool acd_start( char *filename )
 	if (track < 0 || track >= acd_num_tracks || 
 			track > acd_tracks_info[acd_num_tracks - 1].m_number)
 		return FALSE;
+	acd_cur_track = track;
 
 	/* Open device */
 	if ((fd = acd_prepare_cd()) < 0)
@@ -162,11 +164,6 @@ int acd_get_stream( void *buf, int size )
 	return playing ? size : 0;
 } /* End of 'acd_get_stream' function */
 
-/* Seek song */
-void acd_seek( int shift )
-{
-} /* End of 'acd_seek' function */
-
 /* Initialize songs that respect to object */
 song_t **acd_init_obj_songs( char *name, int *num_songs )
 {
@@ -232,6 +229,77 @@ song_t **acd_init_obj_songs( char *name, int *num_songs )
 	return s;
 } /* End of 'acd_init_obj_songs' function */
 
+/* Pause */
+void acd_pause( void )
+{
+	int fd;
+
+	/* Open device */
+	if ((fd = acd_prepare_cd()) < 0)
+		return;
+
+	/* Pause */
+	if (ioctl(fd, CDROMPAUSE, 0) < 0)
+	{
+		close(fd);
+		return;
+	}
+
+	/* Close device */
+	close(fd);
+} /* End of 'acd_pause' function */
+
+/* Resume */
+void acd_resume( void )
+{
+	int fd;
+
+	/* Open device */
+	if ((fd = acd_prepare_cd()) < 0)
+		return;
+
+	/* Pause */
+	if (ioctl(fd, CDROMRESUME, 0) < 0)
+	{
+		close(fd);
+		return;
+	}
+
+	/* Close device */
+	close(fd);
+} /* End of 'acd_resume' function */
+
+/* Seek */
+void acd_seek( int shift )
+{
+	int fd;
+	struct cdrom_subchnl info;
+	struct cdrom_msf msf;
+
+	if (acd_cur_track < 0 || acd_cur_track >= acd_num_tracks)
+		return;
+
+	/* Start playing from new position */
+	if ((fd = acd_prepare_cd()) < 0)
+		return;
+	shift = acd_tracks_info[acd_cur_track].m_start_min * 60 + 
+		acd_tracks_info[acd_cur_track].m_start_sec + shift;
+	msf.cdmsf_min0 = shift / 60;
+	msf.cdmsf_sec0 = shift % 60;
+	msf.cdmsf_frame0 = 0;
+	msf.cdmsf_min1 = acd_tracks_info[acd_cur_track].m_end_min;
+	msf.cdmsf_sec1 = acd_tracks_info[acd_cur_track].m_end_sec;
+	msf.cdmsf_frame1 = acd_tracks_info[acd_cur_track].m_end_frm;
+	if (ioctl(fd, CDROMPLAYMSF, &msf) < 0)
+	{
+		close(fd);
+		return;
+	}
+
+	/* Close device */
+	close(fd);
+} /* End of 'acd_seek' function */
+
 /* Get audio parameters */
 void acd_get_audio_params( int *ch, int *freq, dword *fmt )
 {
@@ -251,6 +319,8 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_get_audio_params = acd_get_audio_params;
 	fl->m_init_obj_songs = acd_init_obj_songs;
 	fl->m_flags = INP_NO_OUTP;
+	fl->m_pause = acd_pause;
+	fl->m_resume = acd_resume;
 } /* End of 'inp_get_func_list' function */
 
 /* Save variables list */
