@@ -147,6 +147,7 @@ void logger_message( logger_t *log, logger_msg_type_t type, int level,
 		msg->m_prev = log->m_tail;
 		log->m_tail = msg;
 	}
+	log->m_num_messages ++;
 
 	/* Write message to the file */
 	if (log->m_fd != NULL)

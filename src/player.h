@@ -339,6 +339,9 @@ wnd_msg_retcode_t player_on_test_stop( wnd_t *wnd );
 /* Handle 'ok_clicked' for test dialog box */
 wnd_msg_retcode_t player_on_test( wnd_t *wnd );
 
+/* Handle 'close' message for logger view */
+wnd_msg_retcode_t player_logview_on_close( wnd_t *wnd );
+
 /***
  * Variables change handlers
  ***/

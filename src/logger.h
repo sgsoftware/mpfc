@@ -70,6 +70,9 @@ typedef struct tag_logger_t
 		struct logger_message_t *m_next, *m_prev;
 	} *m_head, *m_tail;
 
+	/* Number of messages */
+	int m_num_messages;
+
 	/* Configuration list */
 	cfg_node_t *m_cfg;
 

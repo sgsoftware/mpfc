@@ -31,15 +31,19 @@
 #include "types.h"
 #include "logger.h"
 #include "wnd.h"
+#include "wnd_scrollable.h"
 
 /* Logger view window type */
 typedef struct
 {
 	/* Window part */
-	wnd_t m_wnd;
+	scrollable_t m_wnd;
 
 	/* Corresponding logger object */
 	logger_t *m_logger;
+
+	/* Top message */
+	struct logger_message_t *m_top_message;
 } logger_view_t;
 
 /* Convert window object to logger view type */
@@ -56,6 +60,15 @@ void logview_destructor( wnd_t *wnd );
 
 /* Display logger window */
 wnd_msg_retcode_t logview_on_display( wnd_t *wnd );
+
+/* 'keydown' message handler */
+wnd_msg_retcode_t logview_on_keydown( wnd_t *wnd, wnd_key_t key );
+
+/* 'scrolled' message handler */
+wnd_msg_retcode_t logview_on_scrolled( wnd_t *wnd, int offset );
+
+/* Scroll specified number of pages */
+void logview_move_pages( scrollable_t *scr, int pages );
 
 /*
  * Class functions

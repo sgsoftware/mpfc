@@ -101,7 +101,6 @@ void kbind_init( void )
 	kbind_add(KBIND_EQUALIZER, 1, 'e');
 	kbind_add(KBIND_SHUFFLE, 1, 'R');
 	kbind_add(KBIND_LOOP, 1, 'L');
-	kbind_add(KBIND_VAR_MANAGER, 1, 'O');
 	kbind_add(KBIND_VAR_MINI_MANAGER, 1, 'o');
 	kbind_add(KBIND_DIG_0, 1, '0');
 	kbind_add(KBIND_DIG_1, 1, '1');
@@ -180,6 +179,7 @@ void kbind_init( void )
 	kbind_add(KBIND_RELOAD_PLUGINS, 1, 'P');
 	kbind_add(KBIND_FILE_BROWSER, 1, 'B');
 	kbind_add(KBIND_TEST, 1, 'T');
+	kbind_add(KBIND_LOG, 1, 'O');
 
 	/* Read bindings from configuration */
 	kbind_read_from_cfg();
@@ -496,6 +496,10 @@ int kbind_var2act( char *name )
 		return KBIND_RELOAD_PLUGINS;
 	else if (!strcmp(name, "kbind-file-browser"))
 		return KBIND_FILE_BROWSER;
+	else if (!strcmp(name, "kbind-test"))
+		return KBIND_TEST;
+	else if (!strcmp(name, "kbind-log"))
+		return KBIND_LOG;
 	return -1;
 } /* End of 'kbind_var2act' function */
 

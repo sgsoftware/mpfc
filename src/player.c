@@ -205,10 +205,9 @@ bool_t player_init( int argc, char *argv[] )
 		fprintf(stderr, _("Unable to initialize log system"));
 		return FALSE;
 	}
-	logger_attach_handler(player_log, player_on_log_msg, NULL);
 	t = time(NULL);
 	str_time = ctime(&t);
-	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_LOW, 
+	logger_message(player_log, LOGGER_MSG_STATUS, LOGGER_LEVEL_LOW, 
 			_("MPFC 1.3.1 Log\n%s"), str_time);
 	free(str_time);
 
@@ -231,8 +230,12 @@ bool_t player_init( int argc, char *argv[] )
 				_("Unable to initialize play list window"));
 		return FALSE;
 	}
-	player_logview = logview_new(wnd_root, player_log);
+	//player_logview = logview_new(wnd_root, player_log);
+	logger_attach_handler(player_log, player_on_log_msg, NULL);
 	wnd_set_focus(player_wnd);
+	for ( i = 0; i < 100; i ++ )
+		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
+				"Logger message #%d", i);
 
 	/* Initialize key bindings */
 	kbind_init();
@@ -750,7 +753,7 @@ void player_handle_action( int action )
 	int was_song, was_time;
 
 	/* Clear message string */
-	//player_print_msg("");
+	player_msg = NULL;
 
 	was_pos = player_plist->m_sel_end;
 	was_song = player_plist->m_cur_song;
@@ -1097,6 +1100,16 @@ void player_handle_action( int action )
 		player_test_dialog();
 		break;
 
+	/* Launch logger view */
+	case KBIND_LOG:
+		if (player_logview == NULL)
+		{
+			player_logview = logview_new(wnd_root, player_log);
+			wnd_msg_add_handler(WND_OBJ(player_logview), "close", 
+					player_logview_on_close);
+		}
+		break;
+
 	/* Digit means command repeation value edit */
 	case KBIND_DIG_1:
 	case KBIND_DIG_2:
@@ -1371,7 +1384,14 @@ void player_on_log_msg( logger_t *log, void *data,
 	/* Print message to status line */
 	player_msg = msg->m_message;
 	wnd_invalidate(player_wnd);
-	wnd_invalidate(WND_OBJ(player_logview));
+
+	/* Add to logger view */
+	if (player_logview != NULL)
+	{
+		scrollable_set_size(SCROLLABLE_OBJ(player_logview), 
+				player_log->m_num_messages);
+		wnd_invalidate(WND_OBJ(player_logview));
+	}
 } /* End of 'player_on_log_msg' function */
 
 /*****
@@ -2635,6 +2655,13 @@ wnd_msg_retcode_t player_on_test( wnd_t *wnd )
 	test_start(sel);
 	return WND_MSG_RETCODE_OK;
 } /* End of 'player_on_test' function */
+
+/* Handle 'close' message for logger view */
+wnd_msg_retcode_t player_logview_on_close( wnd_t *wnd )
+{
+	player_logview = NULL;
+	return WND_MSG_RETCODE_OK;
+} /* End of 'player_logview_on_close' function */
 
 /*****
  *

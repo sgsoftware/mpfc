@@ -30,6 +30,7 @@
 #include "logger.h"
 #include "logger_view.h"
 #include "wnd.h"
+#include "wnd_scrollable.h"
 
 /* Create new logger view */
 logger_view_t *logview_new( wnd_t *parent, logger_t *logger )
@@ -50,51 +51,152 @@ logger_view_t *logview_new( wnd_t *parent, logger_t *logger )
 		return NULL;
 	}
 	wnd_postinit(lv);
+	scrollable_set_size(SCROLLABLE_OBJ(lv), logger->m_num_messages);
 	return lv;
 } /* End of 'logview_new' function */
 
 /* Initialize logger window */
 bool_t logview_construct( logger_view_t *lv, wnd_t *parent, logger_t *logger )
 {
+	scrollable_t *scr = SCROLLABLE_OBJ(lv);
+
 	/* Initialize window part */
-	if (!wnd_construct(WND_OBJ(lv), parent, _("Log"), 0, 0, 0, 0,
-				WND_FLAG_FULL_BORDER | WND_FLAG_MAXIMIZED))
+	if (!scrollable_construct(scr, parent, _("Log"), 0, 0, 0, 0,
+				SCROLLABLE_VERTICAL, WND_FLAG_FULL_BORDER | WND_FLAG_MAXIMIZED))
 		return FALSE;
 
 	/* Set message map */
 	wnd_msg_add_handler(WND_OBJ(lv), "display", logview_on_display);
-	wnd_msg_add_handler(WND_OBJ(lv), "destructor", logview_destructor);
+	wnd_msg_add_handler(WND_OBJ(lv), "keydown", logview_on_keydown);
+	wnd_msg_add_handler(WND_OBJ(lv), "scrolled", logview_on_scrolled);
 
 	/* Set fields */
 	lv->m_logger = logger;
+	lv->m_top_message = logger->m_head;
 	return TRUE;
 } /* End of 'logview_construct' function */
-
-/* Destructor */
-void logview_destructor( wnd_t *wnd )
-{
-} /* End of 'logview_destructor' function */
 
 /* Display logger window */
 wnd_msg_retcode_t logview_on_display( wnd_t *wnd )
 {
 	logger_view_t *lv = LOGGER_VIEW(wnd);
-	logger_t *logger = lv->m_logger;
 	struct logger_message_t *msg;
 
 	wnd_move(wnd, 0, 0, 0);
-	for ( msg = logger->m_head; msg != NULL; msg = msg->m_next )
+	wnd_apply_default_style(wnd);
+	for ( msg = lv->m_top_message; msg != NULL; msg = msg->m_next )
 	{
+		logger_msg_type_t type = msg->m_type;
+		if (type == LOGGER_MSG_NORMAL)
+			wnd_apply_style(wnd, "logger-normal-style");
+		else if (type == LOGGER_MSG_STATUS)
+			wnd_apply_style(wnd, "logger-status-style");
+		else if (type == LOGGER_MSG_WARNING)
+			wnd_apply_style(wnd, "logger-warning-style");
+		else if (type == LOGGER_MSG_ERROR)
+			wnd_apply_style(wnd, "logger-error-style");
+		else if (type == LOGGER_MSG_FATAL)
+			wnd_apply_style(wnd, "logger-fatal-style");
 		wnd_printf(wnd, 0, 0, "%s\n", msg->m_message);
 	}
 	return WND_MSG_RETCODE_OK;
 } /* End of 'logview_on_display' function */
 
+/* 'keydown' message handler */
+wnd_msg_retcode_t logview_on_keydown( wnd_t *wnd, wnd_key_t key )
+{
+	scrollable_t *scr = SCROLLABLE_OBJ(wnd);
+
+	switch (key)
+	{
+	/* Scroll */
+	case 'j':
+		scrollable_scroll(scr, 1, FALSE);
+		break;
+	case 'k':
+		scrollable_scroll(scr, -1, FALSE);
+		break;
+	case 'd':
+	case ' ':
+		logview_move_pages(scr, 1);
+		break;
+	case 'u':
+		logview_move_pages(scr, -1);
+		break;
+	case 'g':
+		scrollable_scroll(scr, 0, TRUE);
+		break;
+	case 'G':
+		scrollable_scroll(scr, LOGGER_VIEW(wnd)->m_logger->m_num_messages,
+				TRUE);
+		break;
+
+	/* Close window */
+	case 'q':
+		wnd_close(wnd);
+		break;
+	}
+	return WND_MSG_RETCODE_OK;
+} /* End of 'logview_on_keydown' function */
+
+/* 'scrolled' message handler */
+wnd_msg_retcode_t logview_on_scrolled( wnd_t *wnd, int offset )
+{
+	logger_view_t *lv = LOGGER_VIEW(wnd);
+
+	/* Scroll logger message */
+	if (offset > 0)
+	{
+		for ( ; offset > 0 && lv->m_top_message != NULL; offset -- )
+			lv->m_top_message = lv->m_top_message->m_next;
+	}
+	else if (offset < 0)
+	{
+		for ( ; offset < 0 && lv->m_top_message != NULL; offset ++ )
+			lv->m_top_message = lv->m_top_message->m_prev;
+	}
+	return WND_MSG_RETCODE_OK;
+} /* End of 'logview_on_scrolled' function */
+
+/* Scroll specified number of pages */
+void logview_move_pages( scrollable_t *scr, int pages )
+{
+	int dir = (pages > 0) ? 1 : -1, delta;
+	int max_dist = SCROLLABLE_WND_SIZE(scr) * abs(pages);
+	int real_lines;
+	struct logger_message_t *msg;
+	logger_view_t *lv = LOGGER_VIEW(scr);
+	
+	/* Scroll number of items so that distance between previous and new
+	 * top items is not more than (page size) * pages */
+	for ( delta = 0, real_lines = 0, msg = lv->m_top_message; 
+			real_lines <= max_dist && msg != NULL; delta ++, real_lines ++,
+			((dir > 0) ? (msg = msg->m_next) : (msg = msg->m_prev)) )
+	{
+		int x;
+		char *text = msg->m_message;
+		for ( x = 0; *text; text ++ )
+		{
+			if ((x >= WND_WIDTH(scr)) || ((*text) == '\n'))
+			{
+				x = 0;
+				real_lines ++;
+			}
+			else
+				x ++;
+		}
+	}
+	delta --;
+
+	/* Do scroll */
+	scrollable_scroll(scr, delta * dir, FALSE);
+} /* End of 'logview_move_pages' function */
+
 /* Initialize logger view class */
 wnd_class_t *logview_class_init( wnd_global_data_t *global )
 {
 	wnd_class_t *klass = wnd_class_new(global, "logger_view",
-			wnd_basic_class_init(global), NULL, 
+			scrollable_class_init(global), NULL, 
 			logview_class_set_default_styles);
 	return klass;
 } /* End of 'logview_class_init' function */
@@ -102,6 +204,11 @@ wnd_class_t *logview_class_init( wnd_global_data_t *global )
 /* Set default styles */
 void logview_class_set_default_styles( cfg_node_t *list )
 {
+	cfg_set_var(list, "logger-normal-style", "white:black");
+	cfg_set_var(list, "logger-status-style", "cyan:black:bold");
+	cfg_set_var(list, "logger-warning-style", "magenta:black:bold");
+	cfg_set_var(list, "logger-error-style", "red:black:bold");
+	cfg_set_var(list, "logger-fatal-style", "red:black:bold,blink");
 } /* End of 'logview_class_set_default_styles' function */
 
 /* End of 'logger_view.c' file */
