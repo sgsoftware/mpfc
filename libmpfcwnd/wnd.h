@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Interface for basic window
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 13.08.2004
+ * LAST UPDATE : 15.08.2004
  * NOTE        : Module prefix 'wnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -122,7 +122,7 @@ struct tag_wnd_global_data_t
 			chtype m_char;
 			/* Character attribute */
 			int m_attr;
-			/* Window that has put this character */
+			/* The window this position belongs to */
 			wnd_t *m_wnd;
 		} *m_data;
 
@@ -200,6 +200,10 @@ struct tag_wnd_t
 
 	/* Client area */
 	int m_client_x, m_client_y, m_client_w, m_client_h;
+	
+	/* Part of the window that can be visible (i.e. is not outside window's
+	 * ancestors) */
+	int m_real_left, m_real_top, m_real_right, m_real_bottom;
 
 	/* Cursor position (in client coordinates) */
 	int m_cursor_x, m_cursor_y;
@@ -299,6 +303,9 @@ void wnd_main( wnd_t *wnd_root );
 /* Invalidate window */
 void wnd_invalidate( wnd_t *wnd );
 
+/* Send repainting messages to a window */
+void wnd_send_repaint( wnd_t *wnd, bool_t send_to_children );
+
 /* Push window states */
 void wnd_push_state( wnd_t *wnd, wnd_state_t mask );
 
@@ -366,6 +373,9 @@ wnd_msg_retcode_t wnd_repos_on_key( wnd_t *wnd, wnd_key_t key );
 /* Move and resize window */
 void wnd_repos( wnd_t *wnd, int x, int y, int width, int height );
 
+/* The internal work of 'wnd_repos' (set position and inform children) */
+void wnd_repos_internal( wnd_t *wnd, int x, int y, int w, int h );
+
 /* Toggle the window maximization flag */
 void wnd_toggle_maximize( wnd_t *wnd );
 
@@ -374,6 +384,15 @@ void wnd_set_global_focus( wnd_global_data_t *global );
 
 /* Redisplay the screen (discarding all the optimization stuff) */
 void wnd_redisplay( wnd_t *wnd );
+
+/* Update the whole visibility information */
+void wnd_global_update_visibility( wnd_t *wnd_root );
+
+/* Update the visibility information for a window and its descendants */
+void wnd_update_visibility( wnd_t *wnd );
+
+/* Calculate window real area */
+void wnd_calc_real_pos( wnd_t *wnd );
 
 #endif
 

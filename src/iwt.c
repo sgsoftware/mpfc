@@ -73,7 +73,7 @@ song_t *iwt_pop( void )
 	plist_t *pl = player_plist;
 	
 	if (pl == NULL)
-		return;
+		return NULL;
 	for ( i = 0; i < pl->m_len; i ++ )
 		if (pl->m_list[i] != NULL && (pl->m_list[i]->m_flags & SONG_SAVE_INFO))
 			return pl->m_list[i];
@@ -100,7 +100,7 @@ void *iwt_thread( void *arg )
 		}
 
 		/* Wait a little */
-		util_delay(0, 100000L);
+		util_wait();
 	}
 } /* End of 'iwt_thread' function */
 

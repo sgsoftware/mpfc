@@ -114,6 +114,9 @@ wnd_msg_retcode_t wnd_default_on_close( wnd_t *wnd )
 		wnd_invalidate(parent);
 	}
 
+	/* Update the visibility information */
+	wnd_global_update_visibility(WND_ROOT(wnd));
+
 	/* Remove from the queue all messages addressing to this window */
 	wnd_msg_queue_remove_by_window(WND_MSG_QUEUE(wnd), wnd, TRUE);
 	
@@ -125,17 +128,37 @@ wnd_msg_retcode_t wnd_default_on_close( wnd_t *wnd )
 /* Default WND_MSG_ERASE_BACK message handler */
 wnd_msg_retcode_t wnd_default_on_erase_back( wnd_t *wnd )
 {
-	int i, j;
-	wnd_push_state(wnd, WND_STATE_COLOR | WND_STATE_CURSOR);
-	wnd_set_color(wnd, WND_COLOR_WHITE, WND_COLOR_BLACK);
-	wnd_set_attrib(wnd, 0);
-	for ( i = 0; i < wnd->m_height; i ++ )
+	struct wnd_display_buf_t *db = &WND_DISPLAY_BUF(wnd);
+	struct wnd_display_buf_symbol_t *pos;
+	int dist, i, j;
+	wnd_t *owning;
+
+	/* Clear each window's position */
+	pos = &db->m_data[wnd->m_real_top * db->m_width + wnd->m_real_left];
+	dist = db->m_width - (wnd->m_real_right - wnd->m_real_left);
+	for ( i = wnd->m_real_bottom - wnd->m_real_top; i != 0; i -- )
 	{
-		wnd_move(wnd, WND_MOVE_ABSOLUTE, 0, i);
-		for ( j = 0; j < wnd->m_width; j ++ )
-			wnd_putc(wnd, ' ');
+		for ( j = wnd->m_real_right - wnd->m_real_left; j != 0; j -- )
+		{
+			/* Check that the window owning this position is our window's
+			 * descendant */
+			for ( owning = pos->m_wnd;; owning = owning->m_parent )
+			{
+				if (owning == wnd || owning == NULL)
+				{
+					pos->m_char = ' ';
+					pos->m_attr = 0;
+					break;
+				}
+			}
+
+			/* Move to the next position */
+			pos ++;
+		}
+
+		/* Move to the next line */
+		pos += dist;
 	}
-	wnd_pop_state(wnd);
 	return WND_MSG_RETCODE_OK;
 } /* End of 'wnd_default_on_erase_back' function */
 
@@ -160,32 +183,23 @@ wnd_msg_retcode_t wnd_default_on_parent_repos( wnd_t *wnd,
 		int px, int py, int pw, int ph, int nx, int ny, int nw, int nh )
 {
 	wnd_t *child;
-	int was_x, was_y, was_w, was_h;
+	int x, y, w, h;
 
 	assert(wnd);
 
-	/* Adjust window screen coordinates */
-	was_x = wnd->m_x;
-	was_y = wnd->m_y;
-	was_w = wnd->m_width;
-	was_h = wnd->m_height;
-	wnd->m_screen_x += (nx - px);
-	wnd->m_screen_y += (ny - py);
-
-	/* And also size for maximized windows */
+	/* Adjust window size for a maximized window */
+	x = wnd->m_x;
+	y = wnd->m_y;
+	w = wnd->m_width;
+	h = wnd->m_height;
 	if (WND_FLAGS(wnd) & WND_FLAG_MAXIMIZED)
 	{
-		wnd->m_width += (nw - pw);
-		wnd->m_height += (nh - ph);
-		wnd->m_client_w += (nw - pw);
-		wnd->m_client_h += (nh - ph);
+		w += (nw - pw);
+		h += (nh - ph);
 	}
 
-	/* Inform our children too */
-	for ( child = wnd->m_child; child != NULL; child = child->m_next )
-		wnd_msg_send(child, "parent_repos",
-				wnd_msg_parent_repos_new(was_x, was_y, was_w, was_h,
-					wnd->m_x, wnd->m_y, wnd->m_width, wnd->m_height));
+	/* Reposition */
+	wnd_repos_internal(wnd, x, y, w, h);
 	return WND_MSG_RETCODE_OK;
 } /* End of 'wnd_default_on_parent_repos' function */
 

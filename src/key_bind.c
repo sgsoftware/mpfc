@@ -61,7 +61,7 @@ void kbind_init( void )
 	kbind_add(KBIND_MOVE_UP, 1, KEY_UP);
 	kbind_add(KBIND_SCREEN_UP, 1, 'u');
 	kbind_add(KBIND_SCREEN_UP, 1, KEY_PPAGE);
-	kbind_add(KBIND_SCREEN_DOWN, 1, 'd');
+	kbind_add(KBIND_SCREEN_DOWN, 2, 'd');
 	kbind_add(KBIND_SCREEN_DOWN, 1, KEY_NPAGE);
 	kbind_add(KBIND_MOVE, 1, 'G');
 	kbind_add(KBIND_START_PLAY, 1, '\n');

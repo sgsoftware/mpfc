@@ -120,7 +120,8 @@ int wnd_printf( struct tag_wnd_t *wnd, wnd_print_flags_t flags,
 bool_t wnd_cursor_in_client( struct tag_wnd_t *wnd );
 
 /* Check that position inside the window is visible */
-bool_t wnd_pos_visible( struct tag_wnd_t *wnd, int x, int y );
+bool_t wnd_pos_visible( struct tag_wnd_t *wnd, int x, int y, 
+		struct wnd_display_buf_symbol_t **pos );
 
 #endif
 

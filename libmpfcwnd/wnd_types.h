@@ -37,6 +37,7 @@ typedef struct tag_wnd_msg_data_t wnd_msg_data_t;
 typedef struct tag_wnd_msg_t wnd_msg_t;
 typedef enum tag_wnd_msg_retcode_t wnd_msg_retcode_t;
 typedef struct tag_wnd_msg_handler_t wnd_msg_handler_t;
+struct wnd_display_buf_symbol_t;
 
 #endif
 

@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Window functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 13.08.2004
+ * LAST UPDATE : 15.08.2004
  * NOTE        : Module prefix 'wnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -272,6 +272,7 @@ bool_t wnd_construct( wnd_t *wnd, char *title, wnd_t *parent, int x, int y,
 	wnd->m_mode = WND_MODE_NORMAL;
 	wnd->m_cursor_hidden = FALSE;
 	wnd->m_level = (parent == NULL ? 0 : parent->m_level + 1);
+	wnd_calc_real_pos(wnd);
 
 	/* Calculate client area depending on the window flags */
 	if (wnd->m_flags & WND_FLAG_BORDER)
@@ -319,6 +320,9 @@ bool_t wnd_construct( wnd_t *wnd, char *title, wnd_t *parent, int x, int y,
 		}
 		parent->m_num_children ++;
 	}
+
+	/* Update the visibility information */
+	wnd_global_update_visibility(WND_ROOT(wnd));
 
 	/* Initialize message map */
 	wnd_msg_add_handler(wnd, "display", wnd_default_on_display);
@@ -796,9 +800,9 @@ void wnd_set_focus( wnd_t *wnd )
 	{
 		if (child->m_zval > wnd->m_zval)
 		{
-			child->m_zval --;
 			if (child->m_zval == wnd->m_zval + 1)
 				prev = child;
+			child->m_zval --;
 		}
 	}
 	wnd->m_zval = parent->m_num_children - 1;
@@ -809,6 +813,9 @@ void wnd_set_focus( wnd_t *wnd )
 	/* Set focus to this window */
 	parent->m_focus_child = wnd;
 	wnd_set_global_focus(WND_GLOBAL(wnd));
+
+	/* Update the visibility information */
+	wnd_global_update_visibility(WND_ROOT(wnd));
 
 	/* Repaint */
 	wnd_invalidate(parent);
@@ -861,19 +868,28 @@ void wnd_invalidate( wnd_t *wnd )
 		return;
 
 	wnd_msg_send(wnd, "erase_back", wnd_msg_erase_back_new());
-	wnd_msg_send(wnd, "display", wnd_msg_display_new());
-	for ( child = wnd->m_child; child != NULL; child = child->m_next )
-	{
-		wnd_invalidate(child);
-	}
+	wnd_send_repaint(wnd, TRUE);
 	wnd_msg_send(WND_ROOT(wnd), "update_screen", wnd_msg_update_screen_new());
 } /* End of 'wnd_invalidate' function */
+
+/* Send repainting messages to a window */
+void wnd_send_repaint( wnd_t *wnd, bool_t send_to_children )
+{
+	wnd_msg_send(wnd, "display", wnd_msg_display_new());
+	if (send_to_children)
+	{
+		wnd_t *child;
+		for ( child = wnd->m_child; child != NULL; child = child->m_next )
+			wnd_send_repaint(child, TRUE);
+	}
+} /* End of 'wnd_send_repaint' function */
 
 /* Synchronize screen contents with display buffer */
 void wnd_sync_screen( wnd_t *wnd )
 {
 	struct wnd_display_buf_t *buf = &WND_DISPLAY_BUF(wnd);
-	int i, x = 0, y = 0;
+	struct wnd_display_buf_symbol_t *pos;
+	int x = 0, y = 0;
 	wnd_t *wnd_focus;
 
 	/* Clear screen if buffer is dirty */
@@ -881,10 +897,10 @@ void wnd_sync_screen( wnd_t *wnd )
 		clear();
 
 	/* Copy buffer to screen */
-	for ( i = 0;; i ++ )
+	for ( pos = buf->m_data;; pos ++ )
 	{
 		/* Set symbol */
-		mvaddch(y, x, buf->m_data[i].m_attr | buf->m_data[i].m_char);
+		mvaddch(y, x, pos->m_attr | pos->m_char);
 
 		/* Move to next symbol */
 		if (x >= buf->m_width - 1)
@@ -1045,39 +1061,64 @@ wnd_msg_retcode_t wnd_repos_on_key( wnd_t *wnd, wnd_key_t key )
 /* Move and resize window */
 void wnd_repos( wnd_t *wnd, int x, int y, int width, int height )
 {
+	assert(wnd);
+
+	/* Set new window position and size */
+	wnd_repos_internal(wnd, x, y, width, height);
+
+	/* Update visibility information */
+	wnd_global_update_visibility(WND_ROOT(wnd));
+
+	/* Repaint window */
+	wnd_invalidate(wnd->m_parent == NULL ? wnd : wnd->m_parent);
+} /* End of 'wnd_repos' function */
+
+/* The internal work of 'wnd_repos' (set position and inform children) */
+void wnd_repos_internal( wnd_t *wnd, int x, int y, int w, int h )
+{
 	int dx, dy, dw, dh;
 	int px, py, pw, ph;
 	wnd_t *child;
 
-	assert(wnd);
-
-	/* Set new window position and size */
+	/* Update position */
 	px = wnd->m_x;
 	py = wnd->m_y;
 	pw = wnd->m_width;
 	ph = wnd->m_height;
 	dx = x - wnd->m_x;
 	dy = y - wnd->m_y;
-	dw = width - wnd->m_width;
-	dh = height - wnd->m_height;
+	dw = w - wnd->m_width;
+	dh = h - wnd->m_height;
 	wnd->m_x = x;
 	wnd->m_y = y;
-	wnd->m_width = width;
-	wnd->m_height = height;
-	wnd->m_screen_x += dx;
-	wnd->m_screen_y += dy;
+	wnd->m_width = w;
+	wnd->m_height = h;
+	wnd->m_screen_x = wnd->m_parent->m_screen_x + 
+		wnd->m_parent->m_client_x + x;
+	wnd->m_screen_y = wnd->m_parent->m_screen_y + 
+		wnd->m_parent->m_client_y + y;
 	wnd->m_client_w += dw;
 	wnd->m_client_h += dh;
+	wnd_calc_real_pos(wnd);
 
 	/* Inform children about our repositioning */
 	for ( child = wnd->m_child; child != NULL; child = child->m_next )
-		wnd_msg_send(child, "parent_repos", 
-				wnd_msg_parent_repos_new(px, py, pw, ph, x, y, 
-					width, height));
+	{
+		/* Don't send message, but call handler directly */
+		wnd_msg_callback_t callback;
+		wnd_msg_t msg;
 
-	/* Repaint window */
-	wnd_invalidate(wnd->m_parent == NULL ? wnd : wnd->m_parent);
-} /* End of 'wnd_repos' function */
+		msg.m_wnd = child;
+		msg.m_name = strdup("parent_repos");
+		msg.m_data = wnd_msg_parent_repos_new(px, py, pw, ph, x, y, w, h);
+
+		wnd_msg_handler_t *handler = *wnd_class_get_msg_info(msg.m_wnd, 
+				msg.m_name, &callback);
+		wnd_call_handler(msg.m_wnd, msg.m_name, handler, callback, 
+				&msg.m_data);
+		wnd_msg_free(&msg);
+	}
+} /* End of 'wnd_repos_internal' function */
 
 /* Toggle the window maximization flag */
 void wnd_toggle_maximize( wnd_t *wnd )
@@ -1131,6 +1172,109 @@ void wnd_redisplay( wnd_t *wnd )
 	WND_DISPLAY_BUF(wnd).m_dirty = TRUE;
 	wnd_msg_send(WND_ROOT(wnd), "update_screen", wnd_msg_update_screen_new());
 } /* End of 'wnd_redisplay' function */
+
+/* Update the whole visibility information */
+void wnd_global_update_visibility( wnd_t *wnd_root )
+{
+	struct wnd_display_buf_t *db = &WND_DISPLAY_BUF(wnd_root);
+	struct wnd_display_buf_symbol_t *pos;
+	wnd_t *child;
+	int i;
+	assert(wnd_root);
+
+	/* Clear current information */
+	pos = db->m_data;
+	for ( i = db->m_width * db->m_height; i > 0; i --, pos ++ )
+		pos->m_wnd = wnd_root;
+
+	/* Fill information */
+	for ( child = wnd_root->m_focus_child; child != NULL; 
+			child = child->m_lower_sibling )
+		wnd_update_visibility(child);
+} /* End of 'wnd_global_update_visibility' function */
+
+/* Update the visibility information for a window and its descendants */
+void wnd_update_visibility( wnd_t *wnd )
+{
+	struct wnd_display_buf_t *db = &WND_DISPLAY_BUF(wnd);
+	struct wnd_display_buf_symbol_t *pos;
+	wnd_t *cur, *parent, *child;
+	int dist, i, j;
+
+	/* Set visibility tag for each of the window's positions */
+	dist = db->m_width - (wnd->m_real_right - wnd->m_real_left);
+	pos = &db->m_data[wnd->m_real_top * db->m_width + wnd->m_real_left];
+	for ( i = wnd->m_real_top; i < wnd->m_real_bottom; i ++ )
+	{
+		for ( j = wnd->m_real_left; j < wnd->m_real_right; j ++ )
+		{
+			/* Check that currently visible window is this window's 
+			 * ancestor. If not, this position is not visible because
+			 * currently it is holded by a window from a more top-level
+			 * branch. Otherwise, overwrite it (parent is always below
+			 * the child) */
+			cur = pos->m_wnd;
+			for ( parent = wnd->m_parent; parent != NULL; 
+					parent = parent->m_parent )
+				if (parent == cur)
+				{
+					pos->m_wnd = wnd;
+					break;
+				}
+
+			/* Move to the next position */
+			pos ++;
+		}
+
+		/* Move to the next line */
+		pos += dist;
+	}
+
+	/* Set visibility for the children */
+	for ( child = wnd->m_focus_child; child != NULL; 
+			child = child->m_lower_sibling )
+		wnd_update_visibility(child);
+} /* End of 'wnd_update_visibility' function */
+
+/* Calculate window real area */
+void wnd_calc_real_pos( wnd_t *wnd )
+{
+	wnd_t *parent = wnd->m_parent;
+
+	/* First make them equal with the screen coordinates */
+	wnd->m_real_left = wnd->m_screen_x;
+	wnd->m_real_right = wnd->m_screen_x + wnd->m_width;
+	wnd->m_real_top = wnd->m_screen_y;
+	wnd->m_real_bottom = wnd->m_screen_y + wnd->m_height;
+
+	/* Clip with ancestors boundaries */
+	if (parent != NULL)
+	{
+		/* Clip with parent's client area */
+		int pl = parent->m_screen_x + parent->m_client_x,
+			pr = pl + parent->m_client_w,
+			pt = parent->m_screen_y + parent->m_client_y,
+			pb = pt + parent->m_client_h;
+		if (wnd->m_real_left < pl)
+			wnd->m_real_left = pl;
+		if (wnd->m_real_right > pr)
+			wnd->m_real_right = pr;
+		if (wnd->m_real_top < pt)
+			wnd->m_real_top = pt;
+		if (wnd->m_real_bottom > pb)
+			wnd->m_real_bottom = pb;
+
+		/* Clip with parent's real position */
+		if (wnd->m_real_left < parent->m_real_left)
+			wnd->m_real_left = parent->m_real_left;
+		if (wnd->m_real_right > parent->m_real_right)
+			wnd->m_real_right = parent->m_real_right;
+		if (wnd->m_real_top < parent->m_real_top)
+			wnd->m_real_top = parent->m_real_top;
+		if (wnd->m_real_bottom > parent->m_real_bottom)
+			wnd->m_real_bottom = parent->m_real_bottom;
+	}
+} /* End of 'wnd_calc_real_pos' function */
 
 /* End of 'wnd.c' file */
 

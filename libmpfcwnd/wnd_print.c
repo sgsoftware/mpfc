@@ -80,24 +80,18 @@ void wnd_move( wnd_t *wnd, wnd_move_style_t style, int x, int y )
 void wnd_putc( wnd_t *wnd, dword ch )
 {
 	int cx, cy;
-
-	assert(wnd);
+	struct wnd_display_buf_symbol_t *pos;
 
 	/* This function doesn't print not-printable characters */
 	if (ch < 0x20)
 		return;
 
 	/* Print character */
-	if (wnd_pos_visible(wnd, wnd->m_cursor_x, wnd->m_cursor_y))
+	if (wnd_pos_visible(wnd, wnd->m_cursor_x, wnd->m_cursor_y, &pos))
 	{
-		struct wnd_display_buf_t *buf = &WND_DISPLAY_BUF(wnd);
-		int y = WND_CLIENT2SCREEN_Y(wnd, wnd->m_cursor_y),
-			x = WND_CLIENT2SCREEN_X(wnd, wnd->m_cursor_x),
-			pos = y * buf->m_width + x;
-		buf->m_data[pos].m_attr = wnd->m_attrib | 
+		pos->m_attr = wnd->m_attrib | 
 			COLOR_PAIR(wnd->m_fg_color * WND_COLOR_NUMBER + wnd->m_bg_color);
-		buf->m_data[pos].m_char = ch;
-		buf->m_data[pos].m_wnd = wnd;
+		pos->m_char = ch;
 	}
 
 	/* Advance cursor */
@@ -107,8 +101,6 @@ void wnd_putc( wnd_t *wnd, dword ch )
 /* Put a character */
 void wnd_putchar( wnd_t *wnd, wnd_print_flags_t flags, dword ch )
 {
-	assert(wnd);
-
 	/* Print special character */
 	if (ch < 0x20)
 	{
@@ -243,70 +235,41 @@ int wnd_printf( wnd_t *wnd, wnd_print_flags_t flags, int right_border,
 /* Check that cursor is inside client area */
 bool_t wnd_cursor_in_client( wnd_t *wnd )
 {
-	assert(wnd);
-
 	return (wnd->m_cursor_x >= 0 && wnd->m_cursor_x < wnd->m_client_w &&
 			wnd->m_cursor_y >= 0 && wnd->m_cursor_y < wnd->m_client_h);
 } /* End of 'wnd_cursor_in_client' function */
 
 /* Check that position inside the window is visible */
-bool_t wnd_pos_visible( wnd_t *wnd, int x, int y )
+bool_t wnd_pos_visible( wnd_t *wnd, int x, int y, 
+		struct wnd_display_buf_symbol_t **pos )
 {
-	wnd_t *owning, *wnd_anc[WND_MAX_LEVEL], *own_anc[WND_MAX_LEVEL], *parent;
-	int i, com_anc;
 	int scrx, scry;
+	struct wnd_display_buf_t *db = &WND_DISPLAY_BUF(wnd);
+	static int was_width = 0, was_x = 0, was_y = 0, was_index = 0;
+	int index;
 
 	/* Check that this position belongs to the window */
 	scrx = WND_CLIENT2SCREEN_X(wnd, x);
 	scry = WND_CLIENT2SCREEN_Y(wnd, y);
-	if (scrx < wnd->m_screen_x || scry < wnd->m_screen_y ||
-			scrx >= wnd->m_screen_x + wnd->m_width ||
-			scry >= wnd->m_screen_y + wnd->m_height)
+	if (scrx < 0 || scry < 0 || scrx >= COLS || scry >= LINES)
 		return FALSE;
 
-	/* Check that this position is visible inside parent */
-	for ( parent = wnd->m_parent; parent != NULL; parent = parent->m_parent )
-	{
-		int left = parent->m_screen_x + parent->m_client_x,
-			right = left + parent->m_client_w,
-			top = parent->m_screen_y + parent->m_client_y,
-			bottom = top + parent->m_client_h;
-		if (scrx < left || scry < top || scrx >= right || scry >= bottom)
-			return FALSE;
-	}
+	/* Some optimization: if 'y' is the same as the last time, we
+	 * should not calculate address in such a complicated way */
+	if (scry == was_y && db->m_width == was_width)
+		index = was_index + (scrx - was_x);
+	else
+		index = scry * db->m_width + scrx;
 
-	/* Nobody owns this position yet or overwrite own character */
-	owning = WND_DISPLAY_BUF_ENTRY(wnd, scrx, scry).m_wnd;
-	if (owning == NULL || wnd == owning)
-		return TRUE;
+	/* Save some values for use in future calls */
+	was_width = db->m_width;
+	was_x = scrx;
+	was_y = scry;
+	was_index = index;
 
-	/* Check that position is valid inside the owning window
-	 * (it could be moved) */
-	if (scrx < owning->m_screen_x || scry < owning->m_screen_y ||
-			scrx >= owning->m_screen_x + owning->m_width ||
-			scry >= owning->m_screen_y + owning->m_height)
-		return TRUE;
-
-	/* List windows ancestors */
-	for ( parent = wnd, i = wnd->m_level - 1; parent != NULL;
-			parent = parent->m_parent, i -- )
-		wnd_anc[i] = parent;
-	for ( parent = owning, i = owning->m_level - 1; parent != NULL;
-			parent = parent->m_parent, i -- )
-		own_anc[i] = parent;
-
-	/* Find first common ancestor */
-	for ( com_anc = 0; wnd_anc[com_anc] == own_anc[com_anc]; com_anc ++ );
-	com_anc --;
-
-	/* One of the windows is another's ancestor */
-	if (wnd_anc[com_anc] == wnd)
-		return FALSE;
-	else if (wnd_anc[com_anc] == owning)
-		return TRUE;
-
-	/* Look at z-values of the branches */
-	return (wnd_anc[com_anc + 1]->m_zval > own_anc[com_anc + 1]->m_zval);
+	/* Check that this position is not covered by other windows */
+	*pos = &db->m_data[index];
+	return (*pos)->m_wnd == wnd;
 } /* End of 'wnd_pos_visible' function */
 
 /* End of 'wnd_print.c' file */

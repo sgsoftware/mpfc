@@ -13,7 +13,7 @@ AM_GNU_GETTEXT
 # Check for ncurses
 LIBS_save=$LIBS
 AC_CHECK_HEADERS([curses.h],,[AC_MSG_ERROR(*** Can't find curses.h ***)])
-AC_CHECK_LIB(ncurses_g, initscr,,[AC_MSG_ERROR(*** Can't find ncurses library ***)])
+AC_CHECK_LIB(ncurses, initscr,,[AC_MSG_ERROR(*** Can't find ncurses library ***)])
 CURSES_LIBS="-lncurses"
 AC_SUBST(CURSES_LIBS)
 LIBS=$LIBS_save

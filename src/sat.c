@@ -94,7 +94,7 @@ void *sat_thread( void *arg )
 		}
 
 		/* Wait a little */
-		util_delay(0, 100000L);
+		util_wait();
 	}
 } /* End of 'sat_thread' function */
 
