@@ -69,6 +69,14 @@ bool_t cbox_init( combobox_t *wnd, wnd_t *parent, int x, int y, int width,
 	/* Register message handlers */
 	wnd_register_handler(wnd, WND_MSG_DISPLAY, cbox_display);
 	wnd_register_handler(wnd, WND_MSG_KEYDOWN, cbox_handle_key);
+	wnd_register_handler(wnd, WND_MSG_CHANGE_FOCUS, cbox_handle_focus);
+	wnd_register_handler(wnd, WND_MSG_MOUSE_LEFT_CLICK, cbox_handle_left_click);
+	wnd_register_handler(wnd, WND_MSG_MOUSE_LEFT_DOUBLE, 
+			cbox_handle_dbl_click);
+	wnd_register_handler(wnd, WND_MSG_MOUSE_MIDDLE_CLICK, 
+			cbox_handle_middle_click);
+	wnd_register_handler(wnd, WND_MSG_MOUSE_OUTSIDE_FOCUS, 
+			cbox_handle_mouse_outside);
 	WND_OBJ(wnd)->m_wnd_destroy = cbox_destroy;
 	WND_OBJ(wnd)->m_flags = WND_ITEM;
 
@@ -366,6 +374,100 @@ void cbox_edit2list( combobox_t *cb )
 	cbox_move_list_cursor(cb, FALSE, (i < cb->m_list_size) ? i : -1, FALSE, 
 			FALSE);
 } /* End of 'cbox_edit2list' function */
+
+/* Mouse left button click handler */
+void cbox_handle_left_click( wnd_t *wnd, dword data )
+{
+	combobox_t *box = (combobox_t *)wnd;
+	
+	if (wnd == NULL)
+		return;
+
+	/* Call base handler for a dialog item */
+	if (!dlg_item_handle_mouse(wnd))
+		return;
+
+	/* If combo box is not expanded - expand it */
+	if (!box->m_expanded)
+		box->m_expanded = TRUE;
+	/* Else - set cursor to the respective position */
+	else
+		cbox_move_list_cursor(box, FALSE, 
+				WND_MOUSE_Y(data) + box->m_scrolled - 1, TRUE, TRUE);
+	wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
+} /* End of 'cbox_handle_left_click' function */
+
+/* Mouse middle button click handler */
+void cbox_handle_middle_click( wnd_t *wnd, dword data )
+{
+	combobox_t *box = (combobox_t *)wnd;
+	
+	if (wnd == NULL)
+		return;
+
+	/* Call base handler for a dialog item */
+	if (!dlg_item_handle_mouse(wnd))
+		return;
+
+	/* If list box is not expanded - expand it */
+	if (!box->m_expanded)
+		box->m_expanded = TRUE;
+	/* Else - set cursor to the respective position and centrize view */
+	else
+	{
+		cbox_move_list_cursor(box, FALSE, WND_MOUSE_Y(data) + 
+				box->m_scrolled - 1, TRUE, TRUE);
+		box->m_scrolled = box->m_list_cursor - box->m_list_height / 2;
+		if (box->m_scrolled < 0)
+			box->m_scrolled = 0;
+		else if (box->m_scrolled + box->m_list_height > box->m_list_size)
+			box->m_scrolled = box->m_list_size - box->m_list_height;
+	}
+	wnd_send_msg(wnd, WND_MSG_DISPLAY, 0);
+} /* End of 'cbox_handle_middle_click' function */
+
+/* Focus change handler */
+void cbox_handle_focus( wnd_t *wnd, dword data )
+{
+	/* Unexpand box */
+	((combobox_t *)wnd)->m_expanded = FALSE;
+
+	/* Call base handler */
+	wnd_handle_ch_focus(wnd, data);
+} /* End of 'cbox_handle_focus' function */
+
+/* 'WND_MSG_MOUSE_OUTSIDE_FOCUS' message handler */
+void cbox_handle_mouse_outside( wnd_t *wnd, dword data )
+{
+	/* Unexpand */
+	((combobox_t *)wnd)->m_expanded = FALSE;
+	wnd_send_msg(wnd, WND_MSG_DISPLAY, 0);
+} /* End of 'cbox_handle_mouse_outside' function */
+
+/* Mouse left button double click handler */
+void cbox_handle_dbl_click( wnd_t *wnd, dword data )
+{
+	combobox_t *box = (combobox_t *)wnd;
+	
+	if (wnd == NULL)
+		return;
+
+	/* Call base handler for a dialog item */
+	if (!dlg_item_handle_mouse(wnd))
+		return;
+
+	/* If combo box is not expanded - expand it */
+	if (!box->m_expanded)
+		box->m_expanded = TRUE;
+	/* Else - set cursor to the respective position */
+	else
+	{
+		cbox_move_list_cursor(box, FALSE, 
+				WND_MOUSE_Y(data) + box->m_scrolled - 1, TRUE, TRUE);
+		box->m_expanded = FALSE;
+	}
+	wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
+} /* End of 'cbox_handle_dbl_click' function */
 
 /* End of 'combobox.c' file */
 

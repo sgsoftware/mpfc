@@ -148,7 +148,7 @@ void plist_move( plist_t *pl, int y, bool_t relative );
 void plist_move_sel( plist_t *pl, int y, bool_t relative );
 
 /* Centrize view */
-void plist_centrize( plist_t *pl );
+void plist_centrize( plist_t *pl, int index );
 
 /* Display play list */
 void plist_display( plist_t *pl, wnd_t *wnd );

@@ -5,7 +5,7 @@
 /* FILE NAME   : dlgbox.c
  * PURPOSE     : SG MPFC. Dialog box functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 2.09.2003
+ * LAST UPDATE : 17.11.2003
  * NOTE        : Module prefix 'dlg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -28,6 +28,7 @@
 #include "types.h"
 #include "colors.h"
 #include "dlgbox.h"
+#include "dlg_ctrl.h"
 #include "error.h"
 #include "util.h"
 #include "window.h"
@@ -53,6 +54,9 @@ dlgbox_t *dlg_new( wnd_t *parent, int x, int y, int w, int h,
 		return NULL;
 	}
 
+	/* Create dialog controls */
+	dlgctrl_new(WND_OBJ(dlg), w - 5, 0, DLGCTRL_OK);
+	dlgctrl_new(WND_OBJ(dlg), w - 4, 0, DLGCTRL_CANCEL);
 	return dlg;
 } /* End of 'dlg_new' function */
 
@@ -71,7 +75,7 @@ bool_t dlg_init( dlgbox_t *dlg, wnd_t *parent, int x, int y, int w, int h,
 	
 	/* Save dialog box parameters */
 	strcpy(dlg->m_caption, caption);
-	dlg->m_caption[dlg->m_wnd.m_width - 5] = 0;
+	dlg->m_caption[dlg->m_wnd.m_width - 7] = 0;
 	dlg->m_cur_focus = NULL;
 	dlg->m_ok = FALSE;
 	WND_FLAGS(dlg) |= (WND_DIALOG | WND_INITIALIZED);
@@ -165,6 +169,25 @@ void dlg_next_focus( dlgbox_t *dlg )
 			//((dlg->m_cur_focus->m_next != NULL) ? 
 			 	dlg->m_cur_focus->m_next;// : WND_OBJ(dlg)->m_child);
 } /* End of 'dlg_next_focus' function */
+
+/* A base mouse click handler for dialog items */
+bool_t dlg_item_handle_mouse( wnd_t *wnd )
+{
+	/* If we are not actually a dialog item do nothing but let the further code
+	 * to be executed */
+	if (wnd->m_parent == NULL || !(wnd->m_parent->m_flags & WND_DIALOG))
+		return TRUE;
+
+	/* If we are not children of the same parent with current focus
+	 * do nothing and do not let the further code to do anything */
+	if (wnd_focus == NULL || wnd_focus->m_parent != wnd->m_parent)
+		return FALSE;
+
+	/* Change focus to this window */
+	if (wnd != wnd_focus)
+		wnd_send_msg(wnd_focus, WND_MSG_CHANGE_FOCUS, (dword)wnd);
+	return TRUE;
+} /* End of 'dlg_item_handle_mouse' function */
 
 /* End of 'dlgbox.c' file */
 

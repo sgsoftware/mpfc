@@ -5,7 +5,7 @@
 /* FILE NAME   : player.h
  * PURPOSE     : SG MPFC. Interface for main player functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 9.11.2003
+ * LAST UPDATE : 15.11.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -68,6 +68,17 @@
 #define PLAYER_INFO_GENRE    106
 #define PLAYER_INFO_LABEL    107
 
+/* Sliders parameters */
+#define PLAYER_SLIDER_TIME_Y 2
+#define PLAYER_SLIDER_TIME_X 0
+#define PLAYER_SLIDER_TIME_W (wnd_root->m_width - 24)
+#define PLAYER_SLIDER_VOL_Y  2
+#define PLAYER_SLIDER_VOL_X  (wnd_root->m_width - 22)
+#define PLAYER_SLIDER_VOL_W  20
+#define PLAYER_SLIDER_BAL_Y  1
+#define PLAYER_SLIDER_BAL_X  (wnd_root->m_width - 22)
+#define PLAYER_SLIDER_BAL_W  20
+
 /* Equalizer information */
 extern bool_t player_eq_changed;
 
@@ -97,6 +108,12 @@ void player_handle_key( wnd_t *wnd, dword data );
 
 /* Handle mouse left button click */
 void player_handle_mouse_click( wnd_t *wnd, dword data );
+
+/* Handle mouse left button double click */
+void player_handle_mouse_double( wnd_t *wnd, dword data );
+
+/* Handle mouse middle button click */
+void player_handle_mouse_middle( wnd_t *wnd, dword data );
 
 /* Display player function */
 void player_display( wnd_t *wnd, dword data );

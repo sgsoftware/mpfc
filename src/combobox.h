@@ -79,6 +79,12 @@ void cbox_display( wnd_t *wnd, dword data );
 /* Combo box key handler function */
 void cbox_handle_key( wnd_t *wnd, dword data );
 
+/* Focus change handler */
+void cbox_handle_focus( wnd_t *wnd, dword data );
+
+/* 'WND_MSG_MOUSE_OUTSIDE_FOCUS' message handler */
+void cbox_handle_mouse_outside( wnd_t *wnd, dword data );
+
 /* Set edit box text */
 void cbox_set_text( combobox_t *cb, char *text );
 
@@ -100,6 +106,15 @@ void cbox_move_list_cursor( combobox_t *cb, bool_t rel, int pos, bool_t expand,
 
 /* Update list box using text from edit box */
 void cbox_edit2list( combobox_t *cb );
+
+/* Mouse left button click handler */
+void cbox_handle_left_click( wnd_t *wnd, dword data );
+
+/* Mouse left button double click handler */
+void cbox_handle_dbl_click( wnd_t *wnd, dword data );
+
+/* Mouse middle button click handler */
+void cbox_handle_middle_click( wnd_t *wnd, dword data );
 
 #endif
 

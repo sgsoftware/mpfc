@@ -159,6 +159,10 @@ bool_t player_init( int argc, char *argv[] )
 			player_handle_key);
 	wnd_register_handler(wnd_root, WND_MSG_MOUSE_LEFT_CLICK,
 			player_handle_mouse_click);
+	wnd_register_handler(wnd_root, WND_MSG_MOUSE_LEFT_DOUBLE,
+			player_handle_mouse_double);
+	wnd_register_handler(wnd_root, WND_MSG_MOUSE_MIDDLE_CLICK,
+			player_handle_mouse_middle);
 
 	/* Initialize key bindings */
 	kbind_init();
@@ -366,7 +370,68 @@ void player_handle_key( wnd_t *wnd, dword data )
 /* Handle mouse left button click */
 void player_handle_mouse_click( wnd_t *wnd, dword data )
 {
+	int x = WND_MOUSE_X(data), y = WND_MOUSE_Y(data);
+
+	/* Move cursor in play list */
+	if (y >= player_plist->m_start_pos && 
+			y < player_plist->m_start_pos + player_plist->m_height)
+	{
+		plist_move(player_plist, y - player_plist->m_start_pos + 
+				player_plist->m_scrolled, FALSE);
+		wnd_send_msg(wnd, WND_MSG_DISPLAY, 0);
+	}
+	/* Set volume */
+	else if (y == PLAYER_SLIDER_VOL_Y && x >= PLAYER_SLIDER_VOL_X &&
+				x <= PLAYER_SLIDER_VOL_X + PLAYER_SLIDER_VOL_W)
+	{
+		player_set_vol((x - PLAYER_SLIDER_VOL_X) * 100 / 
+				PLAYER_SLIDER_VOL_W, FALSE);
+		wnd_send_msg(wnd, WND_MSG_DISPLAY, 0);
+	}
+	/* Set balance */
+	else if (y == PLAYER_SLIDER_BAL_Y && x >= PLAYER_SLIDER_BAL_X &&
+				x <= PLAYER_SLIDER_BAL_X + PLAYER_SLIDER_BAL_W)
+	{
+		player_set_bal((x - PLAYER_SLIDER_BAL_X) * 100 / 
+				PLAYER_SLIDER_BAL_W, FALSE);
+		wnd_send_msg(wnd, WND_MSG_DISPLAY, 0);
+	}
+	/* Set time */
+	else if (y == PLAYER_SLIDER_TIME_Y && x >= PLAYER_SLIDER_TIME_X &&
+				x <= PLAYER_SLIDER_TIME_X + PLAYER_SLIDER_TIME_W)
+	{
+		if (player_plist->m_cur_song >= 0)
+		{
+			song_t *s = player_plist->m_list[player_plist->m_cur_song];
+			if (s != NULL)
+			{
+				player_seek((x - PLAYER_SLIDER_TIME_X) * 
+						s->m_len / PLAYER_SLIDER_TIME_W, FALSE);
+				wnd_send_msg(wnd, WND_MSG_DISPLAY, 0);
+			}
+		}
+	}
 } /* End of 'player_handle_mouse_click' function */
+
+/* Handle mouse left button double click */
+void player_handle_mouse_double( wnd_t *wnd, dword data )
+{
+	int x = WND_MOUSE_X(data), y = WND_MOUSE_Y(data);
+
+	/* Play song */
+	if (y >= player_plist->m_start_pos && 
+			y < player_plist->m_start_pos + player_plist->m_height)
+	{
+		int s = y - player_plist->m_start_pos + player_plist->m_scrolled;
+
+		if (s >= 0 && s < player_plist->m_len)
+		{
+			player_status = PLAYER_STATUS_PLAYING;
+			player_play(s, 0);
+			wnd_send_msg(wnd, WND_MSG_DISPLAY, 0);
+		}
+	}
+} /* End of 'player_handle_mouse_double' function */
 
 /* Display player function */
 void player_display( wnd_t *wnd, dword data )
@@ -426,12 +491,12 @@ void player_display( wnd_t *wnd, dword data )
 	col_set_color(wnd, COL_EL_DEFAULT);
 
 	/* Display different slidebars */
-	player_display_slider(wnd, 0, 2, wnd->m_width - 24, 
-			player_cur_time, (s == NULL) ? 0 : s->m_len);
-	player_display_slider(wnd, wnd->m_width - 22, 1, 20, 
-			player_balance, 100.);
-	player_display_slider(wnd, wnd->m_width - 22, 2, 20, 
-			player_volume, 100.);
+	player_display_slider(wnd, PLAYER_SLIDER_TIME_X, PLAYER_SLIDER_TIME_Y, 
+			PLAYER_SLIDER_TIME_W, player_cur_time, (s == NULL) ? 0 : s->m_len);
+	player_display_slider(wnd, PLAYER_SLIDER_BAL_X, PLAYER_SLIDER_BAL_Y,
+			PLAYER_SLIDER_BAL_W, player_balance, 100.);
+	player_display_slider(wnd, PLAYER_SLIDER_VOL_X, PLAYER_SLIDER_VOL_Y,
+			PLAYER_SLIDER_VOL_W, player_volume, 100.);
 	
 	/* Display play list */
 	plist_display(player_plist, wnd);
@@ -922,15 +987,18 @@ void player_info_dialog( void )
 			genre_common = TRUE;
 	bool_t local = TRUE;
 	label_t *label;
+	int sel_start = player_plist->m_sel_start, 
+		sel_end = player_plist->m_sel_end;
+	PLIST_GET_SEL(player_plist, start, end);
 
 	/* Get song object */
-	if (player_plist->m_sel_end < 0 || !player_plist->m_len)
+	if (sel_end < 0 || !player_plist->m_len)
 		return;
 	else
-		s = player_plist->m_list[player_plist->m_sel_end];
+		s = player_plist->m_list[sel_end];
 
 	/* Ask whether to edit info locally in case of multi selection */
-	if (player_plist->m_sel_end != player_plist->m_sel_start)
+	if (sel_end != sel_start)
 	{
 		choice_ctrl_t *ch;
 		int choice;
@@ -948,7 +1016,6 @@ void player_info_dialog( void )
 	}
 	
 	/* Update songs information */
-	PLIST_GET_SEL(player_plist, start, end);
 	if (local)
 	{
 		song_update_info(s);
@@ -1429,7 +1496,7 @@ void player_handle_action( int action )
 
 	/* Centrize view */
 	case KBIND_CENTRIZE:
-		plist_centrize(player_plist);
+		plist_centrize(player_plist, -1);
 		break;
 
 	/* Enter visual mode */
@@ -1839,9 +1906,9 @@ void player_var_mngr_notify( wnd_t *wnd, dword data )
 		editbox_t *name, *val;
 
 		d = dlg_new(WND_OBJ(dlg), 4, 4, 40, 5, _("New variable"));
-		name = ebox_new(WND_OBJ(d), 4, 3, WND_WIDTH(d) - 5, 1, 256, 
+		name = ebox_new(WND_OBJ(d), 2, 1, WND_WIDTH(d) - 5, 1, 256, 
 				_("Name: "), "");
-		val = ebox_new(WND_OBJ(d), 4, 4, WND_WIDTH(d) - 5, 1, 256, 
+		val = ebox_new(WND_OBJ(d), 2, 2, WND_WIDTH(d) - 5, 1, 256, 
 				_("Value: "), "");
 		wnd_run(d);
 		if (d->m_ok)
@@ -2211,6 +2278,21 @@ void player_update_info_dlg( wnd_t *wnd )
 	label_set_text((label_t *)wnd_find_child_by_id(wnd, PLAYER_INFO_LABEL),
 			info->m_own_data);
 } /* End of 'player_update_info_dlg' function */
+
+/* Handle mouse middle button click */
+void player_handle_mouse_middle( wnd_t *wnd, dword data )
+{
+	int x = WND_MOUSE_X(data), y = WND_MOUSE_Y(data);
+
+	/* Centrize this song */
+	if (y >= player_plist->m_start_pos && 
+			y < player_plist->m_start_pos + player_plist->m_height)
+	{
+		plist_centrize(player_plist, y - player_plist->m_start_pos + 
+				player_plist->m_scrolled);
+		wnd_send_msg(wnd, WND_MSG_DISPLAY, 0);
+	}
+} /* End of 'player_handle_mouse_middle' function */
 
 /* End of 'player.c' file */
 

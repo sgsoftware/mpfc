@@ -86,6 +86,9 @@ void ebox_display( wnd_t *wnd, dword data );
 /* Edit box key handler function */
 void ebox_handle_key( wnd_t *wnd, dword data );
 
+/* Mouse left button click message handler */
+void ebox_handle_mouse( wnd_t *wnd, dword data );
+
 /* Add a character to edit box */
 void ebox_add( editbox_t *box, char c );
 

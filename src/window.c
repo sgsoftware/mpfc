@@ -5,7 +5,7 @@
 /* FILE NAME   : window.c
  * PURPOSE     : SG MPFC. Window functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 10.09.2003
+ * LAST UPDATE : 18.11.2003
  * NOTE        : Module prefix 'wnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -46,11 +46,12 @@ wnd_t *wnd_root = NULL;
 /* Current focus window */
 wnd_t *wnd_focus = NULL;
 
-/* Keyboard thread ID */
-pthread_t wnd_kbd_tid;
+/* Thread IDs */
+pthread_t wnd_kbd_tid, wnd_mouse_tid;
 
-/* Keyboard thread termination flag */
+/* Threads termination flag */
 bool_t wnd_end_kbd_thread = FALSE;
+bool_t wnd_end_mouse_thread = FALSE;
 
 /* Number of initialized color pairs */
 int wnd_num_pairs = 0;
@@ -64,6 +65,8 @@ pthread_mutex_t wnd_display_mutex;
 /* Create a new root window */
 wnd_t *wnd_new_root( void )
 {
+	Gpm_Connect conn;
+
 	/* Allocate memory for window object */
 	wnd_root = (wnd_t *)malloc(sizeof(wnd_t));
 	if (wnd_root == NULL)
@@ -83,10 +86,17 @@ wnd_t *wnd_new_root( void )
 	nodelay(wnd_root->m_wnd, TRUE);
 
 	/* Initialize mouse */
-//	mousemask(ALL_MOUSE_EVENTS, NULL);
+	memset(&conn, 0, sizeof(conn));
+	conn.eventMask = GPM_DOWN | GPM_DOUBLE | GPM_DRAG | GPM_UP;
+	conn.defaultMask = ~GPM_HARD;
+	conn.minMod = 0;
+	conn.maxMod = 0;
+	Gpm_Open(&conn, 0); 
+	gpm_zerobased = TRUE;
 
-	/* Initialize keyboard thread */
+	/* Initialize keyboard and mouse threads */
 	pthread_create(&wnd_kbd_tid, NULL, wnd_kbd_thread, NULL);
+	pthread_create(&wnd_mouse_tid, NULL, wnd_mouse_thread, NULL);
 	wnd_root->m_flags |= WND_INITIALIZED;
 
 	/* Return */
@@ -118,20 +128,19 @@ wnd_t *wnd_new_child( wnd_t *parent, int x, int y, int w, int h	)
 /* Initialize window fields */
 bool_t wnd_init( wnd_t *wnd, wnd_t *parent, int x, int y, int w, int h )
 {
-	int sx, sy;
 	int i;
 
 	/* Get real window position (on screen) */
 	memset(wnd, 0, sizeof(wnd_t));
 	if (parent != NULL)
 	{
-		sx = x + parent->m_x;
-		sy = y + parent->m_y;
+		wnd->m_sx = x + parent->m_sx;
+		wnd->m_sy = y + parent->m_sy;
 	}
 	else
 	{
-		sx = x;
-		sy = y;
+		wnd->m_sx = x;
+		wnd->m_sy = y;
 	}
 
 	/* Initialize NCURSES library */
@@ -153,7 +162,7 @@ bool_t wnd_init( wnd_t *wnd, wnd_t *parent, int x, int y, int w, int h )
 	/* Create NCURSES window */
 	else
 	{
-		wnd->m_wnd = newwin(h, w, sy, sx);
+		wnd->m_wnd = newwin(h, w, wnd->m_sy, wnd->m_sx);
 		if (wnd->m_wnd == NULL)
 		{
 			error_set_code(ERROR_CURSES);
@@ -171,7 +180,7 @@ bool_t wnd_init( wnd_t *wnd, wnd_t *parent, int x, int y, int w, int h )
 	wnd->m_child = NULL;
 	wnd->m_next = NULL;
 	wnd->m_flags = 0;
-	wnd->m_id = 0;
+	wnd->m_id = -1;
 	if (wnd->m_parent != NULL)
 	{
 		if (wnd->m_parent->m_child == NULL)
@@ -189,6 +198,7 @@ bool_t wnd_init( wnd_t *wnd, wnd_t *parent, int x, int y, int w, int h )
 		wnd->m_msg_handlers[i] = NULL;
 	wnd->m_msg_handlers[WND_MSG_CLOSE] = wnd_handle_close;
 	wnd->m_msg_handlers[WND_MSG_CHANGE_FOCUS] = wnd_handle_ch_focus;
+	wnd->m_msg_handlers[WND_MSG_POSTPONED_NOTIFY] = wnd_handle_pp_notify;
 	wnd->m_wnd_destroy = wnd_destroy_func;
 	wnd->m_msg_queue_head = wnd->m_msg_queue_tail = NULL;
 
@@ -219,9 +229,14 @@ void wnd_destroy_func( wnd_t *wnd )
 	/* Unitialize NCURSES library if we destroy root window */
 	if (wnd->m_parent == NULL)
 	{
-		/* Kill keyboard thread */
+		/* Kill threads */
 		wnd_end_kbd_thread = TRUE;
+		wnd_end_mouse_thread = TRUE;
 		pthread_join(wnd_kbd_tid, NULL);
+		pthread_join(wnd_mouse_tid, NULL);
+
+		/* Uninitialize mouse */
+		Gpm_Close();
 		
 		endwin();
 	}
@@ -371,7 +386,7 @@ void wnd_send_msg( void *obj, dword id, dword data )
 	}
 
 	/* Execute some messages */
-	if (id == WND_MSG_NOTIFY)
+	if (id == WND_MSG_NOTIFY || WND_IS_MOUSE_MSG(id))
 	{
 		if (wnd->m_msg_handlers[id] != NULL)
 			(wnd->m_msg_handlers[id])(wnd, data);
@@ -560,29 +575,9 @@ void *wnd_kbd_thread( void *arg )
 		/* Read next character */
 		if ((key = getch()) != ERR)
 		{
-			/* Check that it was mouse event */
-#if 0
-			if (key == KEY_MOUSE)
-			{
-				MEVENT me;
-
-				getmouse(&me);
-				if (me.bstate & BUTTON1_CLICKED)
-				{
-					wnd_send_msg(wnd_focus, WND_MSG_MOUSE_LEFT_CLICK,
-							(((dword)(word)me.x) << 16) | (word)me.y);
-				}
-			}
-			/* Send message about this key to current focus window */
-			else
-#endif
-			{
-				if (key == '\f')
-				{
-					wnd_redisplay(wnd_root);
-				}
-				wnd_send_msg(wnd_focus, WND_MSG_KEYDOWN, (dword)key);
-			}
+			if (key == '\f')
+				wnd_redisplay(wnd_root);
+			wnd_send_msg(wnd_focus, WND_MSG_KEYDOWN, (dword)key);
 		}
 
 		/* Wait a little */
@@ -611,16 +606,22 @@ void wnd_handle_ch_focus( wnd_t *wnd, dword data )
 	if (wnd->m_flags & WND_DIALOG)
 	{
 		dlgbox_t *dlg = (dlgbox_t *)wnd;
+		wnd_t *data_wnd = (wnd_t *)data;
 		
 		/* Search for next focusable dialog item */
-		wnd_t *was = dlg->m_cur_focus;
-		do
+		if (data_wnd == NULL || (WND_FLAGS(data_wnd) & WND_NO_FOCUS))
 		{
-			dlg_next_focus(dlg);
-			if (dlg->m_cur_focus == was)
-				break;
-		} while ((dlg->m_cur_focus == NULL) ||
-				(dlg->m_cur_focus->m_flags & WND_NO_FOCUS));
+			wnd_t *was = dlg->m_cur_focus;
+			do
+			{
+				dlg_next_focus(dlg);
+				if (dlg->m_cur_focus == was)
+					break;
+			} while ((dlg->m_cur_focus == NULL) ||
+					(dlg->m_cur_focus->m_flags & WND_NO_FOCUS));
+		}
+		else
+			dlg->m_cur_focus = data_wnd;
 		if (dlg->m_cur_focus != NULL)
 		{
 			if (dlg->m_cur_focus->m_flags & WND_NO_FOCUS)
@@ -633,7 +634,7 @@ void wnd_handle_ch_focus( wnd_t *wnd, dword data )
 	else if ((wnd->m_parent != NULL) && (wnd->m_flags & WND_ITEM) &&
 			(wnd->m_parent->m_flags & WND_DIALOG))
 	{
-		wnd_send_msg(wnd->m_parent, WND_MSG_CHANGE_FOCUS, 0);
+		wnd_send_msg(wnd->m_parent, WND_MSG_CHANGE_FOCUS, data);
 	}
 } /* End of 'wnd_handle_ch_focus' function */
 
@@ -717,6 +718,110 @@ wnd_t *wnd_find_child_by_id( wnd_t *parent, short id )
 			return child;
 	return NULL;
 } /* End of 'wnd_find_child_by_id' function */
+
+/* Gpm mouse handler */
+int wnd_mouse_handler( Gpm_Event *event, void *data )
+{
+	wnd_t *wnd;
+	int msg = -1, x, y;
+
+	/* Determine window to which this event is addressed */
+	x = event->x, y = event->y;
+	wnd = wnd_get_wnd_under_cursor(x, y);
+	if (wnd != NULL)
+		x -= wnd->m_sx, y -= wnd->m_sy;
+
+	/* Send respective message to it */
+	if ((event->type & GPM_DOUBLE) && (event->buttons & GPM_B_LEFT))
+		msg = WND_MSG_MOUSE_LEFT_DOUBLE;
+	if ((event->type & GPM_DOWN) && (event->buttons & GPM_B_LEFT))
+		msg = WND_MSG_MOUSE_LEFT_CLICK;
+	if ((event->type & GPM_DOWN) && (event->buttons & GPM_B_MIDDLE))
+		msg = WND_MSG_MOUSE_MIDDLE_CLICK;
+	if (msg >= 0)
+		wnd_send_msg(wnd, msg, WND_MOUSE_DATA(x, y));
+	if (wnd != wnd_focus && msg >= 0)
+		wnd_send_msg(wnd_focus, WND_MSG_MOUSE_OUTSIDE_FOCUS, 0);
+
+	/* Display cursor */
+	GPM_DRAWPOINTER(event);
+} /* End of 'wnd_mouse_handler' function */
+
+/* Get window under which mouse cursor is */
+wnd_t *wnd_get_wnd_under_cursor( int x, int y )
+{
+	wnd_t *wnd, *w;
+
+	for ( wnd = wnd_root; wnd != NULL; )
+	{
+		wnd_t *fw;
+		
+		/* Find a child under cursor */
+		w = fw = wnd_find_focus_branch(wnd);
+		if (w == NULL || !wnd_pt_belongs(w, x, y))
+		{
+			for ( w = wnd->m_child; w != NULL; w = w->m_next )
+			{
+				if (w == fw)
+					continue;
+				if (wnd_pt_belongs(w, x, y))
+					break;
+			}
+		}
+
+		/* If not found - return current window */
+		if (w == NULL)
+			return wnd;
+
+		/* Else - continue in this window */
+		wnd = w;
+	}
+	return wnd;
+} /* End of 'wnd_get_wnd_under_cursor' function */
+
+/* Mouse thread function */
+void *wnd_mouse_thread( void *arg )
+{
+	fd_set readset;
+	struct timeval tv;
+
+	/* Loop */
+	for ( ; !wnd_end_mouse_thread; )
+	{
+		Gpm_Event event;
+		int ret;
+		
+		/* Initialize stuff for select */
+		FD_ZERO(&readset);
+		FD_SET(gpm_fd, &readset);
+		memset(&tv, 0, sizeof(tv));
+		
+		/* Check for events */
+		if ((ret = select(gpm_fd + 1, &readset, NULL, NULL, &tv)) > 0)
+		{
+			if (Gpm_GetEvent(&event) > 0)
+				wnd_mouse_handler(&event, NULL);
+		}
+
+		/* Wait a little */
+		util_delay(0, 100000);
+	}
+	return NULL;
+} /* End of 'wnd_mouse_thread' function */
+
+/* Check if a point belongs to the window */
+bool_t wnd_pt_belongs( wnd_t *wnd, int x, int y )
+{
+	return (wnd != NULL && x >= wnd->m_sx && x < wnd->m_sx + wnd->m_width &&
+				y >= wnd->m_sy && y < wnd->m_sy + wnd->m_height);
+} /* End of 'wnd_pt_belongs' function */
+
+/* Generic WND_MSG_POSTPONED_NOTIFY message handler */
+void wnd_handle_pp_notify( wnd_t *wnd, dword data )
+{
+	/* Free memory */
+	free((void *)data);
+} /* End of 'wnd_handle_pp_notify' function */
 
 /* End of 'window.c' file */
 

@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: konsamp 0.1\n"
-"POT-Creation-Date: 2003-11-11 18:50+0300\n"
+"POT-Creation-Date: 2003-11-15 21:35+0300\n"
 "PO-Revision-Date: 2003-02-13 09:15+0300\n"
 "Last-Translator: Sergey E. Galanov <sgsoftware@mail.ru>\n"
 "Language-Team: Russian <sgsoftware@mail.ru>\n"
@@ -168,7 +168,7 @@ msgstr "Поиск по: заголовку(T), исполнителю(A), альбому(L), году(Y), жанру(G)"
 msgid "Reload info in the whole list? (Yes/No)"
 msgstr "Сортировать глобально? (Yes/No)"
 
-#: src/plist.c:880
+#: src/plist.c:898
 #, c-format
 msgid "%i/%i songs; %i:%02i:%02i/%i:%02i:%02i"
 msgstr "%i/%i песен; %i:%02i:%02i/%i:%02i:%02i"

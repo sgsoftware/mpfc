@@ -805,16 +805,15 @@ void plist_move( plist_t *pl, int y, bool_t relative )
 } /* End of 'plist_move' function */
 
 /* Centrize view */
-void plist_centrize( plist_t *pl )
+void plist_centrize( plist_t *pl, int index )
 {
-	int index;
-	
 	PLIST_ASSERT(pl);
 
 	if (!pl->m_len)
 		return;
 
-	index = pl->m_cur_song;
+	if (index < 0)
+		index = pl->m_cur_song;
 	if (index >= 0)
 	{
 		pl->m_sel_end = index;

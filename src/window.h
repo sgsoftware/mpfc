@@ -5,7 +5,7 @@
 /* FILE NAME   : window.h
  * PURPOSE     : SG MPFC. Interface for window functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 10.11.2003
+ * LAST UPDATE : 18.11.2003
  * NOTE        : Module prefix 'wnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -28,6 +28,7 @@
 #define __SG_MPFC_WINDOW_H__
 
 #include <curses.h>
+#include <gpm.h>
 #include <pthread.h>
 #include "types.h"
 
@@ -38,11 +39,19 @@ struct tag_wnd_t;
 #define WND_MSG_DISPLAY					0
 #define WND_MSG_KEYDOWN					1
 #define WND_MSG_USER					2
-#define WND_MSG_MOUSE_LEFT_CLICK		3
-#define WND_MSG_CLOSE					4
-#define WND_MSG_CHANGE_FOCUS			5
-#define WND_MSG_NOTIFY					6
-#define WND_MSG_NUMBER					7
+#define WND_MSG_CLOSE					3
+#define WND_MSG_CHANGE_FOCUS			4
+#define WND_MSG_NOTIFY					5
+#define WND_MSG_POSTPONED_NOTIFY		6
+#define WND_MSG_MOUSE_LEFT_CLICK		7
+#define WND_MSG_MOUSE_LEFT_DOUBLE		8
+#define WND_MSG_MOUSE_MIDDLE_CLICK		9
+#define WND_MSG_MOUSE_OUTSIDE_FOCUS		10
+#define WND_MSG_NUMBER					11
+
+/* Check if specified message is a mouse message */
+#define WND_IS_MOUSE_MSG(id) ((id) >= WND_MSG_MOUSE_LEFT_CLICK && \
+								(id) < WND_MSG_NUMBER)
 
 /* Window flags */
 #define WND_DIALOG						0x00000001
@@ -63,6 +72,11 @@ struct tag_wnd_t;
 #define WND_NOTIFY_ID(data) ((data) >> 16)
 #define WND_NOTIFY_ACT(data) (short)(data)
 
+/* Create and get data for mouse messages */
+#define WND_MOUSE_DATA(x, y) (((x) << 16) | (y))
+#define WND_MOUSE_X(data) ((data) >> 16)
+#define WND_MOUSE_Y(data) (short)(data)
+
 /* Window message handler function */
 typedef void (*wnd_msg_handler)( struct tag_wnd_t *wnd, dword data );
 
@@ -74,6 +88,9 @@ typedef struct tag_wnd_t
 
 	/* Window position and size */
 	int m_x, m_y, m_width, m_height;
+
+	/* Window screen position */
+	int m_sx, m_sy;
 
 	/* Window ID */
 	short m_id;
@@ -105,8 +122,18 @@ typedef struct tag_wnd_t
 	pthread_mutex_t m_mutex;
 } wnd_t;
 
+/* Data type for 'WND_MSG_POSTPONED_NOTIFY' message */
+typedef struct 
+{
+	wnd_t *m_whom;
+	dword m_data;
+} wnd_postponed_notify_data_t;
+
 /* Root window */
 extern wnd_t *wnd_root;
+
+/* Current focus window */
+extern wnd_t *wnd_focus;
 
 /* Create a new root window */
 wnd_t *wnd_new_root( void );
@@ -162,11 +189,17 @@ wnd_t *wnd_find_focus_branch( wnd_t *wnd );
 /* Keyboard thread function */
 void *wnd_kbd_thread( void *arg );
 
+/* Mouse thread function */
+void *wnd_mouse_thread( void *arg );
+
 /* Generic WND_MSG_CLOSE message handler */
 void wnd_handle_close( wnd_t *wnd, dword data );
 
 /* Generic WND_MSG_CHANGE_FOCUS message handler */
 void wnd_handle_ch_focus( wnd_t *wnd, dword data );
+
+/* Generic WND_MSG_POSTPONED_NOTIFY message handler */
+void wnd_handle_pp_notify( wnd_t *wnd, dword data );
 
 /* Clear the window */
 void wnd_clear( wnd_t *wnd, bool_t start_from_cursor );
@@ -188,6 +221,15 @@ void wnd_restore_curses( void );
 
 /* Find a child by its ID */
 wnd_t *wnd_find_child_by_id( wnd_t *parent, short id );
+
+/* Gpm mouse handler */
+int wnd_mouse_handler( Gpm_Event *event, void *data );
+
+/* Get window under which mouse cursor is */
+wnd_t *wnd_get_wnd_under_cursor( int x, int y );
+
+/* Check if a point belongs to the window */
+bool_t wnd_pt_belongs( wnd_t *wnd, int x, int y );
 
 #endif
 

@@ -5,7 +5,7 @@
 /* FILE NAME   : editbox.c
  * PURPOSE     : SG MPFC. Edit box functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 9.11.2003
+ * LAST UPDATE : 17.11.2003
  * NOTE        : Module prefix 'ebox'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -72,6 +72,7 @@ bool_t ebox_init( editbox_t *wnd, wnd_t *parent, int x, int y, int width,
 	/* Register message handlers */
 	wnd_register_handler(wnd, WND_MSG_DISPLAY, ebox_display);
 	wnd_register_handler(wnd, WND_MSG_KEYDOWN, ebox_handle_key);
+	wnd_register_handler(wnd, WND_MSG_MOUSE_LEFT_CLICK, ebox_handle_mouse);
 
 	/* Set editbox-specific fields */
 	strcpy(wnd->m_label, label);
@@ -288,6 +289,24 @@ void ebox_del_range( editbox_t *box, int start, int end )
 	for ( i = start; i <= end; i ++ )
 		ebox_del(box, start);
 } /* End of 'ebox_del_range' function */
+
+/* Mouse left button click message handler */
+void ebox_handle_mouse( wnd_t *wnd, dword data )
+{
+	editbox_t *box = (editbox_t *)wnd;
+	
+	if (wnd == NULL)
+		return;
+
+	/* Call base handler for a dialog item */
+	if (!dlg_item_handle_mouse(wnd))
+		return;
+
+	/* Set cursor to the respective position */
+	ebox_set_cursor(box, WND_MOUSE_X(data) - strlen(box->m_label) + 
+			box->m_scrolled);
+	wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
+} /* End of 'ebox_handle_mouse' function */
 
 /* End of 'editbox.c' file */
 

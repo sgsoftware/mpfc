@@ -5,7 +5,7 @@
 /* FILE NAME   : dlgbox.h
  * PURPOSE     : SG MPFC. Interface for dialog box functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 2.09.2003
+ * LAST UPDATE : 17.11.2003
  * NOTE        : Module prefix 'dlg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -87,6 +87,9 @@ wnd_t *dlg_get_item_by_id( dlgbox_t *dlg, short id );
 
 /* Go to the next child focused window */
 void dlg_next_focus( dlgbox_t *dlg );
+
+/* A base mouse click handler for dialog items */
+bool_t dlg_item_handle_mouse( wnd_t *wnd );
 
 #endif
 
