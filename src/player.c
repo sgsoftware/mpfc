@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG MPFC. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 7.11.2004
+ * LAST UPDATE : 14.02.2005
  * NOTE        : Module prefix 'player'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -173,6 +173,10 @@ vfs_t *player_vfs = NULL;
 
 /* Main thread ID */
 pthread_t player_main_tid = 0; 
+
+/* Output plugin used to play current song (this is not the same as
+ * pmng->m_cur_out */
+out_plugin_t *player_cur_outp = NULL;
 
 /*****
  *
@@ -812,7 +816,7 @@ wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action )
 		if (player_status == PLAYER_STATUS_PAUSED)
 		{
 			inp_resume(player_inp);
-			outp_resume(player_pmng->m_cur_out);
+			outp_resume(player_cur_outp);
 		}
 		else
 			player_play(player_plist->m_cur_song, 0);
@@ -825,13 +829,13 @@ wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action )
 		{
 			player_status = PLAYER_STATUS_PAUSED;
 			inp_pause(player_inp);
-			outp_pause(player_pmng->m_cur_out);
+			outp_pause(player_cur_outp);
 		}
 		else if (player_status == PLAYER_STATUS_PAUSED)
 		{
 			player_status = PLAYER_STATUS_PLAYING;
 			inp_resume(player_inp);
-			outp_resume(player_pmng->m_cur_out);
+			outp_resume(player_cur_outp);
 		}
 	}
 	/* Stop */
@@ -1376,10 +1380,11 @@ void player_end_play( bool_t rem_cur_song )
 	int was_song = player_plist->m_cur_song;
 	
 	player_save_time();
-	outp_resume(player_pmng->m_cur_out);
+	outp_resume(player_cur_outp);
 	player_plist->m_cur_song = -1;
 	player_end_track = TRUE;
 //	player_status = PLAYER_STATUS_STOPPED;
+	util_log("waiting\n");
 	while (player_timer_tid)
 		util_wait();
 	if (!rem_cur_song)
@@ -1579,7 +1584,6 @@ void *player_thread( void *arg )
 		int disp_count;
 		dword in_flags, out_flags;
 		file_t *fd = NULL;
-		out_plugin_t *cur_outp = NULL;
 
 		/* Skip to next iteration if there is nothing to play */
 		if (player_plist->m_cur_song < 0 || 
@@ -1632,7 +1636,7 @@ void *player_thread( void *arg )
 			wnd_invalidate(player_wnd);
 			continue;
 		}
-		cur_outp = player_pmng->m_cur_out;
+		player_cur_outp = player_pmng->m_cur_out;
 
 		/* Set audio parameters */
 		/*if (!no_outp)
@@ -1709,10 +1713,10 @@ void *player_thread( void *arg )
 							freq = new_freq;
 							fmt = new_fmt;
 						
-							outp_flush(cur_outp);
-							outp_set_channels(cur_outp, ch);
-							outp_set_freq(cur_outp, freq);
-							outp_set_fmt(cur_outp, fmt);
+							outp_flush(player_cur_outp);
+							outp_set_channels(player_cur_outp, ch);
+							outp_set_freq(player_cur_outp, freq);
+							outp_set_fmt(player_cur_outp, fmt);
 						}
 
 						/* Apply effects */
@@ -1720,7 +1724,7 @@ void *player_thread( void *arg )
 								fmt, freq, ch);
 					
 						/* Send to output plugin */
-						outp_play(cur_outp, buf, size);
+						outp_play(player_cur_outp, buf, size);
 					}
 					else
 						util_wait();
@@ -1741,7 +1745,7 @@ void *player_thread( void *arg )
 		if (!no_outp)
 		{
 			logger_debug(player_log, "outp_flush");
-			outp_flush(cur_outp);
+			outp_flush(player_cur_outp);
 		}
 
 		/* Stop timer thread */
@@ -1765,9 +1769,9 @@ void *player_thread( void *arg )
 		if (!no_outp)
 		{
 			logger_debug(player_log, "outp_end");
-			outp_end(cur_outp);
+			outp_end(player_cur_outp);
 		}
-		cur_outp = NULL;
+		player_cur_outp = NULL;
 
 		/* Update screen */
 		wnd_invalidate(player_wnd);
