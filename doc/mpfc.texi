@@ -315,7 +315,14 @@ in any of these two formats.
 To sort playlist use command @kbd{S}. First you will be asked whether to sort
 globally or not. If you choose global sorting the entire playlist will be
 sorted, otherwise---only the current selection. Then you specify the sort 
-criteria (by title, file name or path and file name) and the sorting is done.
+criteria (by title, file name, path and file name or path and track) and the 
+sorting is done.
+
+Also you can tell MPFC to do sorting automatically on loading songs. Set 
+``sort-on-load'' variable to do this. By default sorting by title is done, but
+you may change this behaviour with ``sort-on-load-type'' variable 
+(``sort-by-title'', ``sort-by-file-name'', ``sort-by-path-and-file'' and
+``sort-by-path-and-track'' values).
 
 @node Move, Undo, Sort, Playlist management
 @subsection Move 
@@ -677,16 +684,18 @@ MPFC configuration file where these variables are set.
 @node Plugins, Copying, Using Variables, Top
 @chapter Plugins usage
 
-Plugins are used to expand MPFC functionality. There are three kinds of
-plugins: input, output and effect. Input plugins are used to play files of
-some kind of format. Output plugins are used to work with sound output
-devices. Effect plugins are used to add effects to playing.
+Plugins are used to expand MPFC functionality. There are four kinds of
+plugins: input, output, effect and charset. Input plugins are used to play 
+files of some kind of format. Output plugins are used to work with sound 
+output devices. Effect plugins are used to add effects to playing. Charset
+plugins are used to support various charsets and convert between them.
 
 Plugins are stored commonly in @file{/usr/lib/mpfc/} or 
 @file{/usr/local/lib/mpfc}.
-There are three directories for each of these plugins types: @file{input},
-@file{output} and @file{effect}. Each plugin is a shared library (.so file). To
-install plugin simply copy it to the respective directory.
+There are four directories for each of these plugins types: @file{input},
+@file{output}, @file{effect} and @file{charset}. Each plugin is a shared 
+library (.so file). To install plugin simply copy it to the respective 
+directory.
 
 Here these types are described in a greater detail and also some standard
 plugins are considered.
@@ -695,6 +704,7 @@ plugins are considered.
 * Input::
 * Output::
 * Effect::
+* Charsets::
 @end menu
 
 @node Input, Output, Plugins, Plugins
@@ -703,20 +713,29 @@ plugins are considered.
 * Common formats::
 * Audio CD::
 * Radio::
+* Recorder::
 @end menu
 
 @node Common formats, Audio CD, Input, Input
 @subsection Common formats
-MPFC has three built-in plugins for common formats: MP3, Ogg Vorbis and WAV.
+MPFC has four built-in plugins for common formats: MP3, Ogg Vorbis, WAV and
+TiMidity.
+The first three are plugins for respective formats and the latter is a simple
+plugin for midi that uses TiMidity++, so if you need this program to handle
+it.
 These plugins have nothing special. The only aspect to note is connected 
 with MP3 plugin. 
 
 There are two methods to calculate MP3 song length: quick 
-and correct. In most cases quick method works correctly but for songs with
+and correct. In most cases quick method works correctly but for some songs with
 variable bitrate their length would be improper. Correct method calculates
 all songs length absolutely correctly but it is rather long. It is quick
 method that is turned on by default. To change this set variable
 ``mp3-quick-get-len'' to ``0''.
+Also there is a note on Ogg Vorbis plugin behaviour. By default it always
+uses UTF-8 as output charset but you may override this behaviour by setting
+``ogg-always-use-utf8'' variable to ``0'', so it would save tags in your
+common output charset (@pxref{Charsets}).
 
 @node Audio CD, Radio, Common formats, Input
 @subsection Audio CD
@@ -743,12 +762,26 @@ set. First is ``cddb-email'' and it holds your e-mail address. Second is
 Possible values are: ``blues'', ``classical'', ``country'', ``data'', ``folk'',
 ``jazz'', ``misc'', ``newage'', ``reggae'', ``rock'' and ``soundtrack''.
 
-@node Radio,, Audio CD, Input
+@node Radio, Recorder, Audio CD, Input
 @subsection Radio
 MPFC has one special plugin for listening to radio. Note that to use it you
 must have radio card installed as a Video4Linux device. The name part of 
 the object name is the radio station frequency (in MHz). So full object 
 name has the following format: ``radio:<freq>'' (e.g. ``radio:91.5''). 
+
+@node Recorder,, Radio, Input
+@subsection Recorder
+Recorder is a plugin for recording audio from microphone, line-in or Audio-CD.
+This is different from, for example, Audio CD that also allows you to record
+its output. Unlike it recorder doesn't handle tracks on disk and other 
+stuff---it simply reads data that is playing now, so you may run any external
+program that plays audio-cd and run MPFC with this plugin. But of course it
+is much more useful to record audio from line-in or microphone.
+
+Recorder instance is an object with name part ``mic'' (for microphone souce), 
+``line'' (for line-in) and ``cd'' (for audio cd). To record audio you 
+create this object, set output plugin to the one you want to use (commonly
+``disk_writer'') and play this object.
 
 @node Output, Effect, Input, Plugins
 @section Output plugins
@@ -777,11 +810,7 @@ Disk Writer plugin is used to save the audio output to disk. Each song that
 you play is stored in a WAV file. The name of this file is same with the file
 name of the song you play and path is read from ``disk-writer-path'' variable.
 
-Note that this plugin is usable only with songs that actually interact with
-the output plugin, so you won't be able to record songs of such plugins 
-as ``Audio CD'' or ``Radio''.
-
-@node Effect,, Output, Plugins
+@node Effect, Charsets, Output, Plugins
 @section Effect plugins
 To enable effect plugin ``plugin'' set variable ``enable-effect-plugin''.
 
@@ -804,6 +833,31 @@ echo-feedback: echo feedback in percents, by default 50;
 @item
 echo-surround-enable: flag of whether surround effect is enables, by default 0.
 @end itemize
+
+@node Charsets,, Effect, Plugins
+@section Charset plugins
+Charsets are used in song info management. Suppose you have song with info
+written in charset A and your display charset is B. This is where charsets
+management is used. Display charset is set with variable ``charset-output''.
+Input charset may be stored with the text in song info, so in this case you
+don't need to specify it. But in many cases it is not, that's why you may
+want to set it. It is done with variable ``charset-input''. Also there is
+a variable ``charset-save-info'' that controls the charset is written down in.
+
+And what about charset plugins? They are used to support various charsets.
+In fact, MPFC internally supports only one charset---UTF-8 (respective 
+variable value is ``utf-8''). So each one-byte
+charset that is used by you should be supported by some plugin. One plugin
+may support many charset (e.g. charsets for some language). Also there are
+special charsets called automatic. They expand to other charsets. These 
+charsets are useful when you have songs with different charsets, so MPFC
+will try to guess charset in each case. This certainly makes sense only for
+input charsets.
+
+MPFC is distributed with one charset plugin---for russian charsets. It supports
+the following charsets: KOI8-R (``koi8-r''), Windows-1251 (``'cp1251') and
+automatic russian charsets (``ru-auto'') that expands to the latter two or 
+UTF-8.
 
 @node Copying,, Plugins, Top
 @chapter Copying information
