@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Interface for MP3 input plugin 
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 6.07.2003
+ * LAST UPDATE : 12.07.2003
  * NOTE        : Module prefix 'mp3'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -59,6 +59,12 @@ void mp3_decode_frame( void );
 
 /* Save ID3 tag */
 void mp3_save_tag( char *filename, byte *tag, int tag_size );
+
+/* Set equalizer parameters */
+void mp3_set_eq( float preamp, float bands[10] );
+
+/* Apply equalizer to frame */
+void mp3_apply_eq( void );
 
 /* End of 'mp3.h' file */
 

@@ -5,7 +5,7 @@
 /* FILE NAME   : player.h
  * PURPOSE     : SG Konsamp. Interface for main player functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 25.05.2003
+ * LAST UPDATE : 12.07.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -37,6 +37,11 @@
 #define PLAYER_STATUS_PLAYING 	0
 #define PLAYER_STATUS_PAUSED	1
 #define PLAYER_STATUS_STOPPED	2
+
+/* Equalizer information */
+extern float player_eq_preamp;
+extern float player_eq_bands[10];
+extern bool player_eq_changed;
 
 /* Initialize player */
 bool player_init( int argc, char *argv[] );
@@ -103,6 +108,9 @@ void player_info_dialog( void );
 
 /* Process search play list dialog */
 void player_search_dialog( void );
+
+/* Process equalizer dialog */
+void player_eq_dialog( void );
 
 /* Show help screen */
 void player_help( void );

@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Interface for input plugin management
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 4.05.2003
+ * LAST UPDATE : 12.07.2003
  * NOTE        : Module prefix 'inp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -62,6 +62,9 @@ typedef struct
 
 	/* Get song audio parameters */
 	void (*m_get_audio_params)( int *channels, int *frequency, dword *fmt );
+
+	/* Set equalizer parameters */
+	void (*m_set_eq)( float preamp, float bands[10] );
 
 	/* Genres list */
 	genre_list_t *m_glist;

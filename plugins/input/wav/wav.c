@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. WAV input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 11.05.2003
+ * LAST UPDATE : 12.07.2003
  * NOTE        : Module prefix 'wav'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -213,6 +213,11 @@ void wav_get_audio_params( int *ch, int *freq, dword *fmt )
 	*fmt = wav_fmt;
 } /* End of 'wav_get_audio_params' function */
 
+/* Set equalizer parameters */
+void wav_set_eq( float preamp, float bands[10] )
+{
+} /* End of 'wav_set_eq' function */
+
 /* Get functions list */
 void inp_get_func_list( inp_func_list_t *fl )
 {
@@ -225,6 +230,7 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_get_audio_params = wav_get_audio_params;
 	fl->m_get_formats = wav_get_formats;
 	fl->m_save_info = wav_save_info;
+	fl->m_set_eq = wav_set_eq;
 	fl->m_glist = NULL;
 } /* End of 'inp_get_func_list' function */
 

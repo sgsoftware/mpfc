@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. MP3 input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 6.07.2003
+ * LAST UPDATE : 12.07.2003
  * NOTE        : Module prefix 'mp3'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -27,6 +27,7 @@
 
 #include <id3tag.h>
 #include <mad.h>
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/soundcard.h>
@@ -40,7 +41,7 @@
 
 #define MP3_IN_BUF_SIZE (5*8192)
 
-/* Declate some functions */
+/* Declare some functions */
 struct id3_frame *id3_frame_new(char const *);
 
 /* libmad structures */
@@ -83,6 +84,9 @@ genre_list_t *mp3_glist = NULL;
 
 /* Current song length */
 int mp3_len = 0;
+
+/* Multipliers for equalizer */
+mad_fixed_t mp3_eq_mul[32];
 
 /* This is pointer to global variables list */
 cfg_list_t *mp3_var_list = NULL;
@@ -634,6 +638,9 @@ int mp3_get_stream( void *buf, int size )
 		if (mad_frame_decode(&mp3_frame, &mp3_stream))
 			return mp3_get_stream(buf, size);
 
+		/* Apply equalizer */
+		mp3_apply_eq();
+
 		/* Update file information */
 		head = mp3_frame.header;
 		mp3_freq = head.samplerate;
@@ -863,6 +870,7 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_seek = mp3_seek;
 	fl->m_get_audio_params = mp3_get_audio_params;
 	fl->m_get_formats = mp3_get_formats;
+	fl->m_set_eq = mp3_set_eq;
 	fl->m_glist = mp3_glist;
 } /* End of 'inp_get_func_list' function */
 
@@ -884,6 +892,42 @@ void inp_set_vars( cfg_list_t *list )
 {
 	mp3_var_list = list;
 } /* End of 'inp_set_vars' function */
+
+/* Set equalizer parameters */
+void mp3_set_eq( float preamp, float bands[10] )
+{
+	byte map[32] = { 0, 1, 2, 3, 4, 5, 6, 6, 7, 7, 7, 7, 8, 8, 8,
+  						8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9, 9, 
+						9, 9, 9	};
+	int i;
+	
+	for ( i = 0; i < 32; i ++ )
+	{
+		float val = preamp + bands[map[i]];
+		if (val > 18.)
+			val = 18.;
+		val = pow(10., val / 20.);
+		mp3_eq_mul[i] = mad_f_tofixed(val);
+	}
+} /* End of 'mp3_set_eq' function */
+
+/* Apply equalizer to frame */
+void mp3_apply_eq( void )
+{
+	unsigned int nch, ch, ns, s, sb;
+
+	/* Do nothing if equalizer is disabled */
+	if (cfg_get_var_int(mp3_var_list, "equalizer_off"))
+		return;
+	
+	nch = MAD_NCHANNELS(&mp3_frame.header);
+	ns = MAD_NSBSAMPLES(&mp3_frame.header);
+	for ( ch = 0; ch < nch; ++ch )
+		for ( s = 0; s < ns; ++s )
+			for ( sb = 0; sb < 32; ++sb )
+				mp3_frame.sbsample[ch][s][sb] = 
+					mad_f_mul(mp3_frame.sbsample[ch][s][sb], mp3_eq_mul[sb]);
+} /* End of 'mp3_apply_eq' function */
 
 /* End of 'mp3.c' file */
 

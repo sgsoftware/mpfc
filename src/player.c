@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG Konsamp. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 6.07.2003
+ * LAST UPDATE : 12.07.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -33,6 +33,7 @@
 #include "choice_ctrl.h"
 #include "dlgbox.h"
 #include "editbox.h"
+#include "eqwnd.h"
 #include "error.h"
 #include "file_input.h"
 #include "help_screen.h"
@@ -82,6 +83,11 @@ int player_status = PLAYER_STATUS_STOPPED;
 /* Current volume */
 int player_volume = 0;
 
+/* Equalizer information */
+float player_eq_preamp = 0.;
+float player_eq_bands[10];
+bool player_eq_changed = FALSE;
+
 /* Initialize player */
 bool player_init( int argc, char *argv[] )
 {
@@ -129,6 +135,12 @@ bool player_init( int argc, char *argv[] )
 		player_volume = pmng_cur_out->m_fl.m_get_volume();
 	else
 		player_volume = 0;
+
+	/* Initialize equalizer */
+	player_eq_preamp = 0.;
+	for ( i = 0; i < 10; i ++ )
+		player_eq_bands[i] = 0.;
+	player_eq_changed = FALSE;
 
 	/* Exit */
 	return TRUE;
@@ -391,6 +403,11 @@ void player_handle_key( wnd_t *wnd, dword data )
 		else
 			strcpy(player_msg, _("String found"));
 		break;
+
+	/* Show equalizer dialog */
+	case 'e':
+		player_eq_dialog();
+		break;
 		
 	/* Digit means command repeation value edit */
 	case '1':
@@ -633,6 +650,9 @@ void *player_thread( void *arg )
 		ofl.m_set_freq(freq);
 		ofl.m_set_fmt(fmt);
 
+		/* Set equalizer */
+		ifl.m_set_eq(player_eq_preamp, player_eq_bands);
+
 		/* Start timer thread */
 		pthread_create(&player_timer_tid, NULL, player_timer_func, 0);
 		wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
@@ -646,6 +666,14 @@ void *player_thread( void *arg )
 
 			if (player_status == PLAYER_STATUS_PLAYING)
 			{
+				/* Update equalizer if it's parameters have changed */
+				if (player_eq_changed)
+				{
+					player_eq_changed = FALSE;
+					ifl.m_set_eq(player_eq_preamp, player_eq_bands);
+				}
+				
+				/* Get stream from input plugin */
 				if (size = ifl.m_get_stream(buf, size))
 				{
 					int new_ch, new_freq;
@@ -1011,6 +1039,16 @@ void player_display_slider( wnd_t *wnd, int x, int y, int width,
 			wnd_printf(wnd, "=");
 	}
 } /* End of 'player_display_slider' function */
+
+/* Process equalizer dialog */
+void player_eq_dialog( void )
+{
+	eq_wnd_t *wnd;
+
+	wnd = eqwnd_new(wnd_root, 0, 0, wnd_root->m_width, wnd_root->m_height);
+	wnd_run(wnd);
+	wnd_destroy(wnd);
+} /* End of 'player_eq_dialog' function */
 
 /* End of 'player.c' file */
 
