@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Songs manipulation functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 2.09.2003
+ * LAST UPDATE : 3.09.2003
  * NOTE        : Module prefix 'song'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "types.h"
+#include "cfg.h"
 #include "codepages.h"
 #include "error.h"
 #include "inp.h"
@@ -117,6 +118,8 @@ void song_set_info( song_t *song, song_info_t *info )
 		for ( i = strlen(song->m_file_name) - 1; 
 				(i >= 0) && (song->m_file_name[i] != '/'); i -- );
 		strcpy(song->m_title, &song->m_file_name[i + 1]);
+		if (cfg_get_var_int(cfg_list, "convert_underscores2spaces"))
+			util_under2spaces(song->m_title);
 	}
 	else
 	{

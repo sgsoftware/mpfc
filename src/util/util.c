@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Various utility functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 2.09.2003
+ * LAST UPDATE : 3.09.2003
  * NOTE        : Module prefix 'util'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -180,6 +180,14 @@ int util_get_file_size( char *filename )
 	fclose(fd);
 	return s;
 } /* End of 'util_get_file_size' function */
+
+/* Convert underscores in a string to spaces */
+void util_under2spaces( char *str )
+{
+	for ( ; *str; str ++ )
+		if (*str == '_')
+			*str = ' ';
+} /* End of 'util_under2spaces' function */
 
 /* End of 'util.c' file */
 
