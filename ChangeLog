@@ -1,3 +1,16 @@
+2004-11-08	Sergey E. Galanov	<sgsoftware@mail.ru>
+
+	* src/Makefile.am, src/player.c, src/plist.c, src/song.c,
+	  src/song.h: info read/write thread implemented as a replacement
+	  for info writer thread and song adder thread.
+	* libmpfc/id3.c, libmpfc/plugin_input.c, plugins/input/audiocd/audiocd.c, 
+	  plugins/input/audiocd/cddb.c, plugins/input/audiocd/cddb.h, 
+	  plugins/input/mp3/mp3.c, plugins/input/ogg/ogg.c, src/inp.h,
+	  src/myid3.h: made 'inp_save_info'
+	  function return the success code.
+	* libmpfcwnd/wnd_kbd.c: fixed possible bug in keyboard thread with
+	  invalid pointer to the root window. 
+
 2004-11-04	Sergey E. Galanov	<sgsoftware@mail.ru>
 
 	* libmpfcwnd/wnd.c, libmpfcwnd/wnd.h, libmpfcwnd/wnd_kbd.c:
