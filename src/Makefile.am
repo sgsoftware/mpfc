@@ -10,6 +10,6 @@ mpfc_SOURCES = main.c types.h error.h error.c player.c player.h \
 					sat.c sat.h
 
 localedir = $(datadir)/locale
-DEFS = -DLOCALEDIR=\"$(localedir)\" @DEFS@
+DEFS = -DLOCALEDIR=\"$(localedir)\" -DLIBDIR=\"$(libdir)\" @DEFS@
 mpfc_LDADD = glist/libglist.a util/libutil.a cfg/libcfg.a
 SUBDIRS = util glist cfg
