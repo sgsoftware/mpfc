@@ -31,6 +31,7 @@
 #include "wnd.h"
 #include "wnd_button.h"
 #include "wnd_dialog.h"
+#include "wnd_dlgitem.h"
 
 /* Create a new dialog */
 dialog_t *dialog_new( char *title, wnd_t *parent, int x, int y,
@@ -60,8 +61,7 @@ dialog_t *dialog_new( char *title, wnd_t *parent, int x, int y,
 		free(dlg);
 		return NULL;
 	}
-	WND_FLAGS(dlg) |= WND_FLAG_INITIALIZED;
-	wnd_invalidate(WND_OBJ(dlg));
+	wnd_postinit(dlg);
 	return dlg;
 } /* End of 'dialog_new' function */
 
@@ -85,13 +85,31 @@ bool_t dialog_construct( dialog_t *dlg, char *title, wnd_t *parent,
 	wnd_msg_add_handler(wnd, "cancel_clicked", dialog_on_cancel);
 
 	/* Create OK and Cancel buttons */
-	ok_btn = button_new("OK", wnd, 0, WND_HEIGHT(wnd) - 1, 8, 1);
+	ok_btn = button_new("OK", NULL, wnd, 0, WND_HEIGHT(wnd) - 1, 8, 1);
 	wnd_msg_add_handler(WND_OBJ(ok_btn), "clicked", dialog_ok_on_clicked);
-	cancel_btn = button_new("Cancel", wnd, 9, WND_HEIGHT(wnd) - 1, 8, 1);
+	cancel_btn = button_new("Cancel", NULL, wnd, 9, WND_HEIGHT(wnd) - 1, 8, 1);
 	wnd_msg_add_handler(WND_OBJ(cancel_btn), "clicked", 
 			dialog_cancel_on_clicked);
 	return TRUE;
 } /* End of 'dialog_construct' function */
+
+/* Find dialog item by its ID */
+wnd_t *dialog_find_item( dialog_t *dlg, char *id )
+{
+	wnd_t *child;
+
+	assert(dlg);
+	assert(id);
+
+	for ( child = WND_OBJ(dlg)->m_child; child != NULL; 
+			child = child->m_next )
+	{
+		dlgitem_t *di = DLGITEM_OBJ(child);
+		if (di->m_id != NULL && !strcmp(di->m_id, id))
+			return child;
+	}
+	return NULL;
+} /* End of 'dialog_find_item' function */
 
 /* Handle 'keydown' message */
 wnd_msg_retcode_t dialog_on_keydown( wnd_t *wnd, wnd_key_t key )

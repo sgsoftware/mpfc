@@ -30,10 +30,11 @@
 #include "types.h"
 #include "wnd.h"
 #include "wnd_button.h"
+#include "wnd_dlgitem.h"
 
 /* Create a new button */
-button_t *button_new( char *title, wnd_t *parent, int x, int y, int width, 
-		int height )
+button_t *button_new( char *title, char *id, wnd_t *parent, int x, int y, 
+		int width, int height )
 {
 	button_t *btn;
 	wnd_class_t *klass;
@@ -54,27 +55,26 @@ button_t *button_new( char *title, wnd_t *parent, int x, int y, int width,
 	WND_OBJ(btn)->m_class = klass;
 
 	/* Initialize button */
-	if (!button_construct(btn, title, parent, x, y, width, height))
+	if (!button_construct(btn, title, id, parent, x, y, width, height))
 	{
 		free(btn);
 		return NULL;
 	}
-	WND_FLAGS(btn) |= WND_FLAG_INITIALIZED;
-	wnd_invalidate(WND_OBJ(btn));
+	wnd_postinit(btn);
 	return btn;
 } /* End of 'button_new' function */
 
 /* Button initialization function */
-bool_t button_construct( button_t *btn, char *title, wnd_t *parent, int x,
-		int y, int width, int height )
+bool_t button_construct( button_t *btn, char *title, char *id, wnd_t *parent, 
+		int x, int y, int width, int height )
 {
 	wnd_t *wnd = WND_OBJ(btn);
 
 	assert(btn);
 
 	/* Initialize window part */
-	if (!wnd_construct(wnd, title, parent, x, y, width, height,
-				WND_FLAG_OWN_DECOR))
+	if (!dlgitem_construct(DLGITEM_OBJ(btn), title, id, parent, x, y, 
+				width, height))
 		return FALSE;
 
 	/* Set message handlers */

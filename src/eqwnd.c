@@ -56,8 +56,7 @@ eq_wnd_t *eqwnd_new( wnd_t *parent )
 		free(eq);
 		return NULL;
 	}
-	WND_FLAGS(eq) |= WND_FLAG_INITIALIZED;
-	wnd_invalidate(WND_OBJ(eq));
+	wnd_postinit(eq);
 	return eq;
 } /* End of 'eqwnd_new' function */
 

@@ -53,8 +53,7 @@ help_screen_t *help_new( wnd_t *parent, int type )
 		free(help);
 		return NULL;
 	}
-	WND_FLAGS(help) |= WND_FLAG_INITIALIZED;
-	wnd_invalidate(WND_OBJ(help));
+	wnd_postinit(help);
 	return help;
 } /* End of 'help_new' function */
 

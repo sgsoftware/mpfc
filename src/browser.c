@@ -82,8 +82,7 @@ browser_t *fb_new( wnd_t *parent, char *dir )
 		free(fb);
 		return NULL;
 	}
-	WND_FLAGS(fb) |= WND_FLAG_INITIALIZED;
-	wnd_invalidate(WND_OBJ(fb));
+	wnd_postinit(fb);
 	return fb;
 } /* End of 'fb_new' function */
 

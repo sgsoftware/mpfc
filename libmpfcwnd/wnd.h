@@ -274,6 +274,11 @@ struct tag_wnd_t
 /* A macro for closing window */
 #define wnd_close(wnd) (wnd_msg_send(wnd, "close", wnd_msg_close_new()))
 
+/* Do post-initialization code */
+#define wnd_postinit(wnd) \
+	WND_FLAGS(wnd) |= WND_FLAG_INITIALIZED;	\
+	wnd_invalidate(WND_OBJ(wnd)->m_parent);
+
 /* Initialize window system */
 wnd_t *wnd_init( cfg_node_t *cfg_list );
 

@@ -36,7 +36,6 @@
 #include "browser.h"
 #include "cfg.h"
 #include "colors.h"
-#include "wnd_dialog.h"
 #include "eqwnd.h"
 #include "error.h"
 #include "file.h"
@@ -51,6 +50,9 @@
 #include "undo.h"
 #include "util.h"
 #include "wnd.h"
+#include "wnd_button.h"
+#include "wnd_dialog.h"
+#include "wnd_editbox.h"
 
 /* Files for player to play */
 int player_num_files = 0;
@@ -977,11 +979,7 @@ void *player_timer_func( void *arg )
 				wnd_invalidate(player_wnd);
 			}
 		}
-
-		/* Sleep a little */
-		tv.tv_sec = 0;
-		tv.tv_nsec = 100000L;
-		nanosleep(&tv, NULL);
+		util_wait();
 	}
 
 	player_cur_time = 0;
@@ -995,7 +993,9 @@ void player_add_dialog( void )
 {
 	dialog_t *dlg;
 
-	dlg = dialog_new("Add songs", player_wnd, 10, 10, 30, 10, 0);
+	dlg = dialog_new("Add songs", wnd_root, 5, 5, 50, 5, 0);
+	editbox_new(WND_OBJ(dlg), "name", 1, 0, WND_WIDTH(dlg) - 2, 1);
+	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_add);
 } /* End of 'player_add_dialog' function */
 
 #if 0
@@ -2684,6 +2684,15 @@ wnd_msg_retcode_t player_on_close( wnd_t *wnd )
 	wnd_close(wnd_root);
 	return WND_MSG_RETCODE_OK;
 } /* End of 'player_on_close' function */
+
+/* Handle 'ok_clicked' for add songs dialog */
+wnd_msg_retcode_t player_on_add( wnd_t *wnd )
+{
+	editbox_t *eb = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "name"));
+	assert(eb);
+	plist_add(player_plist, eb->m_text);
+	return WND_MSG_RETCODE_OK;
+} /* End of 'player_on_add' function */
 
 /* End of 'player.c' file */
 

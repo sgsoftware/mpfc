@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Interface for button
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 11.08.2004
+ * LAST UPDATE : 13.08.2004
  * NOTE        : Module prefix 'button'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -30,12 +30,13 @@
 
 #include "types.h"
 #include "wnd.h"
+#include "wnd_dlgitem.h"
 
 /* Button window type */
 typedef struct 
 {
-	/* Common window part */
-	wnd_t m_wnd;
+	/* Dialog item part */
+	dlgitem_t m_wnd;
 
 	/* Messages */
 	wnd_msg_handler_t *m_on_clicked;
@@ -45,12 +46,12 @@ typedef struct
 #define BUTTON_OBJ(wnd)	((button_t *)wnd)
 
 /* Create a new button */
-button_t *button_new( char *title, wnd_t *parent, int x, int y, int width, 
-		int height );
+button_t *button_new( char *title, char *id, wnd_t *parent, int x, int y, 
+		int width, int height );
 
 /* Button initialization function */
-bool_t button_construct( button_t *btn, char *title, wnd_t *parent, int x,
-		int y, int width, int height );
+bool_t button_construct( button_t *btn, char *title, char *id, wnd_t *parent, 
+		int x, int y, int width, int height );
 
 /* 
  * Message handlers

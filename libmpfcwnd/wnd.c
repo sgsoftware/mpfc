@@ -195,8 +195,7 @@ wnd_t *wnd_new( char *title, wnd_t *parent, int x, int y,
 		free(wnd);
 		return NULL;
 	}
-	WND_FLAGS(wnd) |= WND_FLAG_INITIALIZED;
-	wnd_invalidate(wnd);
+	wnd_postinit(wnd);
 	return wnd;
 } /* End of 'wnd_new' function */
 

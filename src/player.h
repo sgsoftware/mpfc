@@ -314,6 +314,9 @@ void player_set_search_string( char *str );
 /* Signal handler */
 void player_handle_signal( int signum );
 
+/* Handle 'ok_clicked' for add songs dialog */
+wnd_msg_retcode_t player_on_add( wnd_t *wnd );
+
 #endif
 
 /* End of 'player.h' file */

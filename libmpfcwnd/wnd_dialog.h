@@ -53,6 +53,9 @@ dialog_t *dialog_new( char *title, wnd_t *parent, int x, int y,
 bool_t dialog_construct( dialog_t *dlg, char *title, wnd_t *parent, 
 		int x, int y, int width, int height, dword flags ); 
 
+/* Find dialog item by its ID */
+wnd_t *dialog_find_item( dialog_t *dlg, char *id );
+
 /* Handle 'keydown' message */
 wnd_msg_retcode_t dialog_on_keydown( wnd_t *wnd, wnd_key_t key );
 
