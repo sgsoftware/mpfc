@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Input plugin management functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 14.11.2003
+ * LAST UPDATE : 21.12.2003
  * NOTE        : Module prefix 'inp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -283,6 +283,13 @@ void inp_set_song_title( in_plugin_t *p, char *title, char *filename )
 	else
 		strcpy(title, util_get_file_short_name(filename));
 } /* End of 'inp_set_song_title' function */
+
+/* Set next song name */
+void inp_set_next_song( in_plugin_t *p, char *name )
+{
+	if (p != NULL && p->m_fl.m_set_next_song != NULL)
+		p->m_fl.m_set_next_song(name);
+} /* End of 'inp_set_next_song' function */
 
 /* End of 'inp.c' file */
 

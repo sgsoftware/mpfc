@@ -267,6 +267,7 @@ void player_deinit( void )
 	/* End playing thread */
 	sat_free();
 	iwt_free();
+	inp_set_next_song(player_inp, NULL);
 	player_end_track = TRUE;
 	player_end_thread = TRUE;
 	pthread_join(player_tid, NULL);
@@ -617,6 +618,7 @@ void player_end_play( bool_t rem_cur_song )
 void *player_thread( void *arg )
 {
 	bool_t no_outp = FALSE;
+	int next_track = -1;
 	
 	/* Main loop */
 	while (!player_end_thread)
@@ -642,9 +644,10 @@ void *player_thread( void *arg )
 	
 		/* Start playing */
 		inp = song_get_inp(s);
+		next_track = player_get_next_track();
 		if (!inp_start(inp, s->m_file_name))
 		{
-			player_next_track();
+			player_set_track(next_track);
 			error_set_code(ERROR_UNKNOWN_FILE_TYPE);
 			strcpy(player_msg, error_text);
 			wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
@@ -690,6 +693,12 @@ void *player_thread( void *arg )
 		pthread_create(&player_timer_tid, NULL, player_timer_func, 0);
 		//wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
 	
+		/* Inform input plugin about next track */
+		inp_set_next_song(player_inp, next_track >= 0 ?
+				player_plist->m_list[next_track]->m_file_name : NULL);
+		inp_set_next_song(player_inp, next_track >= 0 ?
+				player_plist->m_list[next_track]->m_file_name : NULL);
+
 		/* Play */
 		while (!player_end_track)
 		{
@@ -766,7 +775,7 @@ void *player_thread( void *arg )
 
 		/* Send message about track end */
 		if (!player_end_track)
-			player_next_track();
+			player_set_track(next_track);
 
 		/* Update screen */
 		wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
@@ -1235,11 +1244,20 @@ void player_help( void )
 	wnd_destroy(h);
 } /* End of 'player_help' function */
 
-/* Start next track */
-void player_next_track( void )
+/* Get next track */
+int player_get_next_track( void )
 {
-	player_skip_songs(1);
-} /* End of 'player_next_track' function */
+	return player_skip_songs(1, FALSE);
+} /* End of 'player_get_next_track' function */
+
+/* Start track */
+void player_set_track( int track )
+{
+	if (track < 0)
+		player_end_play(TRUE);
+	else
+		player_play(track, 0);
+} /* End of 'player_set_track' function */
 
 /* Handle non-digit key (place it to buffer) */
 void player_handle_non_digit( int key )
@@ -1292,7 +1310,7 @@ void player_eq_dialog( void )
 } /* End of 'player_eq_dialog' function */
 
 /* Skip some songs */
-void player_skip_songs( int num )
+int player_skip_songs( int num, bool_t play )
 {
 	int len, base, song;
 	
@@ -1333,10 +1351,14 @@ void player_skip_songs( int num )
 	}
 
 	/* Start or end play */
-	if (song == -1)
-		player_end_play(TRUE);
-	else
-		player_play(song, 0);
+	if (play)
+	{
+		if (song == -1)
+			player_end_play(TRUE);
+		else
+			player_play(song, 0);
+	}
+	return song;
 } /* End of 'player_skip_songs' function */
 
 /* Launch variables manager */
@@ -1545,12 +1567,12 @@ void player_handle_action( int action )
 
 	/* Go to next song */
 	case KBIND_NEXT:
-		player_skip_songs((player_repval) ? player_repval : 1);
+		player_skip_songs((player_repval) ? player_repval : 1, TRUE);
 		break;
 
 	/* Go to previous song */
 	case KBIND_PREV:
-		player_skip_songs(-((player_repval) ? player_repval : 1));
+		player_skip_songs(-((player_repval) ? player_repval : 1), TRUE);
 		break;
 
 	/* Add a file */

@@ -5,7 +5,7 @@
 /* FILE NAME   : window.c
  * PURPOSE     : SG MPFC. Window functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 28.11.2003
+ * LAST UPDATE : 21.12.2003
  * NOTE        : Module prefix 'wnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -28,6 +28,7 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/time.h>
 #include "types.h"
 #include "dlgbox.h"
 #include "editbox.h"
@@ -62,6 +63,9 @@ bool_t wnd_curses_closed = FALSE;
 /* Mutex for synchronization displaying */
 pthread_mutex_t wnd_display_mutex;
 
+/* Whether MPFC is running in xterm? */
+bool_t wnd_xterm_mouse = FALSE;
+
 /* Create a new root window */
 wnd_t *wnd_new_root( void )
 {
@@ -91,7 +95,13 @@ wnd_t *wnd_new_root( void )
 	conn.defaultMask = ~GPM_HARD;
 	conn.minMod = 0;
 	conn.maxMod = 0;
-	Gpm_Open(&conn, 0); 
+	wnd_xterm_mouse = FALSE;
+	if (Gpm_Open(&conn, 0) == -2)
+	{
+		/* Initialize mouse in xterm */
+		wnd_xterm_mouse = TRUE;
+		printf("\033[?9h");
+	}
 	gpm_zerobased = TRUE;
 
 	/* Initialize keyboard and mouse threads */
@@ -567,6 +577,10 @@ wnd_t *wnd_find_focus_branch( wnd_t *wnd )
 /* Keyboard thread function */
 void *wnd_kbd_thread( void *arg )
 {
+	struct timeval was_tv, now_tv;
+	int was_btn;
+
+	gettimeofday(&was_tv, NULL);
 	for ( ; !wnd_end_kbd_thread; )
 	{
 		int key;
@@ -577,9 +591,51 @@ void *wnd_kbd_thread( void *arg )
 		{
 			if (key == '\f')
 				wnd_redisplay(wnd_root);
+			else if (key == KEY_MOUSE && wnd_xterm_mouse)
+			{
+				Gpm_Event event;
+				int btn, x, y;
+
+				/* Get event parameters */
+				btn = getch() - 040;
+				x = getch() - 040 - 1;
+				y = getch() - 040 - 1;
+				
+				memset(&event, 0, sizeof(event));
+				event.type = GPM_DOWN;
+				switch (btn)
+				{
+				case 0:
+					event.buttons = GPM_B_LEFT;
+					break;
+				case 1:
+					event.buttons = GPM_B_MIDDLE;
+					break;
+				case 2:
+					event.buttons = GPM_B_RIGHT;
+					break;
+				}
+				event.x = x;
+				event.y = y;
+
+				/* Check for double click */
+				gettimeofday(&now_tv, NULL);
+				if (((now_tv.tv_sec == was_tv.tv_sec && 
+						now_tv.tv_usec - was_tv.tv_usec <= 200000) ||
+						(now_tv.tv_sec == was_tv.tv_sec + 1 &&
+						 now_tv.tv_usec + 1000000 - 
+							 was_tv.tv_usec <= 200000)) && 
+						btn == was_btn)
+					event.type = GPM_DOUBLE;
+				memcpy(&was_tv, &now_tv, sizeof(was_tv));
+				was_btn = btn;
+				
+				wnd_mouse_handler(&event, NULL);
+			}
 /*			else if (key == 14)
 				wnd_reinit_mouse();*/
-			wnd_send_msg(wnd_focus, WND_MSG_KEYDOWN, (dword)key);
+			else 
+				wnd_send_msg(wnd_focus, WND_MSG_KEYDOWN, (dword)key);
 		}
 
 		/* Wait a little */
@@ -842,7 +898,11 @@ void wnd_reinit_mouse( void )
 	conn.defaultMask = ~GPM_HARD;
 	conn.minMod = 0;
 	conn.maxMod = 0;
-	Gpm_Open(&conn, 0); 
+	if (Gpm_Open(&conn, 0) == -2)
+	{
+		wnd_xterm_mouse = TRUE;
+		printf("\033[?9h");
+	}
 	gpm_zerobased = TRUE;
 } /* End of 'wnd_reinit_mouse' function */
 

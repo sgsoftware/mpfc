@@ -178,8 +178,11 @@ void player_help_display( wnd_t *wnd, dword data );
 /* Handle key message handler for help screen */
 void player_help_handle_key( wnd_t *wnd, dword data );
 
-/* Start next track */
-void player_next_track( void );
+/* Get next track */
+int player_get_next_track( void );
+
+/* Start track */
+void player_set_track( int track );
 
 /* Handle non-digit key (place it to buffer) */
 void player_handle_non_digit( int key );
@@ -192,7 +195,7 @@ void player_display_slider( wnd_t *wnd, int x, int y, int width,
 	   int pos, int range );
 
 /* Skip some songs */
-void player_skip_songs( int num );
+int player_skip_songs( int num, bool_t play );
 
 /* Launch variables mini-manager */
 void player_var_mini_mngr( void );

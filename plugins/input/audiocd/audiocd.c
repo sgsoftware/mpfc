@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Audio CD input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 9.12.2003
+ * LAST UPDATE : 19.12.2003
  * NOTE        : Module prefix 'acd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -66,6 +66,9 @@ int acd_time = 0;
 /* Whether running first time? */
 bool_t acd_first_time = TRUE;
 
+/* The next track */
+char acd_next_song[256] = "";
+
 /* Message printer */
 void (*acd_print_msg)( char *msg );
 
@@ -99,6 +102,8 @@ bool_t acd_start( char *filename )
 {
 	int fd, track;
 	struct cdrom_msf msf;
+	struct cdrom_subchnl info;
+	bool_t playing = FALSE;
 
 	/* Get track number from filename */
 	track = acd_fname2trk(filename);
@@ -125,6 +130,7 @@ bool_t acd_start( char *filename )
 	}
 	acd_time = 0;
 	acd_info_read = FALSE;
+	strcpy(acd_next_song, "");
 
 	/* Close device */
 	close(fd);
@@ -143,7 +149,8 @@ void acd_end( void )
 		return;
 
 	/* Stop playing */
-	ioctl(fd, CDROMSTOP, 0);
+	if (strncmp(acd_next_song, "audiocd", 7))
+		ioctl(fd, CDROMSTOP, 0);
 
 	/* Close device */
 	close(fd);
@@ -398,6 +405,15 @@ void acd_save_info( char *filename, song_info_t *info )
 	cddb_save_trk_info(track, info);
 } /* End of 'acd_save_info' function */
 
+/* Set next song name */
+void acd_set_next_song( char *name )
+{
+	if (name == NULL)
+		strcpy(acd_next_song, "");
+	else
+		strcpy(acd_next_song, name);
+} /* End of 'acd_set_next_song' function */
+
 /* Get functions list */
 void inp_get_func_list( inp_func_list_t *fl )
 {
@@ -415,6 +431,7 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_get_info = acd_get_info;
 	fl->m_save_info = acd_save_info;
 	fl->m_set_song_title = acd_set_song_title;
+	fl->m_set_next_song = acd_set_next_song;
 	acd_print_msg = fl->m_print_msg;
 
 	fl->m_num_spec_funcs = 2;
