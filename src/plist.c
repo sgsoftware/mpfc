@@ -349,7 +349,7 @@ void plist_sort( plist_t *pl, bool global, int criteria )
 			break;
 		}
 		
-		for ( j = i; j >= 0; j -- )
+		for ( j = i; j >= start; j -- )
 		{
 			/* Get second string */
 			switch (criteria)
@@ -702,10 +702,14 @@ void plist_move_sel( plist_t *pl, int y, bool relative )
 	if (pl == NULL)
 		return;
 
-	/* Check boundaries */
 	PLIST_GET_SEL(pl, start, end);
 	if (start < 0 || end < 0)
 		return;
+
+	/* Lock play list */
+	plist_lock(pl);
+	
+	/* Check boundaries */
 	if (relative)
 		y = start + y;
 	if (y < 0)
@@ -738,6 +742,9 @@ void plist_move_sel( plist_t *pl, int y, bool relative )
 	pl->m_sel_end += (y - start);
 	if (pl->m_cur_song >= start && pl->m_cur_song <= end)
 		pl->m_cur_song += (y - start);
+
+	/* Unlock play list */
+	plist_unlock(pl);
 } /* End of 'plist_move_sel' function */
 
 /* End of 'plist.c' file */
