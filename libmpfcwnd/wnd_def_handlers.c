@@ -58,7 +58,7 @@ wnd_msg_retcode_t wnd_default_on_keydown( wnd_t *wnd, wnd_key_t key )
 		wnd_close(wnd);
 	/* Maximize/minimize window */
 	else if (key == WND_KEY_WITH_ALT('m') && 
-			(WND_FLAGS(wnd) & WND_FLAG_CLOSE_BOX))
+			(WND_FLAGS(wnd) & WND_FLAG_MAX_BOX))
 		wnd_toggle_maximize(wnd);
 	/* Redisplay screen */
 	else if (key == KEY_CTRL_L)
@@ -142,9 +142,10 @@ wnd_msg_retcode_t wnd_default_on_erase_back( wnd_t *wnd )
 		{
 			/* Check that the window owning this position is our window's
 			 * descendant */
-			for ( owning = pos->m_wnd;; owning = owning->m_parent )
+			for ( owning = pos->m_wnd; owning != NULL; 
+					owning = owning->m_parent )
 			{
-				if (owning == wnd || owning == NULL)
+				if (owning == wnd)
 				{
 					pos->m_char = ' ';
 					pos->m_attr = 0;

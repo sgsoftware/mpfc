@@ -112,7 +112,7 @@ wnd_t *wnd_init( cfg_node_t *cfg_list )
 	cfg_set_var(cfg_wnd, "wndbar-focus-style", "black:green");
 
 	/* Initialize window fields */
-	if (!wnd_construct(wnd_root, "root", NULL, 0, 0, COLS, LINES, 
+	if (!wnd_construct(wnd_root, NULL, "root", 0, 0, COLS, LINES, 
 				WND_FLAG_ROOT | WND_FLAG_OWN_DECOR))
 		goto failed;
 	wnd_root->m_cursor_hidden = TRUE;
@@ -171,8 +171,8 @@ failed:
 } /* End of 'wnd_init' function */
 
 /* Create a window */
-wnd_t *wnd_new( char *title, wnd_t *parent, int x, int y, 
-				int width, int height, dword flags )
+wnd_t *wnd_new( wnd_t *parent, char *title, int x, int y, 
+				int width, int height, wnd_flags_t flags )
 {
 	wnd_t *wnd;
 	wnd_class_t *klass;
@@ -190,7 +190,7 @@ wnd_t *wnd_new( char *title, wnd_t *parent, int x, int y,
 	wnd->m_class = klass;
 
 	/* Initialize window */
-	if (!wnd_construct(wnd, title, parent, x, y, width, height, flags))
+	if (!wnd_construct(wnd, parent, title, x, y, width, height, flags))
 	{
 		free(wnd);
 		return NULL;
@@ -203,8 +203,8 @@ wnd_t *wnd_new( char *title, wnd_t *parent, int x, int y,
  * Main job for creating window is done here. Constructors for
  * various window classes should call this function to initialize 
  * common window part. */
-bool_t wnd_construct( wnd_t *wnd, char *title, wnd_t *parent, int x, int y,
-		int width, int height, dword flags )
+bool_t wnd_construct( wnd_t *wnd, wnd_t *parent, char *title, int x, int y,
+		int width, int height, wnd_flags_t flags )
 {
 	wnd_t *cur_focus;
 	int sx, sy;
@@ -790,35 +790,40 @@ int wnd_string2attrib( char *str )
 /* Set focus window */
 void wnd_set_focus( wnd_t *wnd )
 {
-	wnd_t *parent, *child, *prev = NULL;
+	wnd_t *parent, *child, *prev, *cur;
 
 	assert(wnd);
-	assert(parent = wnd->m_parent);
 
-	/* Rearrange windows */
-	for ( child = parent->m_child; child != NULL; child = child->m_next )
+	/* Rearrange windows in every level until we reach current focus branch */
+	for ( parent = wnd->m_parent, cur = wnd; 
+			parent != NULL && parent->m_focus_child != cur;
+			cur = parent, parent = parent->m_parent )
 	{
-		if (child->m_zval > wnd->m_zval)
+		prev = NULL;
+		for ( child = parent->m_child; child != NULL; child = child->m_next )
 		{
-			if (child->m_zval == wnd->m_zval + 1)
-				prev = child;
-			child->m_zval --;
+			if (child->m_zval > cur->m_zval)
+			{
+				if (child->m_zval == cur->m_zval + 1)
+					prev = child;
+				child->m_zval --;
+			}
 		}
-	}
-	wnd->m_zval = parent->m_num_children - 1;
-	if (prev != NULL)
-		prev->m_lower_sibling = wnd->m_lower_sibling;
-	wnd->m_lower_sibling = parent->m_focus_child;
+		cur->m_zval = parent->m_num_children - 1;
+		if (prev != NULL)
+			prev->m_lower_sibling = cur->m_lower_sibling;
+		cur->m_lower_sibling = parent->m_focus_child;
 
-	/* Set focus to this window */
-	parent->m_focus_child = wnd;
+		/* Set focus to this window */
+		parent->m_focus_child = cur;
+	}
+
+	/* Set the global focus */
 	wnd_set_global_focus(WND_GLOBAL(wnd));
 
-	/* Update the visibility information */
-	wnd_global_update_visibility(WND_ROOT(wnd));
-
 	/* Repaint */
-	wnd_invalidate(parent);
+	wnd_global_update_visibility(WND_ROOT(wnd));
+	wnd_invalidate(parent == NULL ? WND_ROOT(wnd) : parent);
 } /* End of 'wnd_set_focus' function */
 
 /* Set focus to the next child of this window */
@@ -978,7 +983,8 @@ void wnd_set_mode( wnd_t *wnd, wnd_mode_t mode )
 
 	/* Only windows with border may change position or size */
 	if ((mode == WND_MODE_REPOSITION || mode == WND_MODE_RESIZE) &&
-			!(wnd->m_flags & WND_FLAG_BORDER))
+			!(wnd->m_flags & WND_FLAG_BORDER) ||
+			(mode == WND_MODE_RESIZE && (wnd->m_flags & WND_FLAG_NORESIZE)))
 		return;
 	
 	/* Set new mode */

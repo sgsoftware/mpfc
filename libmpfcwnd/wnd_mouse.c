@@ -263,6 +263,10 @@ void wnd_mouse_handle_event( wnd_mouse_data_t *data,
 	x = x - wnd->m_screen_x - wnd->m_client_x;
 	y = y - wnd->m_screen_y - wnd->m_client_y;
 
+	/* Set this window focused */
+	if (type == WND_MOUSE_DOUBLE || type == WND_MOUSE_DOWN)
+		wnd_set_focus(wnd);
+
 	/* Send respective message to it */
 	if (type == WND_MOUSE_DOUBLE) 
 	{

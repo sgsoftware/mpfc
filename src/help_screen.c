@@ -63,11 +63,11 @@ bool_t help_construct( help_screen_t *help, wnd_t *parent, int type )
 	wnd_t *wnd = (wnd_t *)help;
 	
 	/* Initialize window part */
-	if (!wnd_construct(wnd, type == HELP_PLAYER ? 
+	if (!wnd_construct(wnd, parent, type == HELP_PLAYER ? 
 				_("MPFC Default Key Bindings") : (type == HELP_EQWND ?
 					_("Equalizer Key Bindings") : 
 					_("File Browser Key Bindings")), 
-				parent, 0, 0, 0, 0, WND_FLAG_FULL_BORDER | WND_FLAG_MAXIMIZED))
+				0, 0, 0, 0, WND_FLAG_FULL_BORDER | WND_FLAG_MAXIMIZED))
 		return FALSE;
 
 	/* Register handlers */

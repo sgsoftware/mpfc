@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Interface for edit box
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 13.08.2004
+ * LAST UPDATE : 16.08.2004
  * NOTE        : Module prefix 'editbox'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -44,21 +44,25 @@ typedef struct
 
 	/* Cursor position */
 	int m_cursor;
+
+	/* The desired width */
+	int m_width;
 } editbox_t;
 
 /* Convert window object to edit box type */
 #define EDITBOX_OBJ(wnd)	((editbox_t *)wnd)
 
 /* Create a new edit box */
-editbox_t *editbox_new( wnd_t *parent, char *id, int x, int y, int width, 
-		int height );
+editbox_t *editbox_new( wnd_t *parent, char *id, int width );
 
 /* Edit box constructor */
-bool_t editbox_construct( editbox_t *eb, wnd_t *parent, char *id, int x, int y, 
-		int width, int height );
+bool_t editbox_construct( editbox_t *eb, wnd_t *parent, char *id, int width );
 
 /* Destructor */
 void editbox_destructor( wnd_t *wnd );
+
+/* Get edit box desired size */
+void editbox_get_desired_size( dlgitem_t *di, int *width, int *height );
 
 /* Set edit box text */
 void editbox_set_text( editbox_t *eb, char *text );

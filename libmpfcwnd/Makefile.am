@@ -7,7 +7,9 @@ libmpfcwnd_la_SOURCES = wnd.c wnd.h wnd_print.c wnd_print.h \
 						wnd_types.h wnd_basic.c wnd_basic.h wnd_class.c \
 						wnd_class.h wnd_dialog.c wnd_dialog.h \
 						wnd_dlgitem.c wnd_dlgitem.h \
-						wnd_button.c wnd_button.h wnd_editbox.c wnd_editbox.h
+						wnd_button.c wnd_button.h wnd_editbox.c \
+						wnd_editbox.h wnd_vbox.c wnd_vbox.h wnd_hbox.c \
+						wnd_hbox.h
 libmpfcwnd_la_LIBADD = @GPM_LIBS@ @PTHREAD_LIBS@ @CURSES_LIBS@
 INCLUDES = -I$(top_builddir)/src
 localedir = $(datadir)/locale

@@ -181,8 +181,8 @@ bool_t player_init( int argc, char *argv[] )
 		return FALSE;
 
 	/* Create window for play list */
-	player_wnd = wnd_new("Play list", wnd_root, 0, 0, 10, 10, 
-			WND_FLAG_FULL_BORDER | WND_FLAG_MAXIMIZED);
+	player_wnd = wnd_new(wnd_root, "Play list", 0, 0, 10, 10, 
+			/*WND_FLAG_FULL_BORDER | */WND_FLAG_MAXIMIZED);
 	wnd_msg_add_handler(player_wnd, "display", player_on_display);
 	wnd_msg_add_handler(player_wnd, "keydown", player_on_keydown);
 	wnd_msg_add_handler(player_wnd, "close", player_on_close);
@@ -993,9 +993,10 @@ void player_add_dialog( void )
 {
 	dialog_t *dlg;
 
-	dlg = dialog_new("Add songs", wnd_root, 5, 5, 50, 5, 0);
-	editbox_new(WND_OBJ(dlg), "name", 1, 0, WND_WIDTH(dlg) - 2, 1);
+	dlg = dialog_new(wnd_root, "Add songs");
+	editbox_new(WND_OBJ(dlg->m_vbox), "name", 50);
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_add);
+	dialog_arrange_children(dlg);
 } /* End of 'player_add_dialog' function */
 
 #if 0

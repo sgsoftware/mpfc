@@ -66,7 +66,7 @@ bool_t eqwnd_construct( eq_wnd_t *eq, wnd_t *parent )
 	wnd_t *wnd = (wnd_t *)eq;
 
 	/* Initialize window part */
-	if (!wnd_construct(wnd, _("MPFC Equalizer"), parent, 0, 0, 0, 0,
+	if (!wnd_construct(wnd, parent, _("MPFC Equalizer"), 0, 0, 0, 0,
 				WND_FLAG_FULL_BORDER | WND_FLAG_MAXIMIZED))
 		return FALSE;
 

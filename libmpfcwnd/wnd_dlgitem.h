@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Interface for common dialog
  *               item functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 13.08.2004
+ * LAST UPDATE : 16.08.2004
  * NOTE        : Module prefix 'dlgitem'
  *
  * This program is free software; you can redistribute it and/or 
@@ -31,25 +31,60 @@
 #include "types.h"
 #include "wnd.h"
 
+/* Dialog item flags type */
+typedef enum
+{
+	DLGITEM_NOTABSTOP	= 1 << 0,
+	DLGITEM_PACK_END	= 1 << 1,
+} dlgitem_flags_t;
+
+/* Functions for getting desired size for a dialog item and setting
+ * its position */
+struct tag_dlgitem_t;
+typedef void (*dlgitem_get_size_t)( struct tag_dlgitem_t *wnd, int *width, 
+		int *height );
+typedef void (*dlgitem_set_pos_t)( struct tag_dlgitem_t *wnd, int x, int y,
+		int width, int height );
+
 /* Dialog item type */
-typedef struct 
+typedef struct tag_dlgitem_t
 {
 	/* Window part */
 	wnd_t m_wnd;
 
 	/* Item ID string */
 	char *m_id;
+
+	/* Dialog this item belongs to */
+	wnd_t *m_dialog;
+
+	/* Item flags */
+	dlgitem_flags_t m_flags;
+
+	/* Get the desired window size and set its position functions */
+	dlgitem_get_size_t m_get_size;
+	dlgitem_set_pos_t m_set_pos;
 } dlgitem_t;
 
 /* Convert window object to dialog item type */
 #define DLGITEM_OBJ(wnd)	((dlgitem_t *)wnd)
 
+/* Access dialog item fields */
+#define DLGITEM_FLAGS(wnd)	(DLGITEM_OBJ(wnd)->m_flags)
+
 /* Construct dialog item */
-bool_t dlgitem_construct( dlgitem_t *di, char *title, char *id, wnd_t *parent, 
-		int x, int y, int width, int height );
+bool_t dlgitem_construct( dlgitem_t *di, wnd_t *parent, char *title, char *id, 
+		dlgitem_get_size_t get_size, dlgitem_set_pos_t set_pos, 
+		dlgitem_flags_t flags );
 
 /* Destructor */
 void dlgitem_destructor( wnd_t *wnd );
+
+/* Get dialog item desired size */
+void dlgitem_get_size( dlgitem_t *di, int *width, int *height );
+
+/* Set dialog item position */
+void dlgitem_set_pos( dlgitem_t *di, int x, int y, int width, int height );
 
 /* 'keydown' message handler */
 wnd_msg_retcode_t dlgitem_on_keydown( wnd_t *wnd, wnd_key_t key );

@@ -92,7 +92,7 @@ bool_t fb_construct( browser_t *fb, wnd_t *parent, char *dir )
 	wnd_t *wnd = (wnd_t *)fb;
 
 	/* Initialize window part */
-	if (!wnd_construct(wnd, "File browser", parent, 0, 0, 0, 0, 
+	if (!wnd_construct(wnd, parent, "File browser", 0, 0, 0, 0, 
 				WND_FLAG_FULL_BORDER | WND_FLAG_MAXIMIZED))
 		return FALSE;
 

@@ -30,6 +30,8 @@
 
 #include "types.h"
 #include "wnd.h"
+#include "wnd_hbox.h"
+#include "wnd_vbox.h"
 
 /* Dialog window type */
 typedef struct 
@@ -40,21 +42,31 @@ typedef struct
 	/* Message handlers */
 	wnd_msg_handler_t *m_on_ok,
 					  *m_on_cancel;
+
+	/* Main controls box */
+	vbox_t *m_vbox;
+
+	/* Buttons box */
+	hbox_t *m_hbox;
 } dialog_t;
 
 /* Convert some window to dialog type */
 #define DIALOG_OBJ(wnd)		((dialog_t *)wnd)
 
 /* Create a new dialog */
-dialog_t *dialog_new( char *title, wnd_t *parent, int x, int y,
-		int width, int height, dword flags ); 
+dialog_t *dialog_new( wnd_t *parent, char *title ); 
 
 /* Dialog window constructor */
-bool_t dialog_construct( dialog_t *dlg, char *title, wnd_t *parent, 
-		int x, int y, int width, int height, dword flags ); 
+bool_t dialog_construct( dialog_t *dlg, wnd_t *parent, char *title ); 
 
 /* Find dialog item by its ID */
-wnd_t *dialog_find_item( dialog_t *dlg, char *id );
+dlgitem_t *dialog_find_item( dialog_t *dlg, char *id );
+
+/* Arrange dialog items */
+void dialog_arrange_children( dialog_t *dlg );
+
+/* Dialog items iterator */
+dlgitem_t *dialog_iterate_items( dialog_t *dlg, dlgitem_t *di, bool_t cycle );
 
 /* Handle 'keydown' message */
 wnd_msg_retcode_t dialog_on_keydown( wnd_t *wnd, wnd_key_t key );

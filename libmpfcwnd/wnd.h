@@ -52,7 +52,8 @@ typedef enum
 								WND_FLAG_CLOSE_BOX | WND_FLAG_MAX_BOX,
 	WND_FLAG_OWN_DECOR		= 1 << 5,
 	WND_FLAG_MAXIMIZED		= 1 << 6,
-	WND_FLAG_INITIALIZED	= 1 << 7,
+	WND_FLAG_NORESIZE		= 1 << 7,
+	WND_FLAG_INITIALIZED	= 1 << 8,
 } wnd_flags_t;
 
 /* States for pushing/popping */
@@ -287,15 +288,15 @@ struct tag_wnd_t
 wnd_t *wnd_init( cfg_node_t *cfg_list );
 
 /* Create a window */
-wnd_t *wnd_new( char *title, wnd_t *parent, int x, int y, 
-				int width, int height, dword flags );
+wnd_t *wnd_new( wnd_t *parent, char *title, int x, int y, 
+				int width, int height, wnd_flags_t flags );
 
 /* Initialize window fields
  * Main job for creating window is done here. Constructors for
  * various window classes should call this function to initialize 
  * common window part. */
-bool_t wnd_construct( wnd_t *wnd, char *title, wnd_t *parent, int x, int y,
-		int width, int height, dword flags );
+bool_t wnd_construct( wnd_t *wnd, wnd_t *parent, char *title, int x, int y,
+		int width, int height, wnd_flags_t flags );
 
 /* Run main window loop */
 void wnd_main( wnd_t *wnd_root );

@@ -33,8 +33,7 @@
 #include "wnd_editbox.h"
 
 /* Create a new edit box */
-editbox_t *editbox_new( wnd_t *parent, char *id, int x, int y, int width, 
-		int height )
+editbox_t *editbox_new( wnd_t *parent, char *id, int width )
 {
 	editbox_t *eb;
 
@@ -46,24 +45,23 @@ editbox_t *editbox_new( wnd_t *parent, char *id, int x, int y, int width,
 	WND_OBJ(eb)->m_class = wnd_basic_class_init(WND_GLOBAL(parent));
 
 	/* Initialize edit box */
-	if (!editbox_construct(eb, parent, id, x, y, width, height))
+	if (!editbox_construct(eb, parent, id, width))
 	{
 		free(eb);
 		return NULL;
 	}
-	wnd_postinit(eb);
+	WND_OBJ(eb)->m_flags |= WND_FLAG_INITIALIZED;
 	return eb;
 } /* End of 'editbox_new' function */
 
 /* Edit box constructor */
-bool_t editbox_construct( editbox_t *eb, wnd_t *parent, char *id, int x, int y, 
-		int width, int height )
+bool_t editbox_construct( editbox_t *eb, wnd_t *parent, char *id, int width )
 {
 	wnd_t *wnd = WND_OBJ(eb);
 
 	/* Initialize window part */
-	if (!dlgitem_construct(DLGITEM_OBJ(eb), "", id, parent, x, y, 
-				width, height))
+	if (!dlgitem_construct(DLGITEM_OBJ(eb), parent, "", id, 
+				editbox_get_desired_size, NULL, 0))
 		return FALSE;
 
 	/* Initialize message map */
@@ -75,6 +73,7 @@ bool_t editbox_construct( editbox_t *eb, wnd_t *parent, char *id, int x, int y,
 	strcpy(eb->m_text, "");
 	eb->m_cursor = 0;
 	eb->m_len = 0;
+	eb->m_width = width;
 	return TRUE;
 } /* End of 'editbox_construct' function */
 
@@ -83,6 +82,14 @@ void editbox_destructor( wnd_t *wnd )
 {
 	free(EDITBOX_OBJ(wnd)->m_text);
 } /* End of 'editbox_destructor' function */
+
+/* Get edit box desired size */
+void editbox_get_desired_size( dlgitem_t *di, int *width, int *height )
+{
+	editbox_t *eb = EDITBOX_OBJ(di);
+	*width = eb->m_width;
+	*height = 1;
+} /* End of 'editbox_get_desired_size' function */
 
 /* Set edit box text */
 void editbox_set_text( editbox_t *eb, char *text )
