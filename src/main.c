@@ -5,7 +5,7 @@
 /* FILE NAME   : main.c
  * PURPOSE     : SG MPFC. Main program module.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 13.02.2003
+ * LAST UPDATE : 24.03.2004
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -25,6 +25,8 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 #include <locale.h>
 #include "error.h"
 #include "player.h"
@@ -32,6 +34,9 @@
 /* Main function */
 int main( int argc, char *argv[] )
 {
+	/* Initialize random numbers generator */
+	srand(time(NULL));
+	
 	/* Initialize gettext */
 	setlocale(LC_ALL, "");
 	bindtextdomain(PACKAGE, LOCALEDIR);
