@@ -21,10 +21,12 @@
  */
 
 #include <stdio.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include "types.h"
 #include "cfg.h"
+#include "command.h"
 #include "csp.h"
 #include "ep.h"
 #include "inp.h"
@@ -85,6 +87,17 @@ void pmng_add_plugin( pmng_t *pmng, plugin_t *p )
 	assert(pmng->m_plugins);
 	pmng->m_plugins[pmng->m_num_plugins ++] = p;
 } /* End of 'pmng_add_plugin' function */
+
+/* Send command message to player */
+void pmng_player_command( pmng_t *pmng, char *cmd, char *params_fmt, ... )
+{
+	va_list ap;
+
+	va_start(ap, params_fmt);
+	wnd_msg_send(pmng->m_player_wnd, "command", 
+			player_msg_command_new(cmd, cmd_create_params_va(params_fmt, ap)));
+	va_end(ap);
+} /* End of 'pmng_player_command' function */
 
 /* Autostart general plugins */
 void pmng_autostart_general( pmng_t *pmng )

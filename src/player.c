@@ -32,6 +32,7 @@
 #include "types.h"
 #include "browser.h"
 #include "cfg.h"
+#include "command.h"
 #include "eqwnd.h"
 #include "file.h"
 #include "help_screen.h"
@@ -234,7 +235,7 @@ bool_t player_init( int argc, char *argv[] )
 
 	/* Initialize play list window */
 	logger_debug(player_log, "Initializing play list window");
-	player_wnd = player_wnd_new(wnd_root);
+	player_wnd = WND_OBJ(player_wnd_new(wnd_root));
 	if (player_wnd == NULL)
 	{
 		logger_fatal(player_log, 0, _("Unable to initialize play list window"));
@@ -254,6 +255,7 @@ bool_t player_init( int argc, char *argv[] )
 		logger_fatal(player_log, 0, _("Unable to initialize plugin manager"));
 		return FALSE;
 	}
+	player_pmng->m_player_wnd = player_wnd;
 
 	/* Initialize VFS */
 	logger_debug(player_log, "Initializing VFS");
@@ -369,15 +371,17 @@ bool_t player_init( int argc, char *argv[] )
 } /* End of 'player_init' function */
 
 /* Initialize the player window */
-wnd_t *player_wnd_new( wnd_t *parent )
+player_wnd_t *player_wnd_new( wnd_t *parent )
 {
+	player_wnd_t *pwnd;
 	wnd_t *wnd;
 
 	/* Allocate memory */
-	wnd = (wnd_t *)malloc(sizeof(*wnd));
-	if (wnd == NULL)
+	pwnd = (player_wnd_t *)malloc(sizeof(*pwnd));
+	if (pwnd == NULL)
 		return NULL;
-	memset(wnd, 0, sizeof(*wnd));
+	memset(pwnd, 0, sizeof(*pwnd));
+	wnd = WND_OBJ(pwnd);
 	wnd->m_class = player_wnd_class_init(WND_GLOBAL(parent));
 
 	/* Initialize the window */
@@ -396,11 +400,12 @@ wnd_t *player_wnd_new( wnd_t *parent )
 	wnd_msg_add_handler(wnd, "mouse_mdown", player_on_mouse_mdown);
 	wnd_msg_add_handler(wnd, "mouse_ldouble", player_on_mouse_ldouble);
 	wnd_msg_add_handler(wnd, "user", player_on_user);
+	wnd_msg_add_handler(wnd, "command", player_on_command);
 
 	/* Set fields */
 	wnd->m_cursor_hidden = TRUE;
 	wnd_postinit(wnd);
-	return wnd;
+	return pwnd;
 } /* End of 'player_wnd_new' function */
 
 /* Root window destructor */
@@ -1166,6 +1171,37 @@ wnd_msg_retcode_t player_on_user( wnd_t *wnd, int id, void *data )
 	}
 	return WND_MSG_RETCODE_OK;
 } /* End of 'player_on_user' function */
+
+/* Handle command message */
+wnd_msg_retcode_t player_on_command( wnd_t *wnd, char *cmd, 
+		cmd_params_list_t *params )
+{
+	/* Clear play list */
+	if (!strcmp(cmd, "plist-clear"))
+	{
+		player_plist->m_sel_start = 0;
+		player_plist->m_sel_end = player_plist->m_len;
+		plist_rem(player_plist);
+	}
+	/* Add a file to play list */
+	else if (!strcmp(cmd, "plist-add"))
+	{
+		char *name = cmd_next_string_param(params);
+		if (name != NULL)
+		{
+			plist_add(player_plist, name);
+			free(name);
+		}
+	}
+	/* Play track */
+	else if (!strcmp(cmd, "play"))
+	{
+		int track = cmd_next_int_param(params);
+		player_status = PLAYER_STATUS_PLAYING;
+		player_play(track, 0);
+	}
+	return WND_MSG_RETCODE_OK;
+} /* End of 'player_on_command' function */
 
 /* Display player function */
 wnd_msg_retcode_t player_on_display( wnd_t *wnd )
@@ -3034,10 +3070,29 @@ bool_t player_handle_kbind_scheme( cfg_node_t *node, char *value,
 wnd_class_t *player_wnd_class_init( wnd_global_data_t *global )
 {
 	wnd_class_t *klass = wnd_class_new(global, "player", 
-			wnd_basic_class_init(global), NULL, NULL,
-			player_class_set_default_styles);
+			wnd_basic_class_init(global), player_get_msg_info, 
+			player_free_handlers, player_class_set_default_styles);
 	return klass;
 } /* End of 'player_wnd_class_init' function */
+
+/* Get message information */
+wnd_msg_handler_t **player_get_msg_info( wnd_t *wnd, char *msg_name,
+		wnd_class_msg_callback_t *callback )
+{
+	if (!strcmp(msg_name, "command"))
+	{
+		if (callback != NULL)
+			(*callback) = player_callback_command;
+		return &PLAYER_WND(wnd)->m_on_command;
+	}
+	return NULL;
+} /* End of 'player_get_msg_info' function */
+
+/* Free message handlers */
+void player_free_handlers( wnd_t *wnd )
+{
+	wnd_msg_free_handlers(PLAYER_WND(wnd)->m_on_command);
+} /* End of 'player_free_handlers' function */
 
 /* Set player class default styles */
 void player_class_set_default_styles( cfg_node_t *list )

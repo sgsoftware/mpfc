@@ -25,6 +25,7 @@
 
 #include "types.h"
 #include "cfg.h"
+#include "command.h"
 #include "logger.h"
 #include "logger_view.h"
 #include "plist.h"
@@ -67,6 +68,17 @@
 #define PLAYER_MSG_INFO			0
 #define PLAYER_MSG_NEXT_FOCUS	1
 
+/* Player window type */
+typedef struct
+{
+	/* Window part */
+	wnd_t m_wnd;
+
+	/* Message handlers */
+	wnd_msg_handler_t *m_on_command;
+} player_wnd_t;
+#define PLAYER_WND(wnd)	((player_wnd_t *)wnd)
+
 /***
  * Global variables
  ***/
@@ -108,7 +120,6 @@ extern cfg_node_t *cfg_list;
 extern logger_t *player_log;
 extern logger_view_t *player_logview;
 
-
 /* VFS data */
 extern vfs_t *player_vfs;
 
@@ -126,7 +137,7 @@ void player_deinit( void );
 void player_root_destructor( wnd_t *wnd );
 
 /* Initialize the player window */
-wnd_t *player_wnd_new( wnd_t *parent );
+player_wnd_t *player_wnd_new( wnd_t *parent );
 
 /* Run player */
 bool_t player_run( void );
@@ -175,6 +186,10 @@ wnd_msg_retcode_t player_on_mouse_ldouble( wnd_t *wnd, int x, int y,
 
 /* Handle user message */
 wnd_msg_retcode_t player_on_user( wnd_t *wnd, int id, void *data );
+
+/* Handle command message */
+wnd_msg_retcode_t player_on_command( wnd_t *wnd, char *cmd, 
+		cmd_params_list_t *params );
 
 /* Signal handler */
 void player_handle_signal( int signum );
@@ -384,6 +399,13 @@ bool_t player_handle_kbind_scheme( cfg_node_t *var, char *value,
 
 /* Initialize class */
 wnd_class_t *player_wnd_class_init( wnd_global_data_t *global );
+
+/* Get message information */
+wnd_msg_handler_t **player_get_msg_info( wnd_t *wnd, char *msg_name,
+		wnd_class_msg_callback_t *callback );
+
+/* Free message handlers */
+void player_free_handlers( wnd_t *wnd );
 
 /* Set player class default styles */
 void player_class_set_default_styles( cfg_node_t *list );

@@ -52,6 +52,9 @@ typedef struct tag_pmng_t
 
 	/* Logger object */
 	logger_t *m_log;
+
+	/* Player window */
+	wnd_t *m_player_wnd;
 } pmng_t;
 
 /* Initialize plugins */
@@ -65,6 +68,9 @@ bool_t pmng_load_plugins( pmng_t *pmng );
 
 /* Add a plugin */
 void pmng_add_plugin( pmng_t *pmng, plugin_t *p );
+
+/* Send command message to player */
+void pmng_player_command( pmng_t *pmng, char *cmd, char *params_fmt, ... );
 
 /* Autostart general plugins */
 void pmng_autostart_general( pmng_t *pmng );
