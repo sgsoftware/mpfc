@@ -160,7 +160,7 @@ void plist_lock( plist_t *pl );
 void plist_unlock( plist_t *pl );
 
 /* Add an object */
-int plist_add_obj( plist_t *pl, char *name, char *title );
+int plist_add_obj( plist_t *pl, char *name, char *title, int where );
 
 /* Set song information */
 void plist_set_song_info( plist_t *pl, int index );

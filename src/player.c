@@ -182,7 +182,7 @@ bool_t player_init( int argc, char *argv[] )
 		return FALSE;
 	}
 	for ( i = 0; i < player_num_obj; i ++ )
-		plist_add_obj(player_plist, player_objects[i], NULL);
+		plist_add_obj(player_plist, player_objects[i], NULL, -1);
 	for ( i = 0; i < player_num_files; i ++ )
 		plist_add(player_plist, player_files[i]);
 
@@ -1342,7 +1342,7 @@ void player_add_obj_dialog( void )
 
 		/* Add object if enter was pressed */
 		if (ebox->m_last_key == '\n')
-			plist_add_obj(player_plist, ebox->m_text, NULL);
+			plist_add_obj(player_plist, ebox->m_text, NULL, -1);
 
 		/* Destroy edit box */
 		wnd_destroy(ebox);

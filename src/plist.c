@@ -169,6 +169,10 @@ int plist_add_song( plist_t *pl, char *filename, char *title, int len,
 	
 	PLIST_ASSERT_RET(pl, FALSE);
 
+	/* Add object */
+	if (plist_is_obj(filename))
+		return plist_add_obj(pl, filename, title, where);
+
 	/* Lock play list */
 	plist_lock(pl);
 
@@ -293,7 +297,7 @@ int plist_add_m3u( plist_t *pl, char *filename )
 
 		/* Check if this is an object */
 		if (plist_is_obj(str))
-			num += plist_add_obj(pl, str, title);
+			num += plist_add_obj(pl, str, title, -1);
 		/* Add this song to list */
 		else
 			num += plist_add_song(pl, str, title, song_len, -1);
@@ -350,7 +354,7 @@ int plist_add_pls( plist_t *pl, char *filename )
 
 		/* Check if this is an object */
 		if (plist_is_obj(str))
-			num += plist_add_obj(pl, s, NULL);
+			num += plist_add_obj(pl, s, NULL, -1);
 		/* Add song */
 		else
 			num += plist_add_song(pl, s, NULL, 0, -1);
@@ -913,13 +917,13 @@ void plist_unlock( plist_t *pl )
 } /* End of 'plist_unlock' function */
 
 /* Add an object */
-int plist_add_obj( plist_t *pl, char *name, char *title )
+int plist_add_obj( plist_t *pl, char *name, char *title, int where )
 {
 	char plugin_name[256], obj_name[256];
 	in_plugin_t *inp;
-	int num_songs, was_len, i;
+	int num_songs, was_len, i, j;
 	song_t **s;
-	
+
 	if (pl == NULL)
 		return 0;
 
@@ -944,6 +948,8 @@ int plist_add_obj( plist_t *pl, char *name, char *title )
 
 	/* Add these songs to play list */
 	plist_lock(pl);
+	if (where < 0 || where >= pl->m_len)  
+		where = pl->m_len;
 	was_len = pl->m_len;
 	pl->m_len += num_songs;
 	if (pl->m_list == NULL)
@@ -951,10 +957,12 @@ int plist_add_obj( plist_t *pl, char *name, char *title )
 	else
 		pl->m_list = (song_t **)realloc(pl->m_list, 
 				sizeof(song_t *) * pl->m_len);
-	memcpy(&pl->m_list[was_len], s, 
+	memmove(&pl->m_list[where + num_songs], &pl->m_list[where],
+			sizeof(song_t *) * (was_len - where));
+	memcpy(&pl->m_list[where], s, 
 			sizeof(song_t *) * num_songs);
 	plist_unlock(pl);
-	for ( i = was_len; i < pl->m_len; i ++ )
+	for ( i = where, j = 0; j < num_songs; i ++, j ++ )
 	{
 		pl->m_list[i]->m_inp = inp;
 		if (title == NULL)
