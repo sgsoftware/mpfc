@@ -103,6 +103,13 @@ wnd_msg_retcode_t combo_on_mouse( wnd_t *wnd, int x, int y,
 /* 'loose_focus' message handler */
 wnd_msg_retcode_t combo_on_loose_focus( wnd_t *wnd );
 
+/*
+ * Class functions
+ */
+
+/* Initialize combo box class */
+wnd_class_t *combo_class_init( wnd_global_data_t *global );
+
 #endif
 
 /* End of 'wnd_combobox.h' file */

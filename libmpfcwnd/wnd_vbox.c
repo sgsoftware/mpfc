@@ -42,7 +42,7 @@ vbox_t *vbox_new( wnd_t *parent, char *title, int dist )
 	if (vbox == NULL)
 		return NULL;
 	memset(vbox, 0, sizeof(*vbox));
-	WND_OBJ(vbox)->m_class = wnd_basic_class_init(WND_GLOBAL(parent));
+	WND_OBJ(vbox)->m_class = vbox_class_init(WND_GLOBAL(parent));
 
 	/* Initialize box */
 	if (!vbox_construct(vbox, parent, title, dist))
@@ -144,6 +144,12 @@ void vbox_set_pos( dlgitem_t *di, int x, int y, int width, int height )
 		}
 	}
 } /* End of 'vbox_set_pos' function */
+
+/* Initialize vbox class */
+wnd_class_t *vbox_class_init( wnd_global_data_t *global )
+{
+	return wnd_class_new(global, "vbox", dlgitem_class_init(global), NULL);
+} /* End of 'vbox_class_init' function */
 
 /* End of 'wnd_vbox.c' file */
 

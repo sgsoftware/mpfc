@@ -93,6 +93,19 @@ void dlgitem_set_pos( dlgitem_t *di, int x, int y, int width, int height );
 /* 'keydown' message handler */
 wnd_msg_retcode_t dlgitem_on_keydown( wnd_t *wnd, wnd_key_t key );
 
+/* Display a label-like text */
+void dlgitem_display_label_text( wnd_t *wnd, char *text );
+
+/* Get length of label-like text */
+int dlgitem_label_text_len( wnd_t *wnd, char *text );
+
+/*
+ * Class functions
+ */
+
+/* Initialize dialog item class */
+wnd_class_t *dlgitem_class_init( wnd_global_data_t *global );
+
 #endif
 
 /* End of 'wnd_dlgitem.h' file */

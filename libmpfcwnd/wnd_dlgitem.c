@@ -101,5 +101,59 @@ wnd_msg_retcode_t dlgitem_on_keydown( wnd_t *wnd, wnd_key_t key )
 	return WND_MSG_RETCODE_OK;
 } /* End of 'dlgitem_on_keydown' function */
 
+/* Display a label-like text */
+void dlgitem_display_label_text( wnd_t *wnd, char *text )
+{
+	bool_t mark_next = FALSE;
+
+	for ( ; (*text) != 0; text ++ )
+	{
+		if ((*text) == '&')
+			mark_next = TRUE;
+		else
+		{
+			/* Mark current char */
+			if (mark_next)
+			{
+				char *color = wnd_get_style(wnd, "letter-color");
+				wnd_push_state(wnd, WND_STATE_COLOR);
+				if (color != NULL)
+					wnd_set_fg_color(wnd, wnd_string2color(color));
+				wnd_putchar(wnd, 0, *text);
+				wnd_pop_state(wnd);
+				mark_next = FALSE;
+			}
+			else
+				wnd_putchar(wnd, 0, *text);
+		}
+	}
+} /* End of 'dlgitem_display_label_text' function */
+
+/* Get length of label-like text */
+int dlgitem_label_text_len( wnd_t *wnd, char *text )
+{
+	int len = 0;
+
+	if (text == NULL)
+		return 0;
+	for ( ; (*text) != 0; text ++ )
+	{
+		if ((*text) != '&')
+			len ++;
+	}
+	return len;
+} /* End of 'dlgitem_label_text_len' function */
+
+/* Initialize dialog item class */
+wnd_class_t *dlgitem_class_init( wnd_global_data_t *global )
+{
+	wnd_class_t *klass = wnd_class_new(global, "dlgitem", 
+			wnd_basic_class_init(global), NULL);
+
+	/* Set default styles for dialog items */
+	cfg_set_var(klass->m_cfg_list, "letter-color", "red");
+	return klass;
+} /* End of 'dlgitem_class_init' function */
+
 /* End of 'wnd_dlgitem.c' file */
 

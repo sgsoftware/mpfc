@@ -163,7 +163,7 @@ wnd_t *player_wnd = NULL;
 cfg_node_t *cfg_list = NULL;
 
 /* Standard value for edit boxes width */
-#define PLAYER_EB_WIDTH	40
+#define PLAYER_EB_WIDTH	50
 
 /*****
  *
@@ -195,17 +195,9 @@ bool_t player_init( int argc, char *argv[] )
 	wnd_root = wnd_init(cfg_list);
 	if (wnd_root == NULL)
 		return FALSE;
-
-	/* Create window for play list */
-	player_wnd = wnd_new(wnd_root, "Play list", 0, 0, 10, 10, 
-			/*WND_FLAG_FULL_BORDER | */WND_FLAG_MAXIMIZED);
-	wnd_msg_add_handler(player_wnd, "display", player_on_display);
-	wnd_msg_add_handler(player_wnd, "keydown", player_on_keydown);
-	wnd_msg_add_handler(player_wnd, "close", player_on_close);
-	wnd_msg_add_handler(player_wnd, "mouse_ldown", player_on_mouse_ldown);
-	wnd_msg_add_handler(player_wnd, "mouse_mdown", player_on_mouse_mdown);
-	wnd_msg_add_handler(player_wnd, "mouse_ldouble", player_on_mouse_ldouble);
-	player_wnd->m_cursor_hidden = TRUE;
+	player_wnd = player_wnd_new(wnd_root);
+	if (player_wnd == NULL)
+		return FALSE;
 
 	/* Initialize key bindings */
 	kbind_init();
@@ -303,6 +295,40 @@ bool_t player_init( int argc, char *argv[] )
 	/* Exit */
 	return TRUE;
 } /* End of 'player_init' function */
+
+/* Initialize the player window */
+wnd_t *player_wnd_new( wnd_t *parent )
+{
+	wnd_t *wnd;
+
+	/* Allocate memory */
+	wnd = (wnd_t *)malloc(sizeof(*wnd));
+	if (wnd == NULL)
+		return NULL;
+	memset(wnd, 0, sizeof(*wnd));
+	wnd->m_class = player_wnd_class_init(WND_GLOBAL(parent));
+
+	/* Initialize the window */
+	if (!wnd_construct(wnd, parent, "Play list", 0, 0, 10, 10,
+				WND_FLAG_MAXIMIZED))
+	{
+		free(wnd);
+		return NULL;
+	}
+
+	/* Set message map */
+	wnd_msg_add_handler(wnd, "display", player_on_display);
+	wnd_msg_add_handler(wnd, "keydown", player_on_keydown);
+	wnd_msg_add_handler(wnd, "close", player_on_close);
+	wnd_msg_add_handler(wnd, "mouse_ldown", player_on_mouse_ldown);
+	wnd_msg_add_handler(wnd, "mouse_mdown", player_on_mouse_mdown);
+	wnd_msg_add_handler(wnd, "mouse_ldouble", player_on_mouse_ldouble);
+
+	/* Set fields */
+	wnd->m_cursor_hidden = TRUE;
+	wnd_postinit(wnd);
+	return wnd;
+} /* End of 'player_wnd_new' function */
 
 /* Unitialize player */
 void player_deinit( void )
@@ -1171,33 +1197,29 @@ wnd_msg_retcode_t player_on_display( wnd_t *wnd )
 	{
 		/* Print about */
 		wnd_move(wnd, 0, 0, 0);
-		col_set_color(wnd, COL_EL_ABOUT);
+		wnd_apply_style(wnd, "about-style");
 		wnd_printf(wnd, 0, 0, _("SG Software Media Player For Console"));
-		col_set_color(wnd, COL_EL_DEFAULT);
 		
 		/* Print shuffle mode */
 		if (cfg_get_var_int(cfg_list, "shuffle-play"))
 		{
 			wnd_move(wnd, 0, WND_WIDTH(wnd) - 13, 0);
-			col_set_color(wnd, COL_EL_PLAY_MODES);
+			wnd_apply_style(wnd, "play-modes-style");
 			wnd_printf(wnd, 0, 0, "Shuffle");
-			col_set_color(wnd, COL_EL_DEFAULT);
 		}
 		
 		/* Print loop mode */
 		if (cfg_get_var_int(cfg_list, "loop-play"))
 		{
 			wnd_move(wnd, 0, WND_WIDTH(wnd) - 5, 0);
-			col_set_color(wnd, COL_EL_PLAY_MODES);
+			wnd_apply_style(wnd, "play-modes-style");
 			wnd_printf(wnd, 0, 0, "Loop");
-			col_set_color(wnd, COL_EL_DEFAULT);
 		}
 
 		/* Print version */
 		wnd_move(wnd, 0, 0, 1);
-		col_set_color(wnd, COL_EL_ABOUT);
+		wnd_apply_style(wnd, "about-style");
 		wnd_printf(wnd, 0, 0, _("version %s"), VERSION);
-		col_set_color(wnd, COL_EL_DEFAULT);
 	}
 	else
 	{
@@ -1207,38 +1229,34 @@ wnd_msg_retcode_t player_on_display( wnd_t *wnd )
 		/* Print current song title */
 		s = player_plist->m_list[player_plist->m_cur_song];
 		wnd_move(wnd, 0, 0, 0);
-		col_set_color(wnd, COL_EL_CUR_TITLE);
+		wnd_apply_style(wnd, "title-style");
 		wnd_printf(wnd, WND_PRINT_ELLIPSES, WND_WIDTH(wnd) - 1, "%s", 
 				STR_TO_CPTR(s->m_title));
-		col_set_color(wnd, COL_EL_DEFAULT);
 
 		/* Print shuffle mode */
 		if (cfg_get_var_int(cfg_list, "shuffle-play"))
 		{
 			wnd_move(wnd, 0, WND_WIDTH(wnd) - 13, 0);
-			col_set_color(wnd, COL_EL_PLAY_MODES);
+			wnd_apply_style(wnd, "play-modes-style");
 			wnd_printf(wnd, 0, 0, "Shuffle");
-			col_set_color(wnd, COL_EL_DEFAULT);
 		}
 
 		/* Print loop mode */
 		if (cfg_get_var_int(cfg_list, "loop-play"))
 		{
 			wnd_move(wnd, 0, WND_WIDTH(wnd) - 5, 0);
-			col_set_color(wnd, COL_EL_PLAY_MODES);
+			wnd_apply_style(wnd, "play-modes-style");
 			wnd_printf(wnd, 0, 0, "Loop");
-			col_set_color(wnd, COL_EL_DEFAULT);
 		}
 
 		/* Print current time */
 		t = (show_rem = cfg_get_var_int(cfg_list, "show-time-remaining")) ? 
 			s->m_len - player_cur_time : player_cur_time;
 		wnd_move(wnd, 0, 0, 1);
-		col_set_color(wnd, COL_EL_CUR_TIME);
+		wnd_apply_style(wnd, "time-style");
 		wnd_printf(wnd, 0, 0, "%s%i:%02i/%i:%02i\n", 
 				show_rem ? "-" : "", t / 60, t % 60,
 				s->m_len / 60, s->m_len % 60);
-		col_set_color(wnd, COL_EL_DEFAULT);
 	}
 
 	/* Display current audio parameters */
@@ -1252,9 +1270,8 @@ wnd_msg_retcode_t player_on_display( wnd_t *wnd )
 				(player_stereo == PLAYER_STEREO) ? "stereo" : "mono");
 	wnd_move(wnd, 0, PLAYER_SLIDER_BAL_X - strlen(aparams) - 1, 
 			PLAYER_SLIDER_BAL_Y);
-	col_set_color(wnd, COL_EL_AUDIO_PARAMS);
+	wnd_apply_style(wnd, "audio-params-style");
 	wnd_printf(wnd, 0, 0, "%s", aparams);
-	col_set_color(wnd, COL_EL_DEFAULT);
 
 	/* Display various slidebars */
 	player_display_slider(wnd, PLAYER_SLIDER_BAL_X, PLAYER_SLIDER_BAL_Y,
@@ -1271,9 +1288,8 @@ wnd_msg_retcode_t player_on_display( wnd_t *wnd )
 	if (player_msg != NULL)
 	{
 		wnd_move(wnd, 0, 0, WND_HEIGHT(wnd) - 1);
-		col_set_color(wnd, COL_EL_STATUS);
+		wnd_apply_style(wnd, "status-style");
 		wnd_printf(wnd, 0, 0, "%s", player_msg);
-		col_set_color(wnd, COL_EL_DEFAULT);
 	}
 	return WND_MSG_RETCODE_OK;
 } /* End of 'player_display' function */
@@ -1286,15 +1302,14 @@ void player_display_slider( wnd_t *wnd, int x, int y, int width,
 	
 	wnd_move(wnd, 0, x, y);
 	slider_pos = (range) ? (pos * width / range) : 0;
-	col_set_color(wnd, COL_EL_SLIDER);
+	wnd_apply_style(wnd, "slider-style");
 	for ( i = 0; i <= width; i ++ )
 	{
 		if (i == slider_pos)
-			wnd_printf(wnd, 0, 0, "O");
+			wnd_putchar(wnd, 0, 'O');
 		else 
-			wnd_printf(wnd, 0, 0, "=");
+			wnd_putchar(wnd, 0,  '=');
 	}
-	col_set_color(wnd, COL_EL_DEFAULT);
 } /* End of 'player_display_slider' function */
 
 /*****
@@ -2544,6 +2559,34 @@ bool_t player_handle_kbind_scheme( cfg_node_t *node, char *value )
 	player_read_rcfile(cfg_list, fname);
 	return TRUE;
 } /* End of 'player_handle_kbind_scheme' function */
+
+/*****
+ *
+ * Player window class functions
+ *
+ *****/
+
+/* Initialize class */
+wnd_class_t *player_wnd_class_init( wnd_global_data_t *global )
+{
+	wnd_class_t *klass = wnd_class_new(global, "player", 
+			wnd_basic_class_init(global), NULL);
+
+	/* Set styles */
+	cfg_set_var(klass->m_cfg_list, "plist-style", "white:black");
+	cfg_set_var(klass->m_cfg_list, "plist-playing-style", "red:black:bold");
+	cfg_set_var(klass->m_cfg_list, "plist-selected-style", "white:blue:bold");
+	cfg_set_var(klass->m_cfg_list, "plist-sel-and-play-style", "red:blue:bold");
+	cfg_set_var(klass->m_cfg_list, "plist-time-style", "green:black:bold");
+	cfg_set_var(klass->m_cfg_list, "title-style", "yellow:black:bold");
+	cfg_set_var(klass->m_cfg_list, "time-style", "green:black:bold");
+	cfg_set_var(klass->m_cfg_list, "audio-params-style", "green:black:bold");
+	cfg_set_var(klass->m_cfg_list, "about-style", "green:black:bold");
+	cfg_set_var(klass->m_cfg_list, "slider-style", "cyan:black:bold");
+	cfg_set_var(klass->m_cfg_list, "play-modes-style", "green:black:bold");
+	cfg_set_var(klass->m_cfg_list, "status-style", "red:black:bold");
+	return klass;
+} /* End of 'player_wnd_class_init' function */
 
 /*****
  *

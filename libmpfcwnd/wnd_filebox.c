@@ -45,22 +45,13 @@ filebox_t *filebox_new( wnd_t *parent, char *id, char *text, char letter,
 		int width )
 {
 	filebox_t *fb;
-	wnd_class_t *klass;
 
 	/* Allocate memory */
 	fb = (filebox_t *)malloc(sizeof(*fb));
 	if (fb == NULL)
 		return NULL;
 	memset(fb, 0, sizeof(*fb));
-
-	/* Initialize class */
-	klass = editbox_class_init(WND_GLOBAL(parent));
-	if (klass == NULL)
-	{
-		free(fb);
-		return NULL;
-	}
-	WND_OBJ(fb)->m_class = klass;
+	WND_OBJ(fb)->m_class = filebox_class_init(WND_GLOBAL(parent));
 
 	/* Initialize file box */
 	if (!filebox_construct(fb, parent, id, text, letter, width))
@@ -95,7 +86,7 @@ filebox_t *filebox_new_with_label( wnd_t *parent, char *title, char *id,
 	hbox_t *hbox;
 	hbox = hbox_new(parent, NULL, 0);
 	label_new(WND_OBJ(hbox), title, "", 0);
-	return filebox_new(WND_OBJ(hbox), id, text, letter, width);
+	return filebox_new(WND_OBJ(hbox), id, text, letter - strlen(title), width);
 } /* End of 'filebox_new_with_label' function */
 
 /* Destructor */
@@ -301,6 +292,12 @@ void filebox_free_names( filebox_t *fb )
 	}
 	fb->m_names = NULL;
 } /* End of 'filebox_free_names' function */
+
+/* Initialize file box class */
+wnd_class_t *filebox_class_init( wnd_global_data_t *global )
+{
+	return wnd_class_new(global, "filebox", editbox_class_init(global), NULL);
+} /* End of 'filebox_class_init' function */
 
 /* End of 'filebox.c' file */
 

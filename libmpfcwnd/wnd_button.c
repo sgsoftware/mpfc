@@ -87,18 +87,17 @@ bool_t button_construct( button_t *btn, wnd_t *parent, char *title, char *id,
 /* Get button desired size */
 void button_get_desired_size( dlgitem_t *di, int *width, int *height )
 {
-	*width = 2 + label_text_len(WND_OBJ(di));
+	*width = 2 + dlgitem_label_text_len(WND_OBJ(di), WND_OBJ(di)->m_title);
 	*height = 1;
 } /* End of 'button_get_desired_size' function */
 
 /* 'display' message handler */
 wnd_msg_retcode_t button_on_display( wnd_t *wnd )
 {
-	wnd_color_t bg = (WND_FOCUS(wnd) == wnd) ? WND_COLOR_BLUE : WND_COLOR_GREEN;
 	wnd_move(wnd, 0, 0, 0);
-	wnd_set_bg_color(wnd, bg);
+	wnd_apply_default_style(wnd);
 	wnd_putchar(wnd, 0, ' ');
-	label_display_text(wnd, wnd->m_title, WND_COLOR_WHITE, bg, WND_ATTRIB_BOLD);
+	dlgitem_display_label_text(wnd, wnd->m_title);
 	wnd_putchar(wnd, 0, ' ');
 	return WND_MSG_RETCODE_OK;
 } /* End of 'button_on_display' function */
@@ -125,8 +124,11 @@ wnd_msg_retcode_t button_on_mouse( wnd_t *wnd, int x, int y,
 /* Initialize button class */
 wnd_class_t *button_class_init( wnd_global_data_t *global )
 {
-	return wnd_class_new(global, "button", wnd_basic_class_init(global),
-			button_get_msg_info);
+	wnd_class_t *klass = wnd_class_new(global, "button", 
+			dlgitem_class_init(global), button_get_msg_info);
+	cfg_set_var(klass->m_cfg_list, "text-style", "white:green:bold");
+	cfg_set_var(klass->m_cfg_list, "focus-text-style", "white:blue:bold");
+	return klass;
 } /* End of 'button_class_init' function */
 
 /* Get message information */

@@ -48,7 +48,7 @@ help_screen_t *help_new( wnd_t *parent, int type )
 		return NULL;
 	}
 	memset(help, 0, sizeof(*help));
-	WND_OBJ(help)->m_class = wnd_basic_class_init(WND_GLOBAL(parent));
+	WND_OBJ(help)->m_class = help_class_init(WND_GLOBAL(parent));
 
 	/* Initialize help screen */
 	if (!help_construct(help, parent, type))
@@ -124,7 +124,7 @@ wnd_msg_retcode_t help_on_display( wnd_t *wnd )
 	int i, j;
 	
 	/* Print keys */
-	col_set_color(wnd, COL_EL_HELP_STRINGS);
+	wnd_apply_style(wnd, "item-style");
 	for ( i = HELP_SCREEN_SIZE(h) * h->m_screen, j = 0; 
 			i < h->m_num_items && i < HELP_SCREEN_SIZE(h) * (h->m_screen + 1);
 	   		i ++, j ++ )  
@@ -132,13 +132,12 @@ wnd_msg_retcode_t help_on_display( wnd_t *wnd )
 		wnd_move(wnd, 0, 0, j);
 		wnd_printf(wnd, 0, 0, "%s", h->m_items[i]);
 	}
-	col_set_color(wnd, COL_EL_DEFAULT);
 
-	col_set_color(wnd, COL_EL_STATUS);
+	/* Print prompt */
+	wnd_apply_style(wnd, "prompt-style");
 	wnd_move(wnd, 0, 0, WND_HEIGHT(wnd) - 1);
 	wnd_printf(wnd, 0, 0, 
 			_("Press <Space> to see next screen and <q> to exit\n"));
-	col_set_color(wnd, COL_EL_DEFAULT);
 	return WND_MSG_RETCODE_OK;
 } /* End of 'help_display' function */
 
@@ -265,6 +264,16 @@ void help_init_eqwnd( help_screen_t *help )
 	help_add(help, _("p:\t\t Load Winamp EQF preset"));
 	help_add(help, _("?:\t\t This help screen"));
 } /* End of 'help_init_eqwnd' function */
+
+/* Initialize help screen class */
+wnd_class_t *help_class_init( wnd_global_data_t *global )
+{
+	wnd_class_t *klass = wnd_class_new(global, "help",
+			wnd_basic_class_init(global), NULL);
+	cfg_set_var(klass->m_cfg_list, "item-style", "white:black");
+	cfg_set_var(klass->m_cfg_list, "prompt-style", "red:black");
+	return klass;
+} /* End of 'help_class_init' function */
 
 /* End of 'help_screen.c' file */
 

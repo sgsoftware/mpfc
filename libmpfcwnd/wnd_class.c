@@ -56,6 +56,8 @@ wnd_class_t *wnd_class_new( wnd_global_data_t *global, char *name,
 	klass->m_name = strdup(name);
 	klass->m_parent = parent;
 	klass->m_get_info = get_info_func;
+	klass->m_cfg_list = cfg_new_list(global->m_classes_cfg, name, 
+			CFG_NODE_RUNTIME | CFG_NODE_MEDIUM_LIST, 0);
 	klass->m_next = NULL;
 
 	/* Insert class to the classes table */
@@ -81,6 +83,9 @@ wnd_msg_handler_t **wnd_class_get_msg_info( wnd_t *wnd, char *msg_name,
 	wnd_class_t *klass;
 	for ( klass = wnd->m_class; klass != NULL; klass = klass->m_parent )
 	{
+		if (klass->m_get_info == NULL)
+			continue;
+
 		wnd_msg_handler_t **h = klass->m_get_info(wnd, msg_name,
 				callback);
 		if (h != NULL)

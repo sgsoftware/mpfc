@@ -42,7 +42,7 @@ hbox_t *hbox_new( wnd_t *parent, char *title, int dist )
 	if (hbox == NULL)
 		return NULL;
 	memset(hbox, 0, sizeof(*hbox));
-	WND_OBJ(hbox)->m_class = wnd_basic_class_init(WND_GLOBAL(parent));
+	WND_OBJ(hbox)->m_class = hbox_class_init(WND_GLOBAL(parent));
 
 	/* Initialize box */
 	if (!hbox_construct(hbox, parent, title, dist))
@@ -144,6 +144,12 @@ void hbox_set_pos( dlgitem_t *di, int x, int y, int width, int height )
 		}
 	}
 } /* End of 'hbox_set_pos' function */
+
+/* Initialize hbox class */
+wnd_class_t *hbox_class_init( wnd_global_data_t *global )
+{
+	return wnd_class_new(global, "hbox", dlgitem_class_init(global), NULL);
+} /* End of 'hbox_class_init' function */
 
 /* End of 'wnd_hbox.c' file */
 

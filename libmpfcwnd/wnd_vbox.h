@@ -60,6 +60,13 @@ void vbox_get_desired_size( dlgitem_t *di, int *width, int *height );
 /* Set position */
 void vbox_set_pos( dlgitem_t *di, int x, int y, int width, int height );
 
+/*
+ * Class functions
+ */
+
+/* Initialize vbox class */
+wnd_class_t *vbox_class_init( wnd_global_data_t *global );
+
 #endif
 
 /* End of 'wnd_vbox.h' file */

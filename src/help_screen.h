@@ -79,6 +79,9 @@ void help_init_browser( help_screen_t *h );
 /* Initialize help screen in equalizer window mode */
 void help_init_eqwnd( help_screen_t *h );
 
+/* Initialize help screen class */
+wnd_class_t *help_class_init( wnd_global_data_t *global );
+
 #endif
 
 /* End of 'help_screen.h' file */

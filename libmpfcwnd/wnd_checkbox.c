@@ -95,18 +95,12 @@ wnd_msg_retcode_t checkbox_on_display( wnd_t *wnd )
 	checkbox_t *cb = CHECKBOX_OBJ(wnd);
 
 	wnd_move(wnd, 0, 0, 0);
-	wnd_set_fg_color(wnd, WND_COLOR_WHITE);
-	wnd_set_bg_color(wnd, WND_COLOR_BLACK);
-	wnd_push_state(wnd, WND_STATE_COLOR);
-	if (WND_FOCUS(wnd) == wnd)
-	{
-		wnd_set_fg_color(wnd, WND_COLOR_WHITE);
-		wnd_set_bg_color(wnd, WND_COLOR_BLUE);
-	}
+	wnd_apply_default_style(wnd);
 	wnd_printf(wnd, 0, 0, "[%c]", cb->m_checked ? 'X' : ' ');
-	wnd_pop_state(wnd);
+	wnd_apply_style(wnd, WND_FOCUS(wnd) == wnd ? "focus-label-style" :
+			"label-style");
 	wnd_putchar(wnd, 0, ' ');
-	label_display_text(wnd, wnd->m_title, WND_COLOR_WHITE, WND_COLOR_BLACK, 0);
+	dlgitem_display_label_text(wnd, wnd->m_title);
 	wnd_move(wnd, 0, 1, 0);
 } /* End of 'checkbox_on_display' function */
 
@@ -129,15 +123,19 @@ void checkbox_toggle( checkbox_t *cb )
 /* Get size desired by check box */
 void checkbox_get_desired_size( dlgitem_t *di, int *width, int *height )
 {
-	*width = label_text_len(WND_OBJ(di)) + 5;
+	*width = dlgitem_label_text_len(WND_OBJ(di), WND_OBJ(di)->m_title) + 5;
 	*height = 1;
 } /* End of 'checkbox_get_desired_size' function */
 
 /* Initialize checkbox class */
 wnd_class_t *checkbox_class_init( wnd_global_data_t *global )
 {
-	return wnd_class_new(global, "checkbox", wnd_basic_class_init(global),
-			checkbox_get_msg_info);
+	wnd_class_t *klass = wnd_class_new(global, "checkbox", 
+			dlgitem_class_init(global), checkbox_get_msg_info);
+	cfg_set_var(klass->m_cfg_list, "focus-text-style", "white:blue:bold");
+	cfg_set_var(klass->m_cfg_list, "label-style", "white:black");
+	cfg_set_var(klass->m_cfg_list, "focus-label-style", "white:black");
+	return klass;
 } /* End of 'checkbox_class_init' function */
 
 /* Get message information */

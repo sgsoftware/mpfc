@@ -78,6 +78,13 @@ void label_display_text( wnd_t *wnd, char *text, wnd_color_t fg,
 /* Get label-like text length */
 int label_text_len( wnd_t *wnd );
 
+/*
+ * Class functions
+ */
+
+/* Initialize label class */
+wnd_class_t *label_class_init( wnd_global_data_t *global );
+
 #endif
 
 /* End of 'wnd_label.h' file */

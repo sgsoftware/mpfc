@@ -937,16 +937,16 @@ void plist_display( plist_t *pl, wnd_t *wnd )
 		if (j >= start && j <= end)
 		{
 			if (j == pl->m_cur_song)
-				col_set_color(wnd, COL_EL_PLIST_TITLE_CUR_SEL);
+				wnd_apply_style(wnd, "plist-sel-and-play-style");
 			else
-				col_set_color(wnd, COL_EL_PLIST_TITLE_SEL);
+				wnd_apply_style(wnd, "plist-selected-style");
 		}
 		else
 		{
 			if (j == pl->m_cur_song)
-				col_set_color(wnd, COL_EL_PLIST_TITLE_CUR);
+				wnd_apply_style(wnd, "plist-playing-style");
 			else
-				col_set_color(wnd, COL_EL_PLIST_TITLE);
+				wnd_apply_style(wnd, "plist-style");
 		}
 		
 		/* Print song title */
@@ -957,7 +957,7 @@ void plist_display( plist_t *pl, wnd_t *wnd )
 			int x;
 			
 			wnd_move(wnd, 0, 0, pl->m_start_pos + i);
-			wnd_printf(wnd, WND_PRINT_ELLIPSES, WND_WIDTH(wnd) - 7, 
+			wnd_printf(wnd, WND_PRINT_ELLIPSES, WND_WIDTH(wnd) - 8, 
 					"%i. %s", j + 1, STR_TO_CPTR(s->m_title));
 			sprintf(len, "%i:%02i", s->m_len / 60, s->m_len % 60);
 			wnd_move(wnd, WND_MOVE_ADVANCE, WND_WIDTH(wnd) - strlen(len) - 1, 
@@ -965,8 +965,6 @@ void plist_display( plist_t *pl, wnd_t *wnd )
 			wnd_printf(wnd, 0, 0, "%s", len);
 		}
 	}
-	col_set_color(wnd, COL_EL_DEFAULT);
-//	wnd_set_attrib(wnd, A_NORMAL);
 
 	/* Display play list time */
 	if (pl->m_len)
@@ -976,7 +974,7 @@ void plist_display( plist_t *pl, wnd_t *wnd )
 		for ( i = start; i <= end; i ++ )
 			s_time += pl->m_list[i]->m_len;
 	}
-	col_set_color(wnd, COL_EL_PLIST_TIME);
+	wnd_apply_style(wnd, "plist-time-style");
 	sprintf(time_text, _("%i/%i songs; %i:%02i:%02i/%i:%02i:%02i"),
 			(end >= 0 && pl->m_len > 0) ? end - start + 1 : 0, pl->m_len,
 			s_time / 3600, (s_time % 3600) / 60, s_time % 60,
@@ -984,7 +982,6 @@ void plist_display( plist_t *pl, wnd_t *wnd )
 	wnd_move(wnd, 0, WND_WIDTH(wnd) - strlen(time_text) - 1, 
 			pl->m_start_pos + PLIST_HEIGHT);
 	wnd_printf(wnd, 0, 0, "%s", time_text);
-	col_set_color(wnd, COL_EL_DEFAULT);
 } /* End of 'plist_display' function */
 
 /* Lock play list */

@@ -39,22 +39,13 @@ combo_t *combo_new( wnd_t *parent, char *id, char *text, char letter,
 		int width, int height )
 {
 	combo_t *combo;
-	wnd_class_t *klass;
 
 	/* Allocate memory */
 	combo = (combo_t *)malloc(sizeof(*combo));
 	if (combo == NULL)
 		return NULL;
 	memset(combo, 0, sizeof(*combo));
-
-	/* Initialize klass */
-	klass = editbox_class_init(WND_GLOBAL(parent));
-	if (klass == NULL)
-	{
-		free(combo);
-		return NULL;
-	}
-	WND_OBJ(combo)->m_class = klass;
+	WND_OBJ(combo)->m_class = combo_class_init(WND_GLOBAL(parent));
 
 	/* Initialize combo box */
 	if (!combo_construct(combo, parent, id, text, letter, width, height))
@@ -72,7 +63,8 @@ combo_t *combo_new_with_label( wnd_t *parent, char *title,
 {
 	hbox_t *hbox = hbox_new(parent, NULL, 0);
 	label_new(WND_OBJ(hbox), title, "", 0);
-	return combo_new(WND_OBJ(hbox), id, text, letter, width, height);
+	return combo_new(WND_OBJ(hbox), id, text, letter, width - strlen(title), 
+			height);
 } /* End of 'combo_new_with_label' function */
 
 /* Combo box constructor */
@@ -197,18 +189,16 @@ wnd_msg_retcode_t combo_on_display( wnd_t *wnd )
 	if (combo->m_expanded)
 	{
 		int i, j;
-		wnd_set_attrib(wnd, WND_ATTRIB_NORMAL);
-		wnd_set_color(wnd, WND_COLOR_WHITE, WND_COLOR_BLACK);
+		wnd_apply_default_style(wnd);
 		for ( i = combo->m_scrolled, j = 1; 
 				i < combo->m_list_size && j <= combo->m_height; j ++, i ++ )
 		{
 			wnd_move(wnd, 0, 1, j);
-			wnd_push_state(wnd, WND_STATE_COLOR|WND_STATE_ATTRIB);
+			wnd_push_state(wnd, WND_STATE_COLOR);
 			if (i == combo->m_cursor)
 			{
-				wnd_set_attrib(wnd, WND_ATTRIB_BOLD);
-				wnd_set_bg_color(wnd, WND_FOCUS(wnd) == wnd ?
-						WND_COLOR_BLUE : WND_COLOR_GREEN);
+				wnd_apply_style(wnd, WND_FOCUS(wnd) == wnd ? 
+						"focus-list-style" : "list-style");
 			}
 			wnd_putstring(wnd, 0, 0, combo->m_list[i]);
 			wnd_pop_state(wnd);
@@ -292,6 +282,16 @@ void combo_unexpand( combo_t *combo )
 	wnd_repos(wnd, wnd->m_x, wnd->m_y, wnd->m_width, 1);
 	wnd_invalidate(WND_ROOT(wnd));
 } /* End of 'combo_unexpand' function */
+
+/* Initialize combo box class */
+wnd_class_t *combo_class_init( wnd_global_data_t *global )
+{
+	wnd_class_t *klass = wnd_class_new(global, "combo", 
+			editbox_class_init(global), NULL);
+	cfg_set_var(klass->m_cfg_list, "list-color", "white:green");
+	cfg_set_var(klass->m_cfg_list, "focus-list-color", "white:blue");
+	return klass;
+} /* End of 'combo_class_init' function */
 
 /* End of 'wnd_combobox.c' file */
 

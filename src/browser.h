@@ -162,6 +162,9 @@ void fb_print_info_col( browser_t *fb, int id, struct browser_list_item *item );
 /* Show help screen */
 void fb_help( browser_t *fb );
 
+/* Initialize browser class */
+wnd_class_t *fb_class_init( wnd_global_data_t *global );
+
 #endif
 
 /* End of 'browser.h' file */

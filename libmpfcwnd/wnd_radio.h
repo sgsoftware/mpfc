@@ -69,6 +69,13 @@ void radio_check( radio_t *r );
 /* Get size desired by check box */
 void radio_get_desired_size( dlgitem_t *di, int *width, int *height );
 
+/*
+ * Class functions
+ */
+
+/* Initialize radio button class */
+wnd_class_t *radio_class_init( wnd_global_data_t *global );
+
 #endif
 
 /* End of 'wnd_radio.h' file */

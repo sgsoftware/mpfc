@@ -78,7 +78,7 @@ browser_t *fb_new( wnd_t *parent, char *dir )
 		return NULL;
 	}
 	memset(fb, 0, sizeof(*fb));
-	WND_OBJ(fb)->m_class = wnd_basic_class_init(WND_GLOBAL(parent));
+	WND_OBJ(fb)->m_class = fb_class_init(WND_GLOBAL(parent));
 
 	/* Initialize window */
 	if (!fb_construct(fb, parent, dir))
@@ -143,7 +143,7 @@ wnd_msg_retcode_t fb_on_display( wnd_t *wnd )
 	wnd_move(wnd, 0, 0, 0);
 
 	/* Print current directory */
-	col_set_color(wnd, COL_EL_FB_TITLE);
+	wnd_apply_style(wnd, "title-style");
 	wnd_printf(wnd, 0, 0, _("Current directory is %s\n"), fb->m_cur_dir);
 
 	/* Clean information about items position in window */
@@ -162,28 +162,27 @@ wnd_msg_retcode_t fb_on_display( wnd_t *wnd )
 		
 		wnd_move(wnd, 0, 0, j);
 		if (type & FB_ITEM_SEL)
-			col_set_color(wnd, i == fb->m_cursor ? COL_EL_FB_SEL_HL :
-					COL_EL_FB_SEL);
+			wnd_apply_style(wnd, i == fb->m_cursor ? "cur-selection-style" :
+					"selection-style");
 		else if (type & FB_ITEM_DIR)
-			col_set_color(wnd, i == fb->m_cursor ? COL_EL_FB_DIR_HL :
-					COL_EL_FB_DIR);
+			wnd_apply_style(wnd, i == fb->m_cursor ? "cur-dir-style" :
+					"dir-style");
 		else
-			col_set_color(wnd, i == fb->m_cursor ? COL_EL_FB_FILE_HL :
-					COL_EL_FB_FILE);
+			wnd_apply_style(wnd, i == fb->m_cursor ? "cur-file-style" :
+					"file-style");
 		fb->m_files[i].m_y = wnd->m_cursor_y;
 		fb_print_file(fb, &fb->m_files[i]);
 		if (type & FB_ITEM_DIR)
 			wnd_printf(wnd, 0, 0, "/");
 	}
-	col_set_color(wnd, COL_EL_DEFAULT);
 
 	/* Print search stuff */
 	if (fb->m_search_mode)
 	{
 		wnd_move(wnd, 0, 0, WND_HEIGHT(wnd) - 1);
-		wnd_set_attrib(wnd, WND_ATTRIB_BOLD);
+		wnd_apply_style(wnd, "search-prompt-style");
 		wnd_printf(wnd, 0, 0, "Enter name you want to search: ");
-		wnd_set_attrib(wnd, WND_ATTRIB_NORMAL);
+		wnd_apply_style(wnd, "search-string-style");
 		wnd_printf(wnd, 0, 0, "%s", fb->m_search_str);
 	}
 	return WND_MSG_RETCODE_OK;
@@ -746,6 +745,7 @@ void fb_print_header( browser_t *fb )
 	if (!fb->m_info_mode)
 		return;
 
+	wnd_apply_style(wnd, "header-style");
 	for ( i = 0; i < FB_COL_NUM; i ++ )
 		fb_print_info_col(fb, i, NULL);
 	wnd_printf(wnd, 0, 0, "\n");
@@ -882,6 +882,24 @@ void fb_replace_plist( browser_t *fb )
 	plist_add_set(player_plist, set);
 	plist_set_free(set);
 } /* End of 'fb_replace_plist' function */
+
+/* Initialize browser class */
+wnd_class_t *fb_class_init( wnd_global_data_t *global )
+{
+	wnd_class_t *klass = wnd_class_new(global, "browser",
+			wnd_basic_class_init(global), NULL);
+	cfg_set_var(klass->m_cfg_list, "file-style", "white:black");
+	cfg_set_var(klass->m_cfg_list, "cur-file-style", "white:blue");
+	cfg_set_var(klass->m_cfg_list, "dir-style", "green:black");
+	cfg_set_var(klass->m_cfg_list, "cur-dir-style", "green:blue");
+	cfg_set_var(klass->m_cfg_list, "selection-style", "yellow:black:bold");
+	cfg_set_var(klass->m_cfg_list, "cur-selection-style", "yellow:blue:bold");
+	cfg_set_var(klass->m_cfg_list, "search-prompt-style", "white:black:bold");
+	cfg_set_var(klass->m_cfg_list, "search-string-style", "white:black");
+	cfg_set_var(klass->m_cfg_list, "title-style", "green:black:bold");
+	cfg_set_var(klass->m_cfg_list, "header-style", "green:black:bold");
+	return klass;
+} /* End of 'fb_class_init' function */
 
 /* End of 'browser.c' file */
 

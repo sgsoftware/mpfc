@@ -84,6 +84,24 @@ wnd_t *wnd_init( cfg_node_t *cfg_list )
 	global->m_display_buf.m_height = LINES;
 	global->m_display_buf.m_data = db_data;
 
+	/* Initialize configuration */
+	cfg_wnd = cfg_new_list(cfg_list, "windows", CFG_NODE_MEDIUM_LIST |
+			CFG_NODE_RUNTIME, 0);
+	if (cfg_wnd == NULL)
+		goto failed;
+	global->m_root_cfg = cfg_wnd;
+	global->m_classes_cfg = cfg_new_list(cfg_wnd, "classes", 
+			CFG_NODE_MEDIUM_LIST, 0);
+	cfg_set_var(cfg_wnd, "caption-style", "green:black:bold");
+	cfg_set_var(cfg_wnd, "border-style", "white:black:bold");
+	cfg_set_var(cfg_wnd, "repos-border-style", "green:black:bold");
+	cfg_set_var(cfg_wnd, "maximize-box-style", "red:black:bold");
+	cfg_set_var(cfg_wnd, "close-box-style", "red:black:bold");
+	cfg_set_var(cfg_wnd, "wndbar-style", "black:white");
+	cfg_set_var(cfg_wnd, "wndbar-focus-style", "black:green");
+	cfg_set_var(cfg_wnd, "text-style", "white:black");
+	cfg_set_var(cfg_wnd, "focus-text-style", "white:black");
+
 	/* Initialize needed window classes */
 	klass = wnd_root_class_init(global);
 	if (klass == NULL)
@@ -97,20 +115,6 @@ wnd_t *wnd_init( cfg_node_t *cfg_list )
 	global->m_root = wnd_root;
 	wnd_root->m_global = global;
 	wnd_root->m_class = klass;
-
-	/* Initialize configuration */
-	cfg_wnd = cfg_new_list(cfg_list, "windows", CFG_NODE_MEDIUM_LIST |
-			CFG_NODE_RUNTIME, 0);
-	if (cfg_wnd == NULL)
-		goto failed;
-	global->m_root_cfg = cfg_wnd;
-	cfg_set_var(cfg_wnd, "caption-style", "green:black:bold");
-	cfg_set_var(cfg_wnd, "border-style", "white:black:bold");
-	cfg_set_var(cfg_wnd, "repos-border-style", "green:black:bold");
-	cfg_set_var(cfg_wnd, "maximize-box-style", "red:black:bold");
-	cfg_set_var(cfg_wnd, "close-box-style", "red:black:bold");
-	cfg_set_var(cfg_wnd, "wndbar-style", "black:white");
-	cfg_set_var(cfg_wnd, "wndbar-focus-style", "black:green");
 
 	/* Initialize window fields */
 	if (!wnd_construct(wnd_root, NULL, "root", 0, 0, COLS, LINES, 
@@ -520,7 +524,7 @@ void wnd_draw_decorations( wnd_t *wnd )
 				"repos-border-style";
 
 		/* Set style */
-		wnd_set_style(wnd, border_style);
+		wnd_apply_style(wnd, border_style);
 		
 		/* Print top border */
 		wnd_move(wnd, WND_MOVE_ABSOLUTE, 0, 0);
@@ -538,7 +542,7 @@ void wnd_draw_decorations( wnd_t *wnd )
 				text_pos = 1;
 
 			/* Display window title */
-			wnd_set_style(wnd, "caption-style");
+			wnd_apply_style(wnd, "caption-style");
 			wnd_move(wnd, WND_MOVE_ABSOLUTE, text_pos, 0);
 			wnd_putc(wnd, ' ');
 			wnd_putstring(wnd, WND_PRINT_NONCLIENT | WND_PRINT_ELLIPSES,
@@ -547,7 +551,7 @@ void wnd_draw_decorations( wnd_t *wnd )
 		}
 
 		/* Print left and right borders */
-		wnd_set_style(wnd, border_style);
+		wnd_apply_style(wnd, border_style);
 		for ( i = 1; i < wnd->m_height - 1; i ++ )
 		{
 			wnd_move(wnd, WND_MOVE_ABSOLUTE, 0, i);
@@ -567,13 +571,13 @@ void wnd_draw_decorations( wnd_t *wnd )
 		if (WND_FLAGS(wnd) & WND_FLAG_MAX_BOX)
 		{
 			wnd_move(wnd, WND_MOVE_ABSOLUTE, wnd->m_width - 3, 0);
-			wnd_set_style(wnd, "maximize-box-style");
+			wnd_apply_style(wnd, "maximize-box-style");
 			wnd_putc(wnd, (WND_FLAGS(wnd) & WND_FLAG_MAXIMIZED) ? 'o' : 'O');
 		}
 		if (WND_FLAGS(wnd) & WND_FLAG_CLOSE_BOX)
 		{
 			wnd_move(wnd, WND_MOVE_ABSOLUTE, wnd->m_width - 2, 0);
-			wnd_set_style(wnd, "close-box-style");
+			wnd_apply_style(wnd, "close-box-style");
 			wnd_putc(wnd, 'X');
 		}
 	}
@@ -582,8 +586,7 @@ void wnd_draw_decorations( wnd_t *wnd )
 	if (WND_FLAGS(wnd) & WND_FLAG_CAPTION)
 	{
 		/* Set style */
-		wnd_set_style(wnd, "border-style");
-
+		wnd_apply_style(wnd, "border-style");
 	}
 
 	/* Restore window state */
@@ -648,7 +651,7 @@ void wnd_display_wnd_bar( wnd_t *wnd_root )
 	/* Set style */
 	wnd_push_state(wnd_root, WND_STATE_ALL);
 	wnd_move(wnd_root, WND_MOVE_ABSOLUTE, 0, wnd_root->m_height - 1);
-	wnd_set_style(wnd_root, "wndbar-style");
+	wnd_apply_style(wnd_root, "wndbar-style");
 
 	/* Print items for top-level windows */
 	if (wnd_root->m_child == NULL)
@@ -669,7 +672,7 @@ void wnd_display_wnd_bar( wnd_t *wnd_root )
 			/* Print focus child with another style */
 			wnd_push_state(wnd_root, WND_STATE_COLOR | WND_STATE_ATTRIB);
 			if (child == wnd_root->m_focus_child)
-				wnd_set_style(wnd_root, "wndbar-focus-style");
+				wnd_apply_style(wnd_root, "wndbar-focus-style");
 			wnd_printf(wnd_root, WND_PRINT_NONCLIENT | WND_PRINT_ELLIPSES, 
 					right_pos, "%s\n", child->m_title);
 			wnd_pop_state(wnd_root);
@@ -684,25 +687,34 @@ void wnd_display_wnd_bar( wnd_t *wnd_root )
 	wnd_pop_state(wnd_root);
 } /* End of 'wnd_display_wnd_bar' function */
 
-/* Get window setting value */
-char *wnd_get_setting( wnd_t *wnd, char *name )
+/* Get window style */
+char *wnd_get_style( wnd_t *wnd, char *name )
 {
 	char *val;
+	wnd_class_t *klass;
 
 	assert(wnd);
 	assert(name);
 
 	/* First look up window's own configuration list */
 	val = cfg_get_var(wnd->m_cfg_list, name);
+	if (val != NULL)
+		return val;
 
-	/* Then look up common windows setting list */
-	if (val == NULL)
-		val = cfg_get_var(wnd->m_cfg_list->m_parent, name);
-	return val;
-} /* End of 'wnd_get_setting' function */
+	/* Now look in the corresponding classes lists */
+	for ( klass = wnd->m_class; klass != NULL; klass = klass->m_parent )
+	{
+		val = cfg_get_var(klass->m_cfg_list, name);
+		if (val != NULL)
+			return val;
+	}
 
-/* Set window style */
-void wnd_set_style( wnd_t *wnd, char *name )
+	/* Finally look up common windows setting list */
+	return cfg_get_var(WND_ROOT_CFG(wnd), name);
+} /* End of 'wnd_get_style' function */
+
+/* Apply color style */
+void wnd_apply_style( wnd_t *wnd, char *name )
 {
 	char *val;
 	wnd_color_t fg_color, bg_color;
@@ -716,17 +728,19 @@ void wnd_set_style( wnd_t *wnd, char *name )
 	wnd_set_attrib(wnd, 0);
 
 	/* Get style value */
-	val = wnd_get_setting(wnd, name);
+	val = wnd_get_style(wnd, name);
+	if (val == NULL)
+		return;
 
 	/* Parse style and set it */
-	wnd_parse_style(val, &fg_color, &bg_color, &attrib);
+	wnd_parse_color_style(val, &fg_color, &bg_color, &attrib);
 	wnd_set_color(wnd, fg_color, bg_color);
 	wnd_set_attrib(wnd, attrib);
-} /* End of 'wnd_set_style' function */
+} /* End of 'wnd_apply_style' function */
 
-/* Parse style value */
-void wnd_parse_style( char *str, wnd_color_t *fg_color, wnd_color_t *bg_color,
-		int *attrib )
+/* Parse color style value */
+void wnd_parse_color_style( char *str, wnd_color_t *fg_color, 
+		wnd_color_t *bg_color, int *attrib )
 {
 #define WND_PARSE_STYLE_STATE_FG	0
 #define WND_PARSE_STYLE_STATE_BG	1
@@ -781,7 +795,7 @@ void wnd_parse_style( char *str, wnd_color_t *fg_color, wnd_color_t *bg_color,
 		if (*ptr == '\0')
 			return;
 	}
-} /* End of 'wnd_parse_style' function */
+} /* End of 'wnd_parse_color_style' function */
 
 /* Get color from its textual representation */
 wnd_color_t wnd_string2color( char *str )

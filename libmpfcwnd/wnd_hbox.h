@@ -60,6 +60,13 @@ void hbox_get_desired_size( dlgitem_t *di, int *width, int *height );
 /* Set position */
 void hbox_set_pos( dlgitem_t *di, int x, int y, int width, int height );
 
+/*
+ * Class functions
+ */
+
+/* Initialize hbox class */
+wnd_class_t *hbox_class_init( wnd_global_data_t *global );
+
 #endif
 
 /* End of 'wnd_hbox.h' file */

@@ -93,6 +93,9 @@ float eqwnd_pos2val( int pos, int height );
 /* Show help screen */
 void eqwnd_help( eq_wnd_t *eq );
 
+/* Initialize equalizer window class */
+wnd_class_t *eqwnd_class_init( wnd_global_data_t *global );
+
 #endif
 
 /* End of 'eqwnd.h' file */

@@ -80,6 +80,13 @@ void filebox_insert_next( filebox_t *fb );
 /* Free names list */
 void filebox_free_names( filebox_t *fb );
 
+/* 
+ * Class functions
+ */
+
+/* Initialize file box class */
+wnd_class_t *filebox_class_init( wnd_global_data_t *global );
+
 #endif
 
 /* End of 'filebox.h' file */

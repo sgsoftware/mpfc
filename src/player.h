@@ -130,6 +130,9 @@ bool_t player_init( int argc, char *argv[] );
 /* Unitialize player */
 void player_deinit( void );
 
+/* Initialize the player window */
+wnd_t *player_wnd_new( wnd_t *parent );
+
 /* Run player */
 bool_t player_run( void );
 
@@ -345,6 +348,13 @@ bool_t player_handle_color_scheme( cfg_node_t *var, char *value );
 
 /* Handle 'kbind-scheme' variable setting */
 bool_t player_handle_kbind_scheme( cfg_node_t *var, char *value );
+
+/***
+ * Player window class functions
+ ***/
+
+/* Initialize class */
+wnd_class_t *player_wnd_class_init( wnd_global_data_t *global );
 
 /***
  * Miscellaneous functions

@@ -97,7 +97,7 @@ editbox_t *editbox_new_with_label( wnd_t *parent, char *title, char *id,
 	hbox_t *hbox;
 	hbox = hbox_new(parent, NULL, 0);
 	label_new(WND_OBJ(hbox), title, "", 0);
-	return editbox_new(WND_OBJ(hbox), id, text, letter, width);
+	return editbox_new(WND_OBJ(hbox), id, text, letter, width - strlen(title));
 } /* End of 'editbox_new_with_label' function */
 
 /* Destructor */
@@ -178,15 +178,9 @@ wnd_msg_retcode_t editbox_on_display( wnd_t *wnd )
 	/* Print text */
 	wnd_move(wnd, 0, 0, 0);
 	if (!eb->m_modified && eb->m_gray_non_modified)
-	{
-		wnd_set_fg_color(wnd, WND_COLOR_BLACK);
-		wnd_set_attrib(wnd, WND_ATTRIB_BOLD);
-	}
+		wnd_apply_style(wnd, "gray-style");
 	else
-	{
-		wnd_set_fg_color(wnd, WND_COLOR_WHITE);
-		wnd_set_attrib(wnd, WND_ATTRIB_NORMAL);
-	}
+		wnd_apply_default_style(wnd);
 	wnd_printf(wnd, 0, 0, "%s", STR_TO_CPTR(eb->m_text) + eb->m_scrolled);
 
 	/* Move cursor */
@@ -276,8 +270,10 @@ wnd_msg_retcode_t editbox_on_mouse( wnd_t *wnd, int x, int y,
 /* Create edit box class */
 wnd_class_t *editbox_class_init( wnd_global_data_t *global )
 {
-	return wnd_class_new(global, "editbox", wnd_basic_class_init(global),
-			editbox_get_msg_info);
+	wnd_class_t *klass = wnd_class_new(global, "editbox", 
+			dlgitem_class_init(global), editbox_get_msg_info);
+	cfg_set_var(klass->m_cfg_list, "gray-style", "black:black:bold");
+	return klass;
 } /* End of 'editbox_class_init' function */
 
 /* Get message information */

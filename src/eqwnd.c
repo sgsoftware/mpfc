@@ -52,7 +52,7 @@ eq_wnd_t *eqwnd_new( wnd_t *parent )
 		return NULL;
 	}
 	memset(eq, 0, sizeof(*eq));
-	WND_OBJ(eq)->m_class = wnd_basic_class_init(WND_GLOBAL(parent));
+	WND_OBJ(eq)->m_class = eqwnd_class_init(WND_GLOBAL(parent));
 
 	/* Initialize equalizer window */
 	if (!eqwnd_construct(eq, parent))
@@ -106,6 +106,7 @@ wnd_msg_retcode_t eqwnd_on_display( wnd_t *wnd )
 				(i == eq->m_pos), val, str[i]);
 		if (i == 0)
 		{
+			wnd_apply_style(wnd, "label-style");
 			wnd_move(wnd, 0, x, 2);
 			wnd_printf(wnd, 0, 0, "+20 dB");
 			wnd_move(wnd, 0, x, 12);
@@ -176,6 +177,7 @@ int eqwnd_display_slider( wnd_t *wnd, int x, int start_y, int end_y,
 	int pos, i;
 	int h;
 	
+	wnd_apply_style(wnd, hl ? "focus-band-style" : "band-style");
 	h = end_y - start_y;
 	pos = eqwnd_val2pos(val, h);
 	for ( i = 0; i <= h; i ++ )
@@ -193,10 +195,8 @@ int eqwnd_display_slider( wnd_t *wnd, int x, int start_y, int end_y,
 		}
 	}
 	wnd_move(wnd, 0, x - 1, end_y + 1);
-	if (hl)
-		wnd_set_attrib(wnd, WND_ATTRIB_BOLD);
+	wnd_apply_style(wnd, hl ? "focus-label-style" : "label-style");
 	wnd_printf(wnd, 0, 0, "%s", str);
-	wnd_set_attrib(wnd, 0);
 	return 6;
 } /* End of 'eqwnd_display_slider' function */
 
@@ -360,6 +360,18 @@ void eqwnd_help( eq_wnd_t *eq )
 {
 	help_new(WND_OBJ(eq), HELP_EQWND);
 } /* End of 'eqwnd_help' function */
+
+/* Initialize equalizer window class */
+wnd_class_t *eqwnd_class_init( wnd_global_data_t *global )
+{
+	wnd_class_t *klass = wnd_class_new(global, "equalizer", 
+			wnd_basic_class_init(global), NULL);
+	cfg_set_var(klass->m_cfg_list, "band-style", "cyan:black");
+	cfg_set_var(klass->m_cfg_list, "focus-band-style", "cyan:black:bold");
+	cfg_set_var(klass->m_cfg_list, "label-style", "white:black");
+	cfg_set_var(klass->m_cfg_list, "focus-label-style", "white:black:bold");
+	return klass;
+} /* End of 'eqwnd_class_init' function */
 
 /* End of 'eqwnd.c' file */
 

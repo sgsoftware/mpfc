@@ -29,6 +29,7 @@
 #define __SG_MPFC_WND_CLASS_H__
 
 #include "types.h"
+#include "cfg.h"
 #include "wnd_class.h"
 #include "wnd_types.h"
 
@@ -52,6 +53,9 @@ struct tag_wnd_class_t
 
 	/* Get specified message handler and callback function */
 	wnd_class_msg_get_info_t m_get_info;
+
+	/* Class configuration */
+	cfg_node_t *m_cfg_list;
 
 	/* Next class in the classes table */
 	wnd_class_t *m_next;

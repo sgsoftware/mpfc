@@ -62,8 +62,9 @@ typedef enum
 {
 	WND_STATE_FG_COLOR	= 1 << 0,
 	WND_STATE_BG_COLOR	= 1 << 1,
-	WND_STATE_COLOR		= (WND_STATE_FG_COLOR|WND_STATE_BG_COLOR),
 	WND_STATE_ATTRIB	= 1 << 2,
+	WND_STATE_COLOR		= (WND_STATE_FG_COLOR | WND_STATE_BG_COLOR |
+			WND_STATE_ATTRIB),
 	WND_STATE_CURSOR	= 1 << 3,
 	WND_STATE_ALL		= 0xFFFFFFFF
 } wnd_state_t;
@@ -141,6 +142,7 @@ struct tag_wnd_global_data_t
 
 	/* Root window configuration list */
 	cfg_node_t *m_root_cfg;
+	cfg_node_t *m_classes_cfg;
 
 	/* Window classes data */
 	wnd_class_t *m_wnd_classes;
@@ -272,6 +274,7 @@ struct tag_wnd_t
 #define WND_STATES_STACK(wnd)	(WND_GLOBAL(wnd)->m_states_stack)
 #define WND_STATES_POS(wnd)		(WND_GLOBAL(wnd)->m_states_stack_pos)
 #define WND_ROOT_CFG(wnd)		(WND_GLOBAL(wnd)->m_root_cfg)
+#define WND_CLASSES_CFG(wnd)	(WND_GLOBAL(wnd)->m_classes_cfg)
 #define WND_CLASSES(wnd)		(WND_GLOBAL(wnd)->m_wnd_classes)
 #define WND_LIB_ACTIVE(wnd)		(WND_GLOBAL(wnd)->m_lib_active)
 
@@ -351,15 +354,24 @@ void wnd_draw_decorations( wnd_t *wnd );
 /* Display windows bar (in root window) */
 void wnd_display_wnd_bar( wnd_t *wnd_root );
 
-/* Get window setting value */
-char *wnd_get_setting( wnd_t *wnd, char *name );
+/* Get window style */
+char *wnd_get_style( wnd_t *wnd, char *name );
+#define wnd_get_style_int(wnd, name)	(atoi(wnd_get_style(wnd, name)))
+#define wnd_get_style_bool(wnd, name)	\
+		((bool_t)atoi(wnd_get_style(wnd, name)))
+#define wnd_get_style_float(wnd, name)	(atof(wnd_get_style(wnd, name)))
 
-/* Set window style */
-void wnd_set_style( wnd_t *wnd, char *name );
+/* Apply color style */
+void wnd_apply_style( wnd_t *wnd, char *name );
 
-/* Parse style value */
-void wnd_parse_style( char *str, wnd_color_t *fg_color, wnd_color_t *bg_color,
-		int *attrib );
+/* Apply the default text style */
+#define wnd_apply_default_style(wnd) \
+	wnd_apply_style(wnd, WND_FOCUS(wnd) == (wnd) ? "focus-text-style" : \
+			"text-style")
+
+/* Parse color style value */
+void wnd_parse_color_style( char *str, wnd_color_t *fg_color, 
+		wnd_color_t *bg_color, int *attrib );
 
 /* Get color from its textual representation */
 wnd_color_t wnd_string2color( char *str );
