@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Songs manipulation functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 3.02.2004
+ * LAST UPDATE : 11.03.2004
  * NOTE        : Module prefix 'song'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -94,7 +94,7 @@ void song_free( song_t *song )
 /* Update song information */
 void song_update_info( song_t *song )
 {
-	if (song == NULL)
+	if (song == NULL || (song->m_flags & SONG_SAVE_INFO))
 		return;
 
 	si_free(song->m_info);
