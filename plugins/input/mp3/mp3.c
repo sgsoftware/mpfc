@@ -1,12 +1,12 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : mp3.c
  * PURPOSE     : SG MPFC. MP3 input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 28.12.2003
+ * LAST UPDATE : 20.01.2004
  * NOTE        : Module prefix 'mp3'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -908,6 +908,12 @@ void mp3_remove_tag( char *filename )
 		mp3_print_msg(_("OK"));
 } /* End of 'mp3_remove_tag' function */
 
+/* Get current bitrate */
+int mp3_get_bitrate( void )
+{
+	return mp3_bitrate;
+} /* End of 'mp3_get_bitrate' function */
+
 /* Get functions list */
 void inp_get_func_list( inp_func_list_t *fl )
 {
@@ -919,6 +925,7 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_save_info = mp3_save_info;
 	fl->m_seek = mp3_seek;
 	fl->m_get_audio_params = mp3_get_audio_params;
+	fl->m_get_bitrate = mp3_get_bitrate;
 	fl->m_get_formats = mp3_get_formats;
 	fl->m_set_eq = mp3_set_eq;
 	fl->m_glist = mp3_glist;

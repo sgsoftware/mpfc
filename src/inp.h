@@ -1,12 +1,12 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : inp.h
  * PURPOSE     : SG MPFC. Interface for input plugin management
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 21.12.2003
+ * LAST UPDATE : 20.01.2004
  * NOTE        : Module prefix 'inp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -118,6 +118,9 @@ typedef struct
 
 	/* Set next song name */
 	void (*m_set_next_song)( char *name );
+
+	/* Get current bitrate */
+	int (*m_get_bitrate)( void );
 } inp_func_list_t;
 
 /* Input plugin type */
@@ -208,6 +211,9 @@ void inp_set_song_title( in_plugin_t *p, char *title, char *filename );
 
 /* Set next song name */
 void inp_set_next_song( in_plugin_t *p, char *name );
+
+/* Get current bitrate */
+int inp_get_bitrate( in_plugin_t *p );
 
 #endif
 

@@ -1,12 +1,12 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : inp.c
  * PURPOSE     : SG MPFC. Input plugin management functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 21.12.2003
+ * LAST UPDATE : 20.01.2004
  * NOTE        : Module prefix 'inp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -290,6 +290,14 @@ void inp_set_next_song( in_plugin_t *p, char *name )
 	if (p != NULL && p->m_fl.m_set_next_song != NULL)
 		p->m_fl.m_set_next_song(name);
 } /* End of 'inp_set_next_song' function */
+
+/* Get current bitrate */
+int inp_get_bitrate( in_plugin_t *p )
+{
+	if (p != NULL && p->m_fl.m_get_bitrate != NULL)
+		return p->m_fl.m_get_bitrate();
+	return 0;
+} /* End of 'inp_get_bitrate' function */
 
 /* End of 'inp.c' file */
 

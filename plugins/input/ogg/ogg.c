@@ -1,12 +1,12 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : ogg.c
  * PURPOSE     : SG MPFC. Ogg Vorbis input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 25.10.2003
+ * LAST UPDATE : 31.01.2004
  * NOTE        : Module prefix 'ogg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -44,7 +44,7 @@
 OggVorbis_File ogg_vf;
 
 /* Audio parameters */
-int ogg_channels = 0, ogg_freq = 0;
+int ogg_channels = 0, ogg_freq = 0, ogg_bitrate = 0;
 dword ogg_fmt = 0;
 
 /* Genres list */
@@ -70,9 +70,12 @@ void ogg_save_info( char *filename, song_info_t *info );
 void (*ogg_print_msg)( char *msg );
 
 /* Callback functions for libvorbis */
+size_t ogg_file_read( void *ptr, size_t size, size_t nmemb, void *datasource );
 int ogg_file_seek( void *datasource, ogg_int64_t offset, int whence );
-ov_callbacks ogg_callbacks = { file_read, ogg_file_seek, file_close, 
-								file_tell };
+int ogg_file_close( void *datasource );
+long ogg_file_tell( void *datasource );
+ov_callbacks ogg_callbacks = { ogg_file_read, ogg_file_seek, ogg_file_close, 
+								ogg_file_tell };
 
 /* Mutex for synchronizing operations */
 pthread_mutex_t ogg_mutex;
@@ -102,6 +105,7 @@ bool_t ogg_start( char *filename )
 	ogg_vi = ov_info(&ogg_vf, -1);
 	ogg_channels = ogg_vi->channels;
 	ogg_freq = ogg_vi->rate;
+	ogg_bitrate = 0;
 	ogg_need_save_info = FALSE;
 	strcpy(ogg_filename, filename);
 	return TRUE;
@@ -123,6 +127,10 @@ void ogg_end( void )
 		ogg_save_info(fname, &ogg_info);
 		ogg_need_save_info = FALSE;
 	}
+	ogg_bitrate = 0;
+	ogg_freq = 0;
+	ogg_channels = 0;
+	ogg_fmt = 0;
 
 	/* Destroy mutex */
 	pthread_mutex_destroy(&ogg_mutex);
@@ -182,6 +190,12 @@ int ogg_get_stream( void *buf, int size )
 
 	ogg_lock();
 	ret = ov_read(&ogg_vf, buf, size, 0, 2, 1, &current_section);
+	ogg_bitrate = ov_bitrate(&ogg_vf, current_section);
+	ogg_freq = ogg_vi->rate;
+	ogg_channels = ogg_vi->channels;
+	if (!(ogg_vi->bitrate_upper == ogg_vi->bitrate_lower && 
+				ogg_vi->bitrate_upper == ogg_vi->bitrate_nominal))
+		ogg_bitrate = ov_bitrate_instant(&ogg_vf);
 	ogg_unlock();
 	return ret;
 } /* End of 'ogg_get_stream' function */
@@ -206,6 +220,12 @@ void ogg_get_audio_params( int *ch, int *freq, dword *fmt )
 	*fmt = ogg_fmt;
 } /* End of 'ogg_get_audio_params' function */
 
+/* Get current bitrate */
+int ogg_get_bitrate( void )
+{
+	return ogg_bitrate;
+} /* End of 'ogg_get_bitrate' function */  
+	
 /* Get current time */
 int ogg_get_cur_time( void )
 {
@@ -433,6 +453,7 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_get_stream = ogg_get_stream;
 	fl->m_seek = ogg_seek;
 	fl->m_get_audio_params = ogg_get_audio_params;
+	fl->m_get_bitrate = ogg_get_bitrate;
 	fl->m_get_cur_time = ogg_get_cur_time;
 	fl->m_get_formats = ogg_get_formats;
 	fl->m_save_info = ogg_save_info;
@@ -629,5 +650,23 @@ int ogg_file_seek( void *datasource, ogg_int64_t offset, int whence )
 		return file_seek(fd, offset, whence);
 } /* End of 'ogg_file_seek' function */
 	
+/* Helper reading function */
+size_t ogg_file_read( void *ptr, size_t size, size_t nmemb, void *datasource )
+{
+	return file_read(ptr, size, nmemb, datasource);
+} /* End of 'ogg_file_read' function */
+
+/* Helper file closing function */
+int ogg_file_close( void *datasource )
+{
+	return file_close(datasource);
+} /* End of 'ogg_file_close' function */
+
+/* Helper file position telling function */
+long ogg_file_tell( void *datasource )
+{
+	return file_tell(datasource);
+} /* End of 'ogg_file_tell' function */
+
 /* End of 'ogg.c' file */
 

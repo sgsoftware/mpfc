@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG MPFC. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 1.01.2004
+ * LAST UPDATE : 31.01.2004
  * NOTE        : Module prefix 'player'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -131,6 +131,11 @@ int player_last_song = -1, player_last_song_time = -1;
 song_t *player_info_song = NULL;
 bool_t player_info_local = TRUE;
 int player_info_start = -1, player_info_end = -1;
+
+/* Current audio parameters */
+int player_bitrate = 0, player_freq = 0, player_stereo = 0;
+#define PLAYER_STEREO 1
+#define PLAYER_MONO 2
 
 /* Initialize player */
 bool_t player_init( int argc, char *argv[] )
@@ -445,6 +450,7 @@ void player_display( wnd_t *wnd, dword data )
 {
 	int i;
 	song_t *s = NULL;
+	char aparams[256];
 
 	/* Clear the screen */
 	wnd_clear(wnd, FALSE);
@@ -497,6 +503,21 @@ void player_display( wnd_t *wnd, dword data )
 	}
 	col_set_color(wnd, COL_EL_DEFAULT);
 
+	/* Display current audio parameters */
+	strcpy(aparams, "");
+	if (player_bitrate)
+		sprintf(aparams, "%s%d kbps ", aparams, player_bitrate);
+	if (player_freq)
+		sprintf(aparams, "%s%d Hz ", aparams, player_freq);
+	if (player_stereo)
+		sprintf(aparams, "%s%s", aparams, 
+				(player_stereo == PLAYER_STEREO) ? "stereo" : "mono");
+	col_set_color(wnd, COL_EL_AUDIO_PARAMS);
+	wnd_move(wnd, PLAYER_SLIDER_BAL_X - strlen(aparams) - 1, 
+			PLAYER_SLIDER_BAL_Y);
+	wnd_printf(wnd, "%s\n", aparams);
+	col_set_color(wnd, COL_EL_DEFAULT);
+
 	/* Display different slidebars */
 	player_display_slider(wnd, PLAYER_SLIDER_TIME_X, PLAYER_SLIDER_TIME_Y, 
 			PLAYER_SLIDER_TIME_W, player_cur_time, (s == NULL) ? 0 : s->m_len);
@@ -510,7 +531,8 @@ void player_display( wnd_t *wnd, dword data )
 
 	/* Print message */
 	col_set_color(wnd, COL_EL_STATUS);
-	wnd_move(wnd, 0, wnd->m_height - 2);
+	while (wnd_gety(wnd) < wnd->m_height - 2)
+		wnd_printf(wnd, "\n");
 	wnd_printf(wnd, "%s", player_msg);
 	col_set_color(wnd, COL_EL_DEFAULT);
 
@@ -628,6 +650,8 @@ void *player_thread( void *arg )
 		dword fmt;
 		song_info_t si;
 		in_plugin_t *inp;
+		int was_pfreq, was_pbr, was_pstereo;
+		int disp_count;
 
 		/* Skip to next iteration if there is nothing to play */
 		if (player_plist->m_cur_song < 0 || 
@@ -676,7 +700,6 @@ void *player_thread( void *arg )
 		/* Set audio parameters */
 		if (!no_outp)
 		{
-			inp_get_audio_params(inp, &ch, &freq, &fmt);
 			outp_set_channels(pmng_cur_out, 2);
 			outp_set_freq(pmng_cur_out, freq);
 			outp_set_fmt(pmng_cur_out, fmt);
@@ -693,6 +716,7 @@ void *player_thread( void *arg )
 		//wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
 	
 		/* Play */
+		disp_count = 0;
 		while (!player_end_track)
 		{
 			byte buf[8192];
@@ -714,11 +738,30 @@ void *player_thread( void *arg )
 					int new_ch, new_freq;
 					dword new_fmt;
 					
+					/* Get audio parameters */
+					inp_get_audio_params(inp, &new_ch, &new_freq, &new_fmt);
+					was_pfreq = player_freq; was_pstereo = player_stereo;
+					was_pbr = player_bitrate;
+					player_freq = freq;
+					player_stereo = (ch == 1) ? PLAYER_MONO : PLAYER_STEREO;
+					player_bitrate = inp_get_bitrate(inp) / 1000;
+					if ((player_freq != was_pfreq || 
+							player_stereo != was_pstereo ||
+							player_bitrate != was_pbr) && !disp_count)
+					{
+						disp_count = cfg_get_var_int(cfg_list, 
+								"audio-params-display-count");
+						if (!disp_count)
+							disp_count = 20;
+						wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
+					}
+					disp_count --;
+					if (disp_count < 0)
+						disp_count = 0;
+
 					/* Update audio parameters if they have changed */
 					if (!no_outp)
 					{
-						inp_get_audio_params(inp, &new_ch, &new_freq, 
-								&new_fmt);
 						if (ch != new_ch || freq != new_freq || fmt != new_fmt)
 						{
 							ch = new_ch;
@@ -765,6 +808,7 @@ void *player_thread( void *arg )
 		/* End playing */
 		inp_end(inp);
 		player_inp = NULL;
+		player_bitrate = player_freq = player_stereo = 0;
 
 		/* End output plugin */
 		if (!no_outp)

@@ -5,7 +5,7 @@
 /* FILE NAME   : window.h
  * PURPOSE     : SG MPFC. Interface for window functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 1.01.2004
+ * LAST UPDATE : 30.01.2004
  * NOTE        : Module prefix 'wnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -121,6 +121,11 @@ typedef struct tag_wnd_t
 
 	/* Mutex for queue access synchronization */
 	pthread_mutex_t m_mutex;
+
+#if 0
+	/* Window contents after last redraw */
+	chtype **m_save_contents;
+#endif
 } wnd_t;
 
 /* Data type for 'WND_MSG_POSTPONED_NOTIFY' message */
@@ -234,6 +239,10 @@ bool_t wnd_pt_belongs( wnd_t *wnd, int x, int y );
 
 /* Reinitialize mouse */
 void wnd_reinit_mouse( void );
+
+/* Untouch lines touched by ncurses and touch lines that have been
+ * really changed */
+void wnd_touch( wnd_t *wnd );
 
 #endif
 

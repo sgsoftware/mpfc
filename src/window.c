@@ -212,6 +212,17 @@ bool_t wnd_init( wnd_t *wnd, wnd_t *parent, int x, int y, int w, int h )
 	wnd->m_wnd_destroy = wnd_destroy_func;
 	wnd->m_msg_queue_head = wnd->m_msg_queue_tail = NULL;
 
+#if 0
+	/* Initialize window contents */
+	wnd->m_save_contents = (chtype **)malloc(sizeof(chtype *) * wnd->m_height);
+	for ( i = 0; i < wnd->m_height; i ++ ) 
+	{
+		wnd->m_save_contents[i] = (chtype *)malloc(sizeof(chtype) * 
+				wnd->m_width);
+		memset(wnd->m_save_contents[i], 0, wnd->m_width * sizeof(chtype));
+	}
+#endif
+
 	/* Create mutex for message queue synchronization */
 	pthread_mutex_init(&wnd->m_mutex, NULL);
 
@@ -222,6 +233,7 @@ bool_t wnd_init( wnd_t *wnd, wnd_t *parent, int x, int y, int w, int h )
 void wnd_destroy_func( wnd_t *wnd )
 {
 	struct tag_msg_queue *t, *t1;
+	int i;
 
 	WND_ASSERT(wnd);
 
@@ -235,6 +247,17 @@ void wnd_destroy_func( wnd_t *wnd )
 		t = t1;
 	}
 	pthread_mutex_destroy(&wnd->m_mutex);
+
+#if 0
+	/* Free memory */
+	if (wnd->m_save_contents != NULL)
+	{
+		for ( i = 0; i < wnd->m_height; i ++ )
+			free(wnd->m_save_contents[i]);
+		free(wnd->m_save_contents);
+		wnd->m_save_contents = NULL;
+	}
+#endif
 
 	/* Unitialize NCURSES library if we destroy root window */
 	if (wnd->m_parent == NULL)
@@ -518,6 +541,7 @@ void wnd_display( wnd_t *wnd )
 {
 	wnd_t *child, *focus_child;
 	wnd_msg_handler display = wnd->m_msg_handlers[WND_MSG_DISPLAY];
+	int i;
 
 	/* Don't display window if it is not initialized yet */
 	if (!(wnd->m_flags & WND_INITIALIZED))
@@ -701,10 +725,10 @@ void wnd_clear( wnd_t *wnd, bool_t start_from_cursor )
 {
 	int i;
 
-	if (!start_from_cursor)
+/*	if (!start_from_cursor)
 		wnd_move(wnd, 0, 0);
 	for ( i = (start_from_cursor ? wnd_gety(wnd) : 0); i < wnd->m_height; i ++ )
-		wnd_printf(wnd, "\n");
+		wnd_printf(wnd, "\n");*/
 } /* End of 'wnd_clear' function */
 
 /* Totally redisplay window */
@@ -907,6 +931,50 @@ void wnd_reinit_mouse( void )
 	}
 	gpm_zerobased = TRUE;
 } /* End of 'wnd_reinit_mouse' function */
+
+#if 0
+/* Untouch lines touched by ncurses and touch lines that have been
+ * really changed */
+void wnd_touch( wnd_t *wnd )
+{
+	WINDOW *w;
+	int i, j, x, y;
+	
+	if (wnd == NULL || wnd->m_save_contents == NULL || 
+			(w = wnd->m_wnd) == NULL)
+		return;
+
+	/* Save cursor position */
+	x = wnd_getx(wnd);
+	y = wnd_gety(wnd);
+
+	/* Clean curses information about touched lines */
+	untouchwin(w);
+
+	/* Compare lines */
+	for ( i = 0; i < wnd->m_height; i ++ )
+	{
+		bool_t equal = TRUE;
+
+		for ( j = 0; j < wnd->m_width; j ++ )
+		{
+			chtype ch = mvwinch(w, i, j);
+			if (ch != wnd->m_save_contents[i][j])
+			{
+				equal = FALSE;
+				wnd->m_save_contents[i][j] = ch;
+			}
+		}
+
+		/* Touch line if it is changed */
+		if (!equal)
+			touchline(w, i, 1);
+	}
+
+	/* Restore cursor */
+	wnd_move(wnd, x, y);
+} /* End of 'wnd_touch' function */
+#endif
 
 /* End of 'window.c' file */
 
