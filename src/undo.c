@@ -124,7 +124,8 @@ void undo_do( struct tag_undo_list_item_t *item )
 	if (item->m_type == UNDO_ADD)
 	{
 		struct tag_undo_list_add_t *data = &item->m_data.m_add;
-		plist_add(player_plist, data->m_file_name);
+		char *was_val;
+		plist_add_set(player_plist, data->m_set);
 		plist_flush_scheduled(player_plist);
 	}
 	/* Add object */
@@ -283,8 +284,7 @@ void undo_free_list( struct tag_undo_list_item_t *l )
 		switch (t->m_type)
 		{
 		case UNDO_ADD:
-			if (t->m_data.m_add.m_file_name != NULL)
-				free(t->m_data.m_add.m_file_name);
+			plist_set_free(t->m_data.m_add.m_set);
 			break;
 		case UNDO_ADD_OBJ:
 			if (t->m_data.m_add_obj.m_obj_name != NULL)

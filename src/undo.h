@@ -29,6 +29,7 @@
 #define __SG_MPFC_UNDO_H__
 
 #include "types.h"
+#include "plist.h"
 
 /* Undo actions */
 #define UNDO_MOVE		0
@@ -54,7 +55,7 @@ typedef struct tag_undo_list_t
 			} m_move_plist;
 			struct tag_undo_list_add_t
 			{
-				char *m_file_name;
+				plist_set_t *m_set;
 				int m_num_songs;
 			} m_add;
 			struct tag_undo_list_add_obj_t

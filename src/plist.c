@@ -99,44 +99,15 @@ void plist_free( plist_t *pl )
 /* Add a file to play list */
 bool_t plist_add( plist_t *pl, char *filename )
 {
-	int i, num = 0;
-	char fname[MAX_FILE_NAME];
+	plist_set_t *set;
+	bool_t ret;
 
-	/* Do nothing if path is empty */
-	if (pl == NULL || !filename[0])
-		return FALSE;
-
-	strcpy(fname, filename);
-	if (file_get_type(filename) == FILE_TYPE_REGULAR && 
-			filename[0] != '/' && filename[0] != '~')
-	{
-		char wd[MAX_FILE_NAME];
-		char fn[MAX_FILE_NAME];
-		
-		getcwd(wd, sizeof(wd));
-		strcpy(fn, fname);
-		sprintf(fname, "%s/%s", wd, fn);
-	}
-
-	/* Find songs */
-	num = find_do(fname, "*", plist_find_handler, pl);
-
-	/* Set info */
-	plist_flush_scheduled(pl);
-	
-	/* Store undo information */
-	if (player_store_undo && num)
-	{
-		struct tag_undo_list_item_t *undo;
-		undo = (struct tag_undo_list_item_t *)malloc(sizeof(*undo));
-		undo->m_type = UNDO_ADD;
-		undo->m_next = undo->m_prev = NULL;
-		undo->m_data.m_add.m_num_songs = num;
-		undo->m_data.m_add.m_file_name = strdup(filename);
-		undo_add(player_ul, undo);
-	}
-
-	return TRUE;
+	/* Initialize one-element set and add it */
+	set = plist_set_new();
+	plist_set_add(set, filename);
+	ret = plist_add_set(pl, set);
+	plist_set_free(set);
+	return ret;
 } /* End of 'plist_add' function */
 
 /* Add single file to play list */
@@ -487,14 +458,76 @@ bool_t plist_save_mpl( plist_t *pl, char *filename )
 {
 } /* End of 'plist_save_mpl' function */
 
-/* Sort play list */
-void plist_sort( plist_t *pl, bool_t global, int criteria )
+/* Compare two songs for sorting */
+int plist_song_cmp( song_t *s1, song_t *s2, int criteria )
 {
-	int start, end, i, j, was_song;
+	char dir1[MAX_FILE_NAME], dir2[MAX_FILE_NAME];
+	int res;
+	
+	if (s1 == NULL || s2 == NULL)
+		return 0;
+
+	switch (criteria)
+	{
+	case PLIST_SORT_BY_TITLE:
+		return strcmp(STR_TO_CPTR(s1->m_title), STR_TO_CPTR(s2->m_title));
+	case PLIST_SORT_BY_NAME:
+		return strcmp(s1->m_short_name, s2->m_short_name);
+	case PLIST_SORT_BY_PATH:
+		return strcmp(s1->m_file_name, s2->m_file_name);
+	case PLIST_SORT_BY_TRACK:
+		/* Compare directories first */
+		util_get_dir_name(dir1, s1->m_file_name);
+		util_get_dir_name(dir2, s2->m_file_name);
+		res = strcmp(dir1, dir2);
+		if (res != 0)
+			return res;
+
+		/* Now compare tracks */
+		if (s1->m_info != NULL && s2->m_info != NULL)
+		{
+			int t1 = atoi(s1->m_info->m_track), t2 = atoi(s2->m_info->m_track);
+			if (t1 != t2)
+				return t1 - t2;
+		}
+
+		/* Now compare file names */
+		return strcmp(s1->m_short_name, s2->m_short_name);
+	}
+	return 0;
+} /* End of 'plist_song_cmp' function */
+
+/* Sort play list with specified bounds */
+void plist_sort_bounds( plist_t *pl, int start, int end, int criteria )
+{
+	int i, j, was_song;
 	song_t *cur_song;
 	song_t **was_list = NULL;
-	
+	bool_t finished = FALSE;
+
 	PLIST_ASSERT(pl);
+	if (start > end)
+		return;
+	if (start < 0)
+		start = 0;
+	if (end >= pl->m_len)
+		end = pl->m_len - 1;
+
+	/* Wait until info isn't got */
+	while ((criteria == PLIST_SORT_BY_TITLE || 
+				criteria == PLIST_SORT_BY_TRACK) && !finished)
+	{
+		finished = TRUE;
+		for ( i = 0; i < pl->m_len; i ++ )
+		{
+			if (pl->m_list[i]->m_flags & SONG_GET_INFO)
+			{
+				finished = FALSE;
+				break;
+			}
+		}
+		util_delay(0, 1000000);
+	}
 
 	/* Lock play list */
 	plist_lock(pl);
@@ -503,12 +536,6 @@ void plist_sort( plist_t *pl, bool_t global, int criteria )
 	was_list = (song_t **)malloc(sizeof(song_t *) * pl->m_len);
 	memcpy(was_list, pl->m_list, sizeof(song_t *) * pl->m_len);
 	
-	/* Get sort start and end */
-	if (global)
-		start = 0, end = pl->m_len - 1;
-	else
-		PLIST_GET_SEL(pl, start, end);
-
 	/* Save current song */
 	was_song = pl->m_cur_song;
 	cur_song = (pl->m_cur_song < 0) ? NULL : pl->m_list[was_song];
@@ -518,40 +545,11 @@ void plist_sort( plist_t *pl, bool_t global, int criteria )
 	{
 		int k = i + 1, j;
 		song_t *s = pl->m_list[k];
-		char *str1, *str2;
 
-		/* Get first string */
-		switch (criteria)
-		{
-		case PLIST_SORT_BY_TITLE:
-			str1 = STR_TO_CPTR(s->m_title);
-			break;
-		case PLIST_SORT_BY_PATH:
-			str1 = s->m_file_name;
-			break;
-		case PLIST_SORT_BY_NAME:
-			str1 = util_short_name(s->m_file_name);
-			break;
-		}
-		
 		for ( j = i; j >= start; j -- )
 		{
-			/* Get second string */
-			switch (criteria)
-			{
-			case PLIST_SORT_BY_TITLE:
-				str2 = STR_TO_CPTR(pl->m_list[j]->m_title);
-				break;
-			case PLIST_SORT_BY_PATH:
-				str2 = pl->m_list[j]->m_file_name;
-				break;
-			case PLIST_SORT_BY_NAME:
-				str2 = util_short_name(pl->m_list[j]->m_file_name);
-				break;
-			}
-
-			/* Save current preferred position */
-			if (strcmp(str1, str2) < 0)
+			/* Compare songs and save current preferred position */
+			if (plist_song_cmp(s, pl->m_list[j], criteria) < 0)
 				k = j;
 			else
 				break;
@@ -604,6 +602,23 @@ void plist_sort( plist_t *pl, bool_t global, int criteria )
 
 	/* Unlock play list */
 	plist_unlock(pl);
+} /* End of 'plist_sort_bounds' function */
+
+/* Sort play list */
+void plist_sort( plist_t *pl, bool_t global, int criteria )
+{
+	int start, end;
+	
+	PLIST_ASSERT(pl);
+
+	/* Get sort start and end */
+	if (global)
+		start = 0, end = pl->m_len - 1;
+	else
+		PLIST_GET_SEL(pl, start, end);
+
+	/* Sort */
+	plist_sort_bounds(pl, start, end, criteria);
 } /* End of 'plist_sort' function */
 
 /* Remove selected songs from play list */
@@ -1137,6 +1152,145 @@ void plist_flush_scheduled( plist_t *pl )
 			pl->m_list[i]->m_flags &= (~SONG_SCHEDULE);
 		}
 } /* End of 'plist_flush_scheduled' function */
+
+/* Add a set of files to play list */
+bool_t plist_add_set( plist_t *pl, plist_set_t *set )
+{
+	int i, num = 0;
+	struct tag_plist_set_t *node;
+
+	/* Do nothing if set is empty */
+	if (pl == NULL || set == NULL)
+		return FALSE;
+
+	/* Add each file in the set */
+	for ( node = set->m_head; node != NULL; node = node->m_next )
+	{
+		char fname[MAX_FILE_NAME], *filename = node->m_name;
+
+		strcpy(fname, filename);
+		if (file_get_type(filename) == FILE_TYPE_REGULAR && 
+				filename[0] != '/' && filename[0] != '~')
+		{
+			char wd[MAX_FILE_NAME];
+			char fn[MAX_FILE_NAME];
+			
+			getcwd(wd, sizeof(wd));
+			strcpy(fn, fname);
+			sprintf(fname, "%s/%s", wd, fn);
+		}
+
+		/* Find songs */
+		num += find_do(fname, "*", plist_find_handler, pl);
+	}
+
+	/* Set info */
+	plist_flush_scheduled(pl);
+	
+	/* Store undo information */
+	if (player_store_undo && num)
+	{
+		struct tag_undo_list_item_t *undo;
+		undo = (struct tag_undo_list_item_t *)malloc(sizeof(*undo));
+		undo->m_type = UNDO_ADD;
+		undo->m_next = undo->m_prev = NULL;
+		undo->m_data.m_add.m_num_songs = num;
+		undo->m_data.m_add.m_set = plist_set_dup(set);
+		undo_add(player_ul, undo);
+	}
+
+	/* Sort added songs if need */
+	if (cfg_get_var_int(cfg_list, "sort-on-load") && player_store_undo)
+	{
+		char *type = cfg_get_var(cfg_list, "sort-on-load-type");
+		int cr = -1;
+
+		/* Determine criteria */
+		if (type == NULL)
+			cr = PLIST_SORT_BY_PATH;
+		else if (!strcmp(type, "sort-by-path-and-file"))
+			cr = PLIST_SORT_BY_PATH;
+		else if (!strcmp(type, "sort-by-title"))
+			cr = PLIST_SORT_BY_TITLE;
+		else if (!strcmp(type, "sort-by-file-name"))
+			cr = PLIST_SORT_BY_NAME;
+		else if (!strcmp(type, "sort-by-path-and-track"))
+			cr = PLIST_SORT_BY_TRACK;
+		if (cr >= 0)
+		{
+			plist_sort_bounds(pl, pl->m_len - num, pl->m_len - 1, cr);
+		}
+	}
+
+	return TRUE;
+} /* End of 'plist_add_set' function */
+
+/* Initialize a set of files for adding */
+plist_set_t *plist_set_new( void )
+{
+	plist_set_t *set;
+
+	/* Allocate memory */
+	set = (plist_set_t *)malloc(sizeof(plist_set_t));
+	if (set == NULL)
+		return NULL;
+	set->m_head = set->m_tail = NULL;
+	return set;
+} /* End of 'plist_set_new' function */
+
+/* Free files set */
+void plist_set_free( plist_set_t *set )
+{
+	if (set != NULL)
+	{
+		struct tag_plist_set_t *t, *t1;
+
+		for ( t = set->m_head; t != NULL; )
+		{
+			t1 = t->m_next;
+			free(t->m_name);
+			free(t);
+			t = t1;
+		}
+	}
+} /* End of 'plist_set_free' function */
+
+/* Add a file to set */
+void plist_set_add( plist_set_t *set, char *name )
+{
+	struct tag_plist_set_t *node;
+	
+	if (set == NULL)
+		return;
+
+	/* Create new node */
+	node = (struct tag_plist_set_t *)malloc(sizeof(*node));
+	if (node == NULL)
+		return;
+	node->m_name = strdup(name);
+	node->m_next = NULL;
+
+	/* Add this node to the list */
+	if (set->m_tail == NULL)
+		set->m_head = set->m_tail = node;
+	else
+		set->m_tail->m_next = node;
+} /* End of 'plist_set_add' function */
+
+/* Duplicate set */
+plist_set_t *plist_set_dup( plist_set_t *set )
+{
+	plist_set_t *s;
+	struct tag_plist_set_t *node;
+	
+	if (set == NULL)
+		return NULL;
+
+	s = plist_set_new();
+	for ( node = set->m_head; node != NULL; node = node->m_next )
+		plist_set_add(s, node->m_name);
+	return s;
+} /* End of 'plist_set_dup' function */
 
 /* End of 'plist.c' file */
 

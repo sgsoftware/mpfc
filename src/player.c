@@ -149,6 +149,7 @@ char player_cfg_file[MAX_FILE_NAME] = "";
 bool_t player_init( int argc, char *argv[] )
 {
 	int i, l, r;
+	plist_set_t *set;
 
 	/* Set signal handlers */
 	/*signal(SIGINT, player_handle_signal);
@@ -210,8 +211,13 @@ bool_t player_init( int argc, char *argv[] )
 //		free(player_objects[i]);
 	}
 	free(player_objects);
+
+	/* Make a set of files to add */
+	set = plist_set_new();
 	for ( i = 0; i < player_num_files; i ++ )
-		plist_add(player_plist, player_files[i]);
+		plist_set_add(set, player_files[i]);
+	plist_add_set(player_plist, set);
+	plist_set_free(set);
 
 	/* Load saved play list if files list is empty */
 	if (!player_num_files && !player_num_obj)
@@ -995,7 +1001,8 @@ void player_sort_dialog( void )
 	
 	/* Get sort criteria */
 	ch = choice_new(wnd_root, 0, wnd_root->m_height - 1, wnd_root->m_width,
-		1, _("Sort by: (T)itle, (F)ile name, (P)ath and file name"), "tfp");
+		1, _("Sort by: (T)itle, (F)ile name, (P)ath and file name, "
+			"T(r)ack"), "tfpr");
 	if (ch == NULL)
 		return;
 	wnd_run(ch);
@@ -1015,6 +1022,9 @@ void player_sort_dialog( void )
 		break;
 	case 'p':
 		t = PLIST_SORT_BY_PATH;
+		break;
+	case 'r':
+		t = PLIST_SORT_BY_TRACK;
 		break;
 	}
 	plist_sort(player_plist, g, t);

@@ -70,6 +70,9 @@ void util_del_nl( char *dest, char *src );
 /* Remove multiple slashes in file name */
 void util_rem_slashes( char *name );
 
+/* Get file directory name */
+void util_get_dir_name( char *dir, char *filename );
+
 #endif
 
 /* End of 'util.h' file */

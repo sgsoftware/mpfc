@@ -61,10 +61,21 @@ typedef struct
 	pthread_mutex_t m_mutex;
 } plist_t;
 
+/* A set of files for adding */
+typedef struct 
+{
+	struct tag_plist_set_t
+	{
+		char *m_name;
+		struct tag_plist_set_t *m_next;
+	} *m_head, *m_tail;
+} plist_set_t;
+
 /* Sort criterias */
 #define PLIST_SORT_BY_TITLE 0
 #define PLIST_SORT_BY_NAME  1
 #define PLIST_SORT_BY_PATH  2
+#define PLIST_SORT_BY_TRACK 3
 
 /* Search criterias */
 #define PLIST_SEARCH_TITLE		0
@@ -96,6 +107,9 @@ void plist_free( plist_t *pl );
 
 /* Add a file to play list (it may be directory) */
 bool_t plist_add( plist_t *pl, char *filename );
+
+/* Add a set of files to play list */
+bool_t plist_add_set( plist_t *pl, plist_set_t *set );
 
 /* Add single file to play list */
 int plist_add_one_file( plist_t *pl, char *filename );
@@ -131,6 +145,12 @@ bool_t plist_save_pls( plist_t *pl, char *filename );
 
 /* Save play list to MPL format */
 bool_t plist_save_mpl( plist_t *pl, char *filename );
+
+/* Compare two songs for sorting */
+int plist_song_cmp( song_t *s1, song_t *s2, int criteria );
+
+/* Sort play list with specified bounds */
+void plist_sort_bounds( plist_t *pl, int start, int end, int criteria );
 
 /* Sort play list */
 void plist_sort( plist_t *pl, bool_t global, int criteria );
@@ -176,6 +196,18 @@ bool_t plist_is_obj( char *filename );
 
 /* Set info for all scheduled songs */
 void plist_flush_scheduled( plist_t *pl );
+
+/* Initialize a set of files for adding */
+plist_set_t *plist_set_new( void );
+
+/* Duplicate set */
+plist_set_t *plist_set_dup( plist_set_t *set );
+
+/* Free files set */
+void plist_set_free( plist_set_t *set );
+
+/* Add a file to set */
+void plist_set_add( plist_set_t *set, char *name );
 
 #endif
 
