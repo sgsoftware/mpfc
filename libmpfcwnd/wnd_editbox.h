@@ -33,6 +33,17 @@
 #include "wnd.h"
 #include "wnd_dlgitem.h"
 
+/* Edit box history list type */
+typedef struct 
+{
+	/* List */
+	struct editbox_history_item_t
+	{
+		char *m_text;
+		struct editbox_history_item_t *m_next, *m_prev;
+	} *m_head, *m_tail, *m_cur;
+} editbox_history_t;
+
 /* Edit box type */
 typedef struct
 {
@@ -56,6 +67,12 @@ typedef struct
 
 	/* Has the text been modified? */
 	bool_t m_modified;
+
+	/* The history list for this edit box */
+	editbox_history_t *m_history;
+
+	/* Edit box text before inserting text from history */
+	str_t *m_text_before_hist;
 
 	/* Should non-modified text be displayed as grayed? */
 	bool_t m_gray_non_modified;
@@ -107,6 +124,18 @@ wnd_msg_retcode_t editbox_on_keydown( wnd_t *wnd, wnd_key_t key );
 /* 'mouse_ldown' message handler */
 wnd_msg_retcode_t editbox_on_mouse( wnd_t *wnd, int x, int y,
 		wnd_mouse_button_t mb, wnd_mouse_event_t type );
+
+/* Initialize history list */
+editbox_history_t *editbox_history_new( void );
+
+/* Free history list */
+void editbox_history_free( editbox_history_t *l );
+
+/* Add an item to history list */
+void editbox_history_add( editbox_history_t *l, char *text );
+
+/* Handle history moving */
+void editbox_hist_move( editbox_t *box, bool_t up );
 
 /*
  * Class functions

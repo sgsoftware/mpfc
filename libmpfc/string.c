@@ -243,5 +243,22 @@ str_t *str_substring( str_t *str, int start, int end )
 	return new_str;
 } /* End of 'str_substring' function */
 
+/* Escape the special symbols (assuming that string is a file name) */
+void str_fn_escape_specs( str_t *str, bool_t escape_slashes )
+{
+	int i;
+
+	assert(str);
+
+	for ( i = 0; i < str->m_len; i ++ )
+	{
+		char ch = str->m_data[i];
+		if (ch == ' ' || ch == '*' || ch == '[' || ch == ']' ||
+				ch == '\'' || ch == '\"' || ch == '!' ||
+				(escape_slashes && ch == '/') || ch == '\\')
+			str_insert_char(str, '\\', i ++);
+	}
+} /* End of 'str_fn_escape_specs' function */
+
 /* End of 'string.c' file */
 

@@ -87,6 +87,7 @@ bool_t editbox_construct( editbox_t *eb, wnd_t *parent, char *id, char *text,
 	eb->m_text = str_new(text);
 	eb->m_width = width;
 	editbox_move(eb, STR_LEN(eb->m_text));
+	eb->m_text_before_hist = str_new("");
 	return TRUE;
 } /* End of 'editbox_construct' function */
 
@@ -103,7 +104,20 @@ editbox_t *editbox_new_with_label( wnd_t *parent, char *title, char *id,
 /* Destructor */
 void editbox_destructor( wnd_t *wnd )
 {
-	str_free(EDITBOX_OBJ(wnd)->m_text);
+	editbox_t *eb = EDITBOX_OBJ(wnd);
+	assert(eb);
+
+	/* Save text in history */
+	if (eb->m_history != NULL)
+	{
+		if (eb->m_modified)
+			editbox_history_add(eb->m_history, STR_TO_CPTR(eb->m_text));
+		eb->m_history->m_cur = NULL;
+	}
+
+	/* Free memory */
+	str_free(eb->m_text);
+	str_free(eb->m_text_before_hist);
 } /* End of 'editbox_destructor' function */
 
 /* Get edit box desired size */
@@ -249,6 +263,15 @@ wnd_msg_retcode_t editbox_on_keydown( wnd_t *wnd, wnd_key_t key )
 	{
 		editbox_move(eb, EDITBOX_LEN(eb));
 	}
+	/* History stuff */
+	else if (key == KEY_UP || key == KEY_CTRL_P)
+	{
+		editbox_hist_move(eb, TRUE);
+	}
+	else if (key == KEY_DOWN || key == KEY_CTRL_N)
+	{
+		editbox_hist_move(eb, FALSE);
+	}
 	else
 		return WND_MSG_RETCODE_PASS_TO_PARENT;
 	wnd_invalidate(wnd);
@@ -266,6 +289,102 @@ wnd_msg_retcode_t editbox_on_mouse( wnd_t *wnd, int x, int y,
 	wnd_invalidate(wnd);
 	return WND_MSG_RETCODE_OK;
 } /* End of 'editbox_on_mouse' function */
+
+/* Initialize history list */
+editbox_history_t *editbox_history_new( void )
+{
+	editbox_history_t *l;
+
+	/* Allocate memory for list */
+	l = (editbox_history_t *)malloc(sizeof(*l));
+	if (l == NULL)
+		return NULL;
+
+	/* Set fields */
+	l->m_head = l->m_tail = l->m_cur = NULL;
+	return l;
+} /* End of 'editbox_history_new' function */
+
+/* Free history list */
+void editbox_history_free( editbox_history_t *l )
+{
+	if (l == NULL)
+		return;
+
+	if (l->m_head != NULL)
+	{
+		struct editbox_history_item_t *t, *t1;
+		
+		for ( t = l->m_head; t != NULL; )
+		{
+			t1 = t->m_next;
+			free(t->m_text);
+			free(t);
+			t = t1;
+		}
+	}
+	free(l);
+} /* End of 'editbox_history_free' function */
+
+/* Add an item to history list */
+void editbox_history_add( editbox_history_t *l, char *text )
+{
+	struct editbox_history_item_t *t;
+	
+	if (l == NULL)
+		return;
+
+	if (l->m_tail == NULL)
+	{
+		t = l->m_tail = l->m_head = 
+			(struct editbox_history_item_t *)malloc(sizeof(*t));
+		t->m_prev = NULL;
+	}
+	else
+	{
+		t = l->m_tail->m_next = 
+			(struct editbox_history_item_t *)malloc(sizeof(*t));
+		t->m_prev = l->m_tail;
+	}
+	t->m_next = NULL;
+	t->m_text = strdup(text);
+	l->m_tail = t;
+} /* End of 'editbox_history_add' function */
+
+/* Handle history moving */
+void editbox_hist_move( editbox_t *eb, bool_t up )
+{
+	editbox_history_t *l;
+	
+	if ((l = eb->m_history) != NULL && l->m_tail != NULL)
+	{
+		if (up)
+		{
+			if (l->m_cur == NULL)
+			{
+				l->m_cur = l->m_tail;
+				str_copy(eb->m_text_before_hist, eb->m_text);
+			}
+			else if (l->m_cur->m_prev != NULL)
+				l->m_cur = l->m_cur->m_prev;
+			else
+				return;
+		}
+		else
+		{
+			if (l->m_cur == NULL)
+				return;
+			else
+				l->m_cur = l->m_cur->m_next;
+		}
+		if (l->m_cur != NULL)
+			editbox_set_text(eb, l->m_cur->m_text);
+		else if (!up)
+			editbox_set_text(eb, STR_TO_CPTR(eb->m_text_before_hist));
+		eb->m_modified = FALSE;
+		editbox_move(eb, EDITBOX_LEN(eb));
+	}
+} /* End of 'editbox_hist_move' function */
 
 /* Create edit box class */
 wnd_class_t *editbox_class_init( wnd_global_data_t *global )

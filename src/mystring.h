@@ -5,7 +5,7 @@
 /* FILE NAME   : mystring.h
  * PURPOSE     : SG MPFC. Interface for string management functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 18.08.2004
+ * LAST UPDATE : 5.09.2004
  * NOTE        : Module prefix 'str'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -92,6 +92,9 @@ str_t *str_substring( str_t *str, int start, int end );
 
 /* Formatted print */
 int str_printf( str_t *str, char *fmt, ... );
+
+/* Escape the special symbols (assuming that string is a file name) */
+void str_fn_escape_specs( str_t *str, bool_t escape_slashes );
 
 #endif
 

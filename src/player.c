@@ -40,7 +40,6 @@
 #include "error.h"
 #include "file.h"
 #include "help_screen.h"
-#include "history.h"
 #include "iwt.h"
 #include "key_bind.h"
 #include "player.h"
@@ -114,7 +113,7 @@ char **player_objects = NULL;
 int player_num_obj = 0;
 
 /* Edit boxes history lists */
-hist_list_t *player_hist_lists[PLAYER_NUM_HIST_LISTS];
+editbox_history_t *player_hist_lists[PLAYER_NUM_HIST_LISTS];
 
 /* Current input plugin */
 in_plugin_t *player_inp = NULL;
@@ -247,7 +246,7 @@ bool_t player_init( int argc, char *argv[] )
 
 	/* Initialize history lists */
 	for ( i = 0; i < PLAYER_NUM_HIST_LISTS; i ++ )
-		player_hist_lists[i] = hist_list_new();
+		player_hist_lists[i] = editbox_history_new();
 
 	/* Initialize playing thread */
 	pthread_create(&player_tid, NULL, player_thread, NULL);
@@ -368,7 +367,7 @@ void player_deinit( void )
 	/* Uninitialize history lists */
 	for ( i = 0; i < PLAYER_NUM_HIST_LISTS; i ++ )
 	{
-		hist_list_free(player_hist_lists[i]);
+		editbox_history_free(player_hist_lists[i]);
 		player_hist_lists[i] = NULL;
 	}
 
@@ -1751,10 +1750,12 @@ void *player_thread( void *arg )
 void player_add_dialog( void )
 {
 	dialog_t *dlg;
+	filebox_t *eb;
 
 	dlg = dialog_new(wnd_root, "Add songs");
-	filebox_new_with_label(WND_OBJ(dlg->m_vbox), "File &name: ", "name", "", 
-			'n', 50);
+	eb = filebox_new_with_label(WND_OBJ(dlg->m_vbox), "File &name: ", 
+			"name", "", 'n', 50);
+	EDITBOX_OBJ(eb)->m_history = player_hist_lists[PLAYER_HIST_LIST_ADD];
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_add);
 	dialog_arrange_children(dlg);
 } /* End of 'player_add_dialog' function */
@@ -1763,10 +1764,12 @@ void player_add_dialog( void )
 void player_add_obj_dialog( void )
 {
 	dialog_t *dlg;
+	editbox_t *eb;
 
 	dlg = dialog_new(wnd_root, "Add object");
-	editbox_new_with_label(WND_OBJ(dlg->m_vbox), "Object &name: ",
+	eb = editbox_new_with_label(WND_OBJ(dlg->m_vbox), "Object &name: ",
 			"name", "", 'n', 50);
+	eb->m_history = player_hist_lists[PLAYER_HIST_LIST_ADD_OBJ];
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_add_obj);
 	dialog_arrange_children(dlg);
 } /* End of 'player_add_obj_dialog' function */
@@ -1775,10 +1778,12 @@ void player_add_obj_dialog( void )
 void player_save_dialog( void )
 {
 	dialog_t *dlg;
+	filebox_t *eb;
 
 	dlg = dialog_new(wnd_root, "Save play list");
-	filebox_new_with_label(WND_OBJ(dlg->m_vbox), "File &name: ", 
+	eb = filebox_new_with_label(WND_OBJ(dlg->m_vbox), "File &name: ", 
 			"name", "", 'n', 50);
+	EDITBOX_OBJ(eb)->m_history = player_hist_lists[PLAYER_HIST_LIST_SAVE];
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_save);
 	dialog_arrange_children(dlg);
 } /* End of 'player_save_dialog' function */
@@ -1787,10 +1792,12 @@ void player_save_dialog( void )
 void player_exec_dialog( void )
 {
 	dialog_t *dlg;
+	filebox_t *eb;
 
 	dlg = dialog_new(wnd_root, "Execute external command");
-	filebox_new_with_label(WND_OBJ(dlg->m_vbox), "C&ommand: ", 
+	eb = filebox_new_with_label(WND_OBJ(dlg->m_vbox), "C&ommand: ", 
 			"command", "", 'o', 50);
+	EDITBOX_OBJ(eb)->m_history = player_hist_lists[PLAYER_HIST_LIST_EXEC];
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_exec);
 	dialog_arrange_children(dlg);
 } /* End of 'player_exec_dialog' function */
@@ -2063,10 +2070,12 @@ void player_info_dlg_change_eb_gray( dialog_t *dlg, char *id, bool_t gray )
 void player_search_dialog( void )
 {
 	dialog_t *dlg;
+	editbox_t *eb;
 
 	dlg = dialog_new(wnd_root, "Search");
-	editbox_new_with_label(WND_OBJ(dlg->m_vbox), "S&tring: ", 
+	eb = editbox_new_with_label(WND_OBJ(dlg->m_vbox), "S&tring: ", 
 			"string", "", 't', PLAYER_EB_WIDTH);
+	eb->m_history = player_hist_lists[PLAYER_HIST_LIST_SEARCH];
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_search);
 	dialog_arrange_children(dlg);
 } /* End of 'player_search_dialog' function */
@@ -2075,12 +2084,15 @@ void player_search_dialog( void )
 void player_var_mini_manager( void )
 {
 	dialog_t *dlg;
+	editbox_t *eb;
 
 	dlg = dialog_new(wnd_root, "Mini variables manager");
-	editbox_new_with_label(WND_OBJ(dlg->m_vbox), "&Name: ",
+	eb = editbox_new_with_label(WND_OBJ(dlg->m_vbox), "&Name: ",
 			"name", "", 'n', PLAYER_EB_WIDTH);
-	editbox_new_with_label(WND_OBJ(dlg->m_vbox), "&Value: ",
+	eb->m_history = player_hist_lists[PLAYER_HIST_LIST_VAR_NAME];
+	eb = editbox_new_with_label(WND_OBJ(dlg->m_vbox), "&Value: ",
 			"value", "", 'v', PLAYER_EB_WIDTH);
+	eb->m_history = player_hist_lists[PLAYER_HIST_LIST_VAR_VAL];
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_mini_var);
 	dialog_arrange_children(dlg);
 } /* End of 'player_var_mini_manager' function */
@@ -2089,11 +2101,13 @@ void player_var_mini_manager( void )
 void player_advanced_search_dialog( void )
 {
 	dialog_t *dlg;
+	editbox_t *eb;
 	vbox_t *vbox;
 
 	dlg = dialog_new(wnd_root, "Advanced search");
-	editbox_new_with_label(WND_OBJ(dlg->m_vbox), "S&tring: ",
+	eb = editbox_new_with_label(WND_OBJ(dlg->m_vbox), "S&tring: ",
 			"string", "", 't', PLAYER_EB_WIDTH);
+	eb->m_history = player_hist_lists[PLAYER_HIST_LIST_SEARCH];
 	vbox = vbox_new(WND_OBJ(dlg->m_vbox), "Search in", 0);
 	radio_new(WND_OBJ(vbox), "&Title", "title", 't', TRUE);
 	radio_new(WND_OBJ(vbox), "&Name", "name", 'n', FALSE);

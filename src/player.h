@@ -29,15 +29,12 @@
 
 #include "types.h"
 #include "cfg.h"
-#include "history.h"
 #include "plist.h"
 #include "pmng.h"
 #include "undo.h"
 #include "wnd.h"
 #include "wnd_dialog.h"
-
-/* User messages for root window types */
-#define PLAYER_MSG_END_TRACK    0
+#include "wnd_editbox.h"
 
 /* Player statuses */
 #define PLAYER_STATUS_PLAYING 	0
@@ -54,23 +51,6 @@
 #define PLAYER_HIST_LIST_EXEC		6
 #define PLAYER_HIST_FB_PATTERN		7
 #define PLAYER_NUM_HIST_LISTS 		8
-
-/* Variables manager dialog items IDs */
-#define PLAYER_VAR_MNGR_VARS	0
-#define PLAYER_VAR_MNGR_VAL		1
-#define PLAYER_VAR_MNGR_NEW		2
-#define PLAYER_VAR_MNGR_SAVE	3
-#define PLAYER_VAR_MNGR_RESTORE	4
-
-/* Info editor dialog items IDs */
-#define PLAYER_INFO_NAME     100
-#define PLAYER_INFO_ARTIST   101
-#define PLAYER_INFO_ALBUM    102
-#define PLAYER_INFO_YEAR     103
-#define PLAYER_INFO_TRACK    104
-#define PLAYER_INFO_COMMENTS 105
-#define PLAYER_INFO_GENRE    106
-#define PLAYER_INFO_LABEL    107
 
 /* Sliders parameters */
 #define PLAYER_SLIDER_TIME_Y 2
@@ -100,7 +80,7 @@ extern plist_t *player_plist;
 extern bool_t player_store_undo;
 
 /* Edit boxes history lists */
-extern hist_list_t *player_hist_lists[PLAYER_NUM_HIST_LISTS];
+extern editbox_history_t *player_hist_lists[PLAYER_NUM_HIST_LISTS];
 
 /* Plugins manager */
 extern pmng_t *player_pmng;
