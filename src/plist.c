@@ -244,7 +244,6 @@ int plist_add_m3u( plist_t *pl, char *filename )
 		len[j] = 0;
 		if (str[i])
 			song_len = atoi(len);
-
 		title = strdup(&str[i + 1]);
 		util_del_nl(title, title);
 

@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for songs manipulation
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 3.02.2004
+ * LAST UPDATE : 26.08.2004
  * NOTE        : Module prefix 'song'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -60,12 +60,18 @@ typedef struct
 	/* Flags */
 	dword m_flags;
 
+	/* Song object references counter */
+	int m_ref_count;
+
 	/* Input plugin being used to play this song */
 	struct tag_in_plugin_t *m_inp;
 } song_t;
 
 /* Create a new song */
 song_t *song_new( char *filename, char *title, int len );
+
+/* Add a reference to the song object */
+song_t *song_add_ref( song_t *song );
 
 /* Free song */
 void song_free( song_t *song );

@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Checkbox functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 18.08.2004
+ * LAST UPDATE : 26.08.2004
  * NOTE        : Module prefix 'checkbox'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include "types.h"
 #include "wnd.h"
+#include "wnd_button.h"
 #include "wnd_checkbox.h"
 #include "wnd_dlgitem.h"
 
@@ -42,7 +43,7 @@ checkbox_t *checkbox_new( wnd_t *parent, char *title, char *id,
 	if (cb == NULL)
 		return NULL;
 	memset(cb, 0, sizeof(*cb));
-	WND_OBJ(cb)->m_class = wnd_basic_class_init(WND_GLOBAL(parent));
+	WND_OBJ(cb)->m_class = checkbox_class_init(WND_GLOBAL(parent));
 
 	/* Initialize check box */
 	if (!checkbox_construct(cb, parent, title, id, checked))
@@ -120,6 +121,7 @@ wnd_msg_retcode_t checkbox_on_mouse( wnd_t *wnd, int x, int y,
 void checkbox_toggle( checkbox_t *cb )
 {
 	cb->m_checked = !cb->m_checked;
+	wnd_msg_send(WND_OBJ(cb), "clicked", button_msg_clicked_new());
 	wnd_invalidate(WND_OBJ(cb));
 } /* End of 'checkbox_toggle' function */
 
@@ -129,6 +131,26 @@ void checkbox_get_desired_size( dlgitem_t *di, int *width, int *height )
 	*width = strlen(WND_OBJ(di)->m_title) + 5;
 	*height = 1;
 } /* End of 'checkbox_get_desired_size' function */
+
+/* Initialize checkbox class */
+wnd_class_t *checkbox_class_init( wnd_global_data_t *global )
+{
+	return wnd_class_new(global, "checkbox", wnd_basic_class_init(global),
+			checkbox_get_msg_info);
+} /* End of 'checkbox_class_init' function */
+
+/* Get message information */
+wnd_msg_handler_t **checkbox_get_msg_info( wnd_t *wnd, char *msg_name,
+		wnd_class_msg_callback_t *callback )
+{
+	if (!strcmp(msg_name, "clicked"))
+	{
+		if (callback != NULL)
+			(*callback) = wnd_basic_callback_noargs;
+		return &CHECKBOX_OBJ(wnd)->m_on_clicked;
+	}
+	return NULL;
+} /* End of 'checkbox_get_msg_info' function */
 
 /* End of 'wnd_checkbox.c' file */
 

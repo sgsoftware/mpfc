@@ -71,7 +71,7 @@ combo_t *combo_new_with_label( wnd_t *parent, char *title,
 		char *id, char *text, int width, int height )
 {
 	hbox_t *hbox = hbox_new(parent, NULL, 0);
-	label_new(WND_OBJ(hbox), title);
+	label_new(WND_OBJ(hbox), title, "", TRUE);
 	return combo_new(WND_OBJ(hbox), id, text, width, height);
 } /* End of 'combo_new_with_label' function */
 

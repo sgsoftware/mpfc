@@ -54,9 +54,11 @@ typedef struct
 	/* The desired width */
 	int m_width;
 
-	/* Grayed flag (this flag is used when edit box represents multiple
-	 * different texts; it is reset with the first text modification) */
-	bool_t m_grayed;
+	/* Has the text been modified? */
+	bool_t m_modified;
+
+	/* Should non-modified text be displayed as grayed? */
+	bool_t m_gray_non_modified;
 } editbox_t;
 
 /* Convert window object to edit box type */

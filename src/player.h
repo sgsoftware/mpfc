@@ -34,6 +34,7 @@
 #include "pmng.h"
 #include "undo.h"
 #include "wnd.h"
+#include "wnd_dialog.h"
 
 /* User messages for root window types */
 #define PLAYER_MSG_END_TRACK    0
@@ -250,6 +251,12 @@ void player_sort_dialog( void );
 /* Launch song info dialog */
 void player_info_dialog( void );
 
+/* Fill info dialog with values */
+bool_t player_info_dialog_fill( dialog_t *dlg, bool_t first_call );
+
+/* Set gray-non-modified flag for info dialog edit box */
+void player_info_dlg_change_eb_gray( dialog_t *dlg, char *id, bool_t gray );
+
 /* Launch info reload dialog */
 void player_info_reload_dialog( void );
 
@@ -286,6 +293,24 @@ wnd_msg_retcode_t player_on_exec( wnd_t *wnd );
 
 /* Handle 'ok_clicked' for sort dialog */
 wnd_msg_retcode_t player_on_sort( wnd_t *wnd );
+
+/* Handle 'ok_clicked' for info dialog */
+wnd_msg_retcode_t player_on_info( wnd_t *wnd );
+
+/* Save the info dialog contents */
+void player_save_info_dialog( dialog_t *dlg );
+
+/* Handle 'close' for info dialog */
+wnd_msg_retcode_t player_on_info_close( wnd_t *wnd );
+
+/* Handle 'clicked' for info dialog reload button */
+wnd_msg_retcode_t player_on_info_dlg_reload( wnd_t *wnd );
+
+/* Handle 'clicked' for info dialog special function button */
+wnd_msg_retcode_t player_on_info_spec( wnd_t *wnd );
+
+/* Handle 'clicked' for info dialog write-in-all checkbox */
+wnd_msg_retcode_t player_on_info_cb_clicked( wnd_t *wnd );
 
 /* Handle 'ok_clicked' for search dialog */
 wnd_msg_retcode_t player_on_search( wnd_t *wnd );

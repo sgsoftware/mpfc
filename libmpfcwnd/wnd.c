@@ -395,14 +395,16 @@ void wnd_main( wnd_t *wnd_root )
 			/* Handle it */
 			wnd_t *target;
 			wnd_msg_callback_t callback;
-			wnd_msg_handler_t *handler;
+			wnd_msg_handler_t *handler, **ph;
 			wnd_msg_retcode_t ret;
 
 			/* Choose appropriate callback for calling handler */
 			target = msg.m_wnd;
 			assert(target);
-			handler = *wnd_class_get_msg_info(target, msg.m_name, 
-					&callback);
+			ph = wnd_class_get_msg_info(target, msg.m_name, &callback);
+			if (ph == NULL)
+				continue;
+			handler = *ph;
 
 			/* Call handler */
 			if (!strcmp(msg.m_name, "display"))
@@ -914,7 +916,8 @@ void wnd_prev_focus( wnd_t *wnd )
 void wnd_invalidate( wnd_t *wnd )
 {
 	/* Mark window as invalid */
-	wnd->m_is_invalid = TRUE;
+	if (wnd != NULL)
+		wnd->m_is_invalid = TRUE;
 } /* End of 'wnd_invalidate' function */
 
 /* Send repainting messages to a window */
@@ -1368,6 +1371,13 @@ void wnd_restore_curses( wnd_t *wnd_root )
 	refresh();
 	WND_LIB_ACTIVE(wnd_root) = TRUE;
 } /* End of 'wnd_restore_curses' function */
+
+/* Set window title */
+void wnd_set_title( wnd_t *wnd, char *title )
+{
+	free(wnd->m_title);
+	wnd->m_title = strdup(title);
+} /* End of 'wnd_set_title' function */
 
 /* End of 'wnd.c' file */
 

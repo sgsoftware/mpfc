@@ -153,6 +153,16 @@ int cfg_get_var_int( cfg_node_t *parent, char *name );
 /* Get variable float value */
 float cfg_get_var_float( cfg_node_t *parent, char *name );
 
+/* Setters/getters for some other types */
+#define cfg_set_var_ptr(parent, name, val)	\
+	(cfg_set_var_int(parent, name, (int)val))
+#define cfg_set_var_bool(parent, name, val)	\
+	(cfg_set_var_int(parent, name, (int)val))
+#define cfg_get_var_ptr(parent, name)	\
+	((void *)cfg_get_var_int(parent, name))
+#define cfg_get_var_bool(parent, name)	\
+	((bool_t)cfg_get_var_int(parent, name))
+
 /* Find the real parent of node */
 cfg_node_t *cfg_find_real_parent( cfg_node_t *parent, char *name, 
 		char **real_name );

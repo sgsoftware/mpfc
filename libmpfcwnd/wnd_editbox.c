@@ -84,10 +84,7 @@ bool_t editbox_construct( editbox_t *eb, wnd_t *parent, char *id, char *text,
 
 	/* Initialize edit box fields */
 	eb->m_text = str_new(text);
-	eb->m_cursor = 0;
-	eb->m_scrolled = 0;
 	eb->m_width = width;
-	eb->m_grayed = FALSE;
 	editbox_move(eb, STR_LEN(eb->m_text));
 	return TRUE;
 } /* End of 'editbox_construct' function */
@@ -98,7 +95,7 @@ editbox_t *editbox_new_with_label( wnd_t *parent, char *title, char *id,
 {
 	hbox_t *hbox;
 	hbox = hbox_new(parent, NULL, 0);
-	label_new(WND_OBJ(hbox), title);
+	label_new(WND_OBJ(hbox), title, "", TRUE);
 	return editbox_new(WND_OBJ(hbox), id, text, width);
 } /* End of 'editbox_new_with_label' function */
 
@@ -123,7 +120,7 @@ void editbox_set_text( editbox_t *eb, char *text )
 	assert(text);
 	str_copy_cptr(eb->m_text, text);
 	editbox_move(eb, EDITBOX_LEN(eb));
-	eb->m_grayed = FALSE;
+	eb->m_modified = TRUE;
 	wnd_msg_send(WND_OBJ(eb), "changed", editbox_changed_new());
 	wnd_invalidate(WND_OBJ(eb));
 } /* End of 'editbox_set_text' function */
@@ -134,7 +131,7 @@ void editbox_addch( editbox_t *eb, char ch )
 	assert(eb);
 	str_insert_char(eb->m_text, ch, eb->m_cursor);
 	editbox_move(eb, eb->m_cursor + 1);
-	eb->m_grayed = FALSE;
+	eb->m_modified = TRUE;
 } /* End of 'editbox_addch' function */
 
 /* Delete character from the current or previous cursor position */
@@ -143,7 +140,7 @@ void editbox_delch( editbox_t *eb, int pos )
 	assert(eb);
 	if (str_delete_char(eb->m_text, pos))
 		editbox_move(eb, pos);
-	eb->m_grayed = FALSE;
+	eb->m_modified = TRUE;
 } /* End of 'editbox_delch' function */
 
 /* Move cursor */
@@ -179,7 +176,7 @@ wnd_msg_retcode_t editbox_on_display( wnd_t *wnd )
 
 	/* Print text */
 	wnd_move(wnd, 0, 0, 0);
-	if (eb->m_grayed)
+	if (!eb->m_modified && eb->m_gray_non_modified)
 	{
 		wnd_set_fg_color(wnd, WND_COLOR_BLACK);
 		wnd_set_attrib(wnd, WND_ATTRIB_BOLD);

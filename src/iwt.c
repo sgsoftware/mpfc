@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Info saver thread functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 18.12.2003
+ * LAST UPDATE : 27.08.2004
  * NOTE        : Module prefix 'iwt'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -39,9 +39,23 @@ pthread_t iwt_tid = 0;
 /* Exit thread flag */
 bool_t iwt_exit = FALSE;
 
+/* Songs-to-write queue */
+struct iwt_queue_t
+{
+	song_t *m_song;
+	struct iwt_queue_t *m_next;
+} *iwt_queue = NULL;
+
+/* Queue mutex */
+pthread_mutex_t iwt_mutex;
+
 /* Initialize IWT module */
 bool_t iwt_init( void )
 {
+	/* Initialize queue */
+	iwt_queue = NULL;
+	pthread_mutex_init(&iwt_mutex, NULL);
+	
 	/* Initialize thread */
 	pthread_create(&iwt_tid, NULL, iwt_thread, NULL);
 } /* End of 'iwt_init' function */
@@ -57,27 +71,88 @@ void iwt_free( void )
 		iwt_tid = 0;
 		iwt_exit = FALSE;
 	}
+
+	/* Free queue */
+	iwt_lock();
+	for ( ; iwt_queue != NULL; )
+	{
+		struct iwt_queue_t *next = iwt_queue->m_next;
+		song_free(iwt_queue->m_song);
+		free(iwt_queue);
+		iwt_queue = next;
+	}
+	iwt_unlock();
+	pthread_mutex_destroy(&iwt_mutex);
 } /* End of 'iwt_free' function */
+
+/* Lock queue */
+void iwt_lock( void )
+{
+	pthread_mutex_lock(&iwt_mutex);
+} /* End of 'iwt_lock' function */
+
+/* Unlock queue */
+void iwt_unlock( void )
+{
+	pthread_mutex_unlock(&iwt_mutex);
+} /* End of 'iwt_unlock' function */
 
 /* Push song to queue */
 void iwt_push( song_t *song )
 {
-	if (song != NULL)
-		song->m_flags |= SONG_SAVE_INFO;
+	assert(song);
+
+	/* Lock the queue */
+	iwt_lock();
+	
+	/* Queue is empty */
+	if (iwt_queue == NULL)
+	{
+		iwt_queue = (struct iwt_queue_t *)malloc(sizeof(*iwt_queue));
+		iwt_queue->m_song = song_add_ref(song);
+		iwt_queue->m_next = NULL;
+	}
+	else
+	{
+		struct iwt_queue_t *q, *node;
+
+		/* Do nothing if this song is already in the queue */
+		for ( q = iwt_queue; q->m_next != NULL; q = q->m_next )
+		{
+			if (q->m_song == song)
+				break;
+		}
+
+		/* Add song to the queue */
+		if (q->m_song != song)
+		{
+			node = (struct iwt_queue_t *)malloc(sizeof(*node));
+			node->m_song = song_add_ref(song);
+			node->m_next = NULL;
+			q->m_next = node;
+		}
+	}
+
+	/* Unlock the queue */
+	iwt_unlock();
 } /* End of 'iwt_push' function */
 
 /* Pop song from queue */
 song_t *iwt_pop( void )
 {
-	int i;
-	plist_t *pl = player_plist;
-	
-	if (pl == NULL)
-		return NULL;
-	for ( i = 0; i < pl->m_len; i ++ )
-		if (pl->m_list[i] != NULL && (pl->m_list[i]->m_flags & SONG_SAVE_INFO))
-			return pl->m_list[i];
-	return NULL;
+	song_t *s = NULL;
+
+	iwt_lock();
+	if (iwt_queue != NULL)
+	{
+		struct iwt_queue_t *next = iwt_queue->m_next;
+		s = iwt_queue->m_song;
+		next = iwt_queue->m_next;
+		free(iwt_queue);
+		iwt_queue = next;
+	}
+	iwt_unlock();
+	return s;
 } /* End of 'iwt_pop' function */
 
 /* Info writer thread function */
@@ -92,10 +167,8 @@ void *iwt_thread( void *arg )
 		{
 			player_print_msg(_("Saving info to file %s"), song->m_file_name);
 			inp_save_info(song_get_inp(song), song->m_file_name, song->m_info);
-			song->m_flags &= (~SONG_SAVE_INFO);
-			plist_lock(player_plist);
 			song_update_info(song);
-			plist_unlock(player_plist);
+			song_free(song);
 			player_print_msg(_("Saved"));
 		}
 

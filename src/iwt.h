@@ -43,6 +43,12 @@ void iwt_push( song_t *song );
 /* Pop song from queue */
 song_t *iwt_pop( void );
 
+/* Lock queue */
+void iwt_lock( void );
+
+/* Unlock queue */
+void iwt_unlock( void );
+
 /* Info writer thread function */
 void *iwt_thread( void *arg );
 

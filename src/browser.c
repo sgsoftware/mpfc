@@ -631,6 +631,7 @@ void fb_select_pattern_dialog( browser_t *fb, bool_t sel )
 	
 	dlg = dialog_new(WND_OBJ(fb), sel ? "Select files matching pattern" :
 			"Deselect files matching pattern");
+	cfg_set_var_int(WND_OBJ(dlg)->m_cfg_list, "select", sel);
 	hbox = hbox_new(WND_OBJ(dlg->m_vbox), NULL, 0);
 	label_new(WND_OBJ(hbox), "Pattern: ");
 	editbox_new(WND_OBJ(hbox), "pattern", "*", 50);
@@ -652,7 +653,7 @@ wnd_msg_retcode_t fb_on_sel_pattern( wnd_t *wnd )
 	for ( i = 0; i < fb->m_num_files; i ++ )
 		if (!fnmatch(EDITBOX_TEXT(eb), fb->m_files[i].m_name, 0))
 		{
-			if (wnd->m_title[0] == 'S')
+			if (cfg_get_var_int(wnd->m_cfg_list, "select"))
 				fb->m_files[i].m_type |= FB_ITEM_SEL;
 			else
 				fb->m_files[i].m_type &= ~FB_ITEM_SEL;

@@ -37,6 +37,9 @@ typedef struct
 {
 	/* Dialog item part */
 	dlgitem_t m_wnd;
+
+	/* Message handlers */
+	wnd_msg_handler_t *m_on_clicked;
 	
 	/* Check box state */
 	bool_t m_checked;
@@ -68,6 +71,20 @@ void checkbox_toggle( checkbox_t *cb );
 
 /* Get size desired by check box */
 void checkbox_get_desired_size( dlgitem_t *di, int *width, int *height );
+
+/* 
+ * Class functions 
+ */
+
+/* Initialize checkbox class */
+wnd_class_t *checkbox_class_init( wnd_global_data_t *global );
+
+/* Get message information */
+wnd_msg_handler_t **checkbox_get_msg_info( wnd_t *wnd, char *msg_name,
+		wnd_class_msg_callback_t *callback );
+
+/* Aliases for message data creating */
+#define checkbox_msg_clicked_new	wnd_msg_noargs_new
 
 #endif
 

@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Songs manipulation functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 11.03.2004
+ * LAST UPDATE : 26.08.2004
  * NOTE        : Module prefix 'song'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -63,6 +63,7 @@ song_t *song_new( char *filename, char *title, int len )
 	}
 
 	/* Set song fields */
+	song->m_ref_count = 0;
 	strncpy(song->m_file_name, filename, sizeof(song->m_file_name));
 	song->m_file_name[sizeof(song->m_file_name) - 1] = 0;
 	//util_rem_slashes(song->m_file_name);
@@ -77,18 +78,34 @@ song_t *song_new( char *filename, char *title, int len )
 		song_update_title(song);
 	else
 		song->m_title = str_new(title);
-	return song;
+	return song_add_ref(song);
 } /* End of 'song_new' function */
+
+/* Add a reference to the song object */
+song_t *song_add_ref( song_t *song )
+{
+	assert(song);
+	assert(song->m_ref_count >= 0);
+	song->m_ref_count ++;
+	return song;
+} /* End of 'song_add_ref' function */
 
 /* Free song */
 void song_free( song_t *song )
 {
-	if (song == NULL)
-		return;
+	assert(song);
+	assert(song->m_ref_count > 0);
 
-	str_free(song->m_title);
-	si_free(song->m_info);
-	free(song);
+	/* Release reference */
+	song->m_ref_count --;
+
+	/* Free object */
+	if (song->m_ref_count == 0)
+	{
+		str_free(song->m_title);
+		si_free(song->m_info);
+		free(song);
+	}
 } /* End of 'song_free' function */
 
 /* Update song information */

@@ -333,6 +333,9 @@ void wnd_next_focus( wnd_t *wnd );
 /* Set focus to the previous child of this window */
 void wnd_prev_focus( wnd_t *wnd );
 
+/* Set window title */
+void wnd_set_title( wnd_t *wnd, char *title );
+
 /* Initialize color pairs array */
 void wnd_init_pairs( void );
 
