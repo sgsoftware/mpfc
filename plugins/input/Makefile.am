@@ -1,1 +1,1 @@
-SUBDIRS = mp3 wav audiocd radio ogg
+SUBDIRS = mp3 wav audiocd radio ogg timidi

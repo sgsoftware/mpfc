@@ -349,7 +349,7 @@ ID3 tag).
 You can view and edit this information using song info editor dialog. To 
 call it place cursor to the respective song and use @kbd{i} command. 
 You can also edit info for multiple songs. To do it select these songs in
-visual mode and answer ``No'' an appeating question. The dialog
+visual mode and answer ``No'' to the appearing question. The dialog
 will appear (if the format allows you). Then you will be able to change its
 contents by setting focus to the respective edit box (press @kbd{@key{TAB}}
 several times to reach it). If you want to save changes press @kbd{@key{RET}},
