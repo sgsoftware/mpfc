@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: mpfc 1.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-09-13 01:40+0400\n"
+"POT-Creation-Date: 2004-09-13 09:05+0400\n"
 "PO-Revision-Date: 2003-02-13 09:15+0300\n"
 "Last-Translator: Sergey E. Galanov <sgsoftware@mail.ru>\n"
 "Language-Team: Russian <sgsoftware@mail.ru>\n"
@@ -513,7 +513,7 @@ msgstr "Добавить песни"
 
 #: ../src/player.c:1788 ../src/player.c:1816
 msgid "File &name: "
-msgstr "Имя файла"
+msgstr "Имя файла (&n): "
 
 #: ../src/player.c:1801
 msgid "Add object"
@@ -521,7 +521,7 @@ msgstr "Добавить объект"
 
 #: ../src/player.c:1802
 msgid "Object &name: "
-msgstr "Имя объекта (n): "
+msgstr "Имя объекта (&n): "
 
 #: ../src/player.c:1815
 msgid "Save play list"
@@ -533,7 +533,7 @@ msgstr "Выполнить команду"
 
 #: ../src/player.c:1830
 msgid "C&ommand: "
-msgstr "Команда (o): "
+msgstr "Команда (&o): "
 
 #: ../src/player.c:1843
 msgid "Sort play list"
@@ -545,19 +545,19 @@ msgstr "Сортировать по"
 
 #: ../src/player.c:1845 ../src/player.c:2144
 msgid "&Title"
-msgstr "Название (t)"
+msgstr "Название (&t)"
 
 #: ../src/player.c:1846
 msgid "&File name"
-msgstr "Имя файла (f)"
+msgstr "Имя файла (&f)"
 
 #: ../src/player.c:1847
 msgid "P&ath and file name"
-msgstr "Путь и имя файла (a): "
+msgstr "Путь и имя файла (&a)"
 
 #: ../src/player.c:1848 ../src/player.c:2150
 msgid "T&rack"
-msgstr "Трек (r)"
+msgstr "Трек (&r)"
 
 #: ../src/player.c:1849
 msgid "&Only selected area"
@@ -565,35 +565,35 @@ msgstr "Только выделенная область (o)"
 
 #: ../src/player.c:1880
 msgid "&Artist: "
-msgstr "Исполнитель (a): "
+msgstr "Исполнитель (&a): "
 
 #: ../src/player.c:1882
 msgid "A&lbum: "
-msgstr "Альбом (l): "
+msgstr "Альбом (&l): "
 
 #: ../src/player.c:1884
 msgid "&Year: "
-msgstr "Год (y): "
+msgstr "Год (&y): "
 
 #: ../src/player.c:1886
 msgid "&Track No: "
-msgstr "Номер трека (t): "
+msgstr "Номер трека (&t): "
 
 #: ../src/player.c:1888
 msgid "C&omments: "
-msgstr "Комментарии (o): "
+msgstr "Комментарии (&o): "
 
 #: ../src/player.c:1890
 msgid "&Genre: "
-msgstr "Жанр (g): "
+msgstr "Жанр (&g): "
 
 #: ../src/player.c:1893
 msgid "&Reload info"
-msgstr "Перезагрузить информацию (r)"
+msgstr "Перезагрузить информацию (&r)"
 
 #: ../src/player.c:1956
 msgid "Write info in &all the selected songs"
-msgstr "Записать во все выделенные песни (a)"
+msgstr "Записать во все выделенные песни (&a)"
 
 #: ../src/player.c:2107
 msgid "Search"
@@ -601,7 +601,7 @@ msgstr "Поиск"
 
 #: ../src/player.c:2108 ../src/player.c:2140
 msgid "S&tring: "
-msgstr "Строка (t): "
+msgstr "Строка (&t): "
 
 #: ../src/player.c:2121
 msgid "Mini variables manager"
@@ -609,7 +609,7 @@ msgstr "Мини-менеджер переменных"
 
 #: ../src/player.c:2125
 msgid "&Value: "
-msgstr "Значение (v): "
+msgstr "Значение (&v): "
 
 #: ../src/player.c:2139
 msgid "Advanced search"
@@ -621,27 +621,27 @@ msgstr "Искать в"
 
 #: ../src/player.c:2145
 msgid "&Name"
-msgstr "Имя (n)"
+msgstr "Имя (&n)"
 
 #: ../src/player.c:2146
 msgid "&Artist"
-msgstr "Исполнитель (a)"
+msgstr "Исполнитель (&a)"
 
 #: ../src/player.c:2147
 msgid "A&lbum"
-msgstr "Альбом (l)"
+msgstr "Альбом (&l)"
 
 #: ../src/player.c:2148
 msgid "&Year"
-msgstr "Год (y)"
+msgstr "Год (&y)"
 
 #: ../src/player.c:2149
 msgid "&Genre"
-msgstr "Жанр (g)"
+msgstr "Жанр (&g)"
 
 #: ../src/player.c:2151
 msgid "C&omment"
-msgstr "Комментарии (o)"
+msgstr "Комментарии (&o)"
 
 #: ../src/player.c:2162
 #, c-format
@@ -654,7 +654,7 @@ msgstr "Перезагрузить информацию"
 
 #: ../src/player.c:2171
 msgid "&Only in selected area"
-msgstr "Только в выделенной области (o)"
+msgstr "Только в выделенной области (&o)"
 
 #: ../src/player.c:2186
 msgid "Repeat value"
@@ -662,7 +662,7 @@ msgstr "Значение повтора"
 
 #: ../src/player.c:2188
 msgid "Enter count &value for the next command: "
-msgstr "Введите число повторений для следующей команды (v): "
+msgstr "Введите число повторений для следующей команды (&v): "
 
 #: ../src/player.c:2206
 msgid "Run/stop test"
@@ -678,7 +678,7 @@ msgstr "Тест &1. Производительность оконной библиотеки"
 
 #: ../src/player.c:2210
 msgid "&Stop job"
-msgstr "Остановить задачу (s)"
+msgstr "Остановить задачу (&s)"
 
 #: ../src/player.c:2247
 msgid "Play list saved"
@@ -821,7 +821,7 @@ msgid "CCITT J.17"
 msgstr "CCITT J.17"
 
 #: ../plugins/input/mp3/mp3.c:570
-#, fuzzy, c-format
+#c-format
 msgid ""
 "MPEG %s, layer %i\n"
 "Bitrate: %i kb/s\n"

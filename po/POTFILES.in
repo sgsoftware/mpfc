@@ -14,3 +14,5 @@ plugins/input/audiocd/audiocd.c
 plugins/input/audiocd/cddb.c
 plugins/input/wav/wav.c
 plugins/input/mp3/mp3.c
+libmpfcwnd/wnd.c
+libmpfcwnd/wnd_dialog.c

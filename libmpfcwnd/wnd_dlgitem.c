@@ -124,7 +124,7 @@ void dlgitem_display_label_text( wnd_t *wnd, char *text )
 				mark_next = FALSE;
 			}
 			else
-				wnd_putchar(wnd, 0, *text);
+				wnd_putchar(wnd, 0, (byte)(*text));
 		}
 	}
 } /* End of 'dlgitem_display_label_text' function */
