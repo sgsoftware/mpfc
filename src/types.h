@@ -29,7 +29,7 @@
 
 #include <assert.h>
 #include <libintl.h>
-#include "config.h"
+#include "mpfc-config.h"
 
 /* Some useful types */
 typedef unsigned char byte;
