@@ -526,12 +526,6 @@ void player_display( wnd_t *wnd, dword data )
 			wnd_printf(wnd, "Shuffle");
 			col_set_color(wnd, COL_EL_DEFAULT);
 		}
-
-		/* Print version */
-		wnd_advance(wnd, 0, 1);
-		col_set_color(wnd, COL_EL_ABOUT);
-		wnd_printf(wnd, _("version %s"), VERSION);
-		col_set_color(wnd, COL_EL_DEFAULT);
 		
 		/* Print loop mode */
 		if (cfg_get_var_int(cfg_list, "loop-play"))
@@ -541,6 +535,12 @@ void player_display( wnd_t *wnd, dword data )
 			wnd_printf(wnd, "Loop");
 			col_set_color(wnd, COL_EL_DEFAULT);
 		}
+
+		/* Print version */
+		wnd_advance(wnd, 0, 1);
+		col_set_color(wnd, COL_EL_ABOUT);
+		wnd_printf(wnd, _("version %s"), VERSION);
+		col_set_color(wnd, COL_EL_DEFAULT);
 	}
 	else
 	{
