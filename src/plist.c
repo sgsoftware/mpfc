@@ -1,12 +1,12 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : plist.c
  * PURPOSE     : SG MPFC. Play list manipulation
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 14.11.2003
+ * LAST UPDATE : 7.01.2004
  * NOTE        : Module prefix 'plist'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -123,12 +123,12 @@ bool_t plist_add( plist_t *pl, char *filename )
 	num = find_do(fname, "*", plist_find_handler, pl);
 
 	/* Set info */
-	for ( i = 0; i < pl->m_len; i ++ )
+/*	for ( i = 0; i < pl->m_len; i ++ )
 		if (pl->m_list[i]->m_flags & SONG_SCHEDULE)
 		{
 			sat_push(pl, i);
 			pl->m_list[i]->m_flags &= (~SONG_SCHEDULE);
-		}
+		}*/
 	
 	/* Store undo information */
 	if (player_store_undo && num)
@@ -225,7 +225,8 @@ int plist_add_song( plist_t *pl, char *filename, char *title, int len,
 
 	/* Schedule song for setting its info and length */
 	if (title == NULL)
-		pl->m_list[where]->m_flags |= SONG_SCHEDULE;
+//		pl->m_list[where]->m_flags |= SONG_SCHEDULE;
+		sat_push(pl, where);
 	return 1;
 } /* End of 'plist_add_song' function */
 
