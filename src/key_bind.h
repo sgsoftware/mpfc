@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for key bindings management
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 2.08.2003
+ * LAST UPDATE : 3.08.2003
  * NOTE        : Module prefix 'kbind'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -113,12 +113,27 @@ void kbind_add( int action, int len, ... );
 /* Store key in buffer */
 void kbind_key2buf( int key );
 
-/* Clear buffer */
-void kbind_clear_buf( void );
-
 /* Check if buffer contains complete sequence */
 int kbind_check_buf( void );
 
+/* Read key bindings from configuration */
+void kbind_read_from_cfg( void );
+
+/* Convert variable name to action ID */
+int kbind_var2act( char *name );
+
+/* Set bindings using variable value */
+void kbind_set_var( int action, char *val );
+
+/* Parse configuration variable value with single key binding */
+void kbind_parse_cfg_str( int action, char *str );
+
+/* Clear key bindings for specified action */
+void kbind_clear_bindings( int action );
+
+/* Add sequence */
+void kbind_add_seq( int action, int len, int *seq );
+	
 #endif
 
 /* End of 'key_bind.h' file */
