@@ -107,7 +107,7 @@ void player_set_vol( int vol, bool_t rel );
 void player_set_bal( int bal, bool_t rel );
 
 /* Play song */
-void player_play( int start_time );
+void player_play( int song, int start_time );
 
 /* End play song thread */
 void player_end_play( void );
@@ -211,6 +211,9 @@ void player_handle_var_title_format( char *name );
 
 /* Handle 'output_plugin' variable setting */
 void player_handle_var_outp( char *name );
+
+/* Return to the last time */
+void player_time_back( void );
 
 #endif
 

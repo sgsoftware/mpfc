@@ -122,6 +122,9 @@ int player_start = -1, player_end = -1;
 int player_marks[PLAYER_NUM_MARKS];
 int player_last_pos = -1;
 
+/* Last position in song */
+int player_last_song = -1, player_last_song_time = -1;
+
 /* Initialize player */
 bool_t player_init( int argc, char *argv[] )
 {
@@ -221,12 +224,12 @@ bool_t player_init( int argc, char *argv[] )
 	if (cfg_get_var_int(cfg_list, "play_from_stop") && 
 			!player_num_files && !player_num_obj)
 	{
-		player_plist->m_cur_song = cfg_get_var_int(cfg_list, "cur_song");
 		player_status = cfg_get_var_int(cfg_list, "player_status");
 		player_start = cfg_get_var_int(cfg_list, "player_start") - 1;
 		player_end = cfg_get_var_int(cfg_list, "player_end") - 1;
 		if (player_status != PLAYER_STATUS_STOPPED)
-			player_play(cfg_get_var_int(cfg_list, "cur_time"));
+			player_play(cfg_get_var_int(cfg_list, "cur_song"),
+					cfg_get_var_int(cfg_list, "cur_time"));
 	}
 
 	/* Exit */
@@ -498,14 +501,13 @@ void player_seek( int sec, bool_t rel )
 } /* End of 'player_seek' function */
 
 /* Play song */
-void player_play( int start_time )
+void player_play( int song, int start_time )
 {
 	song_t *s;
 	
 	/* Check that we have anything to play */
-	if (player_plist->m_cur_song < 0 || 
-			player_plist->m_cur_song >= player_plist->m_len ||
-			(s = player_plist->m_list[player_plist->m_cur_song]) == NULL)
+	if (song < 0 || song >= player_plist->m_len ||
+			(s = player_plist->m_list[song]) == NULL)
 	{
 		player_plist->m_cur_song = -1;
 		return;
@@ -517,6 +519,7 @@ void player_play( int start_time )
 	/* Start new playing thread */
 	cfg_set_var(cfg_list, "cur_song_name", 
 			util_get_file_short_name(s->m_file_name));
+	player_plist->m_cur_song = song;
 	player_cur_time = start_time;
 //	player_status = PLAYER_STATUS_PLAYING;
 } /* End of 'player_play' function */
@@ -524,8 +527,11 @@ void player_play( int start_time )
 /* End playing song */
 void player_end_play( void )
 {
+	player_plist->m_cur_song = -1;
 	player_end_track = TRUE;
 //	player_status = PLAYER_STATUS_STOPPED;
+	while (player_timer_tid)
+		util_delay(0, 100000);
 	cfg_set_var(cfg_list, "cur_song_name", "");
 } /* End of 'player_end_play' function */
 
@@ -1052,25 +1058,26 @@ void player_eq_dialog( void )
 /* Skip some songs */
 void player_skip_songs( int num )
 {
-	int len, base;
+	int len, base, song;
 	
 	if (player_plist == NULL || !player_plist->m_len)
 		return;
 	
 	/* Change current song */
+	song = player_plist->m_cur_song;
 	len = (player_start < 0) ? player_plist->m_len : 
 		(player_end - player_start + 1);
 	base = (player_start < 0) ? 0 : player_start;
 	if (cfg_get_var_int(cfg_list, "shuffle_play"))
 	{
-		int initial = player_plist->m_cur_song;
+		int initial = song;
 
-		while (player_plist->m_cur_song == initial)
-			player_plist->m_cur_song = base + (rand() % len);
+		while (song == initial)
+			song = base + (rand() % len);
 	}
 	else 
 	{
-		int s, cur = player_plist->m_cur_song;
+		int s, cur = song;
 		if (player_start >= 0 && (cur < player_start || cur > player_end))
 			s = -1;
 		else 
@@ -1081,19 +1088,19 @@ void player_skip_songs( int num )
 			while (s < 0)
 				s += len;
 			s %= len;
-			player_plist->m_cur_song = s + base;
+			song = s + base;
 		}
 		else if (s < 0 || s >= len)
-			player_plist->m_cur_song = -1;
+			song = -1;
 		else
-			player_plist->m_cur_song = s + base;
+			song = s + base;
 	}
 
 	/* Start or end play */
-	if (player_plist->m_cur_song == -1)
+	if (song == -1)
 		player_end_play();
 	else
-		player_play(0);
+		player_play(song, 0);
 } /* End of 'player_skip_songs' function */
 
 /* Launch variables manager */
@@ -1181,11 +1188,14 @@ void player_handle_action( int action )
 	editbox_t *ebox;
 	bool_t dont_change_repval = FALSE;
 	int was_pos;
+	int was_song, was_time;
 
 	/* Clear message string */
 	strcpy(player_msg, "");
 
 	was_pos = player_plist->m_sel_end;
+	was_song = player_plist->m_cur_song;
+	was_time = player_cur_time;
 	switch (action)
 	{
 	/* Exit MPFC */
@@ -1264,7 +1274,7 @@ void player_handle_action( int action )
 		if (player_status == PLAYER_STATUS_PAUSED)
 			inp_resume(player_inp);
 		else
-			player_play(0);
+			player_play(player_plist->m_cur_song, 0);
 		player_status = PLAYER_STATUS_PLAYING;
 		break;
 
@@ -1292,9 +1302,8 @@ void player_handle_action( int action )
 	case KBIND_START_PLAY:
 		if (!player_plist->m_len)
 			break;
-		player_plist->m_cur_song = player_plist->m_sel_end;
 		player_status = PLAYER_STATUS_PLAYING;
-		player_play(0);
+		player_play(player_plist->m_sel_end, 0);
 		break;
 
 	/* Go to next song */
@@ -1425,13 +1434,17 @@ void player_handle_action( int action )
 		PLIST_GET_SEL(player_plist, player_start, player_end);
 		if (!player_plist->m_len)
 			break;
-		player_plist->m_cur_song = player_start;
-		player_play(0);
+		player_play(player_start, 0);
 		break;
 
 	/* Execute outer command */
 	case KBIND_EXEC:
 		player_exec();
+		break;
+
+	/* Go back */
+	case KBIND_TIME_BACK:
+		player_time_back();
 		break;
 
 	/* Set mark */
@@ -1544,6 +1557,13 @@ void player_handle_action( int action )
 	/* Save last position */
 	if (player_plist->m_sel_end != was_pos)
 		player_last_pos = was_pos;
+
+	/* Save last time */
+	if (player_plist->m_cur_song != was_song || player_cur_time != was_time)
+	{
+		player_last_song = was_song;
+		player_last_song_time = was_time;
+	}
 } /* End of 'player_handle_action' function */
 
 /* Launch variables mini-manager */
@@ -1894,6 +1914,12 @@ void player_handle_var_outp( char *name )
 			break;
 		}
 } /* End of 'player_handle_var_outp' function */
+
+/* Return to the last time */
+void player_time_back( void )
+{
+	player_play(player_last_song, player_last_song_time);
+} /* End of 'player_time_back' function */
 
 /* End of 'player.c' file */
 
