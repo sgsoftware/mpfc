@@ -898,17 +898,17 @@ void player_info_dialog( void )
 			cfg_get_var_int(cfg_list, "info_editor_show_full_name") ? 
 			s->m_file_name : util_get_file_short_name(s->m_file_name));
 	name = ebox_new((wnd_t *)dlg, 2, 1, wnd_root->m_width - 10, 1, 
-			30, "Song name: ", s->m_info->m_name);
+			30, _("Song name: "), s->m_info->m_name);
 	artist = ebox_new((wnd_t *)dlg, 2, 2, wnd_root->m_width - 10, 1, 
-			30, "Artist name: ", s->m_info->m_artist);
+			30, _("Artist name: "), s->m_info->m_artist);
 	album = ebox_new((wnd_t *)dlg, 2, 3, wnd_root->m_width - 10, 1, 
-			30, "Album name: ", s->m_info->m_album);
+			30, _("Album name: "), s->m_info->m_album);
 	year = ebox_new((wnd_t *)dlg, 2, 4, wnd_root->m_width - 10, 1, 
-			4, "Year: ", s->m_info->m_year);
+			4, _("Year: "), s->m_info->m_year);
 	comments = ebox_new((wnd_t *)dlg, 2, 5, wnd_root->m_width - 10, 1, 
-			4, "Comments: ", s->m_info->m_comments);
+			4, _("Comments: "), s->m_info->m_comments);
 	genre = lbox_new((wnd_t *)dlg, 2, 6, wnd_root->m_width - 10, 13,
-			"Genre: ");
+			_("Genre: "));
 	glist = s->m_inp->m_fl.m_glist;
 	for ( i = 0; glist != NULL && i < glist->m_size; i ++ )
 		lbox_add(genre, glist->m_list[i].m_name);
