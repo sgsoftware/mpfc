@@ -240,11 +240,11 @@ void player_deinit( void )
 	
 	/* Save information about place in song where we stop */
 	cfg_set_var_int(cfg_list, "cur_song", 
-			player_plist->m_cur_song, CFG_RUNTIME);
-	cfg_set_var_int(cfg_list, "cur_time", player_cur_time, CFG_RUNTIME);
-	cfg_set_var_int(cfg_list, "player_status", player_status, CFG_RUNTIME);
-	cfg_set_var_int(cfg_list, "player_start", player_start + 1, CFG_RUNTIME);
-	cfg_set_var_int(cfg_list, "player_end", player_end + 1, CFG_RUNTIME);
+			player_plist->m_cur_song);
+	cfg_set_var_int(cfg_list, "cur_time", player_cur_time);
+	cfg_set_var_int(cfg_list, "player_status", player_status);
+	cfg_set_var_int(cfg_list, "player_start", player_start + 1);
+	cfg_set_var_int(cfg_list, "player_end", player_end + 1);
 	player_save_cfg_vars(cfg_list, "cur_song;cur_time;player_status;"
 			"player_start;player_end");
 	
@@ -340,7 +340,7 @@ bool_t player_parse_cmd_line( int argc, char *argv[] )
 		}
 		
 		/* Set respective variable */
-		cfg_set_var(cfg_list, name, val, 0);
+		cfg_set_var(cfg_list, name, val);
 	}
 
 	/* Get file names from command line */
@@ -516,7 +516,7 @@ void player_play( int start_time )
 
 	/* Start new playing thread */
 	cfg_set_var(cfg_list, "cur_song_name", 
-			util_get_file_short_name(s->m_file_name), CFG_RUNTIME);
+			util_get_file_short_name(s->m_file_name));
 	player_cur_time = start_time;
 //	player_status = PLAYER_STATUS_PLAYING;
 } /* End of 'player_play' function */
@@ -526,7 +526,7 @@ void player_end_play( void )
 {
 	player_end_track = TRUE;
 //	player_status = PLAYER_STATUS_STOPPED;
-	cfg_set_var(cfg_list, "cur_song_name", "", CFG_RUNTIME);
+	cfg_set_var(cfg_list, "cur_song_name", "");
 } /* End of 'player_end_play' function */
 
 /* Player thread function */
@@ -1130,7 +1130,8 @@ void player_var_manager( void )
 	player_var_mngr_pos = -1;
 	for ( i = 0; i < cfg_list->m_num_vars; i ++ )
 	{
-		if (!(cfg_list->m_vars[i].m_flags & CFG_RUNTIME))
+		if (!(cfg_get_var_flags(cfg_list, cfg_list->m_vars[i].m_name) & 
+				CFG_RUNTIME))
 			lbox_add(var_lb, cfg_list->m_vars[i].m_name);
 	}
 	lbox_move_cursor(var_lb, FALSE, 0, TRUE);
@@ -1142,7 +1143,7 @@ void player_var_manager( void )
 	if (var_lb->m_cursor >= 0)
 	{
 		cfg_set_var(cfg_list, var_lb->m_list[var_lb->m_cursor].m_name, 
-				val_eb->m_text, 0);
+				val_eb->m_text);
 	}
 
 	/* Free memory */
@@ -1365,13 +1366,13 @@ void player_handle_action( int action )
 	/* Set/unset shuffle mode */
 	case KBIND_SHUFFLE:
 		cfg_set_var_int(cfg_list, "shuffle_play",
-				!cfg_get_var_int(cfg_list, "shuffle_play"), 0);
+				!cfg_get_var_int(cfg_list, "shuffle_play"));
 		break;
 		
 	/* Set/unset loop mode */
 	case KBIND_LOOP:
 		cfg_set_var_int(cfg_list, "loop_play",
-				!cfg_get_var_int(cfg_list, "loop_play"), 0);
+				!cfg_get_var_int(cfg_list, "loop_play"));
 		break;
 
 	/* Variables manager */
@@ -1586,7 +1587,7 @@ void player_var_mini_mngr( void )
 	wnd_destroy(ebox);
 
 	/* Set variable value */
-	cfg_set_var(cfg_list, name, val, 0);
+	cfg_set_var(cfg_list, name, val);
 } /* End of 'player_var_mini_mngr' function */
 
 /* Variables manager dialog notify handler */
@@ -1615,7 +1616,7 @@ void player_var_mngr_notify( wnd_t *wnd, dword data )
 		/* Save current edit box value to the respective variable */
 		if (player_var_mngr_pos >= 0)
 			cfg_set_var(cfg_list, 
-					lb->m_list[player_var_mngr_pos].m_name, eb->m_text, 0);
+					lb->m_list[player_var_mngr_pos].m_name, eb->m_text);
 			
 		/* Read new variable */
 		player_var_mngr_pos = lb->m_cursor;
@@ -1653,7 +1654,7 @@ void player_var_mngr_notify( wnd_t *wnd, dword data )
 			int was_len = cfg_list->m_num_vars;
 
 			/* Set variable */
-			cfg_set_var(cfg_list, name->m_text, val->m_text, 0);
+			cfg_set_var(cfg_list, name->m_text, val->m_text);
 
 			/* Update main dialog items */
 			if (was_len != cfg_list->m_num_vars)
@@ -1685,6 +1686,7 @@ void player_save_cfg_vars( cfg_list_t *list, char *vars )
 	tlist = (cfg_list_t *)malloc(sizeof(cfg_list_t));
 	tlist->m_vars = NULL;
 	tlist->m_num_vars = 0;
+	tlist->m_db = NULL;
 
 	/* Read rc file */
 	sprintf(fname, "%s/.mpfcrc", getenv("HOME"));
@@ -1698,7 +1700,7 @@ void player_save_cfg_vars( cfg_list_t *list, char *vars )
 		{
 			name[j] = 0;
 			j = 0;
-			cfg_set_var(tlist, name, cfg_get_var(list, name), 0);
+			cfg_set_var(tlist, name, cfg_get_var(list, name));
 			if (!vars[i])
 				break;
 		}
@@ -1730,7 +1732,7 @@ void player_save_cfg_list( cfg_list_t *list, char *fname )
 	/* Write variables */
 	for ( i = 0; i < list->m_num_vars; i ++ )
 	{
-		if (!(list->m_vars[i].m_flags & CFG_RUNTIME))
+	//	if (!(cfg_get_var_flags(list, list->m_vars[i].m_name) & CFG_RUNTIME))
 			fprintf(fd, "%s=%s\n", list->m_vars[i].m_name, 
 					list->m_vars[i].m_val);
 	}
@@ -1868,6 +1870,30 @@ void player_advanced_search_dialog( void )
 	}
 	player_search_dialog(t);
 } /* End of 'player_advanced_search_dialog' function */
+
+/* Handle 'title_format' variable setting */
+void player_handle_var_title_format( char *name )
+{
+	int i;
+
+	for ( i = 0; i < player_plist->m_len; i ++ )
+		song_get_title_from_info(player_plist->m_list[i]);
+	wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
+} /* End of 'player_handle_var_title_format' function */
+
+/* Handle 'output_plugin' variable setting */
+void player_handle_var_outp( char *name )
+{
+	/* Choose new output plugin */
+	int i;
+	for ( i = 0; i < pmng_num_outp; i ++ )
+		if (!strcmp(pmng_outp[i]->m_name, 
+					cfg_get_var(cfg_list, "output_plugin")))
+		{
+			pmng_cur_out = pmng_outp[i];
+			break;
+		}
+} /* End of 'player_handle_var_outp' function */
 
 /* End of 'player.c' file */
 

@@ -44,7 +44,6 @@ typedef struct
 		byte m_data;
 		char m_text[80];
 	} m_genre_data;
-	bool_t m_loaded;
 	bool_t m_only_own;
 	char m_own_data[1024];
 	bool_t m_not_own_present;

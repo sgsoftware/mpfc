@@ -215,7 +215,7 @@ void eqwnd_set_var( int pos, float val )
 		cur_val = -20.;
 	else if (cur_val > 20.)
 		cur_val = 20.;
-	cfg_set_var_float(cfg_list, str, cur_val, 0);
+	cfg_set_var_float(cfg_list, str, cur_val);
 } /* End of 'eqwnd_set_var' function */
 
 /* Get equalizer variable name */
@@ -286,13 +286,13 @@ void eqwnd_load_eqf( char *filename )
 		}
 
 		cfg_set_var_float(cfg_list, "eq_preamp", 
-				20.0 - ((bands[10] * 40.0) / 63.0), 0);
+				20.0 - ((bands[10] * 40.0) / 63.0));
 		for ( i = 0; i < 10; i ++ )
 		{
 			char str[20];
 			sprintf(str, "eq_band%i", i + 1);
 			cfg_set_var_float(cfg_list, str, 
-					20.0 - ((bands[i] * 40.0) / 64.0), 0);
+					20.0 - ((bands[i] * 40.0) / 64.0));
 		}
 	}
 

@@ -101,30 +101,16 @@ void song_set_info( song_t *song, song_info_t *info )
 		song->m_info = (song_info_t *)malloc(sizeof(song_info_t));
 		memset(song->m_info, 0, sizeof(song_info_t));
 		song->m_info->m_genre = GENRE_ID_UNKNOWN;
-		song->m_info->m_loaded = FALSE;
 	}
 	else
 	{
 		if (song->m_info == NULL)
 			song->m_info = (song_info_t *)malloc(sizeof(song_info_t));
 		memcpy(song->m_info, info, sizeof(song_info_t));
-		song->m_info->m_loaded = TRUE;
 	}
 
 	/* Set title */
-	if (info == NULL || !info->m_not_own_present || info->m_only_own)
-	{
-		int i;
-		for ( i = strlen(song->m_file_name) - 1; 
-				(i >= 0) && (song->m_file_name[i] != '/'); i -- );
-		strcpy(song->m_title, &song->m_file_name[i + 1]);
-		if (cfg_get_var_int(cfg_list, "convert_underscores2spaces"))
-			util_under2spaces(song->m_title);
-	}
-	else
-	{
-		song_get_title_from_info(song);
-	}
+	song_get_title_from_info(song);
 } /* End of 'song_set_info' function */
 
 /* Update song information */
@@ -143,7 +129,6 @@ void song_update_info( song_t *song )
 		cp_to_out(si.m_track, si.m_track);
 		cp_to_out(si.m_year, si.m_year);
 		cp_to_out(si.m_own_data, si.m_own_data);
-		
 		song_set_info(song, &si);
 	}
 	else
@@ -170,9 +155,21 @@ void song_get_title_from_info( song_t *song )
 	bool_t finish = FALSE;
 	char *str;
 	song_info_t *info;
-	
-	if (song == NULL || ((info = song->m_info) == NULL))
+
+	if (song == NULL)
 		return;
+	
+	info = song->m_info;
+	if (info == NULL || !info->m_not_own_present || info->m_only_own)
+	{
+		int i;
+		for ( i = strlen(song->m_file_name) - 1; 
+				(i >= 0) && (song->m_file_name[i] != '/'); i -- );
+		strcpy(song->m_title, &song->m_file_name[i + 1]);
+		if (cfg_get_var_int(cfg_list, "convert_underscores2spaces"))
+			util_under2spaces(song->m_title);
+		return;
+	}
 
 	fmt = cfg_get_var(cfg_list, "title_format");
 	str = song->m_title;

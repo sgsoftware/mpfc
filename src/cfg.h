@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for configuration handling
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 11.08.2003
+ * LAST UPDATE : 29.09.2003
  * NOTE        : Module prefix 'cfg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -33,6 +33,22 @@
 /* Variable flags */
 #define CFG_RUNTIME 0x01
 
+/* Variables data base type */
+typedef struct tag_cfg_db_t
+{
+	/* Variable name */
+	char m_name[80];
+
+	/* Variable handler (is called when variable is set) */
+	void (*m_handler)( char *name );
+
+	/* Variable flags */
+	dword m_flags;
+
+	/* Next list element */
+	struct tag_cfg_db_t *m_next;
+} cfg_db_t;
+
 /* Variable type */
 typedef struct tag_cfg_var_t
 {
@@ -41,9 +57,6 @@ typedef struct tag_cfg_var_t
 
 	/* Variable value */
 	char m_val[256];
-
-	/* Variable flags */
-	byte m_flags;
 } cfg_var_t;
 
 /* Variables list type */
@@ -52,6 +65,9 @@ typedef struct tag_cfg_var_list_t
 	/* Variables list */
 	cfg_var_t *m_vars;
 	int m_num_vars;
+
+	/* Data base */
+	cfg_db_t *m_db;
 } cfg_list_t;
 
 /* Global variables list */
@@ -66,6 +82,9 @@ void cfg_free( void );
 /* Free configuration list */
 void cfg_free_list( cfg_list_t *list );
 
+/* Initialize data base */
+void cfg_init_db( void );
+
 /* Initialize variables with default values */
 void cfg_init_default( void );
 
@@ -76,19 +95,19 @@ void cfg_read_rcfile( cfg_list_t *list, char *name );
 void cfg_parse_line( cfg_list_t *list, char *str );
 
 /* Add variable */
-void cfg_new_var( cfg_list_t *list, char *name, char *val, byte flags );
+void cfg_new_var( cfg_list_t *list, char *name, char *val );
 
 /* Search for variable and return its index (or negative on failure) */
 int cfg_search_var( cfg_list_t *list, char *name );
 
 /* Set variable value */
-void cfg_set_var( cfg_list_t *list, char *name, char *val, byte flags );
+void cfg_set_var( cfg_list_t *list, char *name, char *val );
 
 /* Set variable integer value */
-void cfg_set_var_int( cfg_list_t *list, char *name, int val, byte flags );
+void cfg_set_var_int( cfg_list_t *list, char *name, int val );
 
 /* Set variable integer float */
-void cfg_set_var_float( cfg_list_t *list, char *name, float val, byte flags );
+void cfg_set_var_float( cfg_list_t *list, char *name, float val );
 
 /* Get variable value */
 char *cfg_get_var( cfg_list_t *list, char *name );
@@ -101,6 +120,13 @@ float cfg_get_var_float( cfg_list_t *list, char *name );
 
 /* Get variable flags */
 byte cfg_get_var_flags( cfg_list_t *list, char *name );
+
+/* Handle variable setting */
+void cfg_handle_var( cfg_list_t *list, char *name );
+
+/* Set variable information to the data base */
+void cfg_set_to_db( cfg_list_t *list, char *name, 
+		void (*handler)( char * ), dword flags );
 
 #endif
 

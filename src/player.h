@@ -206,6 +206,12 @@ void player_go_back( void );
 /* Advanced search dialog */
 void player_advanced_search_dialog( void );
 
+/* Handle 'title_format' variable setting */
+void player_handle_var_title_format( char *name );
+
+/* Handle 'output_plugin' variable setting */
+void player_handle_var_outp( char *name );
+
 #endif
 
 /* End of 'player.h' file */

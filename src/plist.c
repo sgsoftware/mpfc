@@ -794,10 +794,10 @@ void plist_display( plist_t *pl, wnd_t *wnd )
 			char title[80];
 			int x;
 			
-			if (strlen(s->m_title) >= wnd->m_width - 10)
+			if (strlen(s->m_title) >= wnd->m_width - 13)
 			{
-				memcpy(title, s->m_title, wnd->m_width - 13);
-				strcpy(&title[wnd->m_width - 13], "...");
+				memcpy(title, s->m_title, wnd->m_width - 16);
+				strcpy(&title[wnd->m_width - 16], "...");
 			}
 			else
 				strcpy(title, s->m_title);
