@@ -66,8 +66,7 @@ wnd_msg_handler_t **wnd_root_get_msg_info( wnd_t *wnd, char *msg_name,
  */
 
 /* 'keydown' message handler */
-wnd_msg_retcode_t wnd_root_on_keydown( wnd_t *wnd,
-		wnd_key_t *keycode );
+wnd_msg_retcode_t wnd_root_on_keydown( wnd_t *wnd, wnd_key_t key );
 
 /* 'display' message handler */
 wnd_msg_retcode_t wnd_root_on_display( wnd_t *wnd );

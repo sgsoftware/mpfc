@@ -94,10 +94,10 @@ bool_t dialog_construct( dialog_t *dlg, char *title, wnd_t *parent,
 } /* End of 'dialog_construct' function */
 
 /* Handle 'keydown' message */
-wnd_msg_retcode_t dialog_on_keydown( wnd_t *wnd, wnd_key_t *keycode )
+wnd_msg_retcode_t dialog_on_keydown( wnd_t *wnd, wnd_key_t key )
 {
 	/* Tab jumps to the next window */
-	if (keycode->m_key == '\t')
+	if (key == '\t')
 	{
 		wnd_t *focus = wnd->m_focus_child;
 		if (focus != NULL);
@@ -106,12 +106,12 @@ wnd_msg_retcode_t dialog_on_keydown( wnd_t *wnd, wnd_key_t *keycode )
 		}
 	}
 	/* Enter initiates 'ok_clicked' message sending */
-	else if (keycode->m_key == '\n')
+	else if (key == '\n')
 	{
 		wnd_msg_send(wnd, "ok_clicked", dialog_msg_ok_new());
 	}
 	/* Escape initiates 'cancel_clicked' message sending */
-	else if (keycode->m_key == KEY_ESCAPE)
+	else if (key == KEY_ESCAPE)
 	{
 		wnd_msg_send(wnd, "cancel_clicked", dialog_msg_cancel_new());
 	}

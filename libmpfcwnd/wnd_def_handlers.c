@@ -40,28 +40,28 @@ wnd_msg_retcode_t wnd_default_on_display( wnd_t *wnd )
 } /* End of 'wnd_default_on_display' function */
 
 /* Default WND_MSG_KEYDOWN message handler */
-wnd_msg_retcode_t wnd_default_on_keydown( wnd_t *wnd, wnd_key_t *keycode )
+wnd_msg_retcode_t wnd_default_on_keydown( wnd_t *wnd, wnd_key_t key )
 {
 	/* Top-level windows focus switch */
-	if (keycode->m_key == '.' && keycode->m_alt)
+	if (key == WND_KEY_WITH_ALT('.'))
 		wnd_next_focus(WND_ROOT(wnd));
-	else if (keycode->m_key == ',' && keycode->m_alt)
+	else if (key == WND_KEY_WITH_ALT(','))
 		wnd_prev_focus(WND_ROOT(wnd));
 	/* Start window change position/size modes */
-	else if (keycode->m_key == 'p' && keycode->m_alt)
+	else if (key == WND_KEY_WITH_ALT('p'))
 		wnd_set_mode(wnd, WND_MODE_REPOSITION);
-	else if (keycode->m_key == 's' && keycode->m_alt)
+	else if (key == WND_KEY_WITH_ALT('s'))
 		wnd_set_mode(wnd, WND_MODE_RESIZE);
 	/* Close window */
-	else if (keycode->m_key == 'c' && keycode->m_alt && 
+	else if (key == WND_KEY_WITH_ALT('c') && 
 			(WND_FLAGS(wnd) & WND_FLAG_CLOSE_BOX))
 		wnd_close(wnd);
 	/* Maximize/minimize window */
-	else if (keycode->m_key == 'm' && keycode->m_alt && 
+	else if (key == WND_KEY_WITH_ALT('m') && 
 			(WND_FLAGS(wnd) & WND_FLAG_CLOSE_BOX))
 		wnd_toggle_maximize(wnd);
 	/* Redisplay screen */
-	else if (keycode->m_key == KEY_CTRL_L)
+	else if (key == KEY_CTRL_L)
 		wnd_redisplay(wnd);
 	return WND_MSG_RETCODE_STOP;
 } /* End of 'wnd_default_on_keydown' function */

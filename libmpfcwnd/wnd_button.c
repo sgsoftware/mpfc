@@ -97,10 +97,10 @@ wnd_msg_retcode_t button_on_display( wnd_t *wnd )
 } /* End of 'button_on_display' function */
 
 /* 'keydown' message handler */
-wnd_msg_retcode_t button_on_keydown( wnd_t *wnd, wnd_key_t *keycode )
+wnd_msg_retcode_t button_on_keydown( wnd_t *wnd, wnd_key_t key )
 {
 	/* Button clicked */
-	if (keycode->m_key == ' ')
+	if (key == ' ')
 		wnd_msg_send(wnd, "clicked", button_msg_clicked_new());
 	else
 		return WND_MSG_RETCODE_PASS_TO_PARENT;

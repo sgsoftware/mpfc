@@ -53,10 +53,10 @@ wnd_msg_handler_t **wnd_root_get_msg_info( wnd_t *wnd, char *msg_name,
 } /* End of 'wnd_root_get_msg_info' function */
 
 /* 'keydown' message handler */
-wnd_msg_retcode_t wnd_root_on_keydown( wnd_t *wnd, wnd_key_t *keycode )
+wnd_msg_retcode_t wnd_root_on_keydown( wnd_t *wnd, wnd_key_t key )
 {
 	/* Close window on 'q' */
-	if (keycode->m_key == 'q' || keycode->m_key == 'Q')
+	if (key == 'q' || key == 'Q')
 		wnd_close(wnd);
 	return WND_MSG_RETCODE_OK;
 } /* End of 'wnd_root_on_keydown' function */

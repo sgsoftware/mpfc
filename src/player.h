@@ -137,7 +137,7 @@ void player_parse_cfg_line( cfg_node_t *list, char *str );
 bool_t player_parse_cmd_line( int argc, char *argv[] );
 
 /* Handle key function */
-wnd_msg_retcode_t player_on_keydown( wnd_t *wnd, wnd_key_t *keycode );
+wnd_msg_retcode_t player_on_keydown( wnd_t *wnd, wnd_key_t key );
 
 /* Handle left-button click */
 wnd_msg_retcode_t player_on_mouse_ldown( wnd_t *wnd, int x, int y,

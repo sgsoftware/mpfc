@@ -116,11 +116,11 @@ wnd_msg_retcode_t eqwnd_on_display( wnd_t *wnd )
 } /* End of 'eqwnd_display' function */
 
 /* Handle key message */
-wnd_msg_retcode_t eqwnd_on_keydown( wnd_t *wnd, wnd_key_t *keycode )
+wnd_msg_retcode_t eqwnd_on_keydown( wnd_t *wnd, wnd_key_t key )
 {
 	eq_wnd_t *eq = (eq_wnd_t *)wnd;
 
-	switch (keycode->m_key)
+	switch (key)
 	{
 	case 'q':
 	case KEY_ESCAPE:

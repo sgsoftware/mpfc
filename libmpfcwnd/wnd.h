@@ -338,7 +338,7 @@ wnd_msg_retcode_t wnd_callback_destructor( wnd_t *wnd, wnd_msg_handler_t *h,
 void wnd_set_mode( wnd_t *wnd, wnd_mode_t mode );
 
 /* Handler for key pressing when in reposition or resize window mode */
-wnd_msg_retcode_t wnd_repos_on_key( wnd_t *wnd, wnd_key_t *keycode );
+wnd_msg_retcode_t wnd_repos_on_key( wnd_t *wnd, wnd_key_t key );
 
 /* Move and resize window */
 void wnd_repos( wnd_t *wnd, int x, int y, int width, int height );

@@ -431,10 +431,9 @@ bool_t player_parse_cmd_line( int argc, char *argv[] )
 } /* End of 'player_parse_cmd_line' function */
 
 /* Handle key function */
-wnd_msg_retcode_t player_on_keydown( wnd_t *wnd, wnd_key_t *keycode )
+wnd_msg_retcode_t player_on_keydown( wnd_t *wnd, wnd_key_t key )
 {
-	if (!keycode->m_alt)
-		kbind_key2buf(keycode->m_key);
+	kbind_key2buf(key);
 	return WND_MSG_RETCODE_OK;
 } /* End of 'player_handle_key' function */
 

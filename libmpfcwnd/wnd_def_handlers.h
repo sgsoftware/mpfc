@@ -40,7 +40,7 @@ wnd_msg_retcode_t wnd_default_on_display( struct tag_wnd_t *wnd );
 
 /* Default WND_MSG_KEYDOWN message handler */
 wnd_msg_retcode_t wnd_default_on_keydown( struct tag_wnd_t *wnd, 
-		wnd_key_t *keycode );
+		wnd_key_t key );
 
 /* Default WND_MSG_CLOSE message handler */
 wnd_msg_retcode_t wnd_default_on_close( struct tag_wnd_t *wnd );

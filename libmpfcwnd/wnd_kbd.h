@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Interface for keyboard 
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 8.07.2004
+ * LAST UPDATE : 13.08.2004
  * NOTE        : Module prefix 'wnd_kbd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -33,7 +33,7 @@
 #include "types.h"
 
 /* Control- key combinations */
-#define KEY_CTLR_AT		0
+#define KEY_CTRL_AT		0
 #define KEY_CTRL_A		1
 #define KEY_CTRL_B		2
 #define KEY_CTRL_C		3
@@ -78,15 +78,9 @@ typedef struct tag_wnd_kbd_data_t
 	struct tag_wnd_t *m_wnd_root;
 } wnd_kbd_data_t;
 
-/* Key with additional parameters */
-typedef struct 
-{
-	/* Key */
-	int m_key;
-
-	/* Alt modifier */
-	bool_t m_alt;
-} wnd_key_t;
+/* Key identification type */
+typedef word wnd_key_t;
+#define WND_KEY_WITH_ALT(ch)	((ch) | 0x8000)
 
 /* Initialize keyboard management system */
 wnd_kbd_data_t *wnd_kbd_init( struct tag_wnd_t *wnd_root );

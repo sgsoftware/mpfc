@@ -81,11 +81,11 @@ wnd_msg_retcode_t wnd_basic_callback_destructor( wnd_t *wnd,
 /* Message data */
 typedef struct
 {
-	wnd_key_t m_keycode;
+	wnd_key_t m_key;
 } wnd_msg_key_t;
 
 /* Create data for key-related message */
-wnd_msg_data_t wnd_msg_key_new( wnd_key_t *keycode );
+wnd_msg_data_t wnd_msg_key_new( wnd_key_t key );
 
 /* Alias */
 #define wnd_msg_keydown_new	wnd_msg_key_new 
@@ -96,7 +96,7 @@ wnd_msg_retcode_t wnd_basic_callback_key( wnd_t *wnd,
 
 /* Convert handler pointer to the proper type */
 #define WND_MSG_KEY_HANDLER(h)	\
-	((wnd_msg_retcode_t (*)(wnd_t *, wnd_key_t *))(h->m_func))
+	((wnd_msg_retcode_t (*)(wnd_t *, wnd_key_t))(h->m_func))
 
 /*
  * Parent reposition message

@@ -143,11 +143,11 @@ wnd_msg_retcode_t help_on_display( wnd_t *wnd )
 } /* End of 'help_display' function */
 
 /* Handle key message */
-wnd_msg_retcode_t help_on_keydown( wnd_t *wnd, wnd_key_t *keycode )
+wnd_msg_retcode_t help_on_keydown( wnd_t *wnd, wnd_key_t key )
 {
 	help_screen_t *h = (help_screen_t *)wnd;
 
-	switch (keycode->m_key)
+	switch (key)
 	{
 	case 'q':
 	case KEY_ESCAPE:

@@ -187,12 +187,11 @@ wnd_msg_retcode_t fb_on_display( wnd_t *wnd )
 } /* End of 'fb_display' function */
 
 /* Handle key pressing */
-wnd_msg_retcode_t fb_on_keydown( wnd_t *wnd, wnd_key_t *keycode )
+wnd_msg_retcode_t fb_on_keydown( wnd_t *wnd, wnd_key_t key )
 {
 	int i;
 	browser_t *fb = (browser_t *)wnd;
 	char str[MAX_FILE_NAME];
-	int key = keycode->m_key;
 
 	assert(fb);
 

@@ -134,13 +134,13 @@ wnd_msg_retcode_t wnd_basic_callback_noargs( wnd_t *wnd,
 } /* End of 'wnd_basic_callback_noargs' function */
 
 /* Create data for key-related message */
-wnd_msg_data_t wnd_msg_key_new( wnd_key_t *keycode )
+wnd_msg_data_t wnd_msg_key_new( wnd_key_t key )
 {
 	wnd_msg_data_t msg_data;
 	wnd_msg_key_t *data;
 
 	data = (wnd_msg_key_t *)malloc(sizeof(*data));
-	data->m_keycode = *keycode;
+	data->m_key = key;
 	msg_data.m_data = data;
 	msg_data.m_destructor = NULL;
 	return msg_data;
@@ -151,7 +151,7 @@ wnd_msg_retcode_t wnd_basic_callback_key( wnd_t *wnd,
 		wnd_msg_handler_t *handler, wnd_msg_data_t *msg_data )
 {
 	wnd_msg_key_t *d = (wnd_msg_key_t *)(msg_data->m_data);
-	return WND_MSG_KEY_HANDLER(handler)(wnd, &d->m_keycode);
+	return WND_MSG_KEY_HANDLER(handler)(wnd, d->m_key);
 } /* End of 'wnd_basic_callback_key' function */
 
 /* Create data for parent reposition message */

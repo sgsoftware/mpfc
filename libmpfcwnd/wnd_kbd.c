@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Keyboard functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 8.07.2004
+ * LAST UPDATE : 13.08.2004
  * NOTE        : Module prefix 'wnd_kbd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -83,7 +83,7 @@ void *wnd_kbd_thread( void *arg )
 			wnd_t *focus = WND_FOCUS(wnd_root);
 			if (focus != NULL)
 			{
-				wnd_msg_send(focus, "keydown", wnd_msg_key_new(&keycode));
+				wnd_msg_send(focus, "keydown", wnd_msg_key_new(keycode));
 			}
 		}
 
@@ -157,16 +157,17 @@ bool_t wnd_kbd_extract_code( wnd_key_t *code, int *buf, int *len )
 	{
 		if (*len == 1)
 			return FALSE;
-		code->m_key = buf[1];
-		code->m_alt = (code->m_key != KEY_ESCAPE);
+		if (buf[1] != KEY_ESCAPE)
+			(*code) = WND_KEY_WITH_ALT(buf[1]);
+		else
+			(*code) = KEY_ESCAPE;
 		memmove(buf, &buf[2], (*len) - 2);
 		(*len) -= 2;
 	}
 	/* Normal key */
 	else
 	{
-		code->m_key = buf[0];
-		code->m_alt = FALSE;
+		(*code) = buf[0];
 		memmove(buf, &buf[1], (*len) - 1);
 		(*len) --;
 	}

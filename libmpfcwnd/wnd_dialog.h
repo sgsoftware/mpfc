@@ -54,7 +54,7 @@ bool_t dialog_construct( dialog_t *dlg, char *title, wnd_t *parent,
 		int x, int y, int width, int height, dword flags ); 
 
 /* Handle 'keydown' message */
-wnd_msg_retcode_t dialog_on_keydown( wnd_t *wnd, wnd_key_t *keycode );
+wnd_msg_retcode_t dialog_on_keydown( wnd_t *wnd, wnd_key_t key );
 
 /* Handle 'ok_clicked' message */
 wnd_msg_retcode_t dialog_on_ok( wnd_t *wnd );

@@ -971,13 +971,12 @@ void wnd_set_mode( wnd_t *wnd, wnd_mode_t mode )
 } /* End of 'wnd_set_mode' function */
 
 /* Handler for key pressing when in reposition or resize window mode */
-wnd_msg_retcode_t wnd_repos_on_key( wnd_t *wnd, wnd_key_t *keycode )
+wnd_msg_retcode_t wnd_repos_on_key( wnd_t *wnd, wnd_key_t key )
 {
 	int x, y, w, h;
 	bool_t not_changed = FALSE;
 
 	assert(wnd);
-	assert(keycode);
 	assert(wnd->m_mode != WND_MODE_NORMAL);
 
 	/* Choose new window parameters */
@@ -987,26 +986,26 @@ wnd_msg_retcode_t wnd_repos_on_key( wnd_t *wnd, wnd_key_t *keycode )
 	h = wnd->m_height;
 	if (wnd->m_mode == WND_MODE_REPOSITION)
 	{
-		if (keycode->m_key == KEY_UP)
+		if (key == KEY_UP)
 			y --;
-		else if (keycode->m_key == KEY_DOWN)
+		else if (key == KEY_DOWN)
 			y ++;
-		else if (keycode->m_key == KEY_RIGHT)
+		else if (key == KEY_RIGHT)
 			x ++;
-		else if (keycode->m_key == KEY_LEFT)
+		else if (key == KEY_LEFT)
 			x --;
 		else
 			not_changed = TRUE;
 	}
 	else if (wnd->m_mode == WND_MODE_RESIZE)
 	{
-		if (keycode->m_key == KEY_UP)
+		if (key == KEY_UP)
 			h --;
-		else if (keycode->m_key == KEY_DOWN)
+		else if (key == KEY_DOWN)
 			h ++;
-		else if (keycode->m_key == KEY_RIGHT)
+		else if (key == KEY_RIGHT)
 			w ++;
-		else if (keycode->m_key == KEY_LEFT)
+		else if (key == KEY_LEFT)
 			w --;
 		else
 			not_changed = TRUE;
@@ -1021,7 +1020,7 @@ wnd_msg_retcode_t wnd_repos_on_key( wnd_t *wnd, wnd_key_t *keycode )
 	}
 
 	/* Return back to normal mode */
-	if (not_changed && keycode->m_key == '\n')
+	if (not_changed && key == '\n')
 	{
 		wnd->m_mode = WND_MODE_NORMAL;
 		wnd_msg_rem_handler(wnd, "keydown");
