@@ -42,6 +42,8 @@ logger_t *logger_new( cfg_node_t *cfg_list, char *file_name )
 		return NULL;
 	memset(log, 0, sizeof(*log));
 	log->m_cfg = cfg_list;
+	log->m_level = logger_get_level(log);
+	cfg_set_var_handler(log->m_cfg, "log-level", logger_on_change_level, log);
 
 	/* Open file */
 	if (file_name != NULL)
@@ -100,8 +102,8 @@ void logger_message( logger_t *log, logger_msg_type_t type, int level,
 	assert(format);
 
 	/* Filter by log level */
-//	if (level > cfg_get_var_int(log->m_cfg, "log-level"))
-//		return;
+	if (level > log->m_level)
+		return;
 
 	/* Build message text */
 	text = (char *)malloc(size);
@@ -152,7 +154,7 @@ void logger_message( logger_t *log, logger_msg_type_t type, int level,
 	/* Write message to the file */
 	if (log->m_fd != NULL)
 	{
-		fprintf(log->m_fd, "%s%s\n", logger_get_type_prefix(type), 
+		fprintf(log->m_fd, "%s%s\n", logger_get_type_prefix(type, level), 
 				msg->m_message);
 		fflush(log->m_fd);
 	}
@@ -192,11 +194,14 @@ void logger_attach_handler( logger_t *log,
 } /* End of 'logger_attach_handler' function */
 
 /* Get prefix of messages of some type */
-char *logger_get_type_prefix( logger_msg_type_t type )
+char *logger_get_type_prefix( logger_msg_type_t type, int level )
 {
-	static char *prefixes[] = { "", "(==) ", "(WW) ", "(EE) ", "(FF) " };
-	if (type < 0 || type >= sizeof(prefixes) / sizeof(*prefixes))
+	static char *prefixes[] = { "", "(==) ", "(WW) ", "(EE) ", "(FF) ", 
+		"(DD) " };
+	if (type < 0 || type >= (sizeof(prefixes) / sizeof(*prefixes) - 1))
 		return NULL;
+	if (level == LOGGER_LEVEL_DEBUG)
+		return prefixes[5];
 	return prefixes[type];
 } /* End of 'logger_get_type_prefix' function */
 
@@ -213,6 +218,32 @@ void logger_unlock( logger_t *log )
 	assert(log);
 	pthread_mutex_unlock(&log->m_mutex);
 } /* End of 'logger_unlock' function */
+
+/* Get logger level from the configuration */
+int logger_get_level( logger_t *log )
+{
+	char *s = cfg_get_var(log->m_cfg, "log-level");
+	if (s == NULL)
+		return LOGGER_LEVEL_DEFAULT;
+	else if (!strcmp(s, "none"))
+		return LOGGER_LEVEL_NONE;
+	else if (!strcmp(s, "low"))
+		return LOGGER_LEVEL_LOW;
+	else if (!strcmp(s, "high"))
+		return LOGGER_LEVEL_HIGH;
+	else if (!strcmp(s, "debug"))
+		return LOGGER_LEVEL_DEBUG;
+	else 
+		return LOGGER_LEVEL_DEFAULT;
+} /* End of 'logger_get_level' function */
+
+/* Handler for setting log level */
+bool_t logger_on_change_level( cfg_node_t *node, char *value, void *data )
+{
+	logger_t *log = (logger_t *)data;
+	log->m_level = logger_get_level(log);
+	return TRUE;
+} /* End of 'logger_on_change_level' function */
 
 /* End of 'logger.c' file */
 

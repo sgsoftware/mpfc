@@ -5,7 +5,7 @@
 /* FILE NAME   : logger.h
  * PURPOSE     : SG MPFC. Interface for logger functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 21.09.2004
+ * LAST UPDATE : 26.09.2004
  * NOTE        : Module prefix 'logger'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -74,6 +74,9 @@ typedef struct tag_logger_t
 	/* Number of messages */
 	int m_num_messages;
 
+	/* Current log level */
+	int m_level;
+
 	/* Configuration list */
 	cfg_node_t *m_cfg;
 
@@ -112,13 +115,19 @@ void logger_attach_handler( logger_t *log,
 		void *data );
 
 /* Get prefix of messages of some type */
-char *logger_get_type_prefix( logger_msg_type_t type );
+char *logger_get_type_prefix( logger_msg_type_t type, int level );
 
 /* Lock logger */
 void logger_lock( logger_t *log );
 
 /* Unlock logger */
 void logger_unlock( logger_t *log );
+
+/* Get current log level */
+int logger_cur_level( logger_t *log );
+
+/* Handler for setting log level */
+bool_t logger_on_change_level( cfg_node_t *node, char *value, void *data );
 
 #endif
 

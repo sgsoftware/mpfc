@@ -344,16 +344,20 @@ wnd_msg_retcode_t player_logview_on_close( wnd_t *wnd );
  ***/
 
 /* Handle 'title-format' variable setting */
-bool_t player_handle_var_title_format( cfg_node_t *var, char *value );
+bool_t player_handle_var_title_format( cfg_node_t *var, char *value, 
+		void *data );
 
 /* Handle 'output-plugin' variable setting */
-bool_t player_handle_var_outp( cfg_node_t *var, char *value );
+bool_t player_handle_var_outp( cfg_node_t *var, char *value, 
+		void *data );
 
 /* Handle 'color-scheme' variable setting */
-bool_t player_handle_color_scheme( cfg_node_t *var, char *value );
+bool_t player_handle_color_scheme( cfg_node_t *var, char *value, 
+		void *data );
 
 /* Handle 'kbind-scheme' variable setting */
-bool_t player_handle_kbind_scheme( cfg_node_t *var, char *value );
+bool_t player_handle_kbind_scheme( cfg_node_t *var, char *value, 
+		void *data );
 
 /***
  * Player window class functions

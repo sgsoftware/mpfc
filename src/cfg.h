@@ -61,7 +61,8 @@ typedef enum
  * If this function returns FALSE (and flag CFG_NODE_HANDLE_AFTER_CHANGE
  * is not set), change does not actually occur */
 struct tag_cfg_node_t;
-typedef bool_t (*cfg_var_handler_t)( struct tag_cfg_node_t *var, char *value );
+typedef bool_t (*cfg_var_handler_t)( struct tag_cfg_node_t *var, char *value,
+		void *data );
 
 /* Configuration tree node */
 typedef struct tag_cfg_node_t
@@ -87,6 +88,7 @@ typedef struct tag_cfg_node_t
 			/* Handler for this variable (a function that is called
 			 * whenever variable value is changed) */
 			cfg_var_handler_t m_handler;
+			void *m_handler_data;
 		} m_var;
 
 		/* Data for list */
@@ -122,8 +124,10 @@ cfg_node_t *cfg_new_list( cfg_node_t *parent, char *name,
 		cfg_set_default_values_t set_def, dword flags, int hash_size );
 
 /* Create a new variable */
-cfg_node_t *cfg_new_var( cfg_node_t *parent, char *name, dword flags, 
-		char *value, cfg_var_handler_t handler );
+cfg_node_t *cfg_new_var_full( cfg_node_t *parent, char *name, dword flags, 
+		char *value, cfg_var_handler_t handler, void *handler_data );
+#define cfg_new_var(parent, name, flags, value, handler) \
+	cfg_new_var_full(parent, name, flags, value, handler, NULL)
 
 /* Create a new node and leave node type specific information unset 
  * (don't use this function directly; use previous two instead) */
@@ -155,6 +159,10 @@ int cfg_get_var_int( cfg_node_t *parent, char *name );
 
 /* Get variable float value */
 float cfg_get_var_float( cfg_node_t *parent, char *name );
+
+/* Set variable's handler */
+void cfg_set_var_handler( cfg_node_t *parent, char *name, 
+		cfg_var_handler_t handler, void *handler_data );
 
 /* Setters/getters for some other types */
 #define cfg_set_var_ptr(parent, name, val)	\

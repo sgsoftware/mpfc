@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Configuration handling functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 12.09.2004
+ * LAST UPDATE : 26.09.2004
  * NOTE        : Module prefix 'cfg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -72,8 +72,9 @@ cfg_node_t *cfg_new_list( cfg_node_t *parent, char *name,
 } /* End of 'cfg_new_list' function */
 
 /* Create a new variable */
-cfg_node_t *cfg_new_var( cfg_node_t *parent, char *name, dword flags, 
-		char *value, cfg_var_handler_t handler )
+cfg_node_t *cfg_new_var_full( cfg_node_t *parent, char *name, 
+		dword flags, char *value, cfg_var_handler_t handler, 
+		void *handler_data )
 {
 	cfg_node_t *node;
 
@@ -86,6 +87,7 @@ cfg_node_t *cfg_new_var( cfg_node_t *parent, char *name, dword flags,
 	/* Set variable data */
 	CFG_VAR(node)->m_value = (value == NULL ? NULL : strdup(value));
 	CFG_VAR(node)->m_handler = handler;
+	CFG_VAR(node)->m_handler_data = handler_data;
 
 	/* Call handler */
 	if (!cfg_call_var_handler(TRUE, node, value))
@@ -378,7 +380,7 @@ bool_t cfg_call_var_handler( bool_t after, cfg_node_t *node, char *value )
 	if (after && (node->m_flags & CFG_NODE_HANDLE_AFTER_CHANGE) ||
 			CFG_VAR_HANDLER(node) == NULL)
 		return TRUE;
-	return CFG_VAR_HANDLER(node)(node, value);
+	return CFG_VAR_HANDLER(node)(node, value, CFG_VAR(node)->m_handler_data);
 } /* End of 'cfg_call_var_handler' function */
 
 /* Calculate string hash value */
@@ -393,6 +395,26 @@ int cfg_calc_hash( char *str, int table_size )
 	}
 	return val % table_size;
 } /* End of 'cfg_calc_hash' function */
+
+/* Set variable's handler */
+void cfg_set_var_handler( cfg_node_t *parent, char *name, 
+		cfg_var_handler_t handler, void *handler_data )
+{
+	cfg_node_t *node;
+	
+	/* Search for this node */
+	node = cfg_search_node(parent, name);
+
+	/* Set handler of an existing variable */
+	if (node != NULL && CFG_NODE_IS_VAR(node))
+	{
+		CFG_VAR(node)->m_handler = handler;
+		CFG_VAR(node)->m_handler_data = handler_data;
+	}
+	/* Create node if not found */
+	else if (node == NULL)
+		cfg_new_var_full(parent, name, 0, NULL, handler, handler_data);
+} /* End of 'cfg_set_var_handler' function */
 
 /* End of 'cfg.c' file */
 

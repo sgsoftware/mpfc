@@ -212,7 +212,7 @@ bool_t player_init( int argc, char *argv[] )
 	t = time(NULL);
 	str_time = ctime(&t);
 	logger_message(player_log, LOGGER_MSG_STATUS, LOGGER_LEVEL_LOW, 
-			_("MPFC 1.3.1 Log\n%s"), str_time);
+			_("MPFC %s Log\n%s"), VERSION, str_time);
 	free(str_time);
 
 	/* Parse command line */
@@ -375,11 +375,11 @@ void player_deinit( wnd_t *wnd_root )
 	int i;
 
 	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-			_("In player_deinit"));
+			"In player_deinit");
 
 	/* Save information about place in song where we stop */
 	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-			_("Saving position to configuration"));
+			"Saving position to configuration");
 	cfg_set_var_int(cfg_list, "cur-song", 
 			player_plist->m_cur_song);
 	cfg_set_var_int(cfg_list, "cur-time", player_cur_time);
@@ -391,18 +391,18 @@ void player_deinit( wnd_t *wnd_root )
 	
 	/* End playing thread */
 	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-			_("Doing sat_free"));
+			"Doing sat_free");
 	sat_free();
 	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-			_("Doing iwt_free"));
+			"Doing iwt_free");
 	iwt_free();
 	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-			_("Setting next song to NULL"));
+			"Setting next song to NULL");
 	inp_set_next_song(player_inp, NULL);
 	if (player_tid)
 	{
 		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-				_("Stopping player thread"));
+				"Stopping player thread");
 		player_end_play(FALSE);
 		player_end_track = TRUE;
 		player_end_thread = TRUE;
@@ -413,18 +413,18 @@ void player_deinit( wnd_t *wnd_root )
 	
 	/* Uninitialize plugin manager */
 	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-			_("Doing pmng_free"));
+			"Doing pmng_free");
 	pmng_free(player_pmng);
 	player_pmng = NULL;
 
 	/* Uninitialize key bindings */
 	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-			_("Doing kbind_free"));
+			"Doing kbind_free");
 	kbind_free();
 
 	/* Uninitialize history lists */
 	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-			_("Freeing history list"));
+			"Freeing history list");
 	for ( i = 0; i < PLAYER_NUM_HIST_LISTS; i ++ )
 	{
 		editbox_history_free(player_hist_lists[i]);
@@ -433,7 +433,7 @@ void player_deinit( wnd_t *wnd_root )
 
 	/* Free memory allocated for strings */
 	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-			_("Freeing strings"));
+			"Freeing strings");
 	if (player_search_string != NULL)
 	{
 		free(player_search_string);
@@ -447,28 +447,28 @@ void player_deinit( wnd_t *wnd_root )
 		if (cfg_get_var_int(cfg_list, "save-playlist-on-exit"))
 		{
 			logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-					_("Saving play list"));
+					"Saving play list");
 			plist_save(player_plist, "~/mpfc.m3u");
 		}
 		
 		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-				_("Destroying play list"));
+				"Destroying play list");
 		plist_free(player_plist);
 		player_plist = NULL;
 	}
 	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-			_("Freeing undo information"));
+			"Freeing undo information");
 	undo_free(player_ul);
 	player_ul = NULL;
 	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-			_("Freeing VFS"));
+			"Freeing VFS");
 	vfs_free(player_vfs);
 
 	/* Free logger */
 	if (player_log != NULL)
 	{
 		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-				_("Stopping logger"));
+				"Stopping logger");
 		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_LOW,
 				_("Left MPFC"));
 		logger_free(player_log);
@@ -1677,7 +1677,7 @@ void *player_thread( void *arg )
 	bool_t no_outp = FALSE;
 	
 	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-			_("In player_thread"));
+			"In player_thread");
 
 	/* Main loop */
 	while (!player_end_thread)
@@ -1706,11 +1706,11 @@ void *player_thread( void *arg )
 		player_end_track = FALSE;
 	
 		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-				_("Playing track %s"), s->m_full_name);
+				"Playing track %s", s->m_full_name);
 
 		/* Start playing */
 		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-				_("Starting input plugin"));
+				"Starting input plugin");
 		inp = song_get_inp(s, &fd);
 		if (!inp_start(inp, s->m_file_name, fd))
 		{
@@ -1729,18 +1729,18 @@ void *player_thread( void *arg )
 
 		/* Get song length and information */
 		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-				_("Updating song info"));
+				"Updating song info");
 		song_update_info(s);
 
 		/* Start output plugin */
 		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-				_("Starting output plugin"));
+				"Starting output plugin");
 		if (!no_outp && (player_pmng->m_cur_out == NULL || 
 				(!cfg_get_var_int(cfg_list, "silent-mode") && 
 					!outp_start(player_pmng->m_cur_out))))
 		{
 			logger_message(player_log, LOGGER_MSG_ERROR, LOGGER_LEVEL_LOW,
-					_("Output plugin initialization failed"));
+					"Output plugin initialization failed");
 //			wnd_send_msg(wnd_root, WND_MSG_USER, PLAYER_MSG_END_TRACK);
 			inp_end(inp);
 			player_status = PLAYER_STATUS_STOPPED;
@@ -1764,14 +1764,14 @@ void *player_thread( void *arg )
 
 		/* Start timer thread */
 		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-				_("Creating timer thread"));
+				"Creating timer thread");
 		pthread_create(&player_timer_tid, NULL, player_timer_func, 0);
 		//wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
 	
 		/* Play */
 		disp_count = 0;
 		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-				_("Going into track playing cycle"));
+				"Going into track playing cycle");
 		while (!player_end_track)
 		{
 			byte buf[8192];
@@ -1852,32 +1852,32 @@ void *player_thread( void *arg )
 			}
 		}
 		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-				_("End playing track"));
+				"End playing track");
 
 		/* Wait until we really stop playing */
 		if (!no_outp)
 		{
 			logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-					_("outp_flush"));
-		//	outp_flush(player_pmng->m_cur_out);
+					"outp_flush");
+			outp_flush(player_pmng->m_cur_out);
 		}
 
 		/* Stop timer thread */
 		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-				_("Stopping timer"));
+				"Stopping timer");
 		player_stop_timer();
 
 		/* Send message about track end */
 		if (!player_end_track)
 		{
 			logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-					_("Going to the next track"));
+					"Going to the next track");
 			player_next_track();
 		}
 
 		/* End playing */
 		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-				_("inp_end"));
+				"inp_end");
 		inp_end(inp);
 		player_inp = NULL;
 		player_bitrate = player_freq = player_stereo = 0;
@@ -1886,7 +1886,7 @@ void *player_thread( void *arg )
 		if (!no_outp)
 		{
 			logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-					_("outp_end"));
+					"outp_end");
 			outp_end(player_pmng->m_cur_out);
 		}
 
@@ -1894,7 +1894,7 @@ void *player_thread( void *arg )
 		wnd_invalidate(player_wnd);
 	}
 	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-			_("Player thread finished"));
+			"Player thread finished");
 	return NULL;
 } /* End of 'player_thread' function */
 
@@ -2727,7 +2727,8 @@ wnd_msg_retcode_t player_logview_on_close( wnd_t *wnd )
  *****/
 
 /* Handle 'title_format' variable setting */
-bool_t player_handle_var_title_format( cfg_node_t *var, char *value )
+bool_t player_handle_var_title_format( cfg_node_t *var, char *value, 
+		void *data )
 {
 	int i;
 
@@ -2738,7 +2739,8 @@ bool_t player_handle_var_title_format( cfg_node_t *var, char *value )
 } /* End of 'player_handle_var_title_format' function */
 
 /* Handle 'output_plugin' variable setting */
-bool_t player_handle_var_outp( cfg_node_t *var, char *value )
+bool_t player_handle_var_outp( cfg_node_t *var, char *value, 
+		void *data )
 {
 	int i;
 
@@ -2757,7 +2759,8 @@ bool_t player_handle_var_outp( cfg_node_t *var, char *value )
 } /* End of 'player_handle_var_outp' function */
 
 /* Handle 'color-scheme' variable setting */
-bool_t player_handle_color_scheme( cfg_node_t *node, char *value )
+bool_t player_handle_color_scheme( cfg_node_t *node, char *value, 
+		void *data )
 {
 	char fname[MAX_FILE_NAME];
 	
@@ -2769,7 +2772,8 @@ bool_t player_handle_color_scheme( cfg_node_t *node, char *value )
 } /* End of 'player_handle_color_scheme' function */
 
 /* Handle 'kbind-scheme' variable setting */
-bool_t player_handle_kbind_scheme( cfg_node_t *node, char *value )
+bool_t player_handle_kbind_scheme( cfg_node_t *node, char *value, 
+		void *data )
 {
 	char fname[MAX_FILE_NAME];
 	

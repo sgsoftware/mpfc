@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Logger view window functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 22.09.2004
+ * LAST UPDATE : 26.09.2004
  * NOTE        : Module prefix 'logview'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -88,7 +88,12 @@ wnd_msg_retcode_t logview_on_display( wnd_t *wnd )
 	for ( msg = lv->m_top_message; msg != NULL; msg = msg->m_next )
 	{
 		logger_msg_type_t type = msg->m_type;
-		if (type == LOGGER_MSG_NORMAL)
+		int level = msg->m_level;
+		util_log("message %s has level %d and type %d\n", msg->m_message,
+				level, type);
+		if (level == LOGGER_LEVEL_DEBUG)
+			wnd_apply_style(wnd, "logger-debug-style");
+		else if (type == LOGGER_MSG_NORMAL)
 			wnd_apply_style(wnd, "logger-normal-style");
 		else if (type == LOGGER_MSG_STATUS)
 			wnd_apply_style(wnd, "logger-status-style");
@@ -235,6 +240,7 @@ void logview_class_set_default_styles( cfg_node_t *list )
 	cfg_set_var(list, "logger-warning-style", "magenta:black:bold");
 	cfg_set_var(list, "logger-error-style", "red:black:bold");
 	cfg_set_var(list, "logger-fatal-style", "red:black:bold,blink");
+	cfg_set_var(list, "logger-debug-style", "yellow:black");
 } /* End of 'logview_class_set_default_styles' function */
 
 /* End of 'logger_view.c' file */

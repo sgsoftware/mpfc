@@ -1,6 +1,5 @@
 src/browser.c
 src/eqwnd.c
-src/error.c
 src/help_screen.c
 src/main.c
 src/player.c
