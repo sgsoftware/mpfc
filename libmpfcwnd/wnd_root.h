@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Interface root window
  *               specific functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 13.08.2004
+ * LAST UPDATE : 18.10.2004
  * NOTE        : Module prefix 'wnd_root'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -55,6 +55,9 @@ wnd_class_t *wnd_root_class_init( wnd_global_data_t *global );
 wnd_msg_handler_t **wnd_root_get_msg_info( wnd_t *wnd, char *msg_name,
 		wnd_class_msg_callback_t *callback );
 
+/* Free window message handlers */
+void wnd_root_free_handlers( wnd_t *wnd );
+
 /*
  * Root window specific messages stuff
  */
@@ -80,9 +83,6 @@ wnd_msg_retcode_t wnd_root_on_update_screen( wnd_t *wnd );
 /* 'mouse_ldown' message handler */
 wnd_msg_retcode_t wnd_root_on_mouse( wnd_t *wnd, int x, int y, 
 		wnd_mouse_button_t btn, wnd_mouse_event_t type );
-
-/* Destructor */
-void wnd_root_destructor( wnd_t *wnd );
 
 #endif
 

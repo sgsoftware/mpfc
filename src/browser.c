@@ -882,7 +882,8 @@ void fb_replace_plist( browser_t *fb )
 wnd_class_t *fb_class_init( wnd_global_data_t *global )
 {
 	wnd_class_t *klass = wnd_class_new(global, "browser",
-			wnd_basic_class_init(global), NULL, fb_class_set_default_styles);
+			wnd_basic_class_init(global), NULL, NULL,
+			fb_class_set_default_styles);
 	return klass;
 } /* End of 'fb_class_init' function */
 

@@ -153,7 +153,8 @@ void radio_get_desired_size( dlgitem_t *di, int *width, int *height )
 wnd_class_t *radio_class_init( wnd_global_data_t *global )
 {
 	wnd_class_t *klass = wnd_class_new(global, "radio", 
-			dlgitem_class_init(global), NULL, radio_class_set_default_styles);
+			dlgitem_class_init(global), NULL, NULL, 
+			radio_class_set_default_styles);
 	return klass;
 } /* End of 'radio_class_init' function */
 

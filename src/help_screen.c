@@ -274,7 +274,8 @@ void help_init_eqwnd( help_screen_t *help )
 wnd_class_t *help_class_init( wnd_global_data_t *global )
 {
 	wnd_class_t *klass = wnd_class_new(global, "help",
-			wnd_basic_class_init(global), NULL, help_class_set_default_styles);
+			wnd_basic_class_init(global), NULL, NULL,
+			help_class_set_default_styles);
 	return klass;
 } /* End of 'help_class_init' function */
 

@@ -62,7 +62,7 @@ file_t *file_open( char *filename, char *mode, logger_t *log )
 /* Close file */
 int file_close( file_t *f )
 {
-	int ret;
+	int ret = 0;
 	
 	if (f != NULL)
 	{
@@ -80,6 +80,7 @@ int file_close( file_t *f )
 			
 		if (f->m_name != NULL)
 			free(f->m_name);
+		free(f);
 	}
 	return ret;
 } /* End of 'file_close' function */

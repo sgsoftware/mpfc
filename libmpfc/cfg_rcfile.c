@@ -25,6 +25,7 @@
  * MA 02111-1307, USA.
  */
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -216,6 +217,8 @@ static void _cfg_rcfile_read( cfg_node_t *list, char *name, bool_t nonrec )
 		
 		/* Read line */
 		str = file_get_str(fd);
+		if (str == NULL)
+			break;
 
 		/* Parse this line */
 		cfg_rcfile_parse_line(list, STR_TO_CPTR(str));

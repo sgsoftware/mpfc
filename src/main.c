@@ -46,6 +46,10 @@ int main( int argc, char *argv[] )
 	/* Initialize player */
 	if (!player_init(argc, argv))
 	{
+		wnd_deinit(wnd_root);
+		player_deinit();
+		fprintf(stderr, _("A fatal error occured during player initialization."
+					" See log for details\n"));
 		return 1;
 	}
 
@@ -53,7 +57,7 @@ int main( int argc, char *argv[] )
 	player_run();
 
 	/* Unitialize player and exit */
-//	player_deinit();
+	player_deinit();
 	return 0;
 } /* End of 'main' function */
 

@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Scrollable windows functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 23.09.2004
+ * LAST UPDATE : 18.10.2004
  * NOTE        : Module prefix 'scrollable'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -155,7 +155,7 @@ wnd_class_t *scrollable_class_init( wnd_global_data_t *global )
 {
 	wnd_class_t *klass = wnd_class_new(global, "scrollable", 
 			wnd_basic_class_init(global), scrollable_get_msg_info,
-			scrollable_class_set_default_styles);
+			scrollable_free_handlers, scrollable_class_set_default_styles);
 	return klass;
 } /* End of 'scrollable_class_init' function */
 
@@ -179,6 +179,12 @@ wnd_msg_handler_t **scrollable_get_msg_info( wnd_t *wnd, char *msg_name,
 	}
 	return NULL;
 } /* End of 'scrollable_get_msg_info' function */
+
+/* Free message handlers */
+void scrollable_free_handlers( wnd_t *wnd )
+{
+	wnd_msg_free_handlers(SCROLLABLE_OBJ(wnd)->m_on_scrolled);
+} /* End of 'scrollable_free_handlers' function */
 
 /* Create data for 'scrolled' message */
 wnd_msg_data_t scrollable_msg_scrolled_new( int offset )

@@ -51,6 +51,9 @@ typedef struct
 
 	/* The root window */
 	wnd_t *m_root_wnd;
+
+	/* Global data */
+	wnd_global_data_t *m_global;
 } wnd_mouse_data_t;
 
 /* Mouse buttons */

@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Button functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 13.08.2004
+ * LAST UPDATE : 18.10.2004
  * NOTE        : Module prefix 'button'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -133,7 +133,7 @@ wnd_class_t *button_class_init( wnd_global_data_t *global )
 {
 	wnd_class_t *klass = wnd_class_new(global, "button", 
 			dlgitem_class_init(global), button_get_msg_info, 
-			button_class_set_default_styles);
+			button_free_handlers, button_class_set_default_styles);
 	return klass;
 } /* End of 'button_class_init' function */
 
@@ -157,6 +157,12 @@ wnd_msg_handler_t **button_get_msg_info( wnd_t *wnd, char *msg_name,
 	}
 	return NULL;
 } /* End of 'button_get_msg_info' function */
+
+/* Free message handlers */
+void button_free_handlers( wnd_t *wnd )
+{
+	wnd_msg_free_handlers(BUTTON_OBJ(wnd)->m_on_clicked);
+} /* End of 'button_free_handlers' function */
 
 /* End of 'wnd_button.h' file */
 

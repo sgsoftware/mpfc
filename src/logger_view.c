@@ -29,6 +29,7 @@
 #include "types.h"
 #include "logger.h"
 #include "logger_view.h"
+#include "player.h"
 #include "wnd.h"
 #include "wnd_scrollable.h"
 
@@ -69,6 +70,7 @@ bool_t logview_construct( logger_view_t *lv, wnd_t *parent, logger_t *logger )
 	wnd_msg_add_handler(WND_OBJ(lv), "display", logview_on_display);
 	wnd_msg_add_handler(WND_OBJ(lv), "action", logview_on_action);
 	wnd_msg_add_handler(WND_OBJ(lv), "scrolled", logview_on_scrolled);
+	wnd_msg_add_handler(WND_OBJ(lv), "destructor", logview_destructor);
 
 	/* Set fields */
 	scr->m_get_range = logview_get_scroll_range;
@@ -76,6 +78,12 @@ bool_t logview_construct( logger_view_t *lv, wnd_t *parent, logger_t *logger )
 	lv->m_top_message = logger->m_head;
 	return TRUE;
 } /* End of 'logview_construct' function */
+
+/* Destructor */
+void logview_destructor( wnd_t *wnd )
+{
+	player_logview = NULL;
+} /* End of 'logview_destructor' function */
 
 /* Display logger window */
 wnd_msg_retcode_t logview_on_display( wnd_t *wnd )
@@ -226,7 +234,7 @@ int logview_get_msg_lines( scrollable_t *scr, struct logger_message_t *msg )
 wnd_class_t *logview_class_init( wnd_global_data_t *global )
 {
 	wnd_class_t *klass = wnd_class_new(global, "logger_view",
-			scrollable_class_init(global), NULL, 
+			scrollable_class_init(global), NULL, NULL,
 			logview_class_set_default_styles);
 	return klass;
 } /* End of 'logview_class_init' function */

@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Edit box functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.10.2004
+ * LAST UPDATE : 18.10.2004
  * NOTE        : Module prefix 'editbox'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -430,9 +430,15 @@ wnd_class_t *editbox_class_init( wnd_global_data_t *global )
 {
 	wnd_class_t *klass = wnd_class_new(global, "editbox", 
 			dlgitem_class_init(global), editbox_get_msg_info,
-			editbox_class_set_default_styles);
+			editbox_free_handlers, editbox_class_set_default_styles);
 	return klass;
 } /* End of 'editbox_class_init' function */
+
+/* Free message handlers */
+void editbox_free_handlers( wnd_t *wnd )
+{
+	wnd_msg_free_handlers(EDITBOX_OBJ(wnd)->m_on_changed);
+} /* End of 'editbox_free_handlers' function */
 
 /* Set edit box class default styles */
 void editbox_class_set_default_styles( cfg_node_t *list )

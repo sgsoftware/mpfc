@@ -307,7 +307,7 @@ void filebox_glob_handler( vfs_file_t *file, void *data )
 wnd_class_t *filebox_class_init( wnd_global_data_t *global )
 {
 	return wnd_class_new(global, "filebox", editbox_class_init(global), NULL,
-			filebox_class_set_default_styles);
+			NULL, filebox_class_set_default_styles);
 } /* End of 'filebox_class_init' function */
 
 /* Set file box class default styles */

@@ -124,13 +124,12 @@ wnd_t *wnd_init( cfg_node_t *cfg_list, logger_t *log )
 		goto failed;
 	wnd_root->m_cursor_hidden = TRUE;
 
-	/* Set root window specific handlers and the destructor */
+	/* Set root window specific handlers */
 	wnd_msg_add_handler(wnd_root, "keydown", wnd_root_on_keydown);
 	wnd_msg_add_handler(wnd_root, "display", wnd_root_on_display);
 	wnd_msg_add_handler(wnd_root, "close", wnd_root_on_close);
 	wnd_msg_add_handler(wnd_root, "update_screen", wnd_root_on_update_screen);
 	wnd_msg_add_handler(wnd_root, "mouse_ldown", wnd_root_on_mouse);
-	wnd_msg_add_handler(wnd_root, "destructor", wnd_root_destructor);
 
 	/* Initialize message queue */
 	msg_queue = wnd_msg_queue_init();
@@ -361,6 +360,49 @@ failed:
 		free(wnd->m_title);
 	return FALSE;
 } /* End of 'wnd_construct' function */
+
+/* Uninitialize window library */
+void wnd_deinit( wnd_t *wnd_root )
+{
+	wnd_global_data_t *global;
+	struct wnd_display_buf_t *db;
+	wnd_class_t *klass;
+
+	if (wnd_root == NULL)
+		return;
+
+	/* Free windows */
+	global = wnd_root->m_global;
+	wnd_call_destructor(wnd_root);
+
+	/* Free modules */
+	wnd_mouse_free(global->m_mouse_data);
+	wnd_kbind_free(global->m_kbind_data);
+	wnd_kbd_free(global->m_kbd_data);
+	wnd_msg_queue_free(global->m_msg_queue);
+
+	/* Free window classes */
+	for ( klass = global->m_wnd_classes; klass != NULL; )
+	{
+		wnd_class_t *next = klass->m_next;
+		wnd_class_free(klass);
+		klass = next;
+	}
+
+	/* Free display buffer */
+	db = &global->m_display_buf;
+	if (db->m_data != NULL)
+	{
+		pthread_mutex_destroy(&db->m_mutex);
+		free(db->m_data);
+	}
+
+	/* Free global data */
+	free(global);
+	
+	/* Uninitialize NCURSES */
+	endwin();
+} /* End of 'wnd_deinit' function */
 
 /* Run main window loop */
 void wnd_main( wnd_t *wnd_root )
@@ -1065,15 +1107,16 @@ wnd_msg_retcode_t wnd_call_handler( wnd_t *wnd, char *msg_name,
 		wnd_msg_handler_t *handler, wnd_msg_callback_t callback, 
 		wnd_msg_data_t *data )
 {
-	wnd_msg_retcode_t ret;
+	wnd_msg_retcode_t ret = WND_MSG_RETCODE_OK;
 	for ( ; handler != NULL; )
 	{
+		wnd_msg_handler_t *next = handler->m_next;
 		ret = callback(wnd, handler, data);
 		/* Stop handling */
 		if (ret == WND_MSG_RETCODE_STOP || ret == WND_MSG_RETCODE_EXIT)
 			return ret;
 		else
-			handler = handler->m_next;
+			handler = next;
 	}
 	return ret;
 } /* End of 'wnd_call_handler' function */

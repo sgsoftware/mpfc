@@ -30,6 +30,7 @@
 #include "types.h"
 #include "cfg.h"
 #include "logger.h"
+#include "logger_view.h"
 #include "plist.h"
 #include "pmng.h"
 #include "undo.h"
@@ -109,6 +110,8 @@ extern cfg_node_t *cfg_list;
 
 /* Logger */
 extern logger_t *player_log;
+extern logger_view_t *player_logview;
+
 
 /* VFS data */
 extern vfs_t *player_vfs;
@@ -121,7 +124,10 @@ extern vfs_t *player_vfs;
 bool_t player_init( int argc, char *argv[] );
 
 /* Unitialize player */
-void player_deinit( wnd_t *wnd_root );
+void player_deinit( void );
+
+/* Root window destructor */
+void player_root_destructor( wnd_t *wnd );
 
 /* Initialize the player window */
 wnd_t *player_wnd_new( wnd_t *parent );
@@ -285,8 +291,8 @@ wnd_msg_retcode_t player_on_info( wnd_t *wnd );
 /* Save the info dialog contents */
 void player_save_info_dialog( dialog_t *dlg );
 
-/* Handle 'close' for info dialog */
-wnd_msg_retcode_t player_on_info_close( wnd_t *wnd );
+/* Destructor for info dialog */
+void player_on_info_close( wnd_t *wnd );
 
 /* Handle 'clicked' for info dialog reload button */
 wnd_msg_retcode_t player_on_info_dlg_reload( wnd_t *wnd );

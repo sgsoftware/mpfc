@@ -199,7 +199,7 @@ wnd_class_t *dlgitem_class_init( wnd_global_data_t *global )
 {
 	wnd_class_t *klass = wnd_class_new(global, "dlgitem", 
 			wnd_basic_class_init(global), dlgitem_get_msg_info, 
-			dlgitem_class_set_default_styles);
+			dlgitem_free_handlers, dlgitem_class_set_default_styles);
 	return klass;
 } /* End of 'dlgitem_class_init' function */
 
@@ -224,6 +224,12 @@ wnd_msg_handler_t **dlgitem_get_msg_info( wnd_t *wnd, char *msg_name,
 	}
 	return NULL;
 } /* End of 'dlgitem_get_msg_info' function */
+
+/* Free message handlers */
+void dlgitem_free_handlers( wnd_t *wnd )
+{
+	wnd_msg_free_handlers(DLGITEM_OBJ(wnd)->m_on_quick_change_focus);
+} /* End of 'dlgitem_free_handlers' function */
 
 /* End of 'wnd_dlgitem.c' file */
 

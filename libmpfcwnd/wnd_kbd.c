@@ -45,6 +45,7 @@ wnd_kbd_data_t *wnd_kbd_init( wnd_t *wnd_root )
 	wnd_kbd_data_t *data = (wnd_kbd_data_t *)malloc(sizeof(wnd_kbd_data_t));
 	data->m_end_thread = FALSE;
 	data->m_wnd_root = wnd_root;
+	data->m_global = WND_GLOBAL(data->m_wnd_root);
 
 	/* Initialize escape sequences list */
 	wnd_kbd_init_seq(data);
@@ -255,7 +256,8 @@ void wnd_kbd_free( wnd_kbd_data_t *data )
 {
 	struct wnd_kbd_seq_t *seq, *next;
 
-	assert(data);
+	if (data == NULL)
+		return;
 
 	/* Free memory */
 	for ( seq = data->m_seq; seq != NULL; seq = next )
@@ -268,6 +270,7 @@ void wnd_kbd_free( wnd_kbd_data_t *data )
 	/* Stop keyboard thread */
 	data->m_end_thread = TRUE;
 	pthread_join(data->m_tid, NULL);
+	logger_debug(data->m_global->m_log, "keyboard thread terminated");
 	free(data);
 } /* End of 'wnd_kbd_free' function */
 
@@ -451,9 +454,9 @@ char *wnd_kbd_ti_val( cfg_node_t *list, char *name )
 	if (var_name != NULL)
 	{
 		char *val = cfg_get_var(list, var_name);
+		free(var_name);
 		if (val != NULL)
 			return val;
-		free(var_name);
 	}
 
 	/* Look up terminfo */

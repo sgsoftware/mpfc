@@ -154,7 +154,8 @@ wnd_kbind_data_t *wnd_kbind_init( wnd_global_data_t *global )
 /* Free kbind module */
 void wnd_kbind_free( wnd_kbind_data_t *kb )
 {
-	assert(kb);
+	if (kb == NULL)
+		return;
 	free(kb);
 } /* End of 'wnd_kbind_free' function */
 
@@ -294,7 +295,8 @@ wnd_key_t wnd_kbind_value_next_key( char **val )
 	{
 		value ++;
 		ret = (*value);
-		value ++;
+		if (ret != 0)
+			value ++;
 	}
 	/* Special symbol in angle brackets */
 	else if ((*value) == '<')
@@ -349,7 +351,8 @@ wnd_key_t wnd_kbind_value_next_key( char **val )
 		ret = (*value);
 		if (ret == ';')
 			ret = 0;
-		value ++;
+		if (ret != 0)
+			value ++;
 	}
 	(*val) = value;
 	return ret;

@@ -42,7 +42,7 @@ bool_t sat_exit = FALSE;
 bool_t sat_init( void )
 {
 	/* Initialize thread */
-	pthread_create(&sat_tid, NULL, sat_thread, NULL);
+	return !pthread_create(&sat_tid, NULL, sat_thread, NULL);
 } /* End of 'sat_init' function */
 
 /* Uninitialize SAT module */
@@ -53,6 +53,7 @@ void sat_free( void )
 	{
 		sat_exit = TRUE;
 		pthread_join(sat_tid, NULL);
+		logger_debug(player_log, "sat thread terminated");
 		sat_tid = 0;
 		sat_exit = FALSE;
 	}
@@ -73,7 +74,7 @@ int sat_pop( plist_t *pl )
 	int i;
 	
 	if (pl == NULL)
-		return;
+		return -1;
 	for ( i = 0; i < pl->m_len; i ++ )
 		if (pl->m_list[i] != NULL && (pl->m_list[i]->m_flags & SONG_GET_INFO))
 			return i;
@@ -96,6 +97,7 @@ void *sat_thread( void *arg )
 		/* Wait a little */
 		util_wait();
 	}
+	return NULL;
 } /* End of 'sat_thread' function */
 
 /* End of 'sat.c' file */

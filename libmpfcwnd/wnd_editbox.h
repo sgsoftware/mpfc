@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Interface for edit box
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 16.08.2004
+ * LAST UPDATE : 18.10.2004
  * NOTE        : Module prefix 'editbox'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -153,6 +153,9 @@ wnd_class_t *editbox_class_init( wnd_global_data_t *global );
 /* Get message information */
 wnd_msg_handler_t **editbox_get_msg_info( wnd_t *wnd, char *msg_name,
 		wnd_class_msg_callback_t *callback );
+
+/* Free message handlers */
+void editbox_free_handlers( wnd_t *wnd );
 
 /* Set edit box class default styles */
 void editbox_class_set_default_styles( cfg_node_t *list );

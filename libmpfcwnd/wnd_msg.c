@@ -152,7 +152,8 @@ void wnd_msg_queue_free( wnd_msg_queue_t *queue )
 {
 	struct wnd_msg_queue_item_t *ptr;
 
-	assert(queue);
+	if (queue == NULL)
+		return;
 
 	/* Free queue */
 	wnd_msg_lock_queue(queue);
@@ -213,6 +214,36 @@ void wnd_msg_add_handler( wnd_t *wnd, char *msg_name, void *h )
 	}
 } /* End of 'wnd_msg_add_handler' function */
 
+/* Add a handler to the handlers chain end */
+void wnd_msg_add_handler_to_end( wnd_t *wnd, char *msg_name, void *h )
+{
+	wnd_msg_handler_t *handler;
+	wnd_msg_handler_t **chain;
+
+	assert(wnd);
+	assert(msg_name);
+	assert(h);
+
+	/* Obtain handlers chain */
+	chain = wnd_class_get_msg_info(wnd, msg_name, NULL);
+
+	/* Allocate memory for handler item */
+	handler = (wnd_msg_handler_t *)malloc(sizeof(*handler));
+	assert(handler);
+	handler->m_func = h;
+	handler->m_next = NULL;
+
+	if (*chain == NULL)
+		*chain = handler;
+	else
+	{
+		wnd_msg_handler_t *ch = *chain;
+		while (ch->m_next != NULL)
+			ch = ch->m_next;
+		ch->m_next = handler;
+	}
+} /* End of 'wnd_msg_add_handler_to_end' function */
+
 /* Remove handler from the handlers chain beginning */
 void wnd_msg_rem_handler( wnd_t *wnd, char *msg_name )
 {
@@ -228,6 +259,17 @@ void wnd_msg_rem_handler( wnd_t *wnd, char *msg_name )
 	free(*chain);
 	*chain = next;
 } /* End of 'wnd_msg_rem_handler' function */
+
+/* Free handlers chain */
+void wnd_msg_free_handlers( wnd_msg_handler_t *h )
+{
+	for ( ; h != NULL; )
+	{
+		wnd_msg_handler_t *next = h->m_next;
+		free(h);
+		h = next;
+	}
+} /* End of 'wnd_msg_free_handlers' function */
 
 /* Remove messages with specified target window */
 void wnd_msg_queue_remove_by_window( wnd_msg_queue_t *queue, wnd_t *wnd,

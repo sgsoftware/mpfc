@@ -46,6 +46,7 @@ wnd_mouse_data_t *wnd_mouse_init( wnd_global_data_t *global )
 	/* Determine the driver */
 	data->m_driver = wnd_mouse_get_driver(global->m_root_cfg->m_parent);
 	data->m_root_wnd = global->m_root;
+	data->m_global = WND_GLOBAL(data->m_root_wnd);
 	
 	/* Make driver-specific initialization */
 	switch (data->m_driver)
@@ -105,7 +106,8 @@ bool_t wnd_mouse_init_xterm( wnd_mouse_data_t *data )
 /* Free mouse-related stuff */
 void wnd_mouse_free( wnd_mouse_data_t *data )
 {
-	assert(data);
+	if (data == NULL)
+		return;
 	switch (data->m_driver)
 	{
 #ifdef HAVE_LIBGPM
@@ -126,6 +128,7 @@ void wnd_mouse_free_gpm( wnd_mouse_data_t *data )
 	/* Terminate mouse thread */
 	data->m_end_thread = TRUE;
 	pthread_join(data->m_tid, NULL);
+	logger_debug(data->m_global->m_log, "gpm thread terminated");
 } /* End of 'wnd_mouse_free_gpm' function */
 
 /* Free mouse in xterm mode */

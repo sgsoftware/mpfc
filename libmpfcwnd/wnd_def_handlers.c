@@ -188,10 +188,15 @@ void wnd_default_destructor( wnd_t *wnd )
 	assert(wnd);
 
 	/* Call destructor for all children */
-	for ( child = wnd->m_child; child != NULL; child = child->m_next )
+	for ( child = wnd->m_child; child != NULL; )
+	{
+		wnd_t *next = child->m_next;
 		wnd_call_destructor(child);
+		child = next;
+	}
 
 	/* Free memory */
+	wnd_class_free_handlers(wnd);
 	free(wnd->m_title);
 	free(wnd);
 } /* End of 'wnd_default_destructor' function */

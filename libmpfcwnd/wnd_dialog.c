@@ -221,7 +221,7 @@ wnd_msg_retcode_t dialog_cancel_on_clicked( wnd_t *wnd )
 wnd_class_t *dialog_class_init( wnd_global_data_t *global )
 {
 	return wnd_class_new(global, "dialog", wnd_basic_class_init(global),
-			dialog_get_msg_info, NULL);
+			dialog_get_msg_info, dialog_free_handlers, NULL);
 } /* End of 'dialog_class_init' function */
 
 /* Get message information */
@@ -242,6 +242,13 @@ wnd_msg_handler_t **dialog_get_msg_info( wnd_t *wnd, char *msg_name,
 	}
 	return NULL;
 } /* End of 'dialog_get_msg_info' function */
+
+/* Free message handlers */
+void dialog_free_handlers( wnd_t *wnd )
+{
+	wnd_msg_free_handlers(DIALOG_OBJ(wnd)->m_on_ok);
+	wnd_msg_free_handlers(DIALOG_OBJ(wnd)->m_on_cancel);
+} /* End of 'dialog_free_handlers' function */
 
 /* End of 'wnd_dialog.c' file */
 

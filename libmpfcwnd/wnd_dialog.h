@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Interface for dialog 
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 13.08.2004
+ * LAST UPDATE : 18.10.2004
  * NOTE        : Module prefix 'dialog'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -90,6 +90,9 @@ wnd_class_t *dialog_class_init( wnd_global_data_t *global );
 /* Get message information */
 wnd_msg_handler_t **dialog_get_msg_info( wnd_t *wnd, char *msg_name,
 		wnd_class_msg_callback_t *callback );
+
+/* Free message handlers */
+void dialog_free_handlers( wnd_t *wnd );
 
 /* Aliases for creating message data */
 #define dialog_msg_ok_new		wnd_msg_noargs_new

@@ -43,6 +43,7 @@ bool_t test_start( int id )
 	/* Start test thread */
 	test_stop_job = FALSE;
 	test_job = id;
+	logger_debug(player_log, "Creating test thread");
 	if (pthread_create(&test_pid, NULL, test_thread, NULL))
 		return FALSE;
 	return TRUE;
@@ -55,6 +56,7 @@ void test_stop( void )
 	{
 		test_stop_job = TRUE;
 		pthread_join(test_pid, NULL);
+		logger_debug(player_log, "Test thread terminated");
 		test_job = TEST_NO_JOB;
 	}
 } /* End of 'test_stop' function */

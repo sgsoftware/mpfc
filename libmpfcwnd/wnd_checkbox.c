@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Checkbox functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 26.08.2004
+ * LAST UPDATE : 18.10.2004
  * NOTE        : Module prefix 'checkbox'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -139,7 +139,7 @@ wnd_class_t *checkbox_class_init( wnd_global_data_t *global )
 {
 	wnd_class_t *klass = wnd_class_new(global, "checkbox", 
 			dlgitem_class_init(global), checkbox_get_msg_info,
-			checkbox_class_set_default_styles);
+			checkbox_free_handlers, checkbox_class_set_default_styles);
 	return klass;
 } /* End of 'checkbox_class_init' function */
 
@@ -164,6 +164,12 @@ wnd_msg_handler_t **checkbox_get_msg_info( wnd_t *wnd, char *msg_name,
 	}
 	return NULL;
 } /* End of 'checkbox_get_msg_info' function */
+
+/* Free message handlers */
+void checkbox_free_handlers( wnd_t *wnd )
+{
+	wnd_msg_free_handlers(CHECKBOX_OBJ(wnd)->m_on_clicked);
+} /* End of 'checkbox_free_handlers' function */
 
 /* End of 'wnd_checkbox.c' file */
 

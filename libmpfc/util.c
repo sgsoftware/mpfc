@@ -218,7 +218,7 @@ void util_del_nl( char *dest, char *src )
 
 	for ( len = strlen(src) - 1; 
 			len >= 0 && (src[len] == '\n' || src[len] == '\r'); len -- );
-	memcpy(dest, src, len + 1);
+	memmove(dest, src, len + 1);
 	dest[len + 1] = 0;
 } /* End of 'util_del_nl' function */
 

@@ -1132,6 +1132,7 @@ void plist_set_free( plist_set_t *set )
 			free(t);
 			t = t1;
 		}
+		free(set);
 	}
 } /* End of 'plist_set_free' function */
 

@@ -217,17 +217,23 @@ bool_t player_init( int argc, char *argv[] )
 //	free(str_time);
 
 	/* Parse command line */
+	logger_debug(player_log, "In player_init");
+	logger_debug(player_log, "Parsing command line");
 	if (!player_parse_cmd_line(argc, argv))
 		return FALSE;
 
 	/* Initialize window system */
+	logger_debug(player_log, "Initializing window system");
 	wnd_root = wnd_init(cfg_list, player_log);
 	if (wnd_root == NULL)
 	{
 		logger_fatal(player_log, 0, _("Window system initialization failed"));
 		return FALSE;
 	}
-	wnd_msg_add_handler(wnd_root, "destructor", player_deinit);
+	wnd_msg_add_handler(wnd_root, "destructor", player_root_destructor);
+
+	/* Initialize play list window */
+	logger_debug(player_log, "Initializing play list window");
 	player_wnd = player_wnd_new(wnd_root);
 	if (player_wnd == NULL)
 	{
@@ -241,21 +247,51 @@ bool_t player_init( int argc, char *argv[] )
 	strcat(player_fb_dir, "/");
 	
 	/* Initialize plugin manager */
+	logger_debug(player_log, "Initializing plugin manager");
 	player_pmng = pmng_init(cfg_list, player_log);
+	if (player_pmng == NULL)
+	{
+		logger_fatal(player_log, 0, _("Unable to initialize plugin manager"));
+		return FALSE;
+	}
 
 	/* Initialize VFS */
+	logger_debug(player_log, "Initializing VFS");
 	player_vfs = vfs_init(player_pmng);
+	if (player_vfs == NULL)
+	{
+		logger_fatal(player_log, 0, _("Unable to initialize VFS module"));
+		return FALSE;
+	}
 
 	/* Initialize song adder thread */
-	sat_init();
+	logger_debug(player_log, "Initializing sat");
+	if (!sat_init())
+	{
+		logger_fatal(player_log, 0, 
+				_("Unable to initialize song adder thread"));
+		return FALSE;
+	}
 
 	/* Initialize info writer thread */
-	iwt_init();
+	logger_debug(player_log, "Initializing iwt");
+	if (!iwt_init())
+	{
+		logger_fatal(player_log, 0, 
+				_("Unable to initialize info writer thread"));
+		return FALSE;
+	}
 
 	/* Initialize undo list */
+	logger_debug(player_log, "Initializing undo list");
 	player_ul = undo_new();
+	if (player_ul == NULL)
+	{
+		logger_debug(player_log, 0, _("Unable to initialize undo list"));
+	}
 
 	/* Create a play list and add files to it */
+	logger_debug(player_log, "Initializing play list");
 	player_plist = plist_new(3);
 	if (player_plist == NULL)
 	{
@@ -264,24 +300,39 @@ bool_t player_init( int argc, char *argv[] )
 	}
 
 	/* Make a set of files to add */
+	logger_debug(player_log, "Initializing play list set");
 	set = plist_set_new(FALSE);
+	if (set == NULL)
+	{
+		logger_fatal(player_log, 0,
+				_("Unable to initialize set of files for play list"));
+		return FALSE;
+	}
 	for ( i = 0; i < player_num_files; i ++ )
 		plist_set_add(set, player_files[i]);
 	plist_add_set(player_plist, set);
 	plist_set_free(set);
 
 	/* Load saved play list if files list is empty */
+	logger_debug(player_log, "Adding list.m3u");
 	if (!player_num_files)
 		plist_add(player_plist, "~/.mpfc/list.m3u");
 
 	/* Initialize history lists */
+	logger_debug(player_log, "Initializing history");
 	for ( i = 0; i < PLAYER_NUM_HIST_LISTS; i ++ )
 		player_hist_lists[i] = editbox_history_new();
 
 	/* Initialize playing thread */
-	pthread_create(&player_tid, NULL, player_thread, NULL);
+	logger_debug(player_log, "Initializing player thread");
+	if (pthread_create(&player_tid, NULL, player_thread, NULL))
+	{
+		logger_fatal(player_log, 0, _("Unable to initialize player thread"));
+		return FALSE;
+	}
 
 	/* Get volume */
+	logger_debug(player_log, "Getting volume");
 	outp_get_volume(player_pmng->m_cur_out, &l, &r);
 	if (l == 0 && r == 0)
 	{
@@ -312,6 +363,7 @@ bool_t player_init( int argc, char *argv[] )
 	/* Start playing from last stop */
 	if (cfg_get_var_int(cfg_list, "play-from-stop") && !player_num_files)
 	{
+		logger_debug(player_log, "Playing from stop");
 		player_status = cfg_get_var_int(cfg_list, "player-status");
 		player_start = cfg_get_var_int(cfg_list, "player-start") - 1;
 		player_end = cfg_get_var_int(cfg_list, "player-end") - 1;
@@ -360,12 +412,10 @@ wnd_t *player_wnd_new( wnd_t *parent )
 	return wnd;
 } /* End of 'player_wnd_new' function */
 
-/* Unitialize player */
-void player_deinit( wnd_t *wnd_root )
+/* Root window destructor */
+void player_root_destructor( wnd_t *wnd )
 {
-	int i;
-
-	logger_debug(player_log, "In player_deinit");
+	logger_debug(player_log, "In player_root_destructor");
 
 	/* Save information about place in song where we stop */
 	logger_debug(player_log, "Saving position to configuration");
@@ -391,6 +441,7 @@ void player_deinit( wnd_t *wnd_root )
 		player_end_track = TRUE;
 		player_end_thread = TRUE;
 		pthread_join(player_tid, NULL);
+		logger_debug(player_log, "Player thread terminated");
 		player_end_thread = FALSE;
 		player_tid = 0;
 	}
@@ -399,6 +450,17 @@ void player_deinit( wnd_t *wnd_root )
 	logger_debug(player_log, "Doing pmng_free");
 	pmng_free(player_pmng);
 	player_pmng = NULL;
+	player_wnd = NULL;
+	wnd_root = NULL;
+	logger_debug(player_log, "player_root_destructor done");
+} /* End of 'player_root_destructor' function */
+
+/* Unitialize player */
+void player_deinit( void )
+{
+	int i;
+
+	logger_debug(player_log, "In player_deinit");
 
 	/* Uninitialize history lists */
 	logger_debug(player_log, "Freeing history list");
@@ -619,6 +681,7 @@ void player_handle_signal( int signum )
 	if (signum == SIGINT || signum == SIGTERM)
 	{
 		wnd_close(wnd_root);
+		//player_deinit();
 	}
 } /* End of 'player_handle_signal' function */
 
@@ -1447,6 +1510,7 @@ void player_stop_timer( void )
 	{
 		player_end_timer = TRUE;
 		pthread_join(player_timer_tid, NULL);
+		logger_debug(player_log, "Timer thread terminated");
 		player_end_timer = FALSE;
 		player_timer_tid = 0;
 		player_cur_time = 0;
@@ -1518,7 +1582,7 @@ void *player_thread( void *arg )
 		int was_pfreq, was_pbr, was_pstereo;
 		int disp_count;
 		dword in_flags, out_flags;
-		file_t *fd;
+		file_t *fd = NULL;
 
 		/* Skip to next iteration if there is nothing to play */
 		if (player_plist->m_cur_song < 0 || 
@@ -1830,7 +1894,7 @@ void player_info_dialog( void )
 	/* Display dialog */
 	wnd_msg_add_handler(WND_OBJ(reload), "clicked", player_on_info_dlg_reload);
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_info);
-	wnd_msg_add_handler(WND_OBJ(dlg), "close", player_on_info_close);
+	wnd_msg_add_handler(WND_OBJ(dlg), "destructor", player_on_info_close);
 	dialog_arrange_children(dlg);
 } /* End of 'player_info_dialog' function */
 
@@ -2302,7 +2366,7 @@ wnd_msg_retcode_t player_on_info( wnd_t *wnd )
 } /* End of 'player_on_info' function */
 
 /* Handle 'close' for info dialog */
-wnd_msg_retcode_t player_on_info_close( wnd_t *wnd )
+void player_on_info_close( wnd_t *wnd )
 {
 	/* Free songs list */
 	song_t **list = cfg_get_var_ptr(wnd->m_cfg_list, "songs_list");
@@ -2314,7 +2378,6 @@ wnd_msg_retcode_t player_on_info_close( wnd_t *wnd )
 			song_free(list[i]);
 		free(list);
 	}
-	return WND_MSG_RETCODE_OK;
 } /* End of 'player_on_info_close' function */
 
 /* Handle 'clicked' for info dialog reload button */
@@ -2647,7 +2710,7 @@ bool_t player_handle_kbind_scheme( cfg_node_t *node, char *value,
 wnd_class_t *player_wnd_class_init( wnd_global_data_t *global )
 {
 	wnd_class_t *klass = wnd_class_new(global, "player", 
-			wnd_basic_class_init(global), NULL, 
+			wnd_basic_class_init(global), NULL, NULL,
 			player_class_set_default_styles);
 	return klass;
 } /* End of 'player_wnd_class_init' function */

@@ -108,6 +108,8 @@ void song_free( song_t *song )
 		str_free(song->m_title);
 		si_free(song->m_info);
 		free(song->m_full_name);
+		if (song->m_default_title != NULL)
+			free(song->m_default_title);
 		free(song);
 	}
 } /* End of 'song_free' function */
@@ -214,6 +216,8 @@ void song_update_title( song_t *song )
 in_plugin_t *song_get_inp( song_t *song, file_t **fd )
 {
 	/* Do nothing if we already no plugin */
+	if (fd != NULL)
+		(*fd) = NULL;
 	if (song->m_inp != NULL)
 		return song->m_inp;
 

@@ -34,7 +34,7 @@
 wnd_class_t *wnd_basic_class_init( wnd_global_data_t *global )
 {
 	return wnd_class_new(global, "basic", NULL, wnd_basic_get_msg_info, 
-			wnd_basic_class_set_default_styles);
+			wnd_basic_free_handlers, wnd_basic_class_set_default_styles);
 } /* End of 'wnd_basic_class_init' function */
 
 /* Get message handler and callback */
@@ -143,6 +143,27 @@ wnd_msg_handler_t **wnd_basic_get_msg_info( wnd_t *wnd, char *name,
 	}
 	return NULL;
 } /* End of 'wnd_basic_get_msg_info' function */
+
+/* Free message handlers */
+void wnd_basic_free_handlers( wnd_t *wnd )
+{
+	wnd_msg_free_handlers(wnd->m_on_display);
+	wnd_msg_free_handlers(wnd->m_on_keydown);
+	wnd_msg_free_handlers(wnd->m_on_action);
+	wnd_msg_free_handlers(wnd->m_on_close);
+	wnd_msg_free_handlers(wnd->m_on_erase_back);
+	wnd_msg_free_handlers(wnd->m_on_parent_repos);
+	wnd_msg_free_handlers(wnd->m_on_mouse_ldown);
+	wnd_msg_free_handlers(wnd->m_on_mouse_mdown);
+	wnd_msg_free_handlers(wnd->m_on_mouse_rdown);
+	wnd_msg_free_handlers(wnd->m_on_mouse_ldouble);
+	wnd_msg_free_handlers(wnd->m_on_mouse_mdouble);
+	wnd_msg_free_handlers(wnd->m_on_mouse_rdouble);
+	wnd_msg_free_handlers(wnd->m_on_loose_focus);
+	wnd_msg_free_handlers(wnd->m_on_get_focus);
+	wnd_msg_free_handlers(wnd->m_on_user);
+	wnd_msg_free_handlers(wnd->m_destructor);
+} /* End of 'wnd_basic_free_handlers' function */
 
 /* Create data for no-arguments message (base function) */
 wnd_msg_data_t wnd_msg_noargs_new( void )

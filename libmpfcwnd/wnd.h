@@ -335,6 +335,9 @@ wnd_t *wnd_new( wnd_t *parent, char *title, int x, int y,
 bool_t wnd_construct( wnd_t *wnd, wnd_t *parent, char *title, int x, int y,
 		int width, int height, wnd_flags_t flags );
 
+/* Uninitialize window library */
+void wnd_deinit( wnd_t *wnd_root );
+
 /* Run main window loop */
 void wnd_main( wnd_t *wnd_root );
 

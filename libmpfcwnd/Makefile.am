@@ -14,6 +14,6 @@ libmpfcwnd_la_SOURCES = wnd.c wnd.h wnd_print.c wnd_print.h \
 						wnd_radio.c wnd_radio.h wnd_combobox.c wnd_combobox.h \
 						wnd_scrollable.c wnd_scrollable.h wnd_kbind.c \
 						wnd_kbind.h
-libmpfcwnd_la_LIBADD = @GPM_LIBS@ @PTHREAD_LIBS@ @CURSES_LIBS@
+libmpfcwnd_la_LIBADD = @COMMON_LIBS@ @GPM_LIBS@ @PTHREAD_LIBS@ @CURSES_LIBS@
 INCLUDES = -I$(top_builddir)/src
 localedir = $(datadir)/locale

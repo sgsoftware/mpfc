@@ -121,7 +121,7 @@ wnd_msg_retcode_t label_on_display( wnd_t *wnd )
 wnd_class_t *label_class_init( wnd_global_data_t *global )
 {
 	return wnd_class_new(global, "label", dlgitem_class_init(global), NULL,
-			NULL);
+			NULL, NULL);
 } /* End of 'label_class_init' function */
 
 /* End of 'wnd_label.c' file */

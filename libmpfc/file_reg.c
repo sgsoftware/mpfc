@@ -139,11 +139,11 @@ bool_t freg_eof( file_t *f )
 /* Get string from file */
 str_t *freg_get_str( file_t *f )
 {
-	char s[1024];
-	str_t *str;
+	char s[1024] = "";
 	FREG_GET_DATA(data, f);
 
-	fgets(s, sizeof(s), data->m_fd);
+	if (fgets(s, sizeof(s), data->m_fd) == NULL)
+		return NULL;
 	return str_new(s);
 } /* End of 'freg_get_str' function */
 

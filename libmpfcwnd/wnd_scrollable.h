@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for scrollable windows
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 23.09.2004
+ * LAST UPDATE : 18.10.2004
  * NOTE        : Module prefix 'scrollable'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -105,6 +105,9 @@ void scrollable_class_set_default_styles( cfg_node_t *node );
 /* Get message information */
 wnd_msg_handler_t **scrollable_get_msg_info( wnd_t *wnd, char *msg_name,
 		wnd_class_msg_callback_t *callback );
+
+/* Free message handlers */
+void scrollable_free_handlers( wnd_t *wnd );
 
 /*
  * Types and functions for 'scrolled' message

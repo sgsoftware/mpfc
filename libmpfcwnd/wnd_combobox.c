@@ -287,7 +287,8 @@ void combo_unexpand( combo_t *combo )
 wnd_class_t *combo_class_init( wnd_global_data_t *global )
 {
 	wnd_class_t *klass = wnd_class_new(global, "combo", 
-			editbox_class_init(global), NULL, combo_class_set_default_styles);
+			editbox_class_init(global), NULL, NULL,
+			combo_class_set_default_styles);
 	return klass;
 } /* End of 'combo_class_init' function */
 

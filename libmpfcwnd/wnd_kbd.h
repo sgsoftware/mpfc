@@ -80,6 +80,7 @@ typedef struct tag_wnd_kbd_data_t
 
 	/* Pointer to the root window */
 	wnd_t *m_wnd_root;
+	wnd_global_data_t *m_global;
 
 	/* Known escape sequences list */
 	struct wnd_kbd_seq_t

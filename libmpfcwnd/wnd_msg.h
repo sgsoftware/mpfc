@@ -127,8 +127,14 @@ void wnd_msg_free( wnd_msg_t *msg );
 /* Add a handler to the handlers chain */
 void wnd_msg_add_handler( wnd_t *wnd, char *msg_name, void *handler );
 
+/* Add a handler to the handlers chain end */
+void wnd_msg_add_handler_to_end( wnd_t *wnd, char *msg_name, void *handler );
+
 /* Remove handler from the handlers chain beginning */
 void wnd_msg_rem_handler( wnd_t *wnd, char *msg_name );
+
+/* Free handlers chain */
+void wnd_msg_free_handlers( wnd_msg_handler_t *h );
 
 #endif
 

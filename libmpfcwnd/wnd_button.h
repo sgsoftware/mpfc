@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Interface for button
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 16.08.2004
+ * LAST UPDATE : 18.10.2004
  * NOTE        : Module prefix 'button'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -82,6 +82,9 @@ wnd_class_t *button_class_init( wnd_global_data_t *global );
 /* Get message information */
 wnd_msg_handler_t **button_get_msg_info( wnd_t *wnd, char *msg_name,
 		wnd_class_msg_callback_t *callback );
+
+/* Free message handlers */
+void button_free_handlers( wnd_t *wnd );
 
 /* Set button class default styles */
 void button_class_set_default_styles( cfg_node_t *node );

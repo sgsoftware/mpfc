@@ -331,7 +331,8 @@ void eqwnd_help( eq_wnd_t *eq )
 wnd_class_t *eqwnd_class_init( wnd_global_data_t *global )
 {
 	wnd_class_t *klass = wnd_class_new(global, "equalizer", 
-			wnd_basic_class_init(global), NULL, eqwnd_class_set_default_styles);
+			wnd_basic_class_init(global), NULL, NULL,
+			eqwnd_class_set_default_styles);
 	return klass;
 } /* End of 'eqwnd_class_init' function */
 

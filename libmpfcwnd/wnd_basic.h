@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Interface for 'basic' window
  *               class.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 29.09.2004
+ * LAST UPDATE : 18.10.2004
  * NOTE        : Module prefix 'wnd_msg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -40,6 +40,9 @@ wnd_class_t *wnd_basic_class_init( wnd_global_data_t *global );
 
 /* Set the default styles */
 void wnd_basic_class_set_default_styles( cfg_node_t *list );
+
+/* Free message handlers */
+void wnd_basic_free_handlers( wnd_t *wnd );
 
 /* Get message handler and callback function */
 wnd_msg_handler_t **wnd_basic_get_msg_info( wnd_t *wnd, char *msg_name,

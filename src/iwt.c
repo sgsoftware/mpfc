@@ -57,7 +57,12 @@ bool_t iwt_init( void )
 	pthread_mutex_init(&iwt_mutex, NULL);
 	
 	/* Initialize thread */
-	pthread_create(&iwt_tid, NULL, iwt_thread, NULL);
+	if (pthread_create(&iwt_tid, NULL, iwt_thread, NULL))
+	{
+		pthread_mutex_destroy(&iwt_mutex);
+		return FALSE;
+	}
+	return TRUE;
 } /* End of 'iwt_init' function */
 
 /* Uninitialize IWT module */
@@ -68,6 +73,7 @@ void iwt_free( void )
 	{
 		iwt_exit = TRUE;
 		pthread_join(iwt_tid, NULL);
+		logger_debug(player_log, "iwt thread terminated");
 		iwt_tid = 0;
 		iwt_exit = FALSE;
 	}
