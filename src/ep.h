@@ -1,12 +1,12 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : ep.h
  * PURPOSE     : SG MPFC. Interface for effect plugin management
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 27.07.2003
+ * LAST UPDATE : 31.01.2004
  * NOTE        : Module prefix 'ep'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -30,11 +30,19 @@
 
 #include "types.h"
 
+struct tag_pmng_t;
+
 /* Plugin functions list structure */
 typedef struct
 {
 	/* Apply plugin function */
 	int (*m_apply)( byte *data, int len, int fmt, int freq, int channels );
+
+	/* Plugins manager */
+	struct tag_pmng_t *m_pmng;
+
+	/* Reserved data */
+	byte m_reserved[248];
 } ep_func_list_t;
 
 /* Effect plugin type */
@@ -51,7 +59,7 @@ typedef struct tag_effect_plugin_t
 } effect_plugin_t;
 
 /* Initialize effect plugin */
-effect_plugin_t *ep_init( char *name );
+effect_plugin_t *ep_init( char *name, struct tag_pmng_t *pmng );
 
 /* Free effect plugin object */
 void ep_free( effect_plugin_t *plugin );

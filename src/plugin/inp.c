@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Input plugin management functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 20.01.2004
+ * LAST UPDATE : 31.01.2004
  * NOTE        : Module prefix 'inp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -29,14 +29,13 @@
 #include <stdlib.h>
 #include "types.h"
 #include "cfg.h"
-#include "error.h"
 #include "inp.h"
-#include "player.h"
+#include "pmng.h"
 #include "song.h"
 #include "util.h"
 
 /* Initialize input plugin */
-in_plugin_t *inp_init( char *name )
+in_plugin_t *inp_init( char *name, pmng_t *pmng )
 {
 	in_plugin_t *p;
 	void (*fl)( inp_func_list_t * );
@@ -46,7 +45,6 @@ in_plugin_t *inp_init( char *name )
 	p = (in_plugin_t *)malloc(sizeof(in_plugin_t));
 	if (p == NULL)
 	{
-		error_set_code(ERROR_NO_MEMORY);
 		return NULL;
 	}
 
@@ -54,8 +52,7 @@ in_plugin_t *inp_init( char *name )
 	p->m_lib_handler = dlopen(name, RTLD_NOW);
 	if (p->m_lib_handler == NULL)
 	{
-		util_log("%s\n", dlerror());
-		error_set_code(ERROR_IN_PLUGIN_ERROR);
+//		util_log("%s\n", dlerror());
 		free(p);
 		return NULL;
 	}
@@ -64,17 +61,17 @@ in_plugin_t *inp_init( char *name )
 	fl = dlsym(p->m_lib_handler, "inp_get_func_list");
 	if (fl == NULL)
 	{
-		error_set_code(ERROR_IN_PLUGIN_ERROR);
 		inp_free(p);
 		return NULL;
 	}
 	util_get_plugin_short_name(p->m_name, name);
 	memset(&p->m_fl, 0, sizeof(p->m_fl));
-	p->m_fl.m_print_msg = player_print_msg;
+	p->m_fl.m_print_msg = pmng->m_print_msg;
+	p->m_fl.m_pmng = pmng;
 	fl(&p->m_fl);
 
 	if ((set_vars = dlsym(p->m_lib_handler, "inp_set_vars")) != NULL)
-		set_vars(cfg_list);
+		set_vars(pmng->m_cfg_list);
 		
 	return p;
 } /* End of 'inp_init' function */

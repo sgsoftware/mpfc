@@ -931,7 +931,7 @@ int plist_add_obj( plist_t *pl, char *name, char *title, int where )
 	plugin_name[i] = 0;
 
 	/* Search for this plugin */
-	inp = pmng_search_inp_by_name(plugin_name);
+	inp = pmng_search_inp_by_name(player_pmng, plugin_name);
 	if (inp == NULL)
 		return 0;
 

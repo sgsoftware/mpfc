@@ -1,12 +1,12 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : pmng.h
  * PURPOSE     : SG MPFC. Interface for plugins manager 
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 2.10.2003
+ * LAST UPDATE : 31.01.2004
  * NOTE        : Module prefix 'pmng'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -29,6 +29,7 @@
 #define __SG_MPFC_PMNG_H__
 
 #include "types.h"
+#include "cfg.h"
 #include "ep.h"
 #include "inp.h"
 #include "outp.h"
@@ -38,56 +39,67 @@
 #define PMNG_OUT	1
 #define PMNG_EFFECT	2
 
-/* Input plugins list */
-extern int pmng_num_inp;
-extern in_plugin_t **pmng_inp;
+/* Plugin manager type */
+typedef struct tag_pmng_t
+{
+	/* Input plugins list */
+	int m_num_inp;
+	in_plugin_t **m_inp;
 
-/* Output plugins list */
-extern int pmng_num_outp;
-extern out_plugin_t **pmng_outp;
+	/* Output plugins list */
+	int m_num_outp;
+	out_plugin_t **m_outp;
 
-/* Effect plugins list */
-extern int pmng_num_ep;
-extern effect_plugin_t **pmng_ep;
+	/* Effect plugins list */
+	int m_num_ep;
+	effect_plugin_t **m_ep;
 
-/* Current output plugin */
-extern out_plugin_t *pmng_cur_out;
+	/* Current output plugin */
+	out_plugin_t *m_cur_out;
+
+	/* Configuration variables list */
+	cfg_list_t *m_cfg_list;
+
+	/* Message printing function */
+	void (*m_print_msg)( char *msg );
+} pmng_t;
 
 /* Initialize plugins */
-bool_t pmng_init( void );
+pmng_t *pmng_init( cfg_list_t *list, void (*print_msg)(char *) );
 
 /* Unitialize plugins */
-void pmng_free( void );
+void pmng_free( pmng_t *pmng );
 
 /* Load plugins */
-void pmng_load_plugins( void );
+bool_t pmng_load_plugins( pmng_t *pmng );
 
 /* Add an input plugin */
-void pmng_add_in( in_plugin_t *p );
+void pmng_add_in( pmng_t *pmng, in_plugin_t *p );
 
 /* Add an output plugin */
-void pmng_add_out( out_plugin_t *p );
+void pmng_add_out( pmng_t *pmng, out_plugin_t *p );
 
 /* Add an effect plugin */
-void pmng_add_effect( effect_plugin_t *p );
+void pmng_add_effect( pmng_t *pmng, effect_plugin_t *p );
 
 /* Search for input plugin supporting given format */
-in_plugin_t *pmng_search_format( char *format );
+in_plugin_t *pmng_search_format( pmng_t *pmng, char *format );
 
 /* Apply effect plugins */
-int pmng_apply_effects( byte *data, int len, int fmt, int freq, int channels );
+int pmng_apply_effects( pmng_t *pmng, byte *data, int len, int fmt, 
+		int freq, int channels );
 
 /* Search for input plugin with specified name */
-in_plugin_t *pmng_search_inp_by_name( char *name );
+in_plugin_t *pmng_search_inp_by_name( pmng_t *pmng, char *name );
 
 /* Plugin finder handler */
 int pmng_find_handler( char *name, void *data );
 
 /* Check if specified plugin is already loaded */
-bool_t pmng_is_loaded( char *name, int type );
+bool_t pmng_is_loaded( pmng_t *pmng, char *name, int type );
 
 /* Search plugin for content-type */
-in_plugin_t *pmng_search_content_type( char *content );
+in_plugin_t *pmng_search_content_type( pmng_t *pmng, char *content );
 
 #endif
 

@@ -110,7 +110,7 @@ song_t **rad_init_obj_songs( char *name, int *num_songs )
 	struct video_tuner vt;
 	int fd;
 
-	(*num_songs) = NULL;
+	(*num_songs) = 0;
 	if (!strlen(name))
 		return;
 

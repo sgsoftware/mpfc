@@ -1,12 +1,12 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : ep.c
  * PURPOSE     : SG MPFC. Fffect plugin management functions
  * 	             implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 27.07.2003
+ * LAST UPDATE : 31.01.2004
  * NOTE        : Module prefix 'ep'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -30,10 +30,10 @@
 #include "types.h"
 #include "cfg.h"
 #include "ep.h"
-#include "error.h"
+#include "pmng.h"
 
 /* Initialize effect plugin */
-effect_plugin_t *ep_init( char *name )
+effect_plugin_t *ep_init( char *name, pmng_t *pmng )
 {
 	effect_plugin_t *p;
 	void (*fl)( ep_func_list_t * );
@@ -43,7 +43,6 @@ effect_plugin_t *ep_init( char *name )
 	p = (effect_plugin_t *)malloc(sizeof(effect_plugin_t));
 	if (p == NULL)
 	{
-		error_set_code(ERROR_NO_MEMORY);
 		return NULL;
 	}
 
@@ -51,7 +50,6 @@ effect_plugin_t *ep_init( char *name )
 	p->m_lib_handler = dlopen(name, RTLD_NOW);
 	if (p->m_lib_handler == NULL)
 	{
-		error_set_code(ERROR_EFFECT_PLUGIN_ERROR);
 		free(p);
 		return NULL;
 	}
@@ -60,16 +58,16 @@ effect_plugin_t *ep_init( char *name )
 	fl = dlsym(p->m_lib_handler, "ep_get_func_list");
 	if (fl == NULL)
 	{
-		error_set_code(ERROR_EFFECT_PLUGIN_ERROR);
-		inp_free(p);
+		ep_free(p);
 		return NULL;
 	}
 	util_get_plugin_short_name(p->m_name, name);
 	memset(&p->m_fl, 0, sizeof(p->m_fl));
+	p->m_fl.m_pmng = pmng;
 	fl(&p->m_fl);
 
 	if ((set_vars = dlsym(p->m_lib_handler, "ep_set_vars")) != NULL)
-		set_vars(cfg_list);
+		set_vars(pmng->m_cfg_list);
 		
 	return p;
 } /* End of 'ep_init' function */

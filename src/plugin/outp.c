@@ -1,12 +1,12 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : outp.c
  * PURPOSE     : SG MPFC. Output plugin management functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 16.08.2003
+ * LAST UPDATE : 31.01.2004
  * NOTE        : Module prefix 'outp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -29,13 +29,13 @@
 #include <stdlib.h>
 #include "types.h"
 #include "cfg.h"
-#include "error.h"
 #include "inp.h"
 #include "outp.h"
+#include "pmng.h"
 #include "song.h"
 
 /* Initialize output plugin */
-out_plugin_t *outp_init( char *name )
+out_plugin_t *outp_init( char *name, pmng_t *pmng )
 {
 	out_plugin_t *p;
 	void (*fl)( outp_func_list_t * );
@@ -45,7 +45,6 @@ out_plugin_t *outp_init( char *name )
 	p = (out_plugin_t *)malloc(sizeof(out_plugin_t));
 	if (p == NULL)
 	{
-		error_set_code(ERROR_NO_MEMORY);
 		return NULL;
 	}
 
@@ -53,7 +52,6 @@ out_plugin_t *outp_init( char *name )
 	p->m_lib_handler = dlopen(name, RTLD_LAZY);
 	if (p->m_lib_handler == NULL)
 	{
-		error_set_code(ERROR_OUT_PLUGIN_ERROR);
 		free(p);
 		return NULL;
 	}
@@ -62,16 +60,16 @@ out_plugin_t *outp_init( char *name )
 	fl = dlsym(p->m_lib_handler, "outp_get_func_list");
 	if (fl == NULL)
 	{
-		error_set_code(ERROR_OUT_PLUGIN_ERROR);
 		outp_free(p);
 		return NULL;
 	}
 	util_get_plugin_short_name(p->m_name, name);
 	memset(&p->m_fl, 0, sizeof(p->m_fl));
+	p->m_fl.m_pmng = pmng;
 	fl(&p->m_fl);
 
 	if ((set_vars = dlsym(p->m_lib_handler, "outp_set_vars")) != NULL)
-		set_vars(cfg_list);
+		set_vars(pmng->m_cfg_list);
 		
 	return p;
 } /* End of 'outp_init' function */

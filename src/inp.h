@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for input plugin management
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 20.01.2004
+ * LAST UPDATE : 31.01.2004
  * NOTE        : Module prefix 'inp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -38,6 +38,8 @@
 
 /* Special function flags */
 #define INP_SPEC_SAVE_INFO 0x00000001
+
+struct tag_pmng_t;
 
 /* Special input plugin function type */
 typedef struct
@@ -121,6 +123,12 @@ typedef struct
 
 	/* Get current bitrate */
 	int (*m_get_bitrate)( void );
+
+	/* Plugins manager */
+	struct tag_pmng_t *m_pmng;
+
+	/* Reserved data */
+	byte m_reserved[160];
 } inp_func_list_t;
 
 /* Input plugin type */
@@ -137,7 +145,7 @@ typedef struct tag_in_plugin_t
 } in_plugin_t;
 
 /* Initialize input plugin */
-in_plugin_t *inp_init( char *name );
+in_plugin_t *inp_init( char *name, struct tag_pmng_t *pmng );
 
 /* Free input plugin object */
 void inp_free( in_plugin_t *plugin );

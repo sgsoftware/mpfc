@@ -5,7 +5,7 @@
 /* FILE NAME   : player.h
  * PURPOSE     : SG MPFC. Interface for main player functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 1.01.2004
+ * LAST UPDATE : 31.01.2004
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -31,6 +31,7 @@
 #include "cfg.h"
 #include "history.h"
 #include "plist.h"
+#include "pmng.h"
 #include "undo.h"
 #include "window.h"
 
@@ -95,6 +96,9 @@ extern bool_t player_store_undo;
 
 /* Edit boxes history lists */
 extern hist_list_t *player_hist_lists[PLAYER_NUM_HIST_LISTS];
+
+/* Plugins manager */
+extern pmng_t *player_pmng;
 
 /* Initialize player */
 bool_t player_init( int argc, char *argv[] );

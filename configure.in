@@ -28,4 +28,4 @@ AC_OUTPUT(Makefile src/Makefile src/util/Makefile src/glist/Makefile \
 			plugins/effect/echo/Makefile plugins/input/audiocd/Makefile \
 			plugins/input/radio/Makefile plugins/output/disk_writer/Makefile \
 			plugins/input/ogg/Makefile plugins/input/timidi/Makefile \
-			doc/Makefile)
+			doc/Makefile src/plugin/Makefile)

@@ -1,8 +1,7 @@
 bin_PROGRAMS = mpfc
 mpfc_SOURCES = main.c types.h error.h error.c player.c player.h \
 					plist.c plist.h song.c song.h util.h \
-					inp.c inp.h outp.c outp.h pmng.c pmng.h \
-					cfg.h cfg.c song_info.h ep.h ep.c \
+					cfg.h cfg.c song_info.h \
 					window.c window.h editbox.c editbox.h \
 					choice_ctrl.c choice_ctrl.h file_input.c file_input.h \
 					dlgbox.c dlgbox.h menu.c menu.h codepages.c codepages.h \
@@ -16,5 +15,6 @@ EXTRA_DIST = .mpfcrc
 
 localedir = $(datadir)/locale
 DEFS = -DLOCALEDIR=\"$(localedir)\" -DLIBDIR=\"$(libdir)\" @DEFS@
-mpfc_LDADD = glist/libglist.a util/libutil.a cfg/libcfg.a file/libfile.a
-SUBDIRS = util glist cfg file myid3
+mpfc_LDADD = glist/libglist.a util/libutil.a cfg/libcfg.a file/libfile.a \
+			 plugin/libplugin.a
+SUBDIRS = util glist cfg file myid3 plugin

@@ -137,6 +137,9 @@ int player_bitrate = 0, player_freq = 0, player_stereo = 0;
 #define PLAYER_STEREO 1
 #define PLAYER_MONO 2
 
+/* Plugins manager */
+pmng_t *player_pmng = NULL;
+
 /* Initialize player */
 bool_t player_init( int argc, char *argv[] )
 {
@@ -178,7 +181,7 @@ bool_t player_init( int argc, char *argv[] )
 	col_init();
 	
 	/* Initialize plugin manager */
-	pmng_init();
+	player_pmng = pmng_init(cfg_list, player_print_msg);
 
 	/* Initialize song adder thread */
 	sat_init();
@@ -212,7 +215,7 @@ bool_t player_init( int argc, char *argv[] )
 	pthread_create(&player_tid, NULL, player_thread, NULL);
 
 	/* Get volume */
-	outp_get_volume(pmng_cur_out, &l, &r);
+	outp_get_volume(player_pmng->m_cur_out, &l, &r);
 	if (l == 0 && r == 0)
 	{
 		player_volume = 0;
@@ -281,7 +284,7 @@ void player_deinit( void )
 	player_tid = 0;
 	
 	/* Uninitialize plugin manager */
-	pmng_free();
+	pmng_free(player_pmng);
 
 	/* Uninitialize key bindings */
 	kbind_free();
@@ -535,6 +538,7 @@ void player_display( wnd_t *wnd, dword data )
 		wnd_printf(wnd, "\n");
 	wnd_printf(wnd, "%s", player_msg);
 	col_set_color(wnd, COL_EL_DEFAULT);
+	wnd_printf(wnd, "\n");
 
 	/* Hide cursor */
 	wnd_move(wnd, wnd->m_width - 1, wnd->m_height - 1);
@@ -685,9 +689,9 @@ void *player_thread( void *arg )
 		song_update_info(s);
 
 		/* Start output plugin */
-		if (!no_outp && (pmng_cur_out == NULL || 
+		if (!no_outp && (player_pmng->m_cur_out == NULL || 
 				(!cfg_get_var_int(cfg_list, "silent-mode") && 
-					!outp_start(pmng_cur_out))))
+					!outp_start(player_pmng->m_cur_out))))
 		{
 			strcpy(player_msg, _("Unable to initialize output plugin"));
 //			wnd_send_msg(wnd_root, WND_MSG_USER, PLAYER_MSG_END_TRACK);
@@ -700,9 +704,9 @@ void *player_thread( void *arg )
 		/* Set audio parameters */
 		if (!no_outp)
 		{
-			outp_set_channels(pmng_cur_out, 2);
-			outp_set_freq(pmng_cur_out, freq);
-			outp_set_fmt(pmng_cur_out, fmt);
+			outp_set_channels(player_pmng->m_cur_out, 2);
+			outp_set_freq(player_pmng->m_cur_out, freq);
+			outp_set_fmt(player_pmng->m_cur_out, fmt);
 		}
 
 		/* Save current input plugin */
@@ -768,17 +772,18 @@ void *player_thread( void *arg )
 							freq = new_freq;
 							fmt = new_fmt;
 						
-							outp_flush(pmng_cur_out);
-							outp_set_channels(pmng_cur_out, 2);
-							outp_set_freq(pmng_cur_out, freq);
-							outp_set_fmt(pmng_cur_out, fmt);
+							outp_flush(player_pmng->m_cur_out);
+							outp_set_channels(player_pmng->m_cur_out, 2);
+							outp_set_freq(player_pmng->m_cur_out, freq);
+							outp_set_fmt(player_pmng->m_cur_out, fmt);
 						}
 
 						/* Apply effects */
-						size = pmng_apply_effects(buf, size, fmt, freq, 2);
+						size = pmng_apply_effects(player_pmng, buf, size, 
+								fmt, freq, 2);
 					
 						/* Send to output plugin */
-						outp_play(pmng_cur_out, buf, size);
+						outp_play(player_pmng->m_cur_out, buf, size);
 					}
 					else
 						util_delay(0, 100000000);
@@ -796,7 +801,7 @@ void *player_thread( void *arg )
 
 		/* Wait until we really stop playing */
 		if (!no_outp)
-			outp_flush(pmng_cur_out);
+			outp_flush(player_pmng->m_cur_out);
 
 		/* Stop timer thread */
 		player_stop_timer();
@@ -812,7 +817,7 @@ void *player_thread( void *arg )
 
 		/* End output plugin */
 		if (!no_outp)
-			outp_end(pmng_cur_out);
+			outp_end(player_pmng->m_cur_out);
 
 		/* Update screen */
 		wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
@@ -1816,7 +1821,7 @@ void player_handle_action( int action )
 
 	/* Reload plugins */
 	case KBIND_RELOAD_PLUGINS:
-		pmng_load_plugins();
+		pmng_load_plugins(player_pmng);
 		break;
 
 	/* Launch file browser */
@@ -2099,7 +2104,7 @@ void player_update_vol( void )
 		r = player_volume;
 		l = player_volume * (100 - player_balance) / 50;
 	}
-	outp_set_volume(pmng_cur_out, l, r);
+	outp_set_volume(player_pmng->m_cur_out, l, r);
 } /* End of 'player_update_vol' function */
 
 /* Execute a command */
@@ -2213,13 +2218,16 @@ void player_handle_var_title_format( char *name )
 /* Handle 'output_plugin' variable setting */
 void player_handle_var_outp( char *name )
 {
+	if (player_pmng == NULL)
+		return;
+
 	/* Choose new output plugin */
 	int i;
-	for ( i = 0; i < pmng_num_outp; i ++ )
-		if (!strcmp(pmng_outp[i]->m_name, 
+	for ( i = 0; i < player_pmng->m_num_outp; i ++ )
+		if (!strcmp(player_pmng->m_outp[i]->m_name, 
 					cfg_get_var(cfg_list, "output-plugin")))
 		{
-			pmng_cur_out = pmng_outp[i];
+			player_pmng->m_cur_out = player_pmng->m_outp[i];
 			break;
 		}
 } /* End of 'player_handle_var_outp' function */

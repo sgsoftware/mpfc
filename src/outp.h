@@ -1,12 +1,12 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : outp.h
  * PURPOSE     : SG MPFC. Interface for output plugin management
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 16.08.2003
+ * LAST UPDATE : 31.01.2004
  * NOTE        : Module prefix 'outp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -29,6 +29,8 @@
 #define __SG_MPFC_OUTP_H__
 
 #include "types.h"
+
+struct tag_pmng_t;
 
 /* Output plugin functions list */
 typedef struct 
@@ -57,6 +59,12 @@ typedef struct
 	/* Set/get volume */
 	void (*m_set_volume)( int left, int right );
 	void (*m_get_volume)( int *left, int *right );
+
+	/* Plugins manager */
+	struct tag_pmng_t *m_pmng;
+
+	/* Reserved data */
+	byte m_reserved[216];
 } outp_func_list_t;
 
 /* Output plugin type */
@@ -73,7 +81,7 @@ typedef struct tag_out_plugin_t
 } out_plugin_t;
 
 /* Initialize output plugin */
-out_plugin_t *outp_init( char *name );
+out_plugin_t *outp_init( char *name, struct tag_pmng_t *pmng );
 
 /* Free output plugin object */
 void outp_free( out_plugin_t *p );

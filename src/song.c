@@ -52,7 +52,7 @@ song_t *song_new( char *filename, char *title, int len )
 	ext = util_get_ext(filename);
 
 	/* Choose appropriate input plugin */
-	inp = pmng_search_format(ext);
+	inp = pmng_search_format(player_pmng, ext);
 	if (inp == NULL && file_get_type(filename) == FILE_TYPE_REGULAR)
 		return NULL;
 	
@@ -266,13 +266,14 @@ in_plugin_t *song_get_inp( song_t *song )
 	ext = util_get_ext(song->m_file_name);
 
 	/* Choose appropriate input plugin */
-	song->m_inp = pmng_search_format(ext);
+	song->m_inp = pmng_search_format(player_pmng, ext);
 	if (song->m_inp == NULL)
 	{
 		file_t *fd = file_open(song->m_file_name, "rb", player_print_msg);
 		if (fd == NULL)
 			return NULL;
-		song->m_inp = pmng_search_content_type(file_get_content_type(fd));
+		song->m_inp = pmng_search_content_type(player_pmng,
+				file_get_content_type(fd));
 		file_close(fd);
 	}
 	return song->m_inp;
