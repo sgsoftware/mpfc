@@ -354,6 +354,8 @@ void player_display( wnd_t *wnd, dword data )
 	else
 	{
 		char title[80];
+		int t;
+		bool show_rem;
 		
 		s = player_plist->m_list[player_plist->m_cur_song];
 		if (strlen(s->m_title) >= wnd->m_width - 1)
@@ -366,8 +368,10 @@ void player_display( wnd_t *wnd, dword data )
 		col_set_color(wnd, COL_EL_CUR_TITLE);
 		wnd_printf(wnd, "%s\n", title);
 		col_set_color(wnd, COL_EL_CUR_TIME);
-		wnd_printf(wnd, "%i:%02i/%i:%02i\n", 
-				player_cur_time / 60, player_cur_time % 60,
+		t = (show_rem = cfg_get_var_int(cfg_list, "show_time_remaining")) ? 
+			s->m_len - player_cur_time : player_cur_time;
+		wnd_printf(wnd, "%s%i:%02i/%i:%02i\n", 
+				show_rem ? "-" : "", t / 60, t % 60,
 				s->m_len / 60, s->m_len % 60);
 		col_set_color(wnd, COL_EL_DEFAULT);
 	}

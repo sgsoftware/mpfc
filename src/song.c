@@ -232,7 +232,7 @@ void song_get_title_from_info( song_t *song )
 	}
 	else
 	{
-		sprintf(str, "%s - %s", info->m_artist, info->m_album);
+		sprintf(str, "%s - %s", info->m_artist, info->m_name);
 	}
 } /* End of 'song_get_title_from_info' function */
 
