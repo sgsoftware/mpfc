@@ -50,6 +50,9 @@ char mp3_file_name[128] = "";
 /* ID3 tag scheduled for saving */
 char mp3_tag[128];
 
+/* Current song information */
+song_info_t mp3_cur_info;
+
 /* Flag of whether we must save tag */
 bool mp3_need_save = FALSE;
 
@@ -62,6 +65,9 @@ bool mp3_start( char *filename )
 	SMPEG_Info info;
 	SDL_AudioSpec as;
 
+	/* Remember tag */
+	mp3_get_info(filename, &mp3_cur_info);
+
 	/* Initialize SMPEG object */
 	mp3_smpeg = SMPEG_new(filename, &info, SDL_FALSE);
 	if (mp3_smpeg == NULL || SMPEG_error(mp3_smpeg) != NULL)
@@ -71,6 +77,7 @@ bool mp3_start( char *filename )
 //			SMPEG_delete(mp3_smpeg);
 			mp3_smpeg = NULL;
 		}
+		strcpy(mp3_file_name, "");
 		return FALSE;
 	}
 	SMPEG_wantedSpec(mp3_smpeg, &as);
@@ -170,7 +177,7 @@ void mp3_save_info( char *filename, song_info_t *info )
 	strncpy(&id3_tag[33], info->m_artist, 30);
 	strncpy(&id3_tag[63], info->m_album, 30);
 	strncpy(&id3_tag[93], info->m_year, 4);
-	strncpy(&id3_tag[97], "", 30);
+	strncpy(&id3_tag[97], info->m_comments, 30);
 	id3_tag[127] = (info->m_genre == GENRE_ID_UNKNOWN) ?
 		info->m_genre_data : mp3_glist->m_list[info->m_genre].m_data;
 
@@ -179,6 +186,7 @@ void mp3_save_info( char *filename, song_info_t *info )
 	{
 		mp3_need_save = TRUE;
 		memcpy(mp3_tag, id3_tag, 128);
+		memcpy(&mp3_cur_info, info, sizeof(song_info_t));
 	}
 	else
 		mp3_save_tag(filename, id3_tag);
@@ -190,6 +198,13 @@ bool mp3_get_info( char *filename, song_info_t *info )
 	char id3_tag[128];
 	FILE *fd;
 	int i;
+
+	/* Return temporary tag if we request for current playing song tag */
+	if (!strcmp(filename, mp3_file_name))
+	{
+		memcpy(info, &mp3_cur_info, sizeof(song_info_t));
+		return TRUE;
+	}
 
 	/* Read ID3 tag */
 	fd = fopen(filename, "rb");

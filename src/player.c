@@ -884,6 +884,7 @@ void player_info_dialog( void )
 		strcpy(s->m_info->m_artist, artist->m_text);
 		strcpy(s->m_info->m_album, album->m_text);
 		strcpy(s->m_info->m_year, year->m_text);
+		strcpy(s->m_info->m_comments, comments->m_text);
 		s->m_info->m_genre = genre->m_cursor;
 	
 		/* Get song length and information at first */
