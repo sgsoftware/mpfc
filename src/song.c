@@ -1,12 +1,12 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : song.c
  * PURPOSE     : SG MPFC. Songs manipulation functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 14.11.2003
+ * LAST UPDATE : 1.02.2004
  * NOTE        : Module prefix 'song'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -29,7 +29,6 @@
 #include <string.h>
 #include "types.h"
 #include "cfg.h"
-#include "codepages.h"
 #include "error.h"
 #include "file.h"
 #include "inp.h"
@@ -124,14 +123,6 @@ void song_update_info( song_t *song )
 	memset(&si, 0, sizeof(si));
 	if (inp_get_info(song->m_inp, song->m_file_name, &si))
 	{
-		/* Convert codepages */
-		cp_to_out(si.m_artist, si.m_artist);
-		cp_to_out(si.m_name, si.m_name);
-		cp_to_out(si.m_album, si.m_album);
-		cp_to_out(si.m_comments, si.m_comments);
-		cp_to_out(si.m_track, si.m_track);
-		cp_to_out(si.m_year, si.m_year);
-		cp_to_out(si.m_own_data, si.m_own_data);
 		song_set_info(song, &si);
 	}
 	else

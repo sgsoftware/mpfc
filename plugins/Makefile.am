@@ -1,1 +1,1 @@
-SUBDIRS = input output effect
+SUBDIRS = input output effect charset

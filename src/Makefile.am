@@ -4,17 +4,15 @@ mpfc_SOURCES = main.c types.h error.h error.c player.c player.h \
 					cfg.h cfg.c song_info.h \
 					window.c window.h editbox.c editbox.h \
 					choice_ctrl.c choice_ctrl.h file_input.c file_input.h \
-					dlgbox.c dlgbox.h menu.c menu.h codepages.c codepages.h \
+					dlgbox.c dlgbox.h menu.c menu.h \
 					listbox.c listbox.h help_screen.c help_screen.h \
 					sat.c sat.h eqwnd.c eqwnd.h key_bind.c key_bind.h \
 					colors.c colors.h history.c history.h button.c button.h \
 					combobox.c combobox.h undo.c undo.h label.c label.h \
-					finder.c finder.h dlg_ctrl.c dlg_ctrl.h iwt.c iwt.h \
+					finder.h dlg_ctrl.c dlg_ctrl.h iwt.c iwt.h \
 					browser.c browser.h
 EXTRA_DIST = .mpfcrc
 
 localedir = $(datadir)/locale
 DEFS = -DLOCALEDIR=\"$(localedir)\" -DLIBDIR=\"$(libdir)\" @DEFS@
-mpfc_LDADD = glist/libglist.a util/libutil.a cfg/libcfg.a file/libfile.a \
-			 plugin/libplugin.a
-SUBDIRS = util glist cfg file myid3 plugin
+mpfc_LDADD = $(top_builddir)/libmpfc/libmpfc.la

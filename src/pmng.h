@@ -30,14 +30,16 @@
 
 #include "types.h"
 #include "cfg.h"
+#include "csp.h"
 #include "ep.h"
 #include "inp.h"
 #include "outp.h"
 
 /* Plugin types */
-#define PMNG_IN		0
-#define PMNG_OUT	1
-#define PMNG_EFFECT	2
+#define PMNG_IN		 0 
+#define PMNG_OUT	 1
+#define PMNG_EFFECT	 2
+#define PMNG_CHARSET 3
 
 /* Plugin manager type */
 typedef struct tag_pmng_t
@@ -53,6 +55,10 @@ typedef struct tag_pmng_t
 	/* Effect plugins list */
 	int m_num_ep;
 	effect_plugin_t **m_ep;
+
+	/* Charset plugins list */
+	int m_num_csp;
+	cs_plugin_t **m_csp;
 
 	/* Current output plugin */
 	out_plugin_t *m_cur_out;
@@ -82,6 +88,9 @@ void pmng_add_out( pmng_t *pmng, out_plugin_t *p );
 /* Add an effect plugin */
 void pmng_add_effect( pmng_t *pmng, effect_plugin_t *p );
 
+/* Add a charset plugin */
+void pmng_add_charset( pmng_t *pmng, cs_plugin_t *p );
+
 /* Search for input plugin supporting given format */
 in_plugin_t *pmng_search_format( pmng_t *pmng, char *format );
 
@@ -100,6 +109,9 @@ bool_t pmng_is_loaded( pmng_t *pmng, char *name, int type );
 
 /* Search plugin for content-type */
 in_plugin_t *pmng_search_content_type( pmng_t *pmng, char *content );
+
+/* Find charset plugin which supports specified set */
+cs_plugin_t *pmng_find_charset( pmng_t *pmng, char *name, int *index );
 
 #endif
 

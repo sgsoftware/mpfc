@@ -1,11 +1,11 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : myid3.h
  * PURPOSE     : SG MPFC. Interface for ID3 tags handling library.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 8.11.2003
+ * LAST UPDATE : 1.02.2004
  * NOTE        : Module prefix 'id3'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -59,6 +59,9 @@ typedef struct
 
 	/* Value */
 	char *m_val;
+
+	/* Encoding */
+	byte m_encoding;
 
 	/* Tag version */
 	byte m_version;
@@ -116,7 +119,6 @@ typedef struct
 	 ID3_IS_VALID_FRAME_SYM(*((name) + 2)) && \
 	 ID3_IS_VALID_FRAME_SYM(*((name) + 3)))
 
-
 /* Convert between synchsafe and normal integers */
 #define ID3_CONVERT_FROM_SYNCHSAFE(num) \
 	((((num) & 0x7F) << 21) | (((num) & 0x7F00) << 6) | \
@@ -124,6 +126,12 @@ typedef struct
 #define ID3_CONVERT_TO_SYNCHSAFE(num) \
 	((((num) & 0x7F) << 24) | (((num) & 0x3F80) << 9) | \
 	 (((num) & 0x1FC000) >> 6) | (((num) & 0xFE00000) >> 21))
+
+/* Text encoding */
+#define ID3_LATIN1  0
+#define ID3_UTF16   1
+#define ID3_UTF16BE 2
+#define ID3_UTF8    3
 
 /* Create a new empty tag */
 id3_tag_t *id3_new( void );

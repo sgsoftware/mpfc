@@ -534,11 +534,8 @@ void player_display( wnd_t *wnd, dword data )
 
 	/* Print message */
 	col_set_color(wnd, COL_EL_STATUS);
-	while (wnd_gety(wnd) < wnd->m_height - 2)
-		wnd_printf(wnd, "\n");
 	wnd_printf(wnd, "%s", player_msg);
 	col_set_color(wnd, COL_EL_DEFAULT);
-	wnd_printf(wnd, "\n");
 
 	/* Hide cursor */
 	wnd_move(wnd, wnd->m_width - 1, wnd->m_height - 1);

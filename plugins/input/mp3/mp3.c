@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. MP3 input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 20.01.2004
+ * LAST UPDATE : 01.02.2004
  * NOTE        : Module prefix 'mp3'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -34,12 +34,14 @@
 #include <sys/soundcard.h>
 #include "types.h"
 #include "cfg.h"
+#include "charset.h"
 #include "file.h"
 #include "genre_list.h"
 #include "getlen.h"
 #include "inp.h"
 #include "mp3.h"
 #include "myid3.h"
+#include "pmng.h"
 #include "song_info.h"
 #include "util.h"
 
@@ -99,6 +101,9 @@ int mp3_time = 0;
 
 /* File object */
 file_t *mp3_fd = NULL;
+
+/* Plugins manager object */
+pmng_t *mp3_pmng = NULL;
 
 /* Current song header */
 struct mad_header mp3_head;
@@ -479,49 +484,61 @@ bool_t mp3_get_info( char *filename, song_info_t *info )
 		{	
 			id3_frame_t f;
 			int size = 1;
+			char *out_str;
 			
 			/* Get next frame */
 			id3_next_frame(tag, &f);
+
+			/* Convert codepages */
+			out_str = cs_convert(f.m_val, f.m_encoding == ID3_UTF8 ?
+					"utf8" : NULL, NULL, mp3_pmng);
+			if (out_str == NULL)
+			{
+				if (f.m_val != NULL)
+					out_str = strdup(f.m_val);
+				else
+					out_str = strdup("");
+			}
 			
 			/* Handle frame */
 			if (!strcmp(f.m_name, ID3_FRAME_TITLE))
 			{
-				strncpy(info->m_name, f.m_val, size = sizeof(info->m_name));
+				strncpy(info->m_name, out_str, size = sizeof(info->m_name));
 				info->m_name[size - 1] = 0;
 			}
 			else if (!strcmp(f.m_name, ID3_FRAME_ARTIST))
 			{
-				strncpy(info->m_artist, f.m_val, size = sizeof(info->m_artist));
+				strncpy(info->m_artist, out_str, size = sizeof(info->m_artist));
 				info->m_artist[size - 1] = 0;
 			}
 			else if (!strcmp(f.m_name, ID3_FRAME_ALBUM))
 			{
-				strncpy(info->m_album, f.m_val, size = sizeof(info->m_album));
+				strncpy(info->m_album, out_str, size = sizeof(info->m_album));
 				info->m_album[size - 1] = 0;
 			}
 			else if (!strcmp(f.m_name, ID3_FRAME_YEAR))
 			{
-				strncpy(info->m_year, f.m_val, size = sizeof(info->m_year));
+				strncpy(info->m_year, out_str, size = sizeof(info->m_year));
 				info->m_year[size - 1] = 0;
 			}
 			else if (!strcmp(f.m_name, ID3_FRAME_TRACK))
 			{
-				strncpy(info->m_track, f.m_val, size = sizeof(info->m_track));
+				strncpy(info->m_track, out_str, size = sizeof(info->m_track));
 				info->m_track[size - 1] = 0;
 			}
 			else if (!strcmp(f.m_name, ID3_FRAME_COMMENT))
 			{
-				strncpy(info->m_comments, f.m_val, 
+				strncpy(info->m_comments, out_str, 
 						size = sizeof(info->m_comments));
 				info->m_comments[size - 1] = 0;
 			}
 			else if (!strcmp(f.m_name, ID3_FRAME_GENRE))
 			{
-				byte genre = mp3_get_genre(f.m_val);
+				byte genre = mp3_get_genre(out_str);
 				if (genre == 0xFE)
 				{
 					info->m_genre = GENRE_ID_OWN_STRING;
-					strncpy(info->m_genre_data.m_text, f.m_val,
+					strncpy(info->m_genre_data.m_text, out_str,
 							size = sizeof(info->m_genre_data.m_text));
 					info->m_genre_data.m_text[size - 1] = 0;
 				}
@@ -532,8 +549,13 @@ bool_t mp3_get_info( char *filename, song_info_t *info )
 				}
 			}
 			else if (!strcmp(f.m_name, ID3_FRAME_FINISHED))
+			{
+				free(out_str);
+				id3_free_frame(&f);
 				break;
+			}
 
+			free(out_str);
 			id3_free_frame(&f);
 		}
 
@@ -936,6 +958,7 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_get_cur_time = mp3_get_cur_time;
 	fl->m_get_content_type = mp3_get_content_type;
 	mp3_print_msg = fl->m_print_msg;
+	mp3_pmng = fl->m_pmng;
 
 	fl->m_num_spec_funcs = 1;
 	fl->m_spec_funcs = (inp_spec_func_t *)malloc(sizeof(inp_spec_func_t) * 

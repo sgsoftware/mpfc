@@ -725,10 +725,10 @@ void wnd_clear( wnd_t *wnd, bool_t start_from_cursor )
 {
 	int i;
 
-/*	if (!start_from_cursor)
+	if (!start_from_cursor)
 		wnd_move(wnd, 0, 0);
 	for ( i = (start_from_cursor ? wnd_gety(wnd) : 0); i < wnd->m_height; i ++ )
-		wnd_printf(wnd, "\n");*/
+		wnd_printf(wnd, "\n");
 } /* End of 'wnd_clear' function */
 
 /* Totally redisplay window */
