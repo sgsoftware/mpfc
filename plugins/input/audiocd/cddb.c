@@ -78,7 +78,7 @@ song_info_t *cddb_get_trk_info( int track )
 	char tr[10];
 
 	if (cddb_data == NULL)
-		return NULL;
+		return si_new();
 
 	si = si_new();
 	for ( i = 0; i < cddb_data_len; i ++ )

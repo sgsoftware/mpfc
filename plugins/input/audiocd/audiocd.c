@@ -427,7 +427,7 @@ song_info_t *acd_get_info( char *filename, int *len )
 
 	/* Read whole disc info */
 	if (!cddb_read())
-		return NULL;
+		return si_new();
 
 	/* Save info for specified track */
 	return cddb_get_trk_info(track);
