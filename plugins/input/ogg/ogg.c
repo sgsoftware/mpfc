@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Ogg Vorbis input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 17.10.2003
+ * LAST UPDATE : 25.10.2003
  * NOTE        : Module prefix 'ogg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/soundcard.h>
+#include <pthread.h>
 #include <vorbis/codec.h>
 #include <vorbis/vorbisfile.h>
 #include "types.h"
@@ -71,7 +72,10 @@ void (*ogg_print_msg)( char *msg );
 /* Callback functions for libvorbis */
 int ogg_file_seek( void *datasource, ogg_int64_t offset, int whence );
 ov_callbacks ogg_callbacks = { file_read, ogg_file_seek, file_close, 
-	file_tell };
+								file_tell };
+
+/* Mutex for synchronizing operations */
+pthread_mutex_t ogg_mutex;
 
 /* Start playing */
 bool_t ogg_start( char *filename )
@@ -89,6 +93,9 @@ bool_t ogg_start( char *filename )
 		file_close(fd);
 		return FALSE;
 	}
+
+	/* Create mutex */
+	pthread_mutex_init(&ogg_mutex, NULL);
 
 	/* Get audio parameters */
 	ogg_fmt = AFMT_S16_LE;
@@ -116,7 +123,22 @@ void ogg_end( void )
 		ogg_save_info(fname, &ogg_info);
 		ogg_need_save_info = FALSE;
 	}
+
+	/* Destroy mutex */
+	pthread_mutex_destroy(&ogg_mutex);
 } /* End of 'ogg_end' function */
+
+/* Lock mutex */
+void ogg_lock( void )
+{
+	pthread_mutex_lock(&ogg_mutex);
+} /* End of 'ogg_lock' function */
+
+/* Unlock mutex */
+void ogg_unlock( void )
+{
+	pthread_mutex_unlock(&ogg_mutex);
+} /* End of 'ogg_unlock' function */
 
 /* Get supported formats */
 void ogg_get_formats( char *buf )
@@ -156,8 +178,12 @@ int ogg_get_len( char *filename )
 /* Get stream */
 int ogg_get_stream( void *buf, int size ) 
 {
-	int current_section;
-	return ov_read(&ogg_vf, buf, size, 0, 2, 1, &current_section);
+	int current_section, ret;
+
+	ogg_lock();
+	ret = ov_read(&ogg_vf, buf, size, 0, 2, 1, &current_section);
+	ogg_unlock();
+	return ret;
 } /* End of 'ogg_get_stream' function */
 
 /* Seek song */
@@ -167,7 +193,9 @@ void ogg_seek( int val )
 	if (file_get_type(ogg_filename) != FILE_TYPE_REGULAR)
 		return;
 	
+	ogg_lock();
 	ov_time_seek(&ogg_vf, val);
+	ogg_unlock();
 } /* End of 'ogg_seek' function */
 
 /* Get audio parameters */
@@ -329,9 +357,9 @@ bool_t ogg_get_info( char *filename, song_info_t *info )
 		info->m_genre = GENRE_ID_UNKNOWN;
 		info->m_only_own = TRUE;
 		sprintf(info->m_own_data, 
-				"Nominal bitrate: %i kb/s\n"
+				_("Nominal bitrate: %i kb/s\n"
 				"Samplerate: %i Hz\n"
-				"Channels: %i",
+				"Channels: %i"),
 				ogg_vi->bitrate_nominal / 1000, ogg_vi->rate, 
 				ogg_vi->channels);
 		return TRUE;
@@ -380,11 +408,11 @@ bool_t ogg_get_info( char *filename, song_info_t *info )
 	if (vi != NULL)
 	{
 		sprintf(info->m_own_data, 
-				"Nominal bitrate: %i kb/s\n"
+				_("Nominal bitrate: %i kb/s\n"
 				"Samplerate: %i Hz\n"
 				"Channels: %i\n"
 				"Length: %i seconds\n"
-				"File size: %i bytes",
+				"File size: %i bytes"),
 				vi->bitrate_nominal / 1000, vi->rate, vi->channels, 
 				(int)ov_time_total(&vf, -1), util_get_file_size(filename));
 	}
@@ -393,6 +421,7 @@ bool_t ogg_get_info( char *filename, song_info_t *info )
 	/* Close file */
 	ov_clear(&vf);
 	return TRUE;
+	return FALSE;
 } /* End of 'ogg_get_info' function */
 
 /* Get functions list */
@@ -593,7 +622,7 @@ void _fini( void )
 int ogg_file_seek( void *datasource, ogg_int64_t offset, int whence )
 {
 	file_t *fd = (file_t *)datasource;
-	
+
 	if (fd->m_type == FILE_TYPE_HTTP)
 		return -1;
 	else

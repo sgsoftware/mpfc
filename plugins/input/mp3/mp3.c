@@ -567,29 +567,29 @@ bool_t mp3_get_info( char *filename, song_info_t *info )
 		info->m_genre = GENRE_ID_UNKNOWN;
 		info->m_only_own = TRUE;
 		sprintf(info->m_own_data, 
-			"MPEG %s, layer %i\n"
+			_("MPEG %s, layer %i\n"
 			"Bitrate: %i kb/s\n"
 			"Samplerate: %i Hz\n"
 			"%s\n"
 			"Error protection: %s\n"
 			"Copyright: %s\n"
 			"Original: %s\n"
-			"Emphasis: %s",
+			"Emphasis: %s"),
 			(mp3_head.flags & MAD_FLAG_MPEG_2_5_EXT) ? "2.5" : "1",
 			(mp3_head.layer == MAD_LAYER_I) ? 1 : 
 				(mp3_head.layer == MAD_LAYER_II ? 2 : 3),
 			mp3_head.bitrate / 1000,
 			mp3_head.samplerate,
-			(mp3_head.mode == MAD_MODE_SINGLE_CHANNEL) ? "Single channel" :
-				(mp3_head.mode == MAD_MODE_DUAL_CHANNEL ? "Dual channel" :
-				 (mp3_head.mode == MAD_MODE_JOINT_STEREO ? "Joint Stereo" : 
-				  "Stereo")),
-			(mp3_head.flags & MAD_FLAG_PROTECTION) ? "Yes" : "No",
-			(mp3_head.flags & MAD_FLAG_COPYRIGHT) ? "Yes" : "No",
-			(mp3_head.flags & MAD_FLAG_ORIGINAL) ? "Yes" : "No",
-			mp3_head.emphasis == MAD_EMPHASIS_NONE ? "None" :
+			(mp3_head.mode == MAD_MODE_SINGLE_CHANNEL) ? _("Single channel") :
+				(mp3_head.mode == MAD_MODE_DUAL_CHANNEL ? _("Dual channel") :
+				 (mp3_head.mode == MAD_MODE_JOINT_STEREO ? _("Joint Stereo") : 
+				  _("Stereo"))),
+			(mp3_head.flags & MAD_FLAG_PROTECTION) ? _("Yes") : _("No"),
+			(mp3_head.flags & MAD_FLAG_COPYRIGHT) ? _("Yes") : _("No"),
+			(mp3_head.flags & MAD_FLAG_ORIGINAL) ? _("Yes") : _("No"),
+			mp3_head.emphasis == MAD_EMPHASIS_NONE ? _("None") :
 		  		(mp3_head.emphasis == MAD_EMPHASIS_50_15_US ? 
-				 "50/15 microseconds" : "CCITT J.17"));
+				 _("50/15 microseconds") : _("CCITT J.17")));
 		return TRUE;
 	}
 	
@@ -684,7 +684,7 @@ bool_t mp3_get_info( char *filename, song_info_t *info )
 		len = filesize / (head.bitrate >> 3);
 		count = mad_timer_count(head.duration, MAD_UNITS_MILLISECONDS);
 		sprintf(info->m_own_data, 
-			"MPEG %s, layer %i\n"
+			_("MPEG %s, layer %i\n"
 			"Bitrate: %i kb/s\n"
 			"Samplerate: %i Hz\n"
 			"%s\n"
@@ -694,22 +694,22 @@ bool_t mp3_get_info( char *filename, song_info_t *info )
 			"Emphasis: %s\n"
 			"approx. %i frames\n"
 			"Length: %i seconds\n"
-			"File size: %i bytes",
+			"File size: %i bytes"),
 			(head.flags & MAD_FLAG_MPEG_2_5_EXT) ? "2.5" : "1",
 			(head.layer == MAD_LAYER_I) ? 1 : (head.layer == MAD_LAYER_II ?
 											   2 : 3),
 			head.bitrate / 1000,
 			head.samplerate,
-			(head.mode == MAD_MODE_SINGLE_CHANNEL) ? "Single channel" :
-				(head.mode == MAD_MODE_DUAL_CHANNEL ? "Dual channel" :
-				 (head.mode == MAD_MODE_JOINT_STEREO ? "Joint Stereo" : 
-				  "Stereo")),
-			(head.flags & MAD_FLAG_PROTECTION) ? "Yes" : "No",
-			(head.flags & MAD_FLAG_COPYRIGHT) ? "Yes" : "No",
-			(head.flags & MAD_FLAG_ORIGINAL) ? "Yes" : "No",
-			head.emphasis == MAD_EMPHASIS_NONE ? "None" :
+			(head.mode == MAD_MODE_SINGLE_CHANNEL) ? _("Single channel") :
+				(head.mode == MAD_MODE_DUAL_CHANNEL ? _("Dual channel") :
+				 (head.mode == MAD_MODE_JOINT_STEREO ? _("Joint Stereo") : 
+				  _("Stereo"))),
+			(head.flags & MAD_FLAG_PROTECTION) ? _("Yes") : _("No"),
+			(head.flags & MAD_FLAG_COPYRIGHT) ? _("Yes") : _("No"),
+			(head.flags & MAD_FLAG_ORIGINAL) ? _("Yes") : _("No"),
+			head.emphasis == MAD_EMPHASIS_NONE ? _("None") :
 		  		(head.emphasis == MAD_EMPHASIS_50_15_US ? 
-				 "50/15 microseconds" : "CCITT J.17"),
+				 _("50/15 microseconds") : _("CCITT J.17")),
 			count == 0 ? 0 : len * 1000 / count, len, filesize);
 	}
 	mad_header_finish(&head);

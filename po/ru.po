@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: konsamp 0.1\n"
-"POT-Creation-Date: 2003-10-04 21:07+0400\n"
+"POT-Creation-Date: 2003-10-31 22:11+0300\n"
 "PO-Revision-Date: 2003-02-13 09:15+0300\n"
 "Last-Translator: Sergey E. Galanov <sgsoftware@mail.ru>\n"
 "Language-Team: Russian <sgsoftware@mail.ru>\n"
@@ -22,136 +22,133 @@ msgstr "Ошибка инициализии : %s\n"
 #: src/player.c:380
 msgid ""
 "SG Software Media Player For Console\n"
-"version 1.0alpha\n"
+"version 1.0\n"
 msgstr ""
 "Плейер для консоли от SG Software\n"
-"версия 1.0-альфа\n"
+"версия 1.0\n"
 
-#: src/player.c:586
+#: src/player.c:591
 msgid "Unable to initialize output plugin"
 msgstr "Не могу инициализировать выходной плагин"
 
-#: src/player.c:768
+#: src/player.c:773
 msgid "Enter file (or directory) name: "
 msgstr "Введите имя файла (или каталога): "
 
-#: src/player.c:793
+#: src/player.c:798
 msgid "Enter file name: "
 msgstr "Введите имя файла: "
 
-#: src/player.c:806
+#: src/player.c:811
 msgid "Play list saved"
 msgstr "Плей-лист сохранен"
 
-#: src/player.c:807
+#: src/player.c:812
 msgid "Unable to save play list"
 msgstr "Не могу сохранить плей-лист"
 
-#: src/player.c:821
+#: src/player.c:826
 #, c-format
 msgid "Removed %i songs"
 msgstr "Удалено %i песен"
 
-#: src/player.c:834
+#: src/player.c:839
 msgid "Sort globally? (Yes/No)"
 msgstr "Сортировать глобально? (Yes/No)"
 
-#: src/player.c:846
+#: src/player.c:851
 msgid "Sort by: (T)itle, (F)ile name, (P)ath and file name"
 msgstr "Сортировать по: Заголовку(T), Имени файла(F), Пути и имени(P)"
 
-#: src/player.c:878
+#: src/player.c:883
 msgid "Enter search string: "
 msgstr "Введите строку для поиска: "
 
-#: src/player.c:892 src/player.c:1364
+#: src/player.c:897 src/player.c:1370
 msgid "String not found"
 msgstr "Строка не найдена"
 
-#: src/player.c:894 src/player.c:1366
+#: src/player.c:899 src/player.c:1372
 msgid "String found"
 msgstr "Строка найдена"
 
-#: src/player.c:931
+#: src/player.c:936
 msgid "Song name: "
 msgstr "Название песни: "
 
-#: src/player.c:933
+#: src/player.c:938
 msgid "Artist name: "
 msgstr "Исполнитель: "
 
-#: src/player.c:935
+#: src/player.c:940
 msgid "Album name: "
 msgstr "Альбом: "
 
-#: src/player.c:937
+#: src/player.c:942
 msgid "Year: "
 msgstr "Год: "
 
-#: src/player.c:939
+#: src/player.c:944
 msgid "Track No: "
 msgstr "Номер трека: "
 
-#: src/player.c:941
+#: src/player.c:946
 msgid "Comments: "
 msgstr "Комментарии: "
 
-#: src/player.c:943
+#: src/player.c:948
 msgid "Genre: "
 msgstr "Жанр: "
 
-#: src/player.c:1116
+#: src/player.c:1121
 msgid "Variables manager"
 msgstr "Менеджер переменных"
 
-#: src/player.c:1123 src/player.c:1675
+#: src/player.c:1128 src/player.c:1681
 msgid "Value: "
 msgstr "Значение: "
 
-#: src/player.c:1126 src/player.c:1671
+#: src/player.c:1131 src/player.c:1677
 msgid "New variable"
 msgstr "Новая переменная"
 
-#: src/player.c:1129
+#: src/player.c:1134
 msgid "Save"
 msgstr "Сохранить"
 
-#: src/player.c:1132
+#: src/player.c:1137
 msgid "Restore value"
 msgstr "Восстановить переменную"
 
-#: src/player.c:1166
+#: src/player.c:1171
 msgid "Enter object name: "
 msgstr "Введите имя объекта: "
 
-#: src/player.c:1536
+#: src/player.c:1542
 msgid "Enter repeat value for the next command: "
 msgstr "Введите число повторений для следующей команды: "
 
-#: src/player.c:1582
+#: src/player.c:1588
 msgid "Enter variable name: "
 msgstr "Введите имя переменной: "
 
-#: src/player.c:1601
+#: src/player.c:1607
 msgid "Enter variable value: "
 msgstr "Введите значение переменной: "
 
-#: src/player.c:1673
+#: src/player.c:1679
 msgid "Name: "
 msgstr "Имя: "
 
-#: src/player.c:1805
+#: src/player.c:1811
 msgid "Enter command: "
-msgstr "Введить команду"
+msgstr "Введите команду: "
 
-#: src/player.c:1860
-msgid ""
-"Search for: (T)itle, (N)ame, (A)rtist, A(l)bum, (Y)ear, (G)enre, (O)wn data"
-msgstr ""
-"Поиск по: заголовку(T), исполнителю(A), альбому(L), году(Y), жанру(G), доп. "
-"информации(O)"
+#: src/player.c:1866
+msgid "Search for: (T)itle, (N)ame, (A)rtist, A(l)bum, (Y)ear, (G)enre"
+msgstr "Поиск по: заголовку(T), исполнителю(A), альбому(L), году(Y), жанру(G)"
 
-#: src/plist.c:765
+#: src/plist.c:880
 #, c-format
 msgid "%i/%i songs; %i:%02i:%02i/%i:%02i:%02i"
 msgstr "%i/%i песен; %i:%02i:%02i/%i:%02i:%02i"
@@ -162,11 +159,11 @@ msgstr "q:\t\t Выйти из программы"
 
 #: src/help_screen.c:80
 msgid "j or <Down>:\t Move one line down"
-msgstr "j или <Down>:\t Спуститься на одну строку"
+msgstr "j или <Вниз>:\t Спуститься на одну строку"
 
 #: src/help_screen.c:81
 msgid "k or <Up>:\t Move one line up"
-msgstr "k или <Up>:\t Подняться на одну строку"
+msgstr "k или <Вверх>:\t Подняться на одну строку"
 
 #: src/help_screen.c:82
 msgid "u or <PgUp>:\t Move one screen up"
@@ -222,15 +219,15 @@ msgstr "z:\t\t Предыдущая песня"
 
 #: src/help_screen.c:96
 msgid "<:\t\t Scroll song 10 seconds up"
-msgstr "h:\t\t Сместиться на 10 секунд назад"
+msgstr "<:\t\t Сместиться на 10 секунд назад"
 
 #: src/help_screen.c:97
 msgid ">:\t\t Scroll song 10 seconds down"
-msgstr "l:\t\t Сместиться на 10 секунд вперед"
+msgstr ">:\t\t Сместиться на 10 секунд вперед"
 
 #: src/help_screen.c:98
-msgid "<Number>t:\t Go to <Number>th second in song"
-msgstr "<Число>g:\t Сместиться к секунде <Число>"
+msgid "<Number>gt:\t Go to <Number>th second in song"
+msgstr "<Число>gt:\t Сместиться к секунде <Число>"
 
 #: src/help_screen.c:99
 msgid "+:\t\t Increase volume"
@@ -321,8 +318,8 @@ msgid "U:\t\t Undo"
 msgstr "U:\t\t Отменить"
 
 #: src/help_screen.c:121
-msgid "R:\t\t Redo"
-msgstr "R:\t\t Восстановить"
+msgid "D:\t\t Redo"
+msgstr "D:\t\t Восстановить"
 
 #: src/help_screen.c:122
 msgid "I:\t\t Reload songs information"
@@ -358,7 +355,7 @@ msgstr "`<Буква>:\t Перейти к метке <Буква>"
 
 #: src/help_screen.c:130
 msgid "``:\t\t Go to previous position"
-msgstr "``:\t\t Перейти в предыдущей позиции"
+msgstr "``:\t\t Перейти к предыдущей позиции"
 
 #: src/help_screen.c:131
 msgid "<Backspace>:\t Go to previous time"
@@ -372,17 +369,19 @@ msgstr "^l:\t\t Обновить экран"
 msgid "?:\t\t This help screen"
 msgstr "?:\t\t Этот экран помощи"
 
-#: src/help_screen.c:153
+#: src/help_screen.c:154
 msgid "MPFC Default Key Bindings"
 msgstr "Стандартные клавиши MPFC"
 
-#~ msgid "MPFC Help Screen"
-#~ msgstr "Экран помощи MPFC"
+#~ msgid "MPFC Equalizer"
+#~ msgstr "Эквалайзер MPFC"
+
+#~ msgid "Load preset from a Winamp EQF file: "
+#~ msgstr "Загрузить из файла Winamp EQF"
 
 #~ msgid "No error"
 #~ msgstr "Нет ошибки"
 
-#, fuzzy
 #~ msgid "No such file or directory"
 #~ msgstr "Нет такого файла или директории"
 
@@ -394,3 +393,159 @@ msgstr "Стандартные клавиши MPFC"
 
 #~ msgid "Unknown file type"
 #~ msgstr "Неизвестный формат файла"
+
+#~ msgid "Invalid command line parameters"
+#~ msgstr "Неправильные параметры командной строки"
+
+#~ msgid "Input plugin error"
+#~ msgstr "Ошибка входного плагина"
+
+#~ msgid "Output plugin error"
+#~ msgstr "Ошибка выходного плагина"
+
+#~ msgid "Effect plugin error"
+#~ msgstr "Ошибка плагина эффектов"
+
+#~ msgid ""
+#~ "MPEG %s, layer %i\n"
+#~ "Bitrate: %i kb/s\n"
+#~ "Samplerate: %i Hz\n"
+#~ "%s\n"
+#~ "Error protection: %s\n"
+#~ "Copyright: %s\n"
+#~ "Original: %s\n"
+#~ "Emphasis: %s"
+#~ msgstr ""
+#~ "MPEG %s, layer %i\n"
+#~ "Битрейт: :i кб/с\n"
+#~ "Частота сэмплов: %i Гц\n"
+#~ "%s\n"
+#~ "Защита от ошибок: %s\n"
+#~ "Копирайт: %s\n"
+#~ "Подлинный: %d\n"
+#~ "Акцент: %s"
+
+#~ msgid "Single channel"
+#~ msgstr "Один канал"
+
+#~ msgid "Dual channel"
+#~ msgstr "Два канала"
+
+#~ msgid "Joint Stereo"
+#~ msgstr "Объединенное стерео"
+
+#~ msgid "Stereo"
+#~ msgstr "Стерео"
+
+#~ msgid "Yes"
+#~ msgstr "Да"
+
+#~ msgid "No"
+#~ msgstr "Нет"
+
+#~ msgid "None"
+#~ msgstr "Нет"
+
+#~ msgid "50/15 microseconds"
+#~ msgstr "50/15 микросекунд"
+
+#~ msgid "CCITT J.17"
+#~ msgstr "CCITT J.17"
+
+#~ msgid ""
+#~ "MPEG %s, layer %i\n"
+#~ "Bitrate: %i kb/s\n"
+#~ "Samplerate: %i Hz\n"
+#~ "%s\n"
+#~ "Error protection: %s\n"
+#~ "Copyright: %s\n"
+#~ "Original: %s\n"
+#~ "Emphasis: %s\n"
+#~ "approx. %i frames\n"
+#~ "Length: %i seconds\n"
+#~ "File size: %i bytes"
+#~ msgstr ""
+#~ "MPEG %s, layer %i\n"
+#~ "Битрейт: :i кб/с\n"
+#~ "Частота сэмплов: %i Гц\n"
+#~ "%s\n"
+#~ "Защита от ошибок: %s\n"
+#~ "Копирайт: %s\n"
+#~ "Подлинный: %d\n"
+#~ "Акцент: %s\n"
+#~ "примерно :i фреймов\n"
+#~ "Длина: %i секунд\n"
+#~ "Размер файла: %i байт"
+
+#~ msgid ""
+#~ "Nominal bitrate: %i kb/s\n"
+#~ "Samplerate: %i Hz\n"
+#~ "Channels: %i"
+#~ msgstr ""
+#~ "Номинальный битрейт: %i кб/с\n"
+#~ "Частота сэмплов: %i Гц\n"
+#~ "Число каналов: %i"
+
+#~ msgid ""
+#~ "Nominal bitrate: %i kb/s\n"
+#~ "Samplerate: %i Hz\n"
+#~ "Channels: %i\n"
+#~ "Length: %i seconds\n"
+#~ "File size: %i bytes"
+#~ msgstr ""
+#~ "Номинальный битрейт: %i кб/с\n"
+#~ "Частота сэмплов: %i Гц\n"
+#~ "Число каналов: %i\n"
+#~ "Длина: %i секунд\n"
+#~ "Размер файла: %i байт"
+
+#~ msgid "Input truncated or empty."
+#~ msgstr "Ввод обрезан или пуст."
+
+#~ msgid "Input is not an Ogg bitstream."
+#~ msgstr "Ввод не является потоком Ogg."
+
+#~ msgid "Error reading first page of Ogg bitstream."
+#~ msgstr "Ошибка при чтении первой страницы потока Ogg."
+
+#~ msgid "Error reading initial header packet."
+#~ msgstr "Ошибка при чтении начального пакета заголовка."
+
+#~ msgid "Ogg bitstream does not contain vorbis data."
+#~ msgstr "Поток Ogg не содержит данных vorbis."
+
+#~ msgid "Corrupt secondary header."
+#~ msgstr "Вторичный заголовок поврежден."
+
+#~ msgid "EOF before end of vorbis headers."
+#~ msgstr "Конец файла перед концом заголовков vorbis."
+
+#~ msgid "Corrupt or missing data, continuing..."
+#~ msgstr "Данные повреждены или отсутствуют, продолжаю..."
+
+#~ msgid ""
+#~ "Error writing stream to output. Output stream may be corrupted or "
+#~ "truncated."
+#~ msgstr "Ошибка при записи потока. Выходной поток поврежден или обрезан."
+
+#~ msgid ""
+#~ "File size: %i bytes\n"
+#~ "Length: %i seconds\n"
+#~ "Bits/sample: %i\n"
+#~ "Format: PCM\n"
+#~ "Channels: %i\n"
+#~ "Samplerate: %i Hz\n"
+#~ "Bytes/sec: %i\n"
+#~ "Block align: %i"
+#~ msgstr ""
+#~ "Размер фала: %i байт\n"
+#~ "Длина: %i секунд\n"
+#~ "Бит/сэмпл: %i\n"
+#~ "Формат: PCM\n"
+#~ "Число каналов: %i\n"
+#~ "Частота сэмплов: %i\n"
+#~ "Байт/сек: %i\n"
+#~ "Выравнивание блока: %i"
+
+#~ msgid "MPFC Help Screen"
+#~ msgstr "Экран помощи MPFC"

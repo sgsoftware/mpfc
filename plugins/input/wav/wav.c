@@ -268,14 +268,14 @@ bool_t wav_get_info( char *filename, song_info_t *info )
 	memset(info, 0, sizeof(*info));
 	info->m_only_own = TRUE;
 	sprintf(info->m_own_data, 
-			"File size: %i bytes\n"
+			_("File size: %i bytes\n"
 			"Length: %i seconds\n"
 			"Bits/sample: %i\n"
 			"Format: PCM\n"
 			"Channels: %i\n"
 			"Samplerate: %i Hz\n"
 			"Bytes/sec: %i\n"
-			"Block align: %i",
+			"Block align: %i"),
 			size, len, bits, channels, samplerate, bps, block_align);
 	return TRUE;
 } /* End of 'wav_get_info' function */ 

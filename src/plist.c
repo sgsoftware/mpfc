@@ -972,7 +972,7 @@ void plist_add_obj( plist_t *pl, char *name )
 /* Move selection in play list */
 void plist_move_sel( plist_t *pl, int y, bool_t relative )
 {
-	int start, end, i, j;
+	int start, end, i, j, num_songs;
 	song_t *cur_song;
 	
 	if (pl == NULL)
@@ -996,6 +996,7 @@ void plist_move_sel( plist_t *pl, int y, bool_t relative )
 		cur_song = pl->m_list[pl->m_cur_song];
 	else
 		cur_song = NULL;
+	num_songs = end - start + 1;
 
 	/* Store undo information */
 	if (player_store_undo)
@@ -1013,19 +1014,21 @@ void plist_move_sel( plist_t *pl, int y, bool_t relative )
 	/* Move */
 	if (y - start < 0)
 	{
-		for ( i = start, j = 0; i <= end; i ++, j ++ )
+		for ( i = start; i > y; i -- )
 		{
-			song_t *s = pl->m_list[y + j];
-			pl->m_list[y + j] = pl->m_list[i];
-			pl->m_list[i] = s;
+			song_t *s = pl->m_list[i - 1];
+			memmove(&pl->m_list[i - 1], &pl->m_list[i], 
+					num_songs * sizeof(song_t *));
+			pl->m_list[i + num_songs - 1] = s;
 		}
 	}
 	else
 	{
-		for ( i = end, j = end - start; i >= start; i --, j -- )
+		for ( i = start; i < y; i ++ )
 		{
-			song_t *s = pl->m_list[y + j];
-			pl->m_list[y + j] = pl->m_list[i];
+			song_t *s = pl->m_list[i + num_songs];
+			memmove(&pl->m_list[i + 1], &pl->m_list[i], 
+					num_songs * sizeof(song_t *));
 			pl->m_list[i] = s;
 		}
 	}
@@ -1039,6 +1042,17 @@ void plist_move_sel( plist_t *pl, int y, bool_t relative )
 			pl->m_cur_song = i;
 			break;
 		}
+
+	/* Scroll if need */
+	if (pl->m_sel_end < pl->m_scrolled || 
+			pl->m_sel_end >= pl->m_scrolled + pl->m_height)
+	{
+		pl->m_scrolled += (y - start);
+		if (pl->m_scrolled < 0)
+			pl->m_scrolled = 0;
+		else if (pl->m_scrolled >= pl->m_len)
+			pl->m_scrolled = pl->m_len - 1;
+	}
 
 	/* Unlock play list */
 	plist_unlock(pl);
