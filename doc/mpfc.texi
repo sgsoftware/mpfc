@@ -1266,6 +1266,18 @@ Disk Writer plugin is used to save the audio output to disk. Each song that
 you play is stored in a WAV file. The name of this file is same with the file
 name of the song you play and path is read from ``path'' variable.
 
+This plugin can also encode this file using some external program (by default
+``oggenc''). This behaviour is controlled by ``encode'' variable. The file
+being encoded is split into parts of fixed length (in time units; by default
+10 minutes). Use ``fragment-size'' to set another value (in seconds).
+Also you can specify any other encoder with variable ``encode-command''.
+This variable should contain a shell command containing ``%i'' and ``%o''
+patterns (they expand into the input file name and output file name without
+extension respectively). For example:
+@example
+lame --quiet "%i" "%o.mp3"
+@end example
+
 @node Effect, Charsets, Output, Plugins
 @section Effect plugins
 To enable effect plugin ``plugin'' set variable ``enable-effect-plugin''.

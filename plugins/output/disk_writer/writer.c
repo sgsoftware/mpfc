@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Disk writer output plugin functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 30.10.2004
+ * LAST UPDATE : 14.02.2005
  * NOTE        : Module prefix 'dw'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -33,13 +33,18 @@
 #include "pmng.h"
 #include "wnd.h"
 #include "wnd_dialog.h"
+#include "wnd_checkbox.h"
 #include "wnd_editbox.h"
 
 /* Header size */
 #define DW_HEAD_SIZE 44
 
+/* Default encoding fragment size (in seconds) */
+#define DW_DEFAULT_FRAGMENT_SIZE 600
+
 /* Output file handler */
 static file_t *dw_fd = NULL;
+static char dw_file_name[MAX_FILE_NAME];
 
 /* Song parameters */
 static short dw_channels = 2;
@@ -60,29 +65,26 @@ static char *dw_author = "Sergey E. Galanov <sgsoftware@mail.ru>";
 /* Logger object */
 static logger_t *dw_log = NULL;
 
-/* Start plugin */
-bool_t dw_start( void )
+/* Encoder thread data */
+static pthread_t dw_encoder_tid = -1;
+static bool_t dw_encoder_stop = FALSE;
+static bool_t dw_encode = FALSE;
+static int dw_fragment_index = 0, dw_head_fragment = 0, dw_fragment_size;
+
+/* Forward declarations */
+static void *dw_encoder_thread( void *arg );
+static void dw_write_head( void );
+
+/* Prepare a new file to write audio data to */
+bool_t dw_prepare_file( void )
 {
-	char name[MAX_FILE_NAME], full_name[MAX_FILE_NAME];
-	char *str;
-	int i;
+	char full_name[MAX_FILE_NAME], suffix[30] = ".wav";
 
 	/* Get output file name */
-	str = cfg_get_var(dw_root_cfg, "cur-song-name");
-	if (str == NULL)
-		return FALSE;
-	util_strncpy(name, str, sizeof(name));
-	str = strrchr(name, '.');
-	if (str != NULL)
-		strcpy(str, ".wav");
-	else
-		strcat(name, ".wav");
-	util_replace_char(name, ':', '_');
-	str = cfg_get_var(dw_cfg, "path");
-	if (str != NULL)
-		snprintf(full_name, sizeof(full_name), "%s/%s", str, name);
-	else
-		snprintf(full_name, sizeof(full_name), "%s", name);
+	util_strncpy(full_name, dw_file_name, sizeof(full_name));
+	if (dw_encode)
+		snprintf(suffix, sizeof(suffix), "-%03d.wav", dw_fragment_index);
+	strcat(full_name, suffix);
 
 	/* Try to open file */
 	dw_fd = file_open(full_name, "w+b", NULL);
@@ -95,6 +97,63 @@ bool_t dw_start( void )
 	/* Leave space for header */
 	file_seek(dw_fd, DW_HEAD_SIZE, SEEK_SET);
 	dw_file_size = DW_HEAD_SIZE;
+} /* End of 'dw_prepare_file' function */
+
+/* Finish work with a file */
+void dw_finish_file( void )
+{
+	dw_write_head();
+	file_close(dw_fd);
+	dw_fd = NULL;
+} /* End of 'dw_finish_file' function */
+
+/* Start plugin */
+bool_t dw_start( void )
+{
+	char name[MAX_FILE_NAME];
+	char *str;
+	int i;
+
+	/* Get output file name (without extension and fragment index) */
+	str = cfg_get_var(dw_root_cfg, "cur-song-name");
+	if (str == NULL)
+		return FALSE;
+	util_strncpy(name, str, sizeof(name));
+	str = strrchr(name, '.');
+	if (str != NULL)
+		*str = 0;
+	util_replace_char(name, ':', '_');
+	str = cfg_get_var(dw_cfg, "path");
+	if (str != NULL)
+		snprintf(dw_file_name, sizeof(dw_file_name), "%s/%s", str, name);
+	else
+		snprintf(dw_file_name, sizeof(dw_file_name), "%s", name);
+
+	/* Check if we should encode the stream */
+	if (cfg_get_var_bool(dw_cfg, "encode"))
+	{
+		dw_encode = TRUE;
+		dw_fragment_index = 0;
+
+		/* Get one fragment size and convert to the respective file size */
+		dw_fragment_size = cfg_get_var_int(dw_cfg, "fragment-size");
+		if (dw_fragment_size <= 0)
+			dw_fragment_size = DW_DEFAULT_FRAGMENT_SIZE;
+		dw_fragment_size *= (dw_freq * dw_channels);
+		if (dw_fmt != AFMT_U8 && dw_fmt != AFMT_S8)
+			dw_fragment_size *= 2;
+
+		/* Start encoder thread */
+		dw_encoder_tid = -1;
+		dw_encoder_stop = FALSE;
+		dw_head_fragment = 0;
+		if (pthread_create(&dw_encoder_tid, NULL, dw_encoder_thread, NULL))
+			dw_encode = FALSE;
+	}
+	
+	/* Prepare the file */
+	if (!dw_prepare_file())
+		return FALSE;
 	return TRUE;
 } /* End of 'dw_start' function */
 
@@ -138,10 +197,12 @@ static void dw_write_head( void )
 void dw_end( void )
 {
 	if (dw_fd != NULL)
+		dw_finish_file();
+	if (dw_encoder_tid)
 	{
-		dw_write_head();
-		file_close(dw_fd);
-		dw_fd = NULL;
+		dw_encoder_stop = TRUE;
+		pthread_join(dw_encoder_tid, NULL);
+		dw_encoder_tid = -1;
 	}
 } /* End of 'dw_end' function */
 
@@ -153,6 +214,12 @@ void dw_play( void *buf, int size )
 	
 	file_write(buf, 1, size, dw_fd);
 	dw_file_size += size;
+	if (dw_encode && dw_file_size >= dw_fragment_size)
+	{
+		dw_finish_file();
+		dw_fragment_index ++;
+		dw_prepare_file();
+	}
 } /* End of 'dw_play' function */
 
 /* Set channels number */
@@ -173,12 +240,104 @@ void dw_set_fmt( dword fmt )
 	dw_fmt = fmt;
 } /* End of 'dw_set_bits' function */
 
+/* Encoder thread function */
+static void *dw_encoder_thread( void *arg )
+{
+	for ( ;; )
+	{
+		/* Do encoding */
+		while ((dw_head_fragment < dw_fragment_index) ||
+				(dw_head_fragment == dw_fragment_index && dw_encoder_stop))
+		{
+			char cmd[MAX_FILE_NAME], file_name[MAX_FILE_NAME], 
+				 full_name[MAX_FILE_NAME];
+			char *cmd_format;
+			int cmd_len;
+
+			/* Construct file name */
+			snprintf(file_name, sizeof(file_name), "%s-%03d", dw_file_name,
+					dw_head_fragment);
+			snprintf(full_name, sizeof(full_name), "%s.wav", file_name);
+
+			/* Format encoder command */
+			cmd_format = cfg_get_var(dw_cfg, "encode-command");
+			if (cmd_format != NULL && strcmp(cmd_format, ""))
+			{
+				/* Substitute tokens in the format string */
+				for ( cmd_len = 0; *cmd_format; cmd_format ++ )
+				{
+					/* Common character */
+					if ((*cmd_format) != '%')
+						cmd[cmd_len ++] = (*cmd_format);
+					/* A token */
+					else
+					{
+						char ch;
+
+						/* Get format symbol */
+						cmd_format ++;
+						ch = (*cmd_format);
+
+						/* Input file name */
+						if (ch == 'i')
+						{
+							strncpy(&cmd[cmd_len], full_name, 
+									sizeof(cmd) - cmd_len);
+							cmd_len += strlen(full_name);
+						}
+						/* Output file name (without extension) */
+						else if (ch == 'o') 
+						{
+							strncpy(&cmd[cmd_len], file_name, 
+									sizeof(cmd) - cmd_len);
+							cmd_len += strlen(file_name);
+						}
+						/* Some other symbol */
+						else
+							cmd[cmd_len ++] = ch;
+					}
+					if (cmd_len >= sizeof(cmd))
+					{
+						cmd_len = sizeof(cmd) - 1;
+						break;
+					}
+				}
+				cmd[cmd_len] = 0;
+			}
+			/* Use default coder */
+			else
+			{
+				snprintf(cmd, sizeof(cmd), "oggenc -Q \"%s\"", full_name);
+			}
+			logger_status_msg(dw_log, 1, _("Encoding: %s"), cmd);
+			system(cmd);
+			unlink(full_name);
+			dw_head_fragment ++;
+		}
+		if (dw_encoder_stop)
+			break;
+		util_wait();
+	}
+	return NULL;
+} /* End of 'dw_encoder_thread' function */
+
 /* Handle 'ok_clicked' message for configuration dialog */
 wnd_msg_retcode_t dw_on_configure( wnd_t *wnd )
 {
-	editbox_t *eb = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "path"));
-	assert(eb);
-	cfg_set_var(dw_cfg, "path", EDITBOX_TEXT(eb));
+	editbox_t *eb_path, *eb_fragment, *eb_command;
+	checkbox_t *cb_encode;
+	
+	eb_path = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "path"));
+	cb_encode = CHECKBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "encode"));
+	eb_fragment = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd),
+				"fragment_size"));
+	eb_command = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), 
+				"encode_command"));
+	assert(eb_path && eb_fragment && eb_command && cb_encode);
+	cfg_set_var(dw_cfg, "path", EDITBOX_TEXT(eb_path));
+	cfg_set_var_bool(dw_cfg, "encode", cb_encode->m_checked);
+	cfg_set_var(dw_cfg, "fragment-size", EDITBOX_TEXT(eb_fragment));
+	cfg_set_var(dw_cfg, "encode-command", EDITBOX_TEXT(eb_command));
 	return WND_MSG_RETCODE_OK;
 } /* End of 'dw_on_configure' function */
 
@@ -186,10 +345,18 @@ wnd_msg_retcode_t dw_on_configure( wnd_t *wnd )
 void dw_configure( wnd_t *parent )
 {
 	dialog_t *dlg;
+	vbox_t *vbox;
 
 	dlg = dialog_new(parent, _("Configure disk writer plugin"));
 	filebox_new_with_label(WND_OBJ(dlg->m_vbox), _("P&ath to store: "), 
 			"path", cfg_get_var(dw_cfg, "path"), 'a', 50);
+	vbox = vbox_new(WND_OBJ(dlg->m_vbox), _("Encoder"), 0);
+	checkbox_new(WND_OBJ(vbox), _("&Enable encoder"),
+			"encode", 'e', cfg_get_var_bool(dw_cfg, "encode"));
+	editbox_new_with_label(WND_OBJ(vbox), _("F&ragment size: "), 
+			"fragment_size", cfg_get_var(dw_cfg, "fragment-size"), 'r', 50);
+	editbox_new_with_label(WND_OBJ(vbox), _("Encoder c&ommand: "),
+			"encode_command", cfg_get_var(dw_cfg, "encode-command"), 'o', 50);
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", dw_on_configure);
 	dialog_arrange_children(dlg);
 } /* End of 'dw_configure' function */
