@@ -3,9 +3,9 @@
  ******************************************************************/
 
 /* FILE NAME   : window.h
- * PURPOSE     : SG Konsamp. Interface for window functions.
+ * PURPOSE     : SG MPFC. Interface for window functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 9.08.2003
+ * LAST UPDATE : 31.08.2003
  * NOTE        : Module prefix 'wnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -24,8 +24,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef __SG_KONSAMP_WINDOW_H__
-#define __SG_KONSAMP_WINDOW_H__
+#ifndef __SG_MPFC_WINDOW_H__
+#define __SG_MPFC_WINDOW_H__
 
 #include <curses.h>
 #include <pthread.h>
@@ -47,6 +47,7 @@ struct tag_wnd_t;
 /* Window flags */
 #define WND_DIALOG						0x00000001
 #define WND_ITEM						0x00000002
+#define WND_NO_FOCUS					0x00000004
 
 /* Get macros */
 #define WND_OBJ(wnd)		((wnd_t *)(wnd))

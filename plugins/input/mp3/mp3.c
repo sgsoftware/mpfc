@@ -3,7 +3,7 @@
  * PURPOSE     : SG Konsamp. MP3 input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 13.08.2003
+ * LAST UPDATE : 2.09.2003
  * NOTE        : Module prefix 'mp3'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -525,7 +525,8 @@ bool mp3_get_info( char *filename, song_info_t *info )
 {
 	struct id3_file *file;
 	struct id3_tag *tag;
-	int i;
+	struct mad_header head;
+	int i, filesize, len;
 
 	/* Return temporary tag if we request for current playing song tag */
 	if (!strcmp(filename, mp3_file_name))
@@ -595,6 +596,42 @@ bool mp3_get_info( char *filename, song_info_t *info )
 
 	/* Close file */
 	id3_file_close(file);
+
+	/* Obtain additional song parameters */
+	mad_header_init(&head);
+	mp3_read_header(filename, &head);
+	filesize = util_get_file_size(filename);
+	len = filesize / (head.bitrate >> 3);
+	sprintf(info->m_own_data, 
+			"MPEG %s, layer %i\n"
+			"Bitrate: %i kb/s\n"
+			"Samplerate: %i Hz\n"
+			"%s\n"
+			"Error protection: %s\n"
+			"Copyright: %s\n"
+			"Original: %s\n"
+			"Emphasis: %s\n"
+			"approx. %i frames\n"
+			"Length: %i seconds\n"
+			"File size: %i bytes",
+			(head.flags & MAD_FLAG_MPEG_2_5_EXT) ? "2.5" : "1",
+			(head.layer == MAD_LAYER_I) ? 1 : (head.layer == MAD_LAYER_II ?
+											   2 : 3),
+			head.bitrate / 1000,
+			head.samplerate,
+			(head.mode == MAD_MODE_SINGLE_CHANNEL) ? "Single channel" :
+				(head.mode == MAD_MODE_DUAL_CHANNEL ? "Dual channel" :
+				 (head.mode == MAD_MODE_JOINT_STEREO ? "Joint Stereo" : 
+				  "Stereo")),
+			(head.flags & MAD_FLAG_PROTECTION) ? "Yes" : "No",
+			(head.flags & MAD_FLAG_COPYRIGHT) ? "Yes" : "No",
+			(head.flags & MAD_FLAG_ORIGINAL) ? "Yes" : "No",
+			head.emphasis == MAD_EMPHASIS_NONE ? "None" :
+		  		(head.emphasis == MAD_EMPHASIS_50_15_US ? 
+				 "50/15 microseconds" : "CCITT J.17"),
+			len * 1000 / mad_timer_count(head.duration, MAD_UNITS_MILLISECONDS),
+			len, filesize);
+	mad_header_finish(&head);
 	return TRUE;
 } /* End of 'mp3_get_info' function */
 
@@ -608,7 +645,6 @@ int mp3_get_stream( void *buf, int size )
 		return 0;
 
 	/* Decode frame if samples counter is zero */
-	util_log("get_stream, bitrate=%i\n", mp3_bitrate);
 	if (!mp3_samples)
 	{
 		struct mad_header head;
@@ -616,7 +652,6 @@ int mp3_get_stream( void *buf, int size )
 		/* Seek */
 		if (mp3_seek_val != -1 && mp3_bitrate)
 		{
-			util_log("In seek\n");
 			fseek(mp3_fd, mp3_seek_val * mp3_bitrate / 8, SEEK_SET);
 			mp3_time = mp3_seek_val;
 			mp3_timer.seconds = mp3_time;
@@ -1017,6 +1052,59 @@ void mp3_read_song_params( void )
 	mad_stream_finish(&stream);
 	fseek(mp3_fd, 0, SEEK_SET);
 } /* End of 'mp3_read_song_params' function */
+
+/* Read mp3 file header */
+void mp3_read_header( char *filename, struct mad_header *head )
+{
+	struct mad_stream stream;
+	byte buffer[8192];
+	int buflen = 0;
+	FILE *fd;
+
+	if (!strcmp(filename, mp3_file_name))
+		return;
+
+	/* Open file */
+	fd = fopen(filename, "rb");
+	if (fd == NULL)
+		return;
+
+	/* Initialize MAD structures */
+	mad_stream_init(&stream);
+
+	/* Scan file */
+	for ( ;; )
+	{
+		/* Read data */
+		if (buflen < sizeof(buffer))
+		{
+			dword bytes;
+			
+			bytes = fread(buffer + buflen, 1, sizeof(buffer) - buflen, fd);
+			if (bytes <= 0)
+				break;
+			buflen += bytes;
+		}
+
+		/* Pipe data to MAD stream */
+		mad_stream_buffer(&stream, buffer, buflen);
+
+		/* Decode frame header */
+		mad_header_decode(head, &stream);
+
+		/* Move rest data (not decoded) to buffer start */
+		memmove(buffer, stream.next_frame, &buffer[buflen] - stream.next_frame);
+		buflen -= stream.next_frame - &buffer[0];
+
+		/* Save parameters */
+		if (head->bitrate)
+			break;
+	} 
+	
+	/* Unitialize all */
+	mad_stream_finish(&stream);
+	fclose(fd);
+} /* End of 'mp3_read_header' function */
 
 /* End of 'mp3.c' file */
 

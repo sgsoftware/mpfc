@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG MPFC. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 16.08.2003
+ * LAST UPDATE : 31.08.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -42,6 +42,7 @@
 #include "help_screen.h"
 #include "history.h"
 #include "key_bind.h"
+#include "label.h"
 #include "listbox.h"
 #include "menu.h"
 #include "player.h"
@@ -152,7 +153,7 @@ bool player_init( int argc, char *argv[] )
 	player_ul = undo_new();
 
 	/* Create a play list and add files to it */
-	player_plist = plist_new(3, wnd_root->m_height - 6);
+	player_plist = plist_new(3, wnd_root->m_height - 5);
 	if (player_plist == NULL)
 	{
 		return FALSE;
@@ -198,7 +199,8 @@ bool player_init( int argc, char *argv[] )
 	player_eq_changed = FALSE;
 
 	/* Start playing from last stop */
-	if (cfg_get_var_int(cfg_list, "play_from_stop") && !player_num_files && !player_num_obj)
+	if (cfg_get_var_int(cfg_list, "play_from_stop") && 
+			!player_num_files && !player_num_obj)
 	{
 		player_plist->m_cur_song = cfg_get_var_int(cfg_list, "cur_song");
 		player_play(cfg_get_var_int(cfg_list, "cur_time"));
@@ -398,7 +400,7 @@ void player_display( wnd_t *wnd, dword data )
 	/* Print message */
 	col_set_color(wnd, COL_EL_STATUS);
 	wnd_move(wnd, 0, wnd->m_height - 2);
-	wnd_printf(wnd, "%s\n", player_msg);
+	wnd_printf(wnd, "%s", player_msg);
 	col_set_color(wnd, COL_EL_DEFAULT);
 
 	/* Hide cursor */
@@ -860,7 +862,7 @@ void player_info_dialog( void )
 	editbox_t *name, *album, *artist, *year, *comments, *track;
 	combobox_t *genre;
 	genre_list_t *glist;
-	int i;
+	int i, y = 1;
 
 	/* Get song object */
 	if (player_plist->m_sel_end < 0 || !player_plist->m_len)
@@ -872,36 +874,45 @@ void player_info_dialog( void )
 	song_update_info(s);
 
 	/* Check if there exists song information */
-	if (s->m_info == NULL)
+	if (s->m_info == NULL || !s->m_info->m_loaded)
 		return;
 
 	/* Create info dialog */
-	dlg = dlg_new(wnd_root, 2, 2, wnd_root->m_width - 4, 20, 
+	dlg = dlg_new(wnd_root, 2, 2, wnd_root->m_width - 4, 21, 
 			cfg_get_var_int(cfg_list, "info_editor_show_full_name") ? 
 			s->m_file_name : util_get_file_short_name(s->m_file_name));
-	name = ebox_new((wnd_t *)dlg, 2, 1, wnd_root->m_width - 10, 1, 
-			256, _("Song name: "), s->m_info->m_name);
-	artist = ebox_new((wnd_t *)dlg, 2, 2, wnd_root->m_width - 10, 1, 
-			256, _("Artist name: "), s->m_info->m_artist);
-	album = ebox_new((wnd_t *)dlg, 2, 3, wnd_root->m_width - 10, 1, 
-			256, _("Album name: "), s->m_info->m_album);
-	year = ebox_new((wnd_t *)dlg, 2, 4, wnd_root->m_width - 10, 1, 
-			256, _("Year: "), s->m_info->m_year);
-	track = ebox_new((wnd_t *)dlg, 2, 5, wnd_root->m_width - 10, 1, 
-			256, _("Track No: "), s->m_info->m_track);
-	comments = ebox_new((wnd_t *)dlg, 2, 6, wnd_root->m_width - 10, 1, 
-			256, _("Comments: "), s->m_info->m_comments);
-	genre = cbox_new((wnd_t *)dlg, 2, 7, wnd_root->m_width - 10, 12,
-			_("Genre: "));
-	glist = inp_get_glist(s->m_inp);
-	for ( i = 0; glist != NULL && i < glist->m_size; i ++ )
-		cbox_list_add(genre, glist->m_list[i].m_name);
-	cbox_move_list_cursor(genre, FALSE, 
-			(s->m_info->m_genre == GENRE_ID_UNKNOWN ||
-			 s->m_info->m_genre == GENRE_ID_OWN_STRING) ? -1 : 
-			s->m_info->m_genre, FALSE, TRUE);
-	if (s->m_info->m_genre == GENRE_ID_OWN_STRING)
-		cbox_set_text(genre, s->m_info->m_genre_data.m_text);
+	if (!s->m_info->m_only_own)
+	{
+		name = ebox_new((wnd_t *)dlg, 2, y ++, WND_WIDTH(dlg) - 6, 1, 
+				256, _("Song name: "), s->m_info->m_name);
+		artist = ebox_new((wnd_t *)dlg, 2, y ++, WND_WIDTH(dlg) - 6, 1, 
+				256, _("Artist name: "), s->m_info->m_artist);
+		album = ebox_new((wnd_t *)dlg, 2, y ++, WND_WIDTH(dlg) - 6, 1, 
+				256, _("Album name: "), s->m_info->m_album);
+		year = ebox_new((wnd_t *)dlg, 2, y ++, WND_WIDTH(dlg) - 6, 1, 
+				256, _("Year: "), s->m_info->m_year);
+		track = ebox_new((wnd_t *)dlg, 2, y ++, WND_WIDTH(dlg) - 6, 1, 
+				256, _("Track No: "), s->m_info->m_track);
+		comments = ebox_new((wnd_t *)dlg, 2, y ++, WND_WIDTH(dlg) - 6, 1, 
+				256, _("Comments: "), s->m_info->m_comments);
+		genre = cbox_new((wnd_t *)dlg, 2, y ++, WND_WIDTH(dlg) - 6, 12,
+				_("Genre: "));
+		glist = inp_get_glist(s->m_inp);
+		for ( i = 0; glist != NULL && i < glist->m_size; i ++ )
+			cbox_list_add(genre, glist->m_list[i].m_name);
+		cbox_move_list_cursor(genre, FALSE, 
+				(s->m_info->m_genre == GENRE_ID_UNKNOWN ||
+				 s->m_info->m_genre == GENRE_ID_OWN_STRING) ? -1 : 
+				s->m_info->m_genre, FALSE, TRUE);
+		if (s->m_info->m_genre == GENRE_ID_OWN_STRING)
+			cbox_set_text(genre, s->m_info->m_genre_data.m_text);
+	}
+
+	/* Display own data */
+	label_new(WND_OBJ(dlg), 2, y + 1, WND_WIDTH(dlg) - 6, 
+			WND_HEIGHT(dlg) - y - 1, s->m_info->m_own_data);
+
+	/* Display dialog */
 	wnd_run(dlg);
 
 	/* Save */

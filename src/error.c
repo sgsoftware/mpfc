@@ -3,7 +3,7 @@
  ******************************************************************/
 
 /* FILE NAME   : error.c
- * PURPOSE     : SG Konsamp. Errors management functions 
+ * PURPOSE     : SG MPFC. Errors management functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
  * LAST UPDATE : 27.07.2003

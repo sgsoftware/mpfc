@@ -3,7 +3,7 @@
  ******************************************************************/
 
 /* FILE NAME   : menu.h
- * PURPOSE     : SG Konsamp. Interface for menu functions.
+ * PURPOSE     : SG MPFC. Interface for menu functions.
  * PROGRAMMER  : Sergey Galanov
  * LAST UPDATE : 23.04.2003
  * NOTE        : Module prefix 'menu'.
@@ -24,8 +24,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef __SG_KONSAMP_MENU_H__
-#define __SG_KONSAMP_MENU_H__
+#ifndef __SG_MPFC_MENU_H__
+#define __SG_MPFC_MENU_H_
 
 #include "types.h"
 #include "window.h"

@@ -72,5 +72,8 @@ int mp3_read( void *ptr, int size, FILE *fd );
 /* Read song parameters */
 void mp3_read_song_params( void );
 
+/* Read mp3 file header */
+void mp3_read_header( char *filename, struct mad_header *head );
+
 /* End of 'mp3.h' file */
 

@@ -3,7 +3,7 @@
  ******************************************************************/
 
 /* FILE NAME   : choice_ctrl.h
- * PURPOSE     : SG Konsamp. Interface for choice control functions.
+ * PURPOSE     : SG MPFC. Interface for choice control functions.
  * PROGRAMMER  : Sergey Galanov
  * LAST UPDATE : 23.04.2003
  * NOTE        : Module prefix 'choice'.
@@ -24,8 +24,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef __SG_KONSAMP_CHOICE_CTRL_H__
-#define __SG_KONSAMP_CHOICE_CTRL_H__
+#ifndef __SG_MPFC_CHOICE_CTRL_H__
+#define __SG_MPFC_CHOICE_CTRL_H__
 
 #include "types.h"
 #include "window.h"

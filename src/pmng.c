@@ -3,7 +3,7 @@
  ******************************************************************/
 
 /* FILE NAME   : pmng.c
- * PURPOSE     : SG Konsamp. Plugins manager functions 
+ * PURPOSE     : SG MPFC. Plugins manager functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
  * LAST UPDATE : 28.07.2003

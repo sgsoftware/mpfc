@@ -3,7 +3,7 @@
  ******************************************************************/
 
 /* FILE NAME   : types.h
- * PURPOSE     : SG Konsamp. Basic types declaration.
+ * PURPOSE     : SG MPFC. Basic types declaration.
  * PROGRAMMER  : Sergey Galanov
  * LAST UPDATE : 7.02.2003
  * NOTE        : None.
@@ -24,8 +24,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef __SG_KONSAMP_TYPES_H__
-#define __SG_KONSAMP_TYPES_H__
+#ifndef __SG_MPFC_TYPES_H__
+#define __SG_MPFC_TYPES_H__
 
 #include <libintl.h>
 #include "config.h"
@@ -37,7 +37,7 @@ typedef unsigned long dword;
 
 /* Define boolean type and values for it */
 #ifndef bool
-  #define bool byte
+  #define bool unsigned
 #endif
 #ifndef TRUE
   #define TRUE 1

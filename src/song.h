@@ -3,7 +3,7 @@
  ******************************************************************/
 
 /* FILE NAME   : song.h
- * PURPOSE     : SG Konsamp. Interface for songs manipulation
+ * PURPOSE     : SG MPFC. Interface for songs manipulation
  *               functions.
  * PROGRAMMER  : Sergey Galanov
  * LAST UPDATE : 7.03.2003
@@ -25,8 +25,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef __SG_KONSAMP_SONG_H__
-#define __SG_KONSAMP_SONG_H__
+#ifndef __SG_MPFC_SONG_H__
+#define __SG_MPFC_SONG_H__
 
 #include "types.h"
 #include "song_info.h"

@@ -3,7 +3,7 @@
  ******************************************************************/
 
 /* FILE NAME   : main.c
- * PURPOSE     : SG Konsamp. Main program module.
+ * PURPOSE     : SG MPFC. Main program module.
  * PROGRAMMER  : Sergey Galanov
  * LAST UPDATE : 13.02.2003
  * NOTE        : None.

@@ -3,7 +3,7 @@
  ******************************************************************/
 
 /* FILE NAME   : outp.c
- * PURPOSE     : SG Konsamp. Output plugin management functions
+ * PURPOSE     : SG MPFC. Output plugin management functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
  * LAST UPDATE : 16.08.2003

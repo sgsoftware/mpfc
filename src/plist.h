@@ -25,8 +25,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef __SG_KONSAMP_PLIST_H__
-#define __SG_KONSAMP_PLIST_H__
+#ifndef __SG_MPFC_PLIST_H__
+#define __SG_MPFC_PLIST_H__
 
 #include <pthread.h>
 #include "types.h"

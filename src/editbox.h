@@ -3,7 +3,7 @@
  ******************************************************************/
 
 /* FILE NAME   : editbox.h
- * PURPOSE     : SG Konsamp. Interface for edit box functions.
+ * PURPOSE     : SG MPFC. Interface for edit box functions.
  * PROGRAMMER  : Sergey Galanov
  * LAST UPDATE : 8.08.2003
  * NOTE        : Module prefix 'ebox'.
@@ -24,8 +24,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef __SG_KONSAMP_EDIT_BOX_H__
-#define __SG_KONSAMP_EDIT_BOX_H__
+#ifndef __SG_MPFC_EDIT_BOX_H__
+#define __SG_MPFC_EDIT_BOX_H__
 
 #include "types.h"
 #include "history.h"

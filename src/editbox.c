@@ -3,7 +3,7 @@
  ******************************************************************/
 
 /* FILE NAME   : editbox.c
- * PURPOSE     : SG Konsamp. Edit box functions implementation.
+ * PURPOSE     : SG MPFC. Edit box functions implementation.
  * PROGRAMMER  : Sergey Galanov
  * LAST UPDATE : 8.08.2003
  * NOTE        : Module prefix 'ebox'.

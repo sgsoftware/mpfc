@@ -3,7 +3,7 @@
  ******************************************************************/
 
 /* FILE NAME   : error.h
- * PURPOSE     : SG Konsamp. Interface for errors management 
+ * PURPOSE     : SG MPFC. Interface for errors management 
  *               functions.
  * PROGRAMMER  : Sergey Galanov
  * LAST UPDATE : 27.07.2003
@@ -25,8 +25,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef __SG_KONSAMP_ERROR_H__
-#define __SG_KONSAMP_ERROR_H__
+#ifndef __SG_MPFC_ERROR_H__
+#define __SG_MPFC_ERROR_H__
 
 #include "types.h"
 

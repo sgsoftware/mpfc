@@ -3,7 +3,7 @@
  ******************************************************************/
 
 /* FILE NAME   : ep.h
- * PURPOSE     : SG Konsamp. Interface for effect plugin management
+ * PURPOSE     : SG MPFC. Interface for effect plugin management
  *               functions.
  * PROGRAMMER  : Sergey Galanov
  * LAST UPDATE : 27.07.2003
@@ -25,8 +25,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef __SG_KONSAMP_EP_H__
-#define __SG_KONSAMP_EP_H__
+#ifndef __SG_MPFC_EP_H__
+#define __SG_MPFC_EP_H__
 
 #include "types.h"
 

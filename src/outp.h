@@ -3,7 +3,7 @@
  ******************************************************************/
 
 /* FILE NAME   : outp.h
- * PURPOSE     : SG Konsamp. Interface for output plugin management
+ * PURPOSE     : SG MPFC. Interface for output plugin management
  *               functions.
  * PROGRAMMER  : Sergey Galanov
  * LAST UPDATE : 16.08.2003
@@ -25,8 +25,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef __SG_KONSAMP_OUTP_H__
-#define __SG_KONSAMP_OUTP_H__
+#ifndef __SG_MPFC_OUTP_H__
+#define __SG_MPFC_OUTP_H__
 
 #include "types.h"
 

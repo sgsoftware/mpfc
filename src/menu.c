@@ -3,7 +3,7 @@
  ******************************************************************/
 
 /* FILE NAME   : menu.c
- * PURPOSE     : SG Konsamp. Menu functions implementation.
+ * PURPOSE     : SG MPFC. Menu functions implementation.
  * PROGRAMMER  : Sergey Galanov
  * LAST UPDATE : 23.04.2003
  * NOTE        : Module prefix 'menu'.

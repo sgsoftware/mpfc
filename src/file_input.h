@@ -3,7 +3,7 @@
  ******************************************************************/
 
 /* FILE NAME   : file_input.h
- * PURPOSE     : SG Konsamp. Interface for file input edit box
+ * PURPOSE     : SG MPFC. Interface for file input edit box
  *               functions.
  * PROGRAMMER  : Sergey Galanov
  * LAST UPDATE : 23.04.2003
@@ -25,8 +25,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef __SG_KONSAMP_FILE_INPUT_H__
-#define __SG_KONSAMP_FILE_INPUT_H__
+#ifndef __SG_MPFC_FILE_INPUT_H__
+#define __SG_MPFC_FILE_INPUT_H__
 
 #include "types.h"
 #include "editbox.h"

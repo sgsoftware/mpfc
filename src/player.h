@@ -24,8 +24,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef __SG_KONSAMP_PLAYER_H__
-#define __SG_KONSAMP_PLAYER_H__
+#ifndef __SG_MPFC_PLAYER_H__
+#define __SG_MPFC_PLAYER_H__
 
 #include "types.h"
 #include "cfg.h"

@@ -3,7 +3,7 @@
  ******************************************************************/
 
 /* FILE NAME   : ep.c
- * PURPOSE     : SG Konsamp. Fffect plugin management functions
+ * PURPOSE     : SG MPFC. Fffect plugin management functions
  * 	             implementation.
  * PROGRAMMER  : Sergey Galanov
  * LAST UPDATE : 27.07.2003

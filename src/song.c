@@ -3,10 +3,10 @@
  ******************************************************************/
 
 /* FILE NAME   : song.c
- * PURPOSE     : SG Konsamp. Songs manipulation functions
+ * PURPOSE     : SG MPFC. Songs manipulation functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 12.08.2003
+ * LAST UPDATE : 2.09.2003
  * NOTE        : Module prefix 'song'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -93,29 +93,33 @@ void song_set_info( song_t *song, song_info_t *info )
 	if (song == NULL)
 		return;
 
+	/* Copy info */
 	if (info == NULL)
 	{
-		int i;
-		
-		/*if (song->m_info != NULL)
-		{
-			free(song->m_info);
-			song->m_info = NULL;
-		}*/
-
 		song->m_info = (song_info_t *)malloc(sizeof(song_info_t));
 		memset(song->m_info, 0, sizeof(song_info_t));
 		song->m_info->m_genre = GENRE_ID_UNKNOWN;
+		song->m_info->m_loaded = FALSE;
 
-		for ( i = strlen(song->m_file_name) - 1; 
-				(i >= 0) && (song->m_file_name[i] != '/'); i -- );
-		strcpy(song->m_title, &song->m_file_name[i + 1]);
 	}
 	else
 	{
 		if (song->m_info == NULL)
 			song->m_info = (song_info_t *)malloc(sizeof(song_info_t));
 		memcpy(song->m_info, info, sizeof(song_info_t));
+		song->m_info->m_loaded = TRUE;
+	}
+
+	/* Set title */
+	if (info == NULL || info->m_only_own)
+	{
+		int i;
+		for ( i = strlen(song->m_file_name) - 1; 
+				(i >= 0) && (song->m_file_name[i] != '/'); i -- );
+		strcpy(song->m_title, &song->m_file_name[i + 1]);
+	}
+	else
+	{
 		sprintf(song->m_title, "%s - %s", info->m_artist, info->m_name);
 	}
 } /* End of 'song_set_info' function */
@@ -125,6 +129,7 @@ void song_update_info( song_t *song )
 {
 	song_info_t si;
 
+	memset(&si, 0, sizeof(si));
 	if (inp_get_info(song->m_inp, song->m_file_name, &si))
 	{
 		/* Convert codepages */
@@ -132,6 +137,9 @@ void song_update_info( song_t *song )
 		cp_to_out(si.m_name, si.m_name);
 		cp_to_out(si.m_album, si.m_album);
 		cp_to_out(si.m_comments, si.m_comments);
+		cp_to_out(si.m_track, si.m_track);
+		cp_to_out(si.m_year, si.m_year);
+		cp_to_out(si.m_own_data, si.m_own_data);
 		
 		song_set_info(song, &si);
 	}

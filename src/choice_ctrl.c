@@ -3,7 +3,7 @@
  ******************************************************************/
 
 /* FILE NAME   : choice_ctrl.c
- * PURPOSE     : SG Konsamp. Choice control functions 
+ * PURPOSE     : SG MPFC. Choice control functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
  * LAST UPDATE : 23.04.2003

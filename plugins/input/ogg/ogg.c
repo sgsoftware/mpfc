@@ -151,6 +151,7 @@ bool ogg_get_info( char *filename, song_info_t *info )
 	FILE *fd;
 	char *str;
 	vorbis_comment *comment;
+	vorbis_info *vi;
 
 	/* Open file */
 	fd = fopen(filename, "rb");
@@ -180,6 +181,20 @@ bool ogg_get_info( char *filename, song_info_t *info )
 	{
 		info->m_genre = GENRE_ID_OWN_STRING;
 		strcpy(info->m_genre_data.m_text, str);
+	}
+
+	/* Set additional information */
+	vi = ov_info(&vf, -1);
+	if (vi != NULL)
+	{
+		sprintf(info->m_own_data, 
+				"Nominal bitrate: %i kb/s\n"
+				"Samplerate: %i\n"
+				"Channels: %i\n"
+				"Length: %i seconds\n"
+				"File size: %i bytes",
+				vi->bitrate_nominal / 1000, vi->rate, vi->channels, 
+				(int)ov_time_total(&vf, -1), util_get_file_size(filename));
 	}
 
 	/* Close file */

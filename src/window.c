@@ -3,9 +3,9 @@
  ******************************************************************/
 
 /* FILE NAME   : window.c
- * PURPOSE     : SG Konsamp. Window functions implementation.
+ * PURPOSE     : SG MPFC. Window functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 9.08.2003
+ * LAST UPDATE : 2.09.2003
  * NOTE        : Module prefix 'wnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -587,15 +587,21 @@ void wnd_handle_ch_focus( wnd_t *wnd, dword data )
 	{
 		dlgbox_t *dlg = (dlgbox_t *)wnd;
 		
-		if (wnd->m_child != NULL)
+		/* Search for next focusable dialog item */
+		wnd_t *was = dlg->m_cur_focus;
+		do
 		{
-			if (dlg->m_cur_focus == NULL)
-				dlg->m_cur_focus = wnd->m_child;
+			dlg_next_focus(dlg);
+			if (dlg->m_cur_focus == was)
+				break;
+		} while ((dlg->m_cur_focus == NULL) ||
+				(dlg->m_cur_focus->m_flags & WND_NO_FOCUS));
+		if (dlg->m_cur_focus != NULL)
+		{
+			if (dlg->m_cur_focus->m_flags & WND_NO_FOCUS)
+				dlg->m_cur_focus = NULL;
 			else
-				dlg->m_cur_focus = 
-					((dlg->m_cur_focus->m_next != NULL) ? 
-					 	dlg->m_cur_focus->m_next : wnd->m_child);
-			wnd_run(dlg->m_cur_focus);
+				wnd_run(dlg->m_cur_focus);
 		}
 	}
 	/* If we are item - close ourselves and inform parent to change focus */

@@ -3,9 +3,9 @@
  ******************************************************************/
 
 /* FILE NAME   : dlgbox.c
- * PURPOSE     : SG Konsamp. Dialog box functions implementation.
+ * PURPOSE     : SG MPFC. Dialog box functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 4.08.2003
+ * LAST UPDATE : 2.09.2003
  * NOTE        : Module prefix 'dlg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -154,6 +154,17 @@ wnd_t *dlg_get_item_by_id( dlgbox_t *dlg, short id )
 			return wnd;
 	return NULL;
 } /* End of 'dlg_get_item_by_id' function */
+
+/* Go to the next child focused window */
+void dlg_next_focus( dlgbox_t *dlg )
+{
+	if (dlg->m_cur_focus == NULL)
+		dlg->m_cur_focus = WND_OBJ(dlg)->m_child;
+	else
+		dlg->m_cur_focus = 
+			//((dlg->m_cur_focus->m_next != NULL) ? 
+			 	dlg->m_cur_focus->m_next;// : WND_OBJ(dlg)->m_child);
+} /* End of 'dlg_next_focus' function */
 
 /* End of 'dlgbox.c' file */
 

@@ -3,7 +3,7 @@
  ******************************************************************/
 
 /* FILE NAME   : wav.c
- * PURPOSE     : SG Konsamp. WAV input plugin functions 
+ * PURPOSE     : SG MPFC. WAV input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
  * LAST UPDATE : 12.07.2003
@@ -45,6 +45,8 @@ int wav_seek_val = -1;
 /* Current song audio parameters */
 int wav_channels = 0, wav_freq = 0, wav_avg_bps = 0;
 dword wav_fmt = 0;
+int wav_file_size = 0;
+int wav_block_align = 0;
 
 /* Song length */
 int wav_len = 0;
@@ -71,7 +73,7 @@ bool wav_start( char *filename )
 
 	/* Read WAV file header */
 	fread(riff, 1, sizeof(riff), wav_fd);
-	fread(&file_size, 1, sizeof(file_size), wav_fd);
+	fread(&wav_file_size, 1, sizeof(file_size), wav_fd);
 	fread(riff_type, 1, sizeof(riff_type), wav_fd);
 
 	/* Check file validity */
@@ -100,6 +102,7 @@ bool wav_start( char *filename )
 	wav_channels = WAV_FMT_GET_CHANNELS(buf);
 	wav_freq = WAV_FMT_GET_SAMPLES_PER_SEC(buf);
 	wav_avg_bps = WAV_FMT_GET_AVG_BYTES_PER_SEC(buf);
+	wav_block_align = WAV_FMT_GET_BLOCK_ALIGN(buf);
 	switch (WAV_FMT_GET_FORMAT(buf))
 	{
 	case 1:
@@ -213,6 +216,70 @@ int wav_get_cur_time( void )
 	return wav_time;
 } /* End of 'wav_get_cur_time' function */
 
+/* Get song information */
+bool wav_get_info( char *filename, song_info_t *info )
+{
+	int size, samplerate, bps, channels, block_align, bits, len;
+	
+	/* Get audio parameters */
+	if (!strcmp(filename, wav_fname))
+	{
+		samplerate = wav_freq;
+		bps = wav_avg_bps;
+		channels = wav_channels;
+		block_align = wav_block_align;
+		bits = (wav_fmt == AFMT_U8 || wav_fmt == AFMT_S8) ? 8 : 16;
+		size = wav_file_size;
+		len = wav_len;
+		return TRUE;
+	}
+	else
+	{
+		FILE *fd;
+		byte *buf;
+		dword data_size = 0;
+
+		/* Read file header */
+		fd = fopen(filename, "rb");
+		if (fd == NULL)
+			return FALSE;
+		fseek(fd, 4, SEEK_SET);
+		fread(&size, 1, 4, fd);
+		fseek(fd, 4, SEEK_CUR);
+		while (!wav_read_next_chunk(fd, (void **)(&buf), &data_size));
+		if (!data_size || buf == NULL || !(WAV_FMT_GET_FORMAT(buf) == 1))
+		{
+			fclose(fd);
+			return FALSE;
+		}
+		fclose(fd);
+
+		/* Get parameters */
+		channels = WAV_FMT_GET_CHANNELS(buf);
+		samplerate = WAV_FMT_GET_SAMPLES_PER_SEC(buf);
+		bps = WAV_FMT_GET_AVG_BYTES_PER_SEC(buf);
+		block_align = WAV_FMT_GET_BLOCK_ALIGN(buf);
+		bits = WAV_PCM_FMT_GET_BPS(buf);
+		len = data_size / bps;
+		free(buf);
+	}
+
+	/* Fill info */
+	memset(info, 0, sizeof(*info));
+	info->m_only_own = TRUE;
+	sprintf(info->m_own_data, 
+			"File size: %i bytes\n"
+			"Length: %i seconds\n"
+			"Bits/sample: %i\n"
+			"Format: PCM\n"
+			"Channels: %i\n"
+			"Samplerate: %i Hz\n"
+			"Bytes/sec: %i\n"
+			"Block align: %i",
+			size, len, bits, channels, samplerate, bps, block_align);
+	return TRUE;
+} /* End of 'wav_get_info' function */ 
+
 /* Get functions list */
 void inp_get_func_list( inp_func_list_t *fl )
 {
@@ -224,6 +291,7 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_get_audio_params = wav_get_audio_params;
 	fl->m_get_formats = wav_get_formats;
 	fl->m_get_cur_time = wav_get_cur_time;
+	fl->m_get_info = wav_get_info;
 } /* End of 'inp_get_func_list' function */
 
 /* Read the next chunk. Returns TRUE when 'data' chunk is read */
@@ -238,7 +306,6 @@ bool wav_read_next_chunk( FILE *fd, void **fmt_buf, dword *data_size )
 	/* Read chunk header */
 	fread(chunk_id, 1, sizeof(chunk_id), fd);
 	fread(&chunk_size, 1, sizeof(chunk_size), fd);
-	util_log("ID is %s\n", chunk_id);
 
 	/* Parse chunk */
 	if (!strncmp(chunk_id, "data", 4))

@@ -3,9 +3,9 @@
  ******************************************************************/
 
 /* FILE NAME   : dlgbox.h
- * PURPOSE     : SG Konsamp. Interface for dialog box functions.
+ * PURPOSE     : SG MPFC. Interface for dialog box functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 24.04.2003
+ * LAST UPDATE : 2.09.2003
  * NOTE        : Module prefix 'dlg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -24,8 +24,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef __SG_KONSAMP_DLG_BOX_H__
-#define __SG_KONSAMP_DLG_BOX_H__
+#ifndef __SG_MPFC_DLG_BOX_H__
+#define __SG_MPFC_DLG_BOX_H__
 
 #include "types.h"
 #include "window.h"
@@ -84,6 +84,9 @@ void dlg_handle_key( wnd_t *wnd, dword data );
 
 /* Get item by its ID */
 wnd_t *dlg_get_item_by_id( dlgbox_t *dlg, short id );
+
+/* Go to the next child focused window */
+void dlg_next_focus( dlgbox_t *dlg );
 
 #endif
 

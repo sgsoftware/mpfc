@@ -3,10 +3,10 @@
  ******************************************************************/
 
 /* FILE NAME   : util.c
- * PURPOSE     : SG Konsamp. Different utility functions 
+ * PURPOSE     : SG MPFC. Various utility functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.08.2003
+ * LAST UPDATE : 2.09.2003
  * NOTE        : Module prefix 'util'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -165,6 +165,21 @@ char *util_get_plugin_short_name( char *dest, char *src )
 	dest[i - j - 4] = 0;
 	return dest;
 } /* End of 'util_get_plugin_short_name' function */
+
+/* Get file size */
+int util_get_file_size( char *filename )
+{
+	FILE *fd;
+	int s;
+	
+	fd = util_fopen(filename, "rb");
+	if (fd == NULL)
+		return 0;
+	fseek(fd, 0, SEEK_END);
+	s = ftell(fd);
+	fclose(fd);
+	return s;
+} /* End of 'util_get_file_size' function */
 
 /* End of 'util.c' file */
 

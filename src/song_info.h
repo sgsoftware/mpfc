@@ -3,9 +3,9 @@
  ******************************************************************/
 
 /* FILE NAME   : song_info.h
- * PURPOSE     : SG Konsamp. Song information type declaration.
+ * PURPOSE     : SG MPFC. Song information type declaration.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 12.08.2003
+ * LAST UPDATE : 31.08.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -24,8 +24,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef __SG_KONSAMP_SONG_INFO_H__
-#define __SG_KONSAMP_SONG_INFO_H__
+#ifndef __SG_MPFC_SONG_INFO_H__
+#define __SG_MPFC_SONG_INFO_H__
 
 #include "types.h"
 
@@ -44,6 +44,9 @@ typedef struct
 		byte m_data;
 		char m_text[80];
 	} m_genre_data;
+	bool m_loaded;
+	bool m_only_own;
+	char m_own_data[1024];
 } song_info_t;
 
 #endif

@@ -3,7 +3,7 @@
  ******************************************************************/
 
 /* FILE NAME   : file_input.c
- * PURPOSE     : SG Konsamp. File input edit box functions
+ * PURPOSE     : SG MPFC. File input edit box functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
  * LAST UPDATE : 6.08.2003

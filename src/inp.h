@@ -3,7 +3,7 @@
  ******************************************************************/
 
 /* FILE NAME   : inp.h
- * PURPOSE     : SG Konsamp. Interface for input plugin management
+ * PURPOSE     : SG MPFC. Interface for input plugin management
  *               functions.
  * PROGRAMMER  : Sergey Galanov
  * LAST UPDATE : 8.08.2003
@@ -25,8 +25,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef __SG_KONSAMP_INP_H__
-#define __SG_KONSAMP_INP_H__
+#ifndef __SG_MPFC_INP_H__
+#define __SG_MPFC_INP_H__
 
 #include "types.h"
 #include "genre_list.h"

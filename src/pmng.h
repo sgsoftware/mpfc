@@ -3,7 +3,7 @@
  ******************************************************************/
 
 /* FILE NAME   : pmng.h
- * PURPOSE     : SG Konsamp. Interface for plugins manager 
+ * PURPOSE     : SG MPFC. Interface for plugins manager 
  *               functions.
  * PROGRAMMER  : Sergey Galanov
  * LAST UPDATE : 28.07.2003
@@ -25,8 +25,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef __SG_KONSAMP_PMNG_H__
-#define __SG_KONSAMP_PMNG_H__
+#ifndef __SG_MPFC_PMNG_H__
+#define __SG_MPFC_PMNG_H__
 
 #include "types.h"
 #include "ep.h"

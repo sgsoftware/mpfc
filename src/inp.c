@@ -3,7 +3,7 @@
  ******************************************************************/
 
 /* FILE NAME   : inp.c
- * PURPOSE     : SG Konsamp. Input plugin management functions
+ * PURPOSE     : SG MPFC. Input plugin management functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
  * LAST UPDATE : 8.08.2003
