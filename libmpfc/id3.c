@@ -481,7 +481,7 @@ void id3_v2_set_frame( id3_tag_data_t *tag, char *name, char *val, char *cs )
 	p = tag->m_frames_start;
 	diff1 = tag->m_frames_start - tag->m_stream;
 	diff2 = tag->m_cur_frame - tag->m_stream;
-	
+
 	/* Search for specified frame */
 	for ( found = finished = FALSE; !found && !finished; )
 	{
@@ -530,7 +530,7 @@ void id3_v2_set_frame( id3_tag_data_t *tag, char *name, char *val, char *cs )
 		memset(p, 0, new_size + 10);
 		memcpy(p, name, 4);
 		*(dword *)(p + 4) = ID3_CONVERT_TO_SYNCHSAFE(new_size);
-		if (cs != NULL && !strcasecmp(cs, "utf-8"))
+		if (cs != NULL && !strcasecmp(cs, "utf-8") && len > 0)
 			*(p + 10) = ID3_UTF8;
 		memcpy(p + 11, val, len);
 		*(dword *)(tag->m_stream + 6) = ID3_CONVERT_TO_SYNCHSAFE(

@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Various utility functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.02.2004
+ * LAST UPDATE : 5.03.2004
  * NOTE        : Module prefix 'util'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -262,7 +262,7 @@ void util_get_dir_name( char *dir, char *filename )
 /* A safe string copying (writes null to the end) */
 char *util_strncpy( char *dest, char *src, size_t n )
 {
-	strcpy(dest, src);
+	strncpy(dest, src, n);
 	dest[n - 1] = 0;
 	return dest;
 } /* End of 'util_strncpy' function */
