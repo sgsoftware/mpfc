@@ -70,6 +70,7 @@ pthread_t player_timer_tid = 0;
 
 /* Timer termination flag */
 bool player_end_timer = FALSE;
+bool player_end_track = FALSE;
 
 /* Current song playing time */
 int player_cur_time = 0;
@@ -100,7 +101,6 @@ bool player_init( int argc, char *argv[] )
 			player_handle_key);
 	wnd_register_handler(wnd_root, WND_MSG_MOUSE_LEFT_CLICK,
 			player_handle_mouse_click);
-	wnd_register_handler(wnd_root, WND_MSG_USER, player_handle_user);
 	
 	/* Initialize plugin manager */
 	pmng_init();
@@ -114,6 +114,9 @@ bool player_init( int argc, char *argv[] )
 	for ( i = 0; i < player_num_files; i ++ )
 		plist_add(player_plist, player_files[i]);
 
+	/* Initialize playing thread */
+	pthread_create(&player_tid, NULL, player_thread, NULL);
+
 	/* Exit */
 	return TRUE;
 } /* End of 'player_init' function */
@@ -121,8 +124,12 @@ bool player_init( int argc, char *argv[] )
 /* Unitialize player */
 void player_deinit( void )
 {
-	/* Stop currently playing song */
-	player_end_play();
+	/* End playing thread */
+	player_end_track = TRUE;
+	player_end_thread = TRUE;
+	pthread_join(player_tid, NULL);
+	player_end_thread = FALSE;
+	player_tid = 0;
 	
 	/* Uninitialize plugin manager */
 	pmng_free();
@@ -519,118 +526,119 @@ void player_play( void )
 			(s = player_plist->m_list[player_plist->m_cur_song]) == NULL)
 		return;
 
-	/* End current playing thread */
+	/* End current playing */
 	player_end_play();
 
 	/* Start new playing thread */
 	player_status = PLAYER_STATUS_PLAYING;
-	pthread_create(&player_tid, NULL, player_thread, s);
 } /* End of 'player_play' function */
 
-/* End play song thread */
+/* End playing song */
 void player_end_play( void )
 {
-	if (player_tid != 0)
-	{
-		player_end_thread = TRUE;
-		pthread_join(player_tid, NULL);
-		player_end_thread = FALSE;
-		player_tid = 0;
-	}
+	player_end_track = TRUE;
+	player_status = PLAYER_STATUS_STOPPED;
 } /* End of 'player_end_play' function */
 
 /* Player thread function */
 void *player_thread( void *arg )
 {
-	song_t *s = (song_t *)arg;
-	int ch, freq, bits;
-	inp_func_list_t ifl;
-	outp_func_list_t ofl;
-	song_info_t si;
-	
-	/* Get song length and information at first */
-	ifl = s->m_inp->m_fl;
-	s->m_len = ifl.m_get_len(s->m_file_name);
-	song_update_info(s);
-
-	/* Start playing */
-	if (!ifl.m_start(s->m_file_name))
-	{
-		wnd_send_msg(wnd_root, WND_MSG_USER, PLAYER_MSG_END_TRACK);
-		player_end_thread = FALSE;
-		player_tid = 0;
-		player_status = PLAYER_STATUS_STOPPED;
-		return;
-	}
-
-	/* Start output plugin */
-	if (pmng_cur_out == NULL || (!cfg_get_var_int("silent_mode") && 
-				!pmng_cur_out->m_fl.m_start()))
-	{
-		strcpy(player_msg, "Unable to initialize output plugin");
-//		wnd_send_msg(wnd_root, WND_MSG_USER, PLAYER_MSG_END_TRACK);
-		ifl.m_end();
-		player_tid = 0;
-		player_status = PLAYER_STATUS_STOPPED;
-		wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
-		return;
-	}
-	ofl = pmng_cur_out->m_fl;
-
-	/* Set audio parameters */
-	ifl.m_get_audio_params(&ch, &freq, &bits);
-	ofl.m_set_channels(2);
-	ofl.m_set_freq(freq);
-	ofl.m_set_bits(bits);
-
-	/* Start timer thread */
-	pthread_create(&player_timer_tid, NULL, player_timer_func, 0);
-	
-	/* Play */
+	/* Main loop */
 	while (!player_end_thread)
 	{
-		byte buf[8192];
-		int size = 8192;
-		struct timespec tv;
+		song_t *s;
+		int ch, freq, bits;
+		inp_func_list_t ifl;
+		outp_func_list_t ofl;
+		song_info_t si;
 
-		if (player_status == PLAYER_STATUS_PLAYING)
+		/* Skip to next iteration if there is nothing to play */
+		if (player_plist->m_cur_song < 0 || 
+				player_status == PLAYER_STATUS_STOPPED)
 		{
-			if (size = ifl.m_get_stream(buf, size))
-			{
-				ofl.m_play(buf, size);
-			}
-			else
-			{
-				break;
-			}
+			util_delay(0, 100000L);
+			continue;
 		}
+
+		/* Play track */
+		s = player_plist->m_list[player_plist->m_cur_song];
+		player_status = PLAYER_STATUS_PLAYING;
+		player_end_track = FALSE;
+	
+		/* Get song length and information at first */
+		ifl = s->m_inp->m_fl;
+		s->m_len = ifl.m_get_len(s->m_file_name);
+		song_update_info(s);
+
+		/* Start playing */
+		if (!ifl.m_start(s->m_file_name))
+		{
+			player_next_track();
+			continue;
+		}
+
+		/* Start output plugin */
+		if (pmng_cur_out == NULL || (!cfg_get_var_int("silent_mode") && 
+					!pmng_cur_out->m_fl.m_start()))
+		{
+			strcpy(player_msg, "Unable to initialize output plugin");
+//			wnd_send_msg(wnd_root, WND_MSG_USER, PLAYER_MSG_END_TRACK);
+			ifl.m_end();
+			player_status = PLAYER_STATUS_STOPPED;
+			wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
+			continue;
+		}
+		ofl = pmng_cur_out->m_fl;
+
+		/* Set audio parameters */
+		ifl.m_get_audio_params(&ch, &freq, &bits);
+		ofl.m_set_channels(2);
+		ofl.m_set_freq(freq);
+		ofl.m_set_bits(bits);
+
+		/* Start timer thread */
+		pthread_create(&player_timer_tid, NULL, player_timer_func, 0);
+	
+		/* Play */
+		while (!player_end_track)
+		{
+			byte buf[8192];
+			int size = 8192;
+			struct timespec tv;
+
+			if (player_status == PLAYER_STATUS_PLAYING)
+			{
+				if (size = ifl.m_get_stream(buf, size))
+				{
+					ofl.m_play(buf, size);
+				}
+				else
+				{
+					break;
+				}
+			}
 		
-		/* Sleep a little */
-		tv.tv_sec = 0;
-		tv.tv_nsec = 100000L;
-		nanosleep(&tv, NULL);
+			/* Sleep a little */
+			util_delay(0, 100000L);
+		}
+
+		/* Stop timer thread */
+		player_stop_timer();
+
+		/* End playing */
+		ifl.m_end();
+
+		/* End output plugin */
+		ofl.m_end();
+
+		/* Send message about track end */
+		if (!player_end_track)
+			player_next_track();
+
+		/* Update screen */
+		wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
 	}
-
-	/* Stop timer thread */
-	player_stop_timer();
-
-	/* End playing */
-	ifl.m_end();
-
-	/* End output plugin */
-	ofl.m_end();
-
-	/* Send message about track end */
-	if (!player_end_thread)
-	{
-		wnd_send_msg(wnd_root, WND_MSG_USER, PLAYER_MSG_END_TRACK);
-	}
-	else
-	{
-		player_end_thread = 0;
-	}
-	player_tid = 0;
-	player_status = PLAYER_STATUS_STOPPED;
+	return NULL;
 } /* End of 'player_thread' function */
 
 /* Stop timer thread */
@@ -642,6 +650,7 @@ void player_stop_timer( void )
 		pthread_join(player_timer_tid, NULL);
 		player_end_timer = FALSE;
 		player_timer_tid = 0;
+		player_cur_time = 0;
 	}
 } /* End of 'player_stop_timer' function */
 
@@ -888,22 +897,6 @@ void player_info_dialog( void )
 	wnd_destroy(dlg);
 } /* End of 'player_info_dialog' function */
 
-/* User message handling function */
-void player_handle_user( wnd_t *wnd, dword data )
-{
-	switch (data)
-	{
-	/* In case of track end - go to next */
-	case PLAYER_MSG_END_TRACK:
-		player_plist->m_cur_song ++;
-		if (player_plist->m_cur_song >= player_plist->m_len)
-			player_plist->m_cur_song = -1;
-		else
-			player_play();
-		break;
-	}
-} /* End of 'player_handle_user' function */
-
 /* Show help screen */
 void player_help( void )
 {
@@ -913,6 +906,16 @@ void player_help( void )
 	wnd_run(h);
 	wnd_destroy(h);
 } /* End of 'player_help' function */
+
+/* Start next track */
+void player_next_track( void )
+{
+	player_plist->m_cur_song ++;
+	if (player_plist->m_cur_song >= player_plist->m_len)
+		player_plist->m_cur_song = -1;
+	else
+		player_play();
+} /* End of 'player_next_track' function */
 
 /* End of 'player.c' file */
 

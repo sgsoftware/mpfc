@@ -346,6 +346,13 @@ void wnd_send_msg( void *obj, dword id, dword data )
 
 	WND_ASSERT(wnd);
 	
+	/* Display window immediately */
+	if (id == WND_MSG_DISPLAY)
+	{
+		wnd_display(wnd_root);
+		return;
+	}
+
 	/* Get access to queue */
 	pthread_mutex_lock(&wnd->m_mutex);
 

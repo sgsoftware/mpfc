@@ -16,4 +16,4 @@ AC_OUTPUT(Makefile src/Makefile src/error/Makefile src/glist/Makefile \
 			 intl/Makefile po/Makefile.in m4/Makefile po/Makefile \
 			plugins/Makefile plugins/input/Makefile plugins/output/Makefile \
 			plugins/input/mp3/Makefile plugins/input/wav/Makefile \
-			plugins/output/oss/Makefile)
+			plugins/output/oss/Makefile doc/Makefile)

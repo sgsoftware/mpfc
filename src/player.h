@@ -110,6 +110,9 @@ void player_help_display( wnd_t *wnd, dword data );
 /* Handle key message handler for help screen */
 void player_help_handle_key( wnd_t *wnd, dword data );
 
+/* Start next track */
+void player_next_track( void );
+
 #endif
 
 /* End of 'player.h' file */

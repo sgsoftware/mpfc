@@ -39,6 +39,9 @@ bool util_search_str( char *ptext, char *text );
 /* Get file extension */
 char *util_get_ext( char *name );
 
+/* Delay */
+void util_delay( long s, long ns );
+
 #endif
 
 /* End of 'util.h' file */

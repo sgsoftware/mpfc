@@ -28,6 +28,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include "types.h"
 #include "util.h"
 
@@ -89,6 +90,16 @@ char *util_get_ext( char *name )
 	for ( i = strlen(name) - 1; i >= 0 && name[i] != '.'; i -- );
 	return &name[i + 1];
 } /* End of 'util_get_ext' function */
+
+/* Delay */
+void util_delay( long s, long ns )
+{
+	struct timespec tv;
+
+	tv.tv_sec = 0;
+	tv.tv_nsec = 100000L;
+	nanosleep(&tv, NULL);
+} /* End of 'util_delay' function */
 
 /* End of 'util.c' file */
 

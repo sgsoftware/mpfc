@@ -133,6 +133,8 @@ void ebox_handle_key( wnd_t *wnd, dword data )
 		ebox_del(box, box->m_cursor);
 	/* Common dialog box item actions */
 	else DLG_ITEM_HANDLE_COMMON(wnd, key)
+	else if (key == '\n' || key == 27)
+		wnd_send_msg(wnd, WND_MSG_CLOSE, 0);
 } /* End of 'ebox_handle_key' function */
 
 /* Add a character to edit box */

@@ -1,4 +1,4 @@
-SUBDIRS = intl m4 po src plugins
+SUBDIRS = doc intl m4 po src plugins
 
 ACLOCAL_AMFLAGS = -I m4
 
