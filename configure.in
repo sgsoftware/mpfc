@@ -8,7 +8,6 @@ AC_CHECK_LIB(ncurses, initscr)
 AC_CHECK_LIB(pthread, pthread_create)
 AC_CHECK_LIB(z, compress)
 AC_CHECK_LIB(m, pow)
-AC_CHECK_LIB(id3tag, id3_file_open)
 AC_CHECK_LIB(mad, mad_stream_init)
 AC_CHECK_LIB(dl, dlopen)
 AC_CHECK_LIB(vorbis, vorbis_dsp_clear)
@@ -20,7 +19,7 @@ AC_CHECK_LIB(resolv, gethostbyname)
 AM_GNU_GETTEXT
 
 AC_OUTPUT(Makefile src/Makefile src/util/Makefile src/glist/Makefile \
-	 	    src/cfg/Makefile src/file/Makefile \
+	 	    src/cfg/Makefile src/file/Makefile src/myid3/Makefile \
 			intl/Makefile po/Makefile.in m4/Makefile po/Makefile \
 			plugins/Makefile plugins/input/Makefile plugins/output/Makefile \
 			plugins/input/mp3/Makefile plugins/input/wav/Makefile \

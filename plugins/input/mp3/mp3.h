@@ -75,5 +75,8 @@ void mp3_read_song_params( void );
 /* Read mp3 file header */
 void mp3_read_header( char *filename, struct mad_header *head );
 
+/* Convert string from ID3 tag to genre id */
+byte mp3_get_genre( char *str );
+
 /* End of 'mp3.h' file */
 

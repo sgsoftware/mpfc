@@ -237,7 +237,7 @@ size_t fhttp_read( void *buf, size_t size, size_t nmemb, file_t *f )
 	if (!data->m_min_buf_size)
 	{
 		while (!data->m_read_size && !data->m_finished)
-			util_delay(1000000);
+			usleep(1);
 	}
 	else if (data->m_read_size <= (data->m_min_buf_size >> 2))
 	{
@@ -256,7 +256,7 @@ size_t fhttp_read( void *buf, size_t size, size_t nmemb, file_t *f )
 			if ((p / 10) != (pp / 10))
 				file_print_msg(f, _("Filling buffer: %d%% done"), p);
 			pp = p;
-			util_delay(1000000);
+			usleep(1);
 		}
 	}
 
@@ -320,7 +320,7 @@ void *fhttp_thread( void *arg )
 		if (!n)
 		{
 			pthread_mutex_unlock(&data->m_mutex);
-			util_delay(0, 1000000);
+			usleep(1);
 			continue;
 		}
 

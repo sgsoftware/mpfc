@@ -16,4 +16,4 @@ EXTRA_DIST = .mpfcrc
 localedir = $(datadir)/locale
 DEFS = -DLOCALEDIR=\"$(localedir)\" -DLIBDIR=\"$(libdir)\" @DEFS@
 mpfc_LDADD = glist/libglist.a util/libutil.a cfg/libcfg.a file/libfile.a
-SUBDIRS = util glist cfg file
+SUBDIRS = util glist cfg file myid3
