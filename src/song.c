@@ -66,6 +66,7 @@ song_t *song_new( char *filename, char *title, int len )
 
 	/* Set song fields */
 	strcpy(song->m_file_name, filename);
+	util_rem_slashes(song->m_file_name);
 	song->m_info = NULL;
 	song->m_inp = inp;
 	song->m_flags = 0;

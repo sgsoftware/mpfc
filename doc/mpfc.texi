@@ -699,6 +699,9 @@ Audio CD plugin supports Audio CDs. This support is done through objects
 (@pxref{Objects}). To add a CD contents to playlist add object named 
 ``audiocd''. The object name part has no meaning for this plugin.
 
+By default CD-ROM device is @file{/dev/cdrom}, but you can change this
+behaviour by setting ``audiocd-device'' variable.
+
 Song info for Audio CD is supported through CDDB. If you want to obtain
 this information you must be connected to the Internet. CDDB server is set
 through ``cddb-host'' variable. The default value is ``freedb.freedb.org''.

@@ -5,7 +5,7 @@
 /* FILE NAME   : window.c
  * PURPOSE     : SG MPFC. Window functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 18.11.2003
+ * LAST UPDATE : 28.11.2003
  * NOTE        : Module prefix 'wnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -577,6 +577,8 @@ void *wnd_kbd_thread( void *arg )
 		{
 			if (key == '\f')
 				wnd_redisplay(wnd_root);
+/*			else if (key == 14)
+				wnd_reinit_mouse();*/
 			wnd_send_msg(wnd_focus, WND_MSG_KEYDOWN, (dword)key);
 		}
 
@@ -826,6 +828,23 @@ void wnd_handle_pp_notify( wnd_t *wnd, dword data )
 	/* Free memory */
 	free((void *)data);
 } /* End of 'wnd_handle_pp_notify' function */
+
+/* Reinitialize mouse */
+void wnd_reinit_mouse( void )
+{
+	Gpm_Connect conn;
+
+	if (gpm_fd >= 0)
+		Gpm_Close();
+
+	memset(&conn, 0, sizeof(conn));
+	conn.eventMask = GPM_DOWN | GPM_DOUBLE | GPM_DRAG | GPM_UP;
+	conn.defaultMask = ~GPM_HARD;
+	conn.minMod = 0;
+	conn.maxMod = 0;
+	Gpm_Open(&conn, 0); 
+	gpm_zerobased = TRUE;
+} /* End of 'wnd_reinit_mouse' function */
 
 /* End of 'window.c' file */
 

@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. MP3 input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 10.11.2003
+ * LAST UPDATE : 5.12.2003
  * NOTE        : Module prefix 'mp3'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -493,7 +493,7 @@ bool_t mp3_get_info( char *filename, song_info_t *info )
 			else if (!strcmp(f.m_name, ID3_FRAME_GENRE))
 			{
 				byte genre = mp3_get_genre(f.m_val);
-				if (!genre)
+				if (genre == 0xFE)
 				{
 					info->m_genre = GENRE_ID_OWN_STRING;
 					strcpy(info->m_genre_data.m_text, f.m_val);
@@ -1081,26 +1081,23 @@ void mp3_read_header( char *filename, struct mad_header *head )
 /* Convert string from ID3 tag to genre id */
 byte mp3_get_genre( char *str )
 {
-	byte g;
+	byte g = 0;
+	bool_t found = FALSE;
 
-	for ( g = 0; *str; str ++ )
+	/* Skip braces in beginning */
+	while (*str == '(')
+		str ++;
+
+	/* Extract a number */
+	while (*str >= '0' && *str <= '9')
 	{
-		/* Skip any parenthesis */
-		if (*str == '(' || *str == ')')
-			continue;
-
-		/* If found digit -- append it to number */
-		else if (*str >= '0' && *str <= '9')
-		{
-			g *= 10;
-			g += (*str - '0');
-		}
-
-		/* Break on any other symbol */
-		else
-			break;
+		g *= 10;
+		g += (*str - '0');
+		str ++;
+		found = TRUE;
 	}
-	return g;
+
+	return found ? g : 0xFE;
 } /* End of 'mp3_get_genre' function */
 
 /* End of 'mp3.c' file */

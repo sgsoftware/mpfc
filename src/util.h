@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for different utility
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 22.10.2003
+ * LAST UPDATE : 28.11.2003
  * NOTE        : Module prefix 'util'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -66,6 +66,9 @@ bool_t util_search_regexp( char *ptext, char *text, bool_t nocase );
 
 /* Delete new line characters from end of string */
 void util_del_nl( char *dest, char *src );
+
+/* Remove multiple slashes in file name */
+void util_rem_slashes( char *name );
 
 #endif
 

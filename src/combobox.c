@@ -365,10 +365,16 @@ void cbox_edit2list( combobox_t *cb )
 	if (cb == NULL)
 		return;
 
-	/* Search list box for item with this text */
-	for ( i = 0; i < cb->m_list_size; i ++ )
-		if (!strncmp(cb->m_list[i], cb->m_text, cb->m_text_len))
-			break;
+	/* If there is no text make no selection */
+	if (!(*(cb->m_text)))
+		i = -1;
+	else
+	{
+		/* Search list box for item with this text */
+		for ( i = 0; i < cb->m_list_size; i ++ )
+			if (!strncmp(cb->m_list[i], cb->m_text, cb->m_text_len))
+				break;
+	}
 
 	/* Select this item */
 	cbox_move_list_cursor(cb, FALSE, (i < cb->m_list_size) ? i : -1, FALSE, 

@@ -821,10 +821,10 @@ void plist_centrize( plist_t *pl, int index )
 			pl->m_sel_start = pl->m_sel_end;
 
 		pl->m_scrolled = pl->m_sel_end - (pl->m_height + 1) / 2;
+		if (pl->m_scrolled >= pl->m_len - pl->m_height)
+			pl->m_scrolled = pl->m_len - pl->m_height;
 		if (pl->m_scrolled < 0)
 			pl->m_scrolled = 0;
-		else if (pl->m_scrolled >= pl->m_len - pl->m_height)
-			pl->m_scrolled = pl->m_len - pl->m_height;
 	}
 } /* End of 'plist_centrize' function */
 

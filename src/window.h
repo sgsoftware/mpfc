@@ -231,6 +231,9 @@ wnd_t *wnd_get_wnd_under_cursor( int x, int y );
 /* Check if a point belongs to the window */
 bool_t wnd_pt_belongs( wnd_t *wnd, int x, int y );
 
+/* Reinitialize mouse */
+void wnd_reinit_mouse( void );
+
 #endif
 
 /* End of 'window.h' file */

@@ -221,5 +221,25 @@ void util_del_nl( char *dest, char *src )
 	dest[len + 1] = 0;
 } /* End of 'util_del_nl' function */
 
+/* Remove multiple slashes in file name */
+void util_rem_slashes( char *name )
+{
+	int len = strlen(name);
+
+	while (*name)
+	{
+		if (((*name) == '/') && ((*(name + 1)) == '/'))
+		{
+			char *p = name;
+			while (*p)
+			{
+				*p = *(p + 1);
+				p ++;
+			}
+		}
+		name ++;
+	}
+} /* End of 'util_rem_slashes' function */
+
 /* End of 'util.c' file */
 

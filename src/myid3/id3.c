@@ -551,9 +551,21 @@ void id3_rem_end_spaces( char *str, int len )
 
 /* Copy string to frame */
 void id3_copy2frame( id3_frame_t *f, byte **ptr, int size )
-{
+{	
+	byte *p = *ptr, pos = 0;
+	int i;
+	
 	if (f == NULL)
 		return;
+
+	/* Seek to the last string in frame */
+	for ( i = 0; i < size; i ++, p ++ )
+		if (!(*p))
+			pos = i;
+	if (pos > 0)
+		pos ++;
+	size -= pos;
+	(*ptr) += pos;
 
 	/* Allocate memory */
 	f->m_val = (char *)malloc(size + 1);

@@ -78,6 +78,8 @@ bool_t ebox_init( editbox_t *wnd, wnd_t *parent, int x, int y, int width,
 	strcpy(wnd->m_label, label);
 	strcpy(wnd->m_text, text);
 	wnd->m_cursor = wnd->m_len = strlen(wnd->m_text);
+	if (wnd->m_cursor >= width)
+		wnd->m_cursor = 0;
 	wnd->m_last_key = 0;
 	wnd->m_max_len = max_len;
 	wnd->m_scrolled = 0;

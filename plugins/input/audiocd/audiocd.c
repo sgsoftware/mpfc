@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Audio CD input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 11.11.2003
+ * LAST UPDATE : 9.12.2003
  * NOTE        : Module prefix 'acd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -73,9 +73,15 @@ void (*acd_print_msg)( char *msg );
 int acd_prepare_cd( void )
 {
 	int fd;
+	char dev[256];
+
+	/* Get device name */
+	strcpy(dev, cfg_get_var(acd_var_list, "audiocd-device"));
+	if (*dev >= '0' && *dev <= '9')
+		strcpy(dev, "/dev/cdrom");
 	
 	/* Open device */
-	fd = open("/dev/cdrom", O_RDONLY|O_NONBLOCK);
+	fd = open(dev, O_RDONLY|O_NONBLOCK);
 	if (fd < 0)
 		return fd;
 

@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG MPFC. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 9.11.2003
+ * LAST UPDATE : 3.12.2003
  * NOTE        : Module prefix 'player'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -574,6 +574,9 @@ void player_play( int song, int start_time )
 {
 	song_t *s;
 
+	/* End current playing */
+	player_end_play(FALSE);
+
 	/* Check that we have anything to play */
 	if (song < 0 || song >= player_plist->m_len ||
 			(s = player_plist->m_list[song]) == NULL)
@@ -581,9 +584,6 @@ void player_play( int song, int start_time )
 		player_plist->m_cur_song = -1;
 		return;
 	}
-
-	/* End current playing */
-	player_end_play(FALSE);
 
 	/* Start new playing thread */
 	cfg_set_var(cfg_list, "cur-song-name", 
