@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Errors management functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.03.2003
+ * LAST UPDATE : 27.07.2003
  * NOTE        : Module prefix 'error'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -83,7 +83,9 @@ void error_update_text( void )
 	case ERROR_OUT_PLUGIN_ERROR:
 		strcpy(error_text, _("Output plugin error"));
 		break;
-
+	case ERROR_EFFECT_PLUGIN_ERROR:
+		strcpy(error_text, _("Effect plugin error"));
+		break;
 	}
 } /* End of 'error_update_text' function */
 

@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Plugins manager functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.03.2003
+ * LAST UPDATE : 27.07.2003
  * NOTE        : Module prefix 'pmng'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include "types.h"
 #include "cfg.h"
+#include "ep.h"
 #include "inp.h"
 #include "outp.h"
 #include "pmng.h"
@@ -42,6 +43,10 @@ in_plugin_t **pmng_inp = NULL;
 int pmng_num_outp = 0;
 out_plugin_t **pmng_outp = NULL;
 
+/* Effect plugins list */
+int pmng_num_ep = 0;
+effect_plugin_t **pmng_ep = NULL;
+
 /* Current output plugin */
 out_plugin_t *pmng_cur_out = NULL;
 
@@ -50,6 +55,7 @@ bool pmng_init( void )
 {
 	in_plugin_t *ip;
 	out_plugin_t *op;
+	effect_plugin_t *ep;
 	FILE *fd;
 	char str[256];
 	
@@ -73,6 +79,29 @@ bool pmng_init( void )
 		ip = inp_init(name);
 		if (ip != NULL)
 			pmng_add_in(ip);
+	}
+	pclose(fd);
+
+	/* Initialize effect plugins */ 
+	if (cfg_get_var_int(cfg_list, "plugins_search_subdirs"))
+		sprintf(str, "find %s/effect/ 2>/dev/null | grep \"\\.so$\"", 
+				cfg_get_var(cfg_list, "lib_dir"));
+	else
+		sprintf(str, "ls %s/effect/*.so 2>/dev/null", 
+				cfg_get_var(cfg_list, "lib_dir"));
+	fd = popen(str, "r");
+	if (fd == NULL)
+		return FALSE;
+	while (!feof(fd))
+	{
+		char name[256];
+		
+		fgets(name, 256, fd);
+		if (name[strlen(name) - 1] == '\n')
+			name[strlen(name) - 1] = 0;
+		ep = ep_init(name);
+		if (ep != NULL)
+			pmng_add_effect(ep);
 	}
 	pclose(fd);
 
@@ -103,16 +132,7 @@ bool pmng_init( void )
 			pmng_add_out(op);
 
 			/* Choose this plugin if it is set in options */
-			for ( i = strlen(name) - 1; i >= 0 && name[i] != '.'; i -- );
-			if (i <= 0)
-				continue;
-			for ( j = i - 1; j >= 0 && name[j] != '/'; j -- );
-			if (j < 0)
-				continue;
-			memcpy(str1, &name[j + 1], i - j - 1);
-			str1[i - j - 1] = 0;
-			sprintf(str2, "lib%s", cfg_get_var(cfg_list, "output_plugin"));
-			if (!strcmp(str1, str2))
+			if (!strcmp(op->m_name, cfg_get_var(cfg_list, "output_plugin")))
 				pmng_cur_out = op;
 		}
 	}
@@ -132,6 +152,9 @@ void pmng_free( void )
 	for ( i = 0; i < pmng_num_outp; i ++ )
 		outp_free(pmng_outp[i]);
 	free(pmng_outp);
+	for ( i = 0; i < pmng_num_ep; i ++ )
+		ep_free(pmng_ep[i]);
+	free(pmng_ep);
 	pmng_cur_out = NULL;
 } /* End of 'pmng_free' function */
 
@@ -186,6 +209,34 @@ in_plugin_t *pmng_search_format( char *format )
 	}
 	return NULL;
 } /* End of 'pmng_search_format' function */
+
+/* Add an effect plugin */
+void pmng_add_effect( effect_plugin_t *p )
+{
+	if (pmng_ep == NULL)
+		pmng_ep = (effect_plugin_t **)malloc(sizeof(effect_plugin_t *));
+	else
+		pmng_ep = (effect_plugin_t **)realloc(pmng_ep, 
+				sizeof(effect_plugin_t *) * (pmng_num_ep + 1));
+	pmng_ep[pmng_num_ep ++] = p;
+} /* End of 'pmng_add_effect' function */
+
+/* Apply effect plugins */
+int pmng_apply_effects( byte *data, int len, int fmt, int freq, int channels )
+{
+	int l = len, i;
+
+	for ( i = 0; i < pmng_num_ep; i ++ )
+	{
+		char name[256];
+		
+		/* Apply effect plugin if it is enabled */
+		sprintf(name, "enable_effect_%s", pmng_ep[i]->m_name);
+		if (cfg_get_var_int(cfg_list, name))
+			l = ep_apply(pmng_ep[i], data, l, fmt, freq, channels);
+	}
+	return l;
+} /* End of 'pmng_apply_effects' function */
 
 /* End of 'pmng.c' file */
 

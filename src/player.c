@@ -6,6 +6,7 @@
  * PURPOSE     : SG Konsamp. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
  * LAST UPDATE : 27.07.2003
+ls
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -474,7 +475,7 @@ void player_display( wnd_t *wnd, dword data )
 	wnd_move(wnd, 0, 0);
 	if (player_plist->m_cur_song == -1)
 		wnd_printf(wnd, "SG Software Media Player For Console\n"
-				"version 0.1.1\n");
+				"version 0.2\n");
 	else
 	{
 		char title[80];
@@ -704,7 +705,11 @@ void *player_thread( void *arg )
 						outp_set_freq(pmng_cur_out, freq);
 						outp_set_fmt(pmng_cur_out, fmt);
 					}
+
+					/* Apply effects */
+					size = pmng_apply_effects(buf, size, fmt, freq, 2);
 					
+					/* Send to output plugin */
 					outp_play(pmng_cur_out, buf, size);
 				}
 				else

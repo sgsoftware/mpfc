@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Different utility functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 26.07.2003
+ * LAST UPDATE : 27.07.2003
  * NOTE        : Module prefix 'util'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -143,6 +143,28 @@ FILE *util_fopen( char *filename, char *flags )
 		strcpy(fname, filename);
 	return fopen(fname, flags);
 } /* End of 'util_fopen' function */
+
+/* Get short plugin name */
+char *util_get_plugin_short_name( char *dest, char *src )
+{
+	int i, j;
+	
+	for ( i = strlen(src) - 1; i >= 0 && src[i] != '.'; i -- );
+	if (i <= 0)
+	{
+		strcpy(dest, src);
+		return dest;
+	}
+	for ( j = i - 1; j >= 0 && src[j] != '/'; j -- );
+		if (j < 0)
+		{
+			strcpy(dest, src);
+			return dest;
+		}
+	memcpy(dest, &src[j + 4], i - j - 4);
+	dest[i - j - 4] = 0;
+	return dest;
+} /* End of 'util_get_plugin_short_name' function */
 
 /* End of 'util.c' file */
 

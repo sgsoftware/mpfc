@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Input plugin management functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 26.07.2003
+ * LAST UPDATE : 27.07.2003
  * NOTE        : Module prefix 'inp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -65,6 +65,7 @@ in_plugin_t *inp_init( char *name )
 		inp_free(p);
 		return NULL;
 	}
+	util_get_plugin_short_name(p->m_name, name);
 	memset(&p->m_fl, 0, sizeof(p->m_fl));
 	fl(&p->m_fl);
 

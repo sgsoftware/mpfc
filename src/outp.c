@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Output plugin management functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 12.07.2003
+ * LAST UPDATE : 27.07.2003
  * NOTE        : Module prefix 'outp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -64,6 +64,7 @@ out_plugin_t *outp_init( char *name )
 		outp_free(p);
 		return NULL;
 	}
+	util_get_plugin_short_name(p->m_name, name);
 	memset(&p->m_fl, 0, sizeof(p->m_fl));
 	fl(&p->m_fl);
 

@@ -2,12 +2,12 @@
  * Copyright (C) 2003 by SG Software.
  ******************************************************************/
 
-/* FILE NAME   : error.h
- * PURPOSE     : SG Konsamp. Interface for errors management 
+/* FILE NAME   : ep.h
+ * PURPOSE     : SG Konsamp. Interface for effect plugin management
  *               functions.
  * PROGRAMMER  : Sergey Galanov
  * LAST UPDATE : 27.07.2003
- * NOTE        : Module prefix 'error'.
+ * NOTE        : Module prefix 'ep'.
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 
@@ -25,38 +25,43 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef __SG_KONSAMP_ERROR_H__
-#define __SG_KONSAMP_ERROR_H__
+#ifndef __SG_KONSAMP_EP_H__
+#define __SG_KONSAMP_EP_H__
 
 #include "types.h"
 
-/* Error codes */
-#define ERROR_NO_ERROR					0
-#define ERROR_NO_SUCH_FILE				1
-#define ERROR_NO_MEMORY					2
-#define ERROR_CURSES					3
-#define ERROR_UNKNOWN_FILE_TYPE			4
-#define ERROR_INVALID_CMD_LINE_PARAMS	5
-#define ERROR_IN_PLUGIN_ERROR			6
-#define ERROR_OUT_PLUGIN_ERROR			7
-#define ERROR_EFFECT_PLUGIN_ERROR		8
+/* Plugin functions list structure */
+typedef struct
+{
+	/* Apply plugin function */
+	int (*m_apply)( byte *data, int len, int fmt, int freq, int channels );
+} ep_func_list_t;
 
-/* Last error description */
-extern char error_text[80];
+/* Effect plugin type */
+typedef struct tag_effect_plugin_t
+{
+	/* Plugin library handler */
+	void *m_lib_handler;
 
-/* Get last error value */
-dword error_get_last( void );
+	/* Plugin short name */
+	char m_name[256];
 
-/* Set error code */
-void error_set_code( dword code );
+	/* Functions list */
+	ep_func_list_t m_fl;
+} effect_plugin_t;
 
-/* Get error textual description */
-char *error_get_text( dword code );
+/* Initialize effect plugin */
+effect_plugin_t *ep_init( char *name );
 
-/* Update error text */
-void error_update_text( void );
+/* Free effect plugin object */
+void ep_free( effect_plugin_t *plugin );
+
+/* Apply plugin to audio data */
+int ep_apply( effect_plugin_t *plugin, byte *data, int len, 
+	   			int fmt, int freq, int channels );
 
 #endif
 
-/* End of 'error.h' file */
+/* End of 'ep.h' file */
+
 

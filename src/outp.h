@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Interface for output plugin management
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 12.07.2003
+ * LAST UPDATE : 27.07.2003
  * NOTE        : Module prefix 'outp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -64,6 +64,9 @@ typedef struct tag_out_plugin_t
 {
 	/* Plugin library handler */
 	void *m_lib_handler;
+
+	/* Plugin short name */
+	char m_name[256];
 
 	/* Functions list */
 	outp_func_list_t m_fl;

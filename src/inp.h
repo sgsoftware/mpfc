@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Interface for input plugin management
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 26.07.2003
+ * LAST UPDATE : 27.07.2003
  * NOTE        : Module prefix 'inp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -75,6 +75,9 @@ typedef struct tag_in_plugin_t
 {
 	/* Plugin library handler */
 	void *m_lib_handler;
+
+	/* Plugin name */
+	char m_name[256];
 
 	/* Functions list */
 	inp_func_list_t m_fl;

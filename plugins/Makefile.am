@@ -1,1 +1,1 @@
-SUBDIRS = input output
+SUBDIRS = input output effect

@@ -1,5 +1,5 @@
 AC_INIT(src/main.c)
-AM_INIT_AUTOMAKE(mpfc, 0.1.1)
+AM_INIT_AUTOMAKE(mpfc, 0.2)
 AC_PROG_CC
 AC_PROG_LIBTOOL
 
@@ -19,4 +19,5 @@ AC_OUTPUT(Makefile src/Makefile src/util/Makefile src/glist/Makefile \
 			 intl/Makefile po/Makefile.in m4/Makefile po/Makefile \
 			plugins/Makefile plugins/input/Makefile plugins/output/Makefile \
 			plugins/input/mp3/Makefile plugins/input/wav/Makefile \
-			plugins/output/oss/Makefile doc/Makefile)
+			plugins/output/oss/Makefile plugins/effect/Makefile \
+			plugins/effect/echo/Makefile doc/Makefile)

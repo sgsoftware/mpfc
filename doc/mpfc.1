@@ -27,10 +27,21 @@ Play silently (i.e. don't make any audio output). Default is "0".
 \fBequalizer_off\fR
 Turn off equalizer. Default is "0".
 .TP
+\fBeq_preamp, eq_band<NUM>\fR
+Preamp and bands values for equalizer.
+.TP
+\fBenable_effect_<NAME>\fR
+Enable effect plugin <NAME>.
+.TP
 \fBmp3_quick_get_len\fR
 Get mp3 song length quickly but not very correctly (the result will
 be improper for files with variable bitrate; in other cases - more or less
 correct). Default value is "1".
+.TP
+\fBecho_surround_enable, echo_volume, echo_delay, echo_feedback\fR
+Variables for echo effect plugin. Volume and feedback are in percents,
+delay - in milliseconds. Initial values are: "0", "50", "500" and "50"
+respectively.
 .TP
 \fBlib_dir\fR
 Directory with plugins. Default is "/usr/local/lib/mpfc".

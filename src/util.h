@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Interface for different utility
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 26.07.2003
+ * LAST UPDATE : 27.07.2003
  * NOTE        : Module prefix 'util'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -48,6 +48,9 @@ char *util_get_file_short_name( char *name );
 
 /* Convert file name to the one with escaped special symbols */
 char *util_escape_fname( char *out, char *in );
+
+/* Get short plugin name */
+char *util_get_plugin_short_name( char *dest, char *src );
 
 /* Open a file expanding home directories */
 FILE *util_fopen( char *filename, char *flags );

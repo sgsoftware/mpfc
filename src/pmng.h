@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Interface for plugins manager 
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 15.02.2003
+ * LAST UPDATE : 27.07.2003
  * NOTE        : Module prefix 'pmng'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -29,6 +29,7 @@
 #define __SG_KONSAMP_PMNG_H__
 
 #include "types.h"
+#include "ep.h"
 #include "inp.h"
 #include "outp.h"
 
@@ -39,6 +40,10 @@ extern in_plugin_t **pmng_inp;
 /* Output plugins list */
 extern int pmng_num_outp;
 extern out_plugin_t **pmng_outp;
+
+/* Effect plugins list */
+extern int pmng_num_ep;
+extern effect_plugin_t **pmng_ep;
 
 /* Current output plugin */
 extern out_plugin_t *pmng_cur_out;
@@ -55,8 +60,14 @@ void pmng_add_in( in_plugin_t *p );
 /* Add an output plugin */
 void pmng_add_out( out_plugin_t *p );
 
+/* Add an effect plugin */
+void pmng_add_effect( effect_plugin_t *p );
+
 /* Search for input plugin supporting given format */
 in_plugin_t *pmng_search_format( char *format );
+
+/* Apply effect plugins */
+int pmng_apply_effects( byte *data, int len, int fmt, int freq, int channels );
 
 #endif
 
