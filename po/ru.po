@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: konsamp 0.1\n"
-"POT-Creation-Date: 2003-07-04 13:35+0400\n"
+"POT-Creation-Date: 2003-07-04 17:22+0400\n"
 "PO-Revision-Date: 2003-02-13 09:15+0300\n"
 "Last-Translator: Sergey E. Galanov <sgsoftware@mail.ru>\n"
 "Language-Team: Russian <sgsoftware@mail.ru>\n"
@@ -30,6 +30,10 @@ msgstr "Строка найдена"
 #: ../src/player.c:411
 msgid "Enter repeat value for the next command: "
 msgstr "Введите число повторений для следующей команды: "
+
+#: ../src/player.c:612
+msgid "Unable to initialize output plugin"
+msgstr "Не могу инициализировать выходной плагин"
 
 #: ../src/player.c:751
 msgid "Enter file (or directory) name: "
