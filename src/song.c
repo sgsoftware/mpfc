@@ -65,22 +65,14 @@ song_t *song_new( char *filename, char *title, int len )
 	strcpy(song->m_file_name, filename);
 	song->m_info = NULL;
 	song->m_inp = inp;
-
 	if (title == NULL)
-	{
-		song_update_info(song);
-	}
+		song_set_info(song, NULL);
 	else
 	{
 		strcpy(song->m_title, title);
 		song->m_info = NULL;
 	}
 	song->m_len = len;
-
-	/* Get song length and information */
-	if (!len)
-		song->m_len = inp_get_len(song->m_inp, song->m_file_name);
-		
 	return song;
 } /* End of 'song_new' function */
 
@@ -146,6 +138,16 @@ void song_update_info( song_t *song )
 	else
 		song_set_info(song, NULL);
 } /* End of 'song_update_info' function */
+
+/* Initialize song info and length */
+void song_init_info_and_len( song_t *song )
+{
+	if (song == NULL)
+		return;
+
+	song->m_len = inp_get_len(song->m_inp, song->m_file_name);
+	song_update_info(song);	
+} /* End of 'song_init_info_and_len' function */
 
 /* End of 'song.c' file */
 

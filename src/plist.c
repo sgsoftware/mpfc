@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Play list manipulation
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 11.08.2003
+ * LAST UPDATE : 13.08.2003
  * NOTE        : Module prefix 'plist'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -28,15 +28,18 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "types.h"
 #include "colors.h"
 #include "error.h"
 #include "inp.h"
+#include "player.h"
 #include "plist.h"
 #include "pmng.h"
 #include "sat.h"
 #include "song.h"
 #include "util.h"
+#include "undo.h"
 #include "window.h"
 
 /* Check play list validity macro */
@@ -101,7 +104,7 @@ bool plist_add( plist_t *pl, char *filename )
 {
 	char str[256];
 	FILE *fd;
-	int i;
+	int i, num = 0;
 	char fname[256];
 
 	/* Do nothing if path is empty */
@@ -135,14 +138,26 @@ bool plist_add( plist_t *pl, char *filename )
 			break;
 		if (fn[strlen(fn) - 1] == '\n')
 			fn[strlen(fn) - 1] = 0;
-		plist_add_one_file(pl, fn);
+		num += plist_add_one_file(pl, fn);
 	}
-	
+
+	/* Store undo information */
+	if (player_store_undo && num)
+	{
+		struct tag_undo_list_item_t *undo;
+		undo = (struct tag_undo_list_item_t *)malloc(sizeof(*undo));
+		undo->m_type = UNDO_ADD;
+		undo->m_next = undo->m_prev = NULL;
+		undo->m_data.m_add.m_num_songs = num;
+		undo->m_data.m_add.m_file_name = strdup(filename);
+		undo_add(player_ul, undo);
+	}
+
 	return TRUE;
 } /* End of 'plist_add' function */
 
 /* Add single file to play list */
-bool plist_add_one_file( plist_t *pl, char *filename )
+int plist_add_one_file( plist_t *pl, char *filename )
 {
 	int i;
 	char *ext;
@@ -151,24 +166,82 @@ bool plist_add_one_file( plist_t *pl, char *filename )
 
 	/* Add song */
 	if (!strcmp((char *)util_get_ext(filename), "m3u"))
-		plist_add_list(pl, filename);
+		return plist_add_list(pl, filename);
 	else
-		plist_add_song(pl, filename, NULL, 0);
-	return TRUE;
+		return plist_add_song(pl, filename, NULL, 0, -1);
 } /* End of 'plist_add_one_file' function */
 
 /* Add a song to play list */
-bool plist_add_song( plist_t *pl, char *filename, char *title, int len )
+int plist_add_song( plist_t *pl, char *filename, char *title, int len, 
+		int where )
 {
-	/* Shedule song for adding */
-	sat_push(pl, filename, title, len);
+	song_t *song;
+	int was_len;
+	
+	PLIST_ASSERT_RET(pl, FALSE);
+
+	/* Lock play list */
+	plist_lock(pl);
+
+	/* Try to reallocate memory for play list */
+	was_len = pl->m_len;
+	if (pl->m_list == NULL)
+	{
+		pl->m_list = (song_t **)malloc(sizeof(song_t *));
+	}
+	else
+	{
+		pl->m_list = (song_t **)realloc(pl->m_list,
+				sizeof(song_t *) * (pl->m_len + 1));
+	}
+	if (pl->m_list == NULL)
+	{
+		pl->m_len = 0;
+		error_set_code(ERROR_NO_MEMORY);
+		plist_unlock(pl);
+		return 0;
+	}
+
+	/* Initialize new song and add it to list */
+	song = song_new(filename, title, len);
+	if (song == NULL)
+	{
+		plist_unlock(pl);
+		return 0;
+	}
+	if (where < 0 || where >= pl->m_len)  
+		where = pl->m_len;
+	memmove(&pl->m_list[where + 1], &pl->m_list[where], 
+			sizeof(song_t *) * (pl->m_len - where));
+	pl->m_list[where] = song;
+	pl->m_len ++;
+
+	/* Update current song index */
+	if (pl->m_cur_song >= where)
+		pl->m_cur_song ++;
+
+	/* If list was empty - put cursor to the first song */
+	if (!was_len)
+	{
+		pl->m_sel_start = pl->m_sel_end = 0;
+		pl->m_visual = FALSE;
+	}
+
+	/* Unlock play list */
+	plist_unlock(pl);
+
+	/* Schedule song for setting its info and length */
+	if (title == NULL)
+		sat_push(pl, where);
+	return 1;
 } /* End of 'plist_add_song' function */
 
 /* Add a play list file to play list */
-bool plist_add_list( plist_t *pl, char *filename )
+int plist_add_list( plist_t *pl, char *filename )
 {
 	FILE *fd;
 	char str[256];
+	int num = 0;
 
 	PLIST_ASSERT_RET(pl, FALSE);
 	
@@ -215,16 +288,17 @@ bool plist_add_list( plist_t *pl, char *filename )
 		str[strlen(str) - 1] = 0;
 
 		/* Add this song to list */
-		plist_add_song(pl, str, title, song_len);
+		num += plist_add_song(pl, str, title, song_len, -1);
 	}
 
 	/* Close file */
 	fclose(fd);
-	return TRUE;
+	return num;
 } /* End of 'plist_add_list' function */
 
 /* Low level song adding */
-bool __plist_add_song( plist_t *pl, char *filename, char *title, int len )
+bool __plist_add_song( plist_t *pl, char *filename, char *title, int len, 
+	   int where )
 {
 	song_t *song;
 	int was_len;
@@ -260,7 +334,15 @@ bool __plist_add_song( plist_t *pl, char *filename, char *title, int len )
 		plist_unlock(pl);
 		return FALSE;
 	}
-	pl->m_list[pl->m_len ++] = song;
+	if (where < 0 || where >= pl->m_len)  
+		pl->m_list[pl->m_len ++] = song;
+	else
+	{
+		memmove(&pl->m_list[where + 1], &pl->m_list[where], 
+				sizeof(song_t *) * (pl->m_len - where));
+		pl->m_list[where] = song;
+		pl->m_len ++;
+	}
 
 	/* If list was empty - put cursor to the first song */
 	if (!was_len)
@@ -310,13 +392,18 @@ bool plist_save( plist_t *pl, char *filename )
 /* Sort play list */
 void plist_sort( plist_t *pl, bool global, int criteria )
 {
-	int start, end, i;
+	int start, end, i, j, was_song;
 	song_t *cur_song;
+	song_t **was_list = NULL;
 	
 	PLIST_ASSERT(pl);
 
 	/* Lock play list */
 	plist_lock(pl);
+
+	/* Save play list */
+	was_list = (song_t **)malloc(sizeof(song_t *) * pl->m_len);
+	memcpy(was_list, pl->m_list, sizeof(song_t *) * pl->m_len);
 	
 	/* Get sort start and end */
 	if (global)
@@ -325,7 +412,8 @@ void plist_sort( plist_t *pl, bool global, int criteria )
 		PLIST_GET_SEL(pl, start, end);
 
 	/* Save current song */
-	cur_song = (pl->m_cur_song < 0) ? NULL : pl->m_list[pl->m_cur_song];
+	was_song = pl->m_cur_song;
+	cur_song = (pl->m_cur_song < 0) ? NULL : pl->m_list[was_song];
 
 	/* Sort */
 	for ( i = start; i < end; i ++ )
@@ -393,6 +481,29 @@ void plist_sort( plist_t *pl, bool global, int criteria )
 			}
 	}
 
+	/* Store undo information */
+	if (player_store_undo)
+	{
+		struct tag_undo_list_item_t *undo;
+		undo = (struct tag_undo_list_item_t *)malloc(sizeof(*undo));
+		undo->m_type = UNDO_SORT;
+		undo->m_next = undo->m_prev = NULL;
+		undo->m_data.m_sort.m_was_song = was_song;
+		undo->m_data.m_sort.m_transform = (int *)malloc(
+				sizeof(int) * pl->m_len);
+		for ( i = 0; i < pl->m_len; i ++ )
+		{
+			for ( j = 0; j < pl->m_len; j ++ )
+				if (was_list[i] == pl->m_list[j])
+				{
+					undo->m_data.m_sort.m_transform[i] = j;
+					break;
+				}
+		}
+		undo_add(player_ul, undo);
+	}
+	free(was_list);
+
 	/* Unlock play list */
 	plist_unlock(pl);
 } /* End of 'plist_sort' function */
@@ -406,13 +517,41 @@ void plist_rem( plist_t *pl )
 
 	/* Get real selection bounds */
 	PLIST_GET_SEL(pl, start, end);
+	if (start >= pl->m_len)
+		start = pl->m_len - 1;
+	if (end >= pl->m_len)
+		end = pl->m_len - 1;
 
 	/* Check if we have anything to delete */
 	if (!pl->m_len)
 		return;
 
+	/* Store undo information */
+	if (player_store_undo)
+	{
+		struct tag_undo_list_item_t *undo;
+		struct tag_undo_list_rem_t *data;
+		int j;
+		
+		undo = (struct tag_undo_list_item_t *)malloc(sizeof(*undo));
+		undo->m_type = UNDO_REM;
+		undo->m_next = undo->m_prev = NULL;
+		data = &undo->m_data.m_rem;
+		data->m_num_files = end - start + 1;
+		data->m_start_pos = start;
+		data->m_files = (char **)malloc(sizeof(char *) * data->m_num_files);
+		for ( i = start, j = 0; i <= end; i ++, j ++ )
+			data->m_files[j] = strdup(pl->m_list[i]->m_file_name);
+		undo_add(player_ul, undo);
+	}
+
 	/* Unlock play list */
 	plist_lock(pl);
+
+	/* Free memory */
+	for ( i = start; i <= end; i ++ )
+		if (i != pl->m_cur_song)
+			song_free(pl->m_list[i]);
 
 	/* Shift songs list and reallocate memory */
 	cur = (pl->m_cur_song >= start && pl->m_cur_song <= end);
@@ -689,6 +828,18 @@ void plist_add_obj( plist_t *pl, char *name )
 		pl->m_visual = FALSE;
 	}
 
+	/* Store undo information */
+	if (player_store_undo && num_songs)
+	{
+		struct tag_undo_list_item_t *undo;
+		undo = (struct tag_undo_list_item_t *)malloc(sizeof(*undo));
+		undo->m_type = UNDO_ADD_OBJ;
+		undo->m_next = undo->m_prev = NULL;
+		undo->m_data.m_add_obj.m_num_songs = num_songs;
+		undo->m_data.m_add_obj.m_obj_name = strdup(name);
+		undo_add(player_ul, undo);
+	}
+
 	/* Update screen */
 	wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
 } /* End of 'plist_add_obj' function */
@@ -720,6 +871,19 @@ void plist_move_sel( plist_t *pl, int y, bool relative )
 		cur_song = pl->m_list[pl->m_cur_song];
 	else
 		cur_song = NULL;
+
+	/* Store undo information */
+	if (player_store_undo)
+	{
+		struct tag_undo_list_item_t *undo;
+		undo = (struct tag_undo_list_item_t *)malloc(sizeof(*undo));
+		undo->m_type = UNDO_MOVE;
+		undo->m_next = undo->m_prev = NULL;
+		undo->m_data.m_move_plist.m_start = start;
+		undo->m_data.m_move_plist.m_end = end;
+		undo->m_data.m_move_plist.m_to = y;
+		undo_add(player_ul, undo);
+	}
 
 	/* Move */
 	if (y - start < 0)
@@ -754,6 +918,18 @@ void plist_move_sel( plist_t *pl, int y, bool relative )
 	/* Unlock play list */
 	plist_unlock(pl);
 } /* End of 'plist_move_sel' function */
+
+/* Set song information */
+void plist_set_song_info( plist_t *pl, int index )
+{
+	if (pl == NULL || index < 0 || index >= pl->m_len)
+		return;
+
+	plist_lock(pl);
+	song_init_info_and_len(pl->m_list[index]);
+	wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
+	plist_unlock(pl);
+} /* End of 'plist_set_song_info' function */
 
 /* End of 'plist.c' file */
 

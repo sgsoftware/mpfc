@@ -65,6 +65,9 @@ void song_set_info( song_t *song, song_info_t *info );
 /* Update song information */
 void song_update_info( song_t *song );
 
+/* Initialize song info and length */
+void song_init_info_and_len( song_t *song );
+
 #endif
 
 /* End of 'song.h' file */

@@ -2,11 +2,11 @@
  * Copyright (C) 2003 by SG Software.
  ******************************************************************/
 
-/* FILE NAME   : key_bind.c
+/* FILE NAME   : key_bind.h
  * PURPOSE     : SG MPFC. Interface for key bindings management
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 8.08.2003
+ * LAST UPDATE : 13.08.2003
  * NOTE        : Module prefix 'kbind'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -82,7 +82,9 @@
 #define KBIND_PLIST_UP			48
 #define KBIND_PLIST_MOVE		49
 #define KBIND_VAR_MINI_MANAGER	50
-#define KBIND_NUM_ACTIONS		51
+#define KBIND_UNDO				51
+#define KBIND_REDO				52
+#define KBIND_NUM_ACTIONS		53
 
 /* The maximal key sequence length */
 #define KBIND_MAX_SEQ_LEN 10

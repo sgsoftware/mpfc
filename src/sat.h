@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for song adder thread
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 12.05.2003
+ * LAST UPDATE : 15.08.2003
  * NOTE        : Module prefix 'sat'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -35,10 +35,7 @@
 typedef struct tag_sat_queue_t
 {
 	plist_t *m_pl;
-	char m_file_name[256];
-	char m_title[256];
-	int m_len;
-	bool m_has_title;
+	int m_index;
 	struct tag_sat_queue_t *m_next;
 } sat_queue_t;
 
@@ -48,12 +45,11 @@ bool sat_init( void );
 /* Uninitialize SAT module */
 void sat_free( void );
 
-/* Push file name to queue */
-void sat_push( plist_t *pl, char *filename, char *title, int len );
+/* Push song to queue */
+void sat_push( plist_t *pl, int index );
 
-/* Pop file name from queue */
-char *sat_pop( plist_t **pl, char *filename, char *title, int *has_title, 
-		int *len );
+/* Pop song from queue */
+int sat_pop( plist_t **pl );
 
 /* Song adder thread function */
 void *sat_thread( void *arg );

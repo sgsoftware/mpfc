@@ -76,16 +76,18 @@ void plist_free( plist_t *pl );
 bool plist_add( plist_t *pl, char *filename );
 
 /* Add single file to play list */
-bool plist_add_one_file( plist_t *pl, char *filename );
+int plist_add_one_file( plist_t *pl, char *filename );
 
 /* Add a song to play list */
-bool plist_add_song( plist_t *pl, char *filename, char *title, int len );
+int plist_add_song( plist_t *pl, char *filename, char *title, int len, 
+		int where );
 
 /* Add a play list file to play list */
-bool plist_add_list( plist_t *pl, char *filename );
+int plist_add_list( plist_t *pl, char *filename );
 
 /* Low level song adding */
-bool __plist_add_song( plist_t *pl, char *filename, char *title, int len );
+bool __plist_add_song( plist_t *pl, char *filename, char *title, int len,
+	   int where );
 
 /* Save play list */
 bool plist_save( plist_t *pl, char *filename );
@@ -119,6 +121,9 @@ void plist_unlock( plist_t *pl );
 
 /* Add an object */
 void plist_add_obj( plist_t *pl, char *name );
+
+/* Set song information */
+void plist_set_song_info( plist_t *pl, int index );
 
 #endif
 

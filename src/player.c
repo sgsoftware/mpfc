@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG MPFC. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 11.08.2003
+ * LAST UPDATE : 13.08.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -48,6 +48,7 @@
 #include "plist.h"
 #include "pmng.h"
 #include "sat.h"
+#include "undo.h"
 #include "util.h"
 
 /* Files for player to play */
@@ -101,6 +102,12 @@ hist_list_t *player_hist_lists[PLAYER_NUM_HIST_LISTS];
 /* Current input plugin */
 in_plugin_t *player_inp = NULL;
 
+/* Undo list */
+undo_list_t *player_ul = NULL;
+
+/* Do we story undo information now? */
+bool player_store_undo = TRUE;
+
 /* Initialize player */
 bool player_init( int argc, char *argv[] )
 {
@@ -136,6 +143,9 @@ bool player_init( int argc, char *argv[] )
 
 	/* Initialize song adder thread */
 	sat_init();
+
+	/* Initialize undo list */
+	player_ul = undo_new();
 
 	/* Create a play list and add files to it */
 	player_plist = plist_new(3, wnd_root->m_height - 6);
@@ -205,6 +215,7 @@ void player_deinit( void )
 		plist_free(player_plist);
 		player_plist = NULL;
 	}
+	undo_free(player_ul);
 
 	/* Uninitialize configuration manager */
 	cfg_free();
@@ -1263,6 +1274,14 @@ void player_handle_action( int action )
 	case KBIND_PLIST_MOVE:
 		plist_move_sel(player_plist, (player_repval == 0) ? 
 				1 : player_repval - 1, FALSE);
+		break;
+
+	/* Undo/redo */
+	case KBIND_UNDO:
+		undo_bw(player_ul);
+		break;
+	case KBIND_REDO:
+		undo_fw(player_ul);
 		break;
 		
 	/* Digit means command repeation value edit */

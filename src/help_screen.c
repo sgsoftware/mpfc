@@ -5,7 +5,7 @@
 /* FILE NAME   : help_screen.c
  * PURPOSE     : SG MPFC. Help screen functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.08.2003
+ * LAST UPDATE : 15.08.2003
  * NOTE        : Module prefix 'help'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -113,6 +113,8 @@ bool help_init( help_screen_t *help, wnd_t *parent, int x, int y,
 	help_add(help, _("L:\t\t Set/unset loop play mode"));
 	help_add(help, _("o:\t\t Variables mini-manager"));
 	help_add(help, _("O:\t\t Variables manager"));
+	help_add(help, _("U:\t\t Undo"));
+	help_add(help, _("R:\t\t Redo"));
 	help_add(help, _("^l:\t\t Redisplay screen"));
 	help_add(help, _("?:\t\t This help screen"));
 	return TRUE;

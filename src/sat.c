@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Song adder thread functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 12.05.2003
+ * LAST UPDATE : 14.08.2003
  * NOTE        : Module prefix 'sat'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -86,7 +86,7 @@ void sat_free( void )
 } /* End of 'sat_free' function */
 
 /* Push file name to queue */
-void sat_push( plist_t *pl, char *filename, char *title, int len )
+void sat_push( plist_t *pl, int index )
 {
 	sat_queue_t *t;
 
@@ -100,10 +100,7 @@ void sat_push( plist_t *pl, char *filename, char *title, int len )
 	else
 		t = sat_queue_tail->m_next = (sat_queue_t *)malloc(sizeof(sat_queue_t));
 	t->m_pl = pl;
-	strcpy(t->m_file_name, filename);
-	if (t->m_has_title = (title != NULL))
-		strcpy(t->m_title, title);
-	t->m_len = len;
+	t->m_index = index;
 	t->m_next = NULL;
 	sat_queue_tail = t;
 
@@ -111,11 +108,11 @@ void sat_push( plist_t *pl, char *filename, char *title, int len )
 	pthread_mutex_unlock(&sat_mutex);
 } /* End of 'sat_push' function */
 
-/* Pop file name from queue */
-char *sat_pop( plist_t **pl, char *filename, char *title, 
-		int *has_title, int *len )
+/* Pop song from queue */
+int sat_pop( plist_t **pl )
 {
 	sat_queue_t *t;
+	int i;
 	
 	/* Get access to queue */
 	pthread_mutex_lock(&sat_mutex);
@@ -124,15 +121,12 @@ char *sat_pop( plist_t **pl, char *filename, char *title,
 	if (sat_queue == NULL)
 	{
 		pthread_mutex_unlock(&sat_mutex);
-		return NULL;
+		return -1;
 	}
 
 	t = sat_queue;
 	*pl = t->m_pl;
-	strcpy(filename, t->m_file_name);
-	if (*has_title = t->m_has_title)
-		strcpy(title, t->m_title);
-	*len = t->m_len;
+	i = t->m_index;
 	t = sat_queue->m_next;
 	free(sat_queue);
 	sat_queue = t;
@@ -141,7 +135,7 @@ char *sat_pop( plist_t **pl, char *filename, char *title,
 
 	/* Release queue */
 	pthread_mutex_unlock(&sat_mutex);
-	return filename;
+	return i;
 } /* End of 'sat_pop' function */
 
 /* Song adder thread function */
@@ -150,16 +144,11 @@ void *sat_thread( void *arg )
 	while (!sat_exit)
 	{
 		plist_t *pl;
-		char filename[256];
-		char title[256];
-		int len;
-		bool has_title;
+		int i;
 		
 		/* Pop file name */
-		if (sat_pop(&pl, filename, title, &has_title, &len) != NULL)
-		{
-			__plist_add_song(pl, filename, has_title ? title : NULL, len);
-		}
+		if ((i = sat_pop(&pl)) >= 0)
+			plist_set_song_info(pl, i);
 
 		/* Wait a little */
 		util_delay(0, 100000L);

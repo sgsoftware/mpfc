@@ -5,7 +5,7 @@
 /* FILE NAME   : player.h
  * PURPOSE     : SG MPFC. Interface for main player functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 8.08.2003
+ * LAST UPDATE : 13.08.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -29,6 +29,8 @@
 
 #include "types.h"
 #include "cfg.h"
+#include "plist.h"
+#include "undo.h"
 #include "window.h"
 
 /* User messages for root window types */
@@ -57,6 +59,15 @@
 
 /* Equalizer information */
 extern bool player_eq_changed;
+
+/* Undo list */
+extern undo_list_t *player_ul;
+
+/* Play list */
+extern plist_t *player_plist;
+
+/* Do we story undo information now? */
+extern bool player_store_undo;
 
 /* Initialize player */
 bool player_init( int argc, char *argv[] );
