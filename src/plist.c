@@ -106,7 +106,7 @@ bool plist_add( plist_t *pl, char *filename )
 	/* Do nothing if path is empty */
 	if (!filename[0])
 		return FALSE;
-	
+
 	/* Get full path of filename */
 	strcpy(fname, filename);
 	if (filename[0] != '/' && filename[0] != '~')

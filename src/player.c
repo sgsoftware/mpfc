@@ -37,6 +37,7 @@
 #include "error.h"
 #include "file_input.h"
 #include "help_screen.h"
+#include "key_bind.h"
 #include "listbox.h"
 #include "menu.h"
 #include "player.h"
@@ -113,6 +114,9 @@ bool player_init( int argc, char *argv[] )
 			player_handle_key);
 	wnd_register_handler(wnd_root, WND_MSG_MOUSE_LEFT_CLICK,
 			player_handle_mouse_click);
+
+	/* Initialize key bindings */
+	kbind_init();
 	
 	/* Initialize plugin manager */
 	pmng_init();
@@ -161,6 +165,9 @@ void player_deinit( void )
 	
 	/* Uninitialize plugin manager */
 	pmng_free();
+
+	/* Uninitialize key bindings */
+	kbind_free();
 	
 	/* Destroy screen window */
 	wnd_destroy(wnd_root);
@@ -247,247 +254,7 @@ bool player_parse_cmd_line( int argc, char *argv[] )
 /* Handle key function */
 void player_handle_key( wnd_t *wnd, dword data )
 {
-	char str[10];
-	editbox_t *ebox;
-	bool dont_change_repval = FALSE;
-	int key = (int)data;
-
-	/* Clear message string */
-	strcpy(player_msg, "");
-
-	switch (key)
-	{
-	/* Exit Konsamp */
-	case 'q':
-	case 'Q':
-		wnd_send_msg(wnd, WND_MSG_CLOSE, 0);
-		break;
-
-	/* Show help screen */
-	case '?':
-		player_help();
-		break;
-
-	/* Move cursor */
-	case 'j':
-	case KEY_DOWN:
-		plist_move(player_plist, (player_repval == 0) ? 1 : player_repval, 
-				TRUE);
-		break;
-	case 'k':
-	case KEY_UP:
-		plist_move(player_plist, (player_repval == 0) ? -1 : -player_repval, 
-				TRUE);
-		break;
-	case 'd':
-	case KEY_NPAGE:
-		plist_move(player_plist, (player_repval == 0) ? 
-				player_plist->m_height : 
-				player_plist->m_height * player_repval, TRUE);
-		break;
-	case 'u':
-	case KEY_PPAGE:
-		plist_move(player_plist, (player_repval == 0) ? 
-				-player_plist->m_height : 
-				-player_plist->m_height * player_repval, TRUE);
-		break;
-	case 'G':
-		plist_move(player_plist, (player_repval == 0) ? 
-				player_plist->m_len - 1 : player_repval - 1, FALSE);
-		break;
-
-	/* Seek song */
-	case 'l':
-		player_seek((player_repval == 0) ? 10 : 10 * player_repval, TRUE);
-		break;
-	case 'h':
-		player_seek((player_repval == 0) ? -10 : -10 * player_repval, TRUE);
-		break;
-	case 'g':
-		player_seek((player_repval == 0) ? 0 : player_repval, FALSE);
-		break;
-
-	/* Increase/decrease volume */
-	case '+':
-		player_set_vol((player_repval == 0) ? 5 : 5 * player_repval, TRUE);
-		break;
-	case '-':
-		player_set_vol((player_repval == 0) ? -5 : -5 * player_repval, TRUE);
-		break;
-
-	/* Centrize view */
-	case 'C':
-		plist_centrize(player_plist);
-		break;
-
-	/* Enter visual mode */
-	case 'V':
-		player_plist->m_visual = !player_plist->m_visual;
-		break;
-
-	/* Resume playing */
-	case 'x':
-		if (player_status == PLAYER_STATUS_PAUSED)
-		{
-			player_status = PLAYER_STATUS_PLAYING;
-			if (player_plist->m_cur_song != -1)
-				inp_resume(player_plist->m_list[
-						player_plist->m_cur_song]->m_inp);
-		}
-		else
-			player_play();
-		break;
-
-	/* Pause */
-	case 'c':
-		if (player_status == PLAYER_STATUS_PLAYING)
-		{
-			player_status = PLAYER_STATUS_PAUSED;
-			if (player_plist->m_cur_song != -1)
-				inp_pause(player_plist->m_list[
-						player_plist->m_cur_song]->m_inp);
-		}
-		else if (player_status == PLAYER_STATUS_PAUSED)
-		{
-			player_status = PLAYER_STATUS_PLAYING;
-			if (player_plist->m_cur_song != -1)
-				inp_resume(player_plist->m_list[
-						player_plist->m_cur_song]->m_inp);
-		}
-		break;
-
-	/* Stop */
-	case 'v':
-		player_end_play();
-		break;
-
-	/* Play song */
-	case '\n':
-		if (!player_plist->m_len)
-			break;
-		player_plist->m_cur_song = player_plist->m_sel_end;
-		player_play();
-		break;
-
-	/* Go to next song */
-	case 'b':
-		player_skip_songs((player_repval) ? player_repval : 1);
-		break;
-
-	/* Go to previous song */
-	case 'z':
-		player_skip_songs(-((player_repval) ? player_repval : 1));
-		break;
-		break;
-
-	/* Add a file */
-	case 'a':
-		player_add_dialog();
-		break;
-
-	/* Add an object */
-	case 'A':
-		player_add_obj_dialog();
-		break;
-
-	/* Save play list */
-	case 's':
-		player_save_dialog();
-		break;
-
-	/* Remove song(s) */
-	case 'r':
-		player_rem_dialog();
-		break;
-
-	/* Sort play list */
-	case 'S':
-		player_sort_dialog();
-		break;
-
-	/* Song info dialog */
-	case 'i':
-		player_info_dialog();
-		break;
-
-	/* Search */
-	case '/':
-		player_search_dialog();
-		break;
-
-	/* Find next/previous search match */
-	case 'n':
-	case 'N':
-		if (!plist_search(player_plist, player_search_string, 
-					(key == 'n') ? 1 : -1))
-			strcpy(player_msg, _("String not found"));
-		else
-			strcpy(player_msg, _("String found"));
-		break;
-
-	/* Show equalizer dialog */
-	case 'e':
-		player_eq_dialog();
-		break;
-
-	/* Set/unset shuffle mode */
-	case 'R':
-		cfg_set_var_int(cfg_list, "shuffle_play",
-				!cfg_get_var_int(cfg_list, "shuffle_play"));
-		break;
-		
-	/* Set/unset loop mode */
-	case 'L':
-		cfg_set_var_int(cfg_list, "loop_play",
-				!cfg_get_var_int(cfg_list, "loop_play"));
-		break;
-
-	/* Variables manager */
-	case 'o':
-		player_var_manager();
-		break;
-		
-	/* Digit means command repeation value edit */
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-	case '0':
-		/* Create edit box */
-		str[0] = key;
-		str[1] = 0;
-		ebox = ebox_new(wnd_root, 0, wnd_root->m_height - 1, 
-				wnd_root->m_width, 1, 5, 
-					_("Enter repeat value for the next command: "), str);
-		if (ebox != NULL)
-		{
-			/* Run edit box message loop */
-			wnd_register_handler(ebox, WND_MSG_KEYDOWN,
-					player_repval_handle_key);
-			wnd_run(ebox);
-
-			/* Remember repeat value or handle last pressed command */
-			if (ebox->m_last_key != 27)
-			{
-				player_repval = atoi(ebox->m_text);
-				dont_change_repval = TRUE;
-				player_handle_key(wnd, ebox->m_last_key);
-			}
-			
-			/* Destroy edit box */
-			wnd_destroy(ebox);
-		}
-		break;
-	}
-
-	/* Flush repeat value */
-	if (!dont_change_repval)
-		player_repval = 0;
+	kbind_key2buf((int)data);
 } /* End of 'player_handle_key' function */
 
 /* Handle mouse left button click */
@@ -1203,6 +970,246 @@ void player_add_obj_dialog( void )
 		wnd_destroy(ebox);
 	}
 } /* End of 'player_add_obj_dialog' function */
+
+/* Handle action */
+void player_handle_action( int action )
+{
+	char str[10];
+	editbox_t *ebox;
+	bool dont_change_repval = FALSE;
+
+	/* Clear message string */
+	strcpy(player_msg, "");
+
+	switch (action)
+	{
+	/* Exit MPFC */
+	case KBIND_QUIT:
+		wnd_send_msg(wnd_root, WND_MSG_CLOSE, 0);
+		break;
+
+	/* Show help screen */
+	case KBIND_HELP:
+		player_help();
+		break;
+
+	/* Move cursor */
+	case KBIND_MOVE_DOWN:
+		plist_move(player_plist, (player_repval == 0) ? 1 : player_repval, 
+				TRUE);
+		break;
+	case KBIND_MOVE_UP:
+		plist_move(player_plist, (player_repval == 0) ? -1 : -player_repval, 
+				TRUE);
+		break;
+	case KBIND_SCREEN_DOWN:
+		plist_move(player_plist, (player_repval == 0) ? 
+				player_plist->m_height : 
+				player_plist->m_height * player_repval, TRUE);
+		break;
+	case KBIND_SCREEN_UP:
+		plist_move(player_plist, (player_repval == 0) ? 
+				-player_plist->m_height : 
+				-player_plist->m_height * player_repval, TRUE);
+		break;
+	case KBIND_MOVE:
+		plist_move(player_plist, (player_repval == 0) ? 
+				player_plist->m_len - 1 : player_repval - 1, FALSE);
+		break;
+
+	/* Seek song */
+	case KBIND_TIME_FW:
+		player_seek((player_repval == 0) ? 10 : 10 * player_repval, TRUE);
+		break;
+	case KBIND_TIME_BW:
+		player_seek((player_repval == 0) ? -10 : -10 * player_repval, TRUE);
+		break;
+	case KBIND_TIME_MOVE:
+		player_seek((player_repval == 0) ? 0 : player_repval, FALSE);
+		break;
+
+	/* Increase/decrease volume */
+	case KBIND_VOL_FW:
+		player_set_vol((player_repval == 0) ? 5 : 5 * player_repval, TRUE);
+		break;
+	case KBIND_VOL_BW:
+		player_set_vol((player_repval == 0) ? -5 : -5 * player_repval, TRUE);
+		break;
+
+	/* Centrize view */
+	case KBIND_CENTRIZE:
+		plist_centrize(player_plist);
+		break;
+
+	/* Enter visual mode */
+	case KBIND_VISUAL:
+		player_plist->m_visual = !player_plist->m_visual;
+		break;
+
+	/* Resume playing */
+	case KBIND_PLAY:
+		if (player_status == PLAYER_STATUS_PAUSED)
+		{
+			player_status = PLAYER_STATUS_PLAYING;
+			if (player_plist->m_cur_song != -1)
+				inp_resume(player_plist->m_list[
+						player_plist->m_cur_song]->m_inp);
+		}
+		else
+			player_play();
+		break;
+
+	/* Pause */
+	case KBIND_PAUSE:
+		if (player_status == PLAYER_STATUS_PLAYING)
+		{
+			player_status = PLAYER_STATUS_PAUSED;
+			if (player_plist->m_cur_song != -1)
+				inp_pause(player_plist->m_list[
+						player_plist->m_cur_song]->m_inp);
+		}
+		else if (player_status == PLAYER_STATUS_PAUSED)
+		{
+			player_status = PLAYER_STATUS_PLAYING;
+			if (player_plist->m_cur_song != -1)
+				inp_resume(player_plist->m_list[
+						player_plist->m_cur_song]->m_inp);
+		}
+		break;
+
+	/* Stop */
+	case KBIND_STOP:
+		player_end_play();
+		break;
+
+	/* Play song */
+	case KBIND_START_PLAY:
+		if (!player_plist->m_len)
+			break;
+		player_plist->m_cur_song = player_plist->m_sel_end;
+		player_play();
+		break;
+
+	/* Go to next song */
+	case KBIND_NEXT:
+		player_skip_songs((player_repval) ? player_repval : 1);
+		break;
+
+	/* Go to previous song */
+	case KBIND_PREV:
+		player_skip_songs(-((player_repval) ? player_repval : 1));
+		break;
+		break;
+
+	/* Add a file */
+	case KBIND_ADD:
+		player_add_dialog();
+		break;
+
+	/* Add an object */
+	case KBIND_ADD_OBJ:
+		player_add_obj_dialog();
+		break;
+
+	/* Save play list */
+	case KBIND_SAVE:
+		player_save_dialog();
+		break;
+
+	/* Remove song(s) */
+	case KBIND_REM:
+		player_rem_dialog();
+		break;
+
+	/* Sort play list */
+	case KBIND_SORT:
+		player_sort_dialog();
+		break;
+
+	/* Song info dialog */
+	case KBIND_INFO:
+		player_info_dialog();
+		break;
+
+	/* Search */
+	case KBIND_SEARCH:
+		player_search_dialog();
+		break;
+
+	/* Find next/previous search match */
+	case KBIND_NEXT_MATCH:
+	case KBIND_PREV_MATCH:
+		if (!plist_search(player_plist, player_search_string, 
+					(action == KBIND_NEXT_MATCH) ? 1 : -1))
+			strcpy(player_msg, _("String not found"));
+		else
+			strcpy(player_msg, _("String found"));
+		break;
+
+	/* Show equalizer dialog */
+	case KBIND_EQUALIZER:
+		player_eq_dialog();
+		break;
+
+	/* Set/unset shuffle mode */
+	case KBIND_SHUFFLE:
+		cfg_set_var_int(cfg_list, "shuffle_play",
+				!cfg_get_var_int(cfg_list, "shuffle_play"));
+		break;
+		
+	/* Set/unset loop mode */
+	case KBIND_LOOP:
+		cfg_set_var_int(cfg_list, "loop_play",
+				!cfg_get_var_int(cfg_list, "loop_play"));
+		break;
+
+	/* Variables manager */
+	case KBIND_VAR_MANAGER:
+		player_var_manager();
+		break;
+		
+	/* Digit means command repeation value edit */
+	case KBIND_DIG_1:
+	case KBIND_DIG_2:
+	case KBIND_DIG_3:
+	case KBIND_DIG_4:
+	case KBIND_DIG_5:
+	case KBIND_DIG_6:
+	case KBIND_DIG_7:
+	case KBIND_DIG_8:
+	case KBIND_DIG_9:
+	case KBIND_DIG_0:
+		/* Create edit box */
+		str[0] = (action - KBIND_DIG_0) + '0';
+		str[1] = 0;
+		ebox = ebox_new(wnd_root, 0, wnd_root->m_height - 1, 
+				wnd_root->m_width, 1, 5, 
+					_("Enter repeat value for the next command: "), str);
+		if (ebox != NULL)
+		{
+			/* Run edit box message loop */
+			wnd_register_handler(ebox, WND_MSG_KEYDOWN,
+					player_repval_handle_key);
+			wnd_run(ebox);
+
+			/* Remember repeat value or handle last pressed command */
+			if (ebox->m_last_key != 27)
+			{
+				player_repval = atoi(ebox->m_text);
+				dont_change_repval = TRUE;
+				player_handle_key(wnd_root, ebox->m_last_key);
+			}
+			
+			/* Destroy edit box */
+			wnd_destroy(ebox);
+		}
+		break;
+	}
+
+	/* Flush repeat value */
+	if (!dont_change_repval)
+		player_repval = 0;
+} /* End of 'player_handle_action' function */
 
 /* End of 'player.c' file */
 

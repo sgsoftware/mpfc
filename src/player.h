@@ -143,6 +143,9 @@ void player_var_manager( void );
 /* Launch add object dialog */
 void player_add_obj_dialog( void );
 
+/* Handle action */
+void player_handle_action( int action );
+
 #endif
 
 /* End of 'player.h' file */
