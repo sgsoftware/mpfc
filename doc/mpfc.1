@@ -1,0 +1,46 @@
+.TH MPFC 1 "4 July 2003" "Version 0.1" "MPFC Manual Page"
+.SH NAME
+MPFC \- Music Player For Console
+.SH SYNOPSIS
+.B mpfc 
+[\fIoptions\fR] [\fIfiles\fR]
+.SH DESCRIPTION
+\fIMPFC\fR is the Music Player For Console. It is used to play audio files
+in console text mode. 
+.SH OPTIONS
+MPFC options are variables that you may set to any values. If variable
+is not set it is assumed to be equal to "0". If variable exists (is declared),
+but has no value its value is assumed to be equal to "1" (e.g. you may
+write 'silent_mode=1' or simply 'silent_mode' - the result would be the same).
+You may set variables in three places: in file \fI~/.mpfcrc\fR, in file 
+\fI./.mpfcrc\fR or in command line (e.g. mpfc --silent_mode=1). They are read
+in the same order (so if you write "silent_mode" in \fI~/.mpfcrc\fR and 
+set this variable to "0" in command line, its value will be "0").
+Options supported now are:
+.TP
+\fBoutput_plugin\fR	
+The output plugin. Default is "oss".
+.TP
+\fBsilent_mode\fR
+Play silently (i.e. don't make any audio output). Default is "0".
+.TP
+\fBmp3_quick_get_len\fR
+Get mp3 song length quickly but not very correctly (the result will
+be improper for files with variable bitrate; in other cases - more or less
+correct). Default value is "1".
+.TP
+\fBlib_dir\fR
+Directory with plugins. Default is "/usr/local/lib/mpfc".
+.SH FILES
+.TP
+~/.mpfcrc
+MPFC configuration file
+.SH COPYRIGHT
+Copyright \(co 2003 by SG Software.
+.br
+This is free software; see the source for copying conditions. There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+.SH AUTHORS
+MPFC is written by Sergey E. Galanov.
+.SH REPORTING BUGS
+Report bugs to <sgsoftware@mail.ru>.
