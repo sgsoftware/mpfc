@@ -36,7 +36,6 @@
 #include "player.h"
 #include "plist.h"
 #include "pmng.h"
-#include "sat.h"
 #include "song.h"
 #include "util.h"
 #include "undo.h"
@@ -187,16 +186,21 @@ int plist_add_m3u( plist_t *pl, char *filename )
 	file_t *fd;
 	char str[1024];
 	int num = 0;
+	bool_t ext_info;
 
 	/* Try to open file */
 	fd = file_open(filename, "rt", NULL);
 	if (fd == NULL)
+	{
+		logger_error(player_log, 0, _("Unable to read %s file"), filename);
 		return 0;
+	}
 
 	/* Read file head */
 	file_gets(str, sizeof(str), fd);
-	if (strncmp(str, "#EXTM3U", 7))
-		return 0;
+	ext_info = !strncmp(str, "#EXTM3U", 7);
+	if (!ext_info)
+		file_seek(fd, 0, SEEK_SET);
 		
 	/* Read file contents */
 	while (!file_eof(fd))
@@ -204,6 +208,18 @@ int plist_add_m3u( plist_t *pl, char *filename )
 		char len[10], *title;
 		int i, j, song_len, str_len;
 		vfs_file_t desc;
+
+		/* Read file name if no extended info is supplied */
+		if (!ext_info)
+		{
+			file_gets(str, sizeof(str), fd);
+			if (file_eof(fd))
+				break;
+			util_del_nl(str, str);
+			vfs_file_desc_init(player_vfs, &desc, str, NULL);
+			num += plist_add_one_file(pl, &desc, NULL, 0, -1);
+			continue;
+		}
 		
 		/* Read song length and title string */
 		file_gets(str, sizeof(str), fd);
@@ -253,7 +269,10 @@ int plist_add_pls( plist_t *pl, char *filename )
 	/* Try to open file */
 	fd = file_open(filename, "rt", NULL);
 	if (fd == NULL)
+	{
+		logger_error(player_log, 0, _("Unable to open file %s"), filename);
 		return 0;
+	}
 
 	/* Read header */
 	file_gets(str, sizeof(str), fd);
@@ -261,6 +280,8 @@ int plist_add_pls( plist_t *pl, char *filename )
 	if (strcasecmp(str, "[playlist]"))
 	{
 		file_close(fd);
+		logger_error(player_log, 1, _("%s: missing play list header"), 
+				filename);
 		return 0;
 	}
 
@@ -270,6 +291,8 @@ int plist_add_pls( plist_t *pl, char *filename )
 	if (strncasecmp(str, "numberofentries=", 16))
 	{
 		file_close(fd);
+		logger_error(player_log, 1, _("%s: missing `numberofentries' tag"), 
+				filename);
 		return 0;
 	}
 	num_entries = atoi(strchr(str, '=') + 1);
@@ -279,6 +302,7 @@ int plist_add_pls( plist_t *pl, char *filename )
 	if (entries == NULL)
 	{
 		file_close(fd);
+		logger_error(player_log, 0, _("No enough memory"));
 		return 0;
 	}
 	memset(entries, 0, sizeof(*entries) * num_entries);

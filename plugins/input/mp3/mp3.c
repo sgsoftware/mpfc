@@ -301,7 +301,7 @@ bool_t mp3_save_info( char *filename, song_info_t *info )
 	/* Supported only for regular files */
 	if (file_get_type(filename) != FILE_TYPE_REGULAR)
 	{
-		logger_error(mp3_log, 1, _("Only regular files are supported for"
+		logger_error(mp3_log, 1, _("Only regular files are supported for "
 					"writing info by mp3 plugin"));
 		return FALSE;
 	}

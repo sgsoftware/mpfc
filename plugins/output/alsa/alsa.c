@@ -101,7 +101,7 @@ void alsa_end ()
 
 void alsa_play (void *buf, int size)
 {
-  if (handle == NULL)
+  if (handle == NULL || size <= 0)
     return;
   while (snd_pcm_writei (handle, buf, size / (alsa_channels * alsa_size)) < 0)
     snd_pcm_prepare (handle);

@@ -119,6 +119,7 @@ bool_t ogg_start_with_fd( char *filename, file_t *fd )
 	ogg_freq = ogg_vi->rate;
 	ogg_bitrate = 0;
 	ogg_info = NULL;
+	file_set_min_buf_size(fd, ogg_vi->bitrate_nominal >> 3);
 	util_strncpy(ogg_filename, filename, sizeof(ogg_filename));
 	return TRUE;
 } /* End of 'ogg_start_with_fd' function */

@@ -101,7 +101,8 @@ void vfs_glob( vfs_t *vfs, char *pattern, vfs_callback_t callback, void *data,
 
 	/* Create list of files matching pattern */
 	if (!bare_slash && !not_fixed_vfs &&
-			(!(flags & VFS_GLOB_NOPATTERN) || STR_LEN(prefix) > 0))
+			(!(flags & VFS_GLOB_NOPATTERN) || STR_LEN(prefix) > 0) &&
+			(file_get_type(pattern) == FILE_TYPE_REGULAR))
 	{
 		int index1, index2;
 		char *s, *ap;
@@ -360,7 +361,7 @@ in_plugin_t *vfs_plugin_from_prefix( vfs_t *vfs, char *full_name, char **name )
 
 	/* Skip until plugin name */
 	(*name) = full_name;
-	while (isalnum(**name))
+	while (isalnum(**name) || (**name) == '_' || (**name) == '-')
 		(*name) ++;
 
 	/* No plugin prefix found */
@@ -385,6 +386,10 @@ in_plugin_t *vfs_plugin_from_prefix( vfs_t *vfs, char *full_name, char **name )
 str_t *vfs_pattern2absolute( vfs_t *vfs, in_plugin_t *inp, char *pattern )
 {
 	str_t *abs_pattern;
+
+	/* Do things for regular files only */
+	if (file_get_type(pattern) != FILE_TYPE_REGULAR)
+		return str_new(pattern);
 
 	/* Pattern is not absolute */
 	if ((*pattern) != '/')
@@ -475,6 +480,13 @@ char *vfs_readdir( vfs_dir_t *dir )
 /* Get file parameters */
 int vfs_stat( vfs_file_t *file, struct stat *st )
 {
+	if (file_get_type(file->m_name) != FILE_TYPE_REGULAR)
+	{
+		memset(st, 0, sizeof(*st));
+		st->st_mode = S_IFREG;
+		return 0;
+	}
+
 	if (VFS_INP_HAS(file->m_inp))
 		return inp_vfs_stat(file->m_inp, file->m_name, st);
 	else

@@ -407,6 +407,9 @@ void player_time_back( void );
 /* Set a new search string */
 void player_set_search_string( char *str );
 
+/* Save current song and time */
+void player_save_time( void );
+
 #endif
 
 /* End of 'player.h' file */

@@ -39,13 +39,11 @@
 #include "eqwnd.h"
 #include "file.h"
 #include "help_screen.h"
-#include "iwt.h"
 #include "logger.h"
 #include "logger_view.h"
 #include "player.h"
 #include "plist.h"
 #include "pmng.h"
-#include "sat.h"
 #include "test.h"
 #include "undo.h"
 #include "util.h"
@@ -1057,11 +1055,11 @@ wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action )
 		player_last_pos = was_pos;
 
 	/* Save last time */
-	if (player_plist->m_cur_song != was_song || player_cur_time != was_time)
+/*	if (player_plist->m_cur_song != was_song || player_cur_time != was_time)
 	{
 		player_last_song = was_song;
 		player_last_song_time = was_time;
-	}
+	}*/
 
 	/* Repaint */
 	wnd_invalidate(player_wnd);
@@ -1342,6 +1340,7 @@ void player_seek( int sec, bool_t rel )
 	else if (new_time > s->m_len)
 		new_time = s->m_len;
 
+	player_save_time();
 	inp_seek(song_get_inp(s, NULL), new_time);
 	player_cur_time = new_time;
 	wnd_invalidate(player_wnd);
@@ -1376,6 +1375,7 @@ void player_end_play( bool_t rem_cur_song )
 {
 	int was_song = player_plist->m_cur_song;
 	
+	player_save_time();
 	outp_resume(player_pmng->m_cur_out);
 	player_plist->m_cur_song = -1;
 	player_end_track = TRUE;
@@ -1602,7 +1602,7 @@ void *player_thread( void *arg )
 		if (!inp_start(inp, s->m_file_name, fd))
 		{
 			player_next_track();
-			logger_debug(player_log, 
+			logger_error(player_log, 0,
 					_("Input plugin for file %s failed"), s->m_file_name);
 			wnd_invalidate(player_wnd);
 			continue;
@@ -1624,7 +1624,8 @@ void *player_thread( void *arg )
 				(!cfg_get_var_int(cfg_list, "silent-mode") && 
 					!outp_start(player_pmng->m_cur_out))))
 		{
-			logger_debug(player_log, "Output plugin initialization failed");
+			logger_error(player_log, 1, 
+					_("Output plugin initialization failed"));
 //			wnd_send_msg(wnd_root, WND_MSG_USER, PLAYER_MSG_END_TRACK);
 			inp_end(inp);
 			player_status = PLAYER_STATUS_STOPPED;
@@ -3113,8 +3114,18 @@ void player_go_back( void )
 /* Return to the last time */
 void player_time_back( void )
 {
-	player_play(player_last_song, player_last_song_time);
+	if (player_last_song == player_plist->m_cur_song)
+		player_seek(player_last_song_time, FALSE);
+	else
+		player_play(player_last_song, player_last_song_time);
 } /* End of 'player_time_back' function */
+
+/* Save current song and time */
+void player_save_time( void )
+{
+	player_last_song = player_plist->m_cur_song;
+	player_last_song_time = player_cur_time;
+} /* End of 'player_save_time' function */
 
 /* End of 'player.c' file */
 

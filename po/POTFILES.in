@@ -61,12 +61,11 @@ src/browser.c
 src/eqwnd.c
 src/help_screen.c
 src/history.c
-src/iwt.c
+src/info_rw_thread.c
 src/logger_view.c
 src/main.c
 src/player.c
 src/plist.c
-src/sat.c
 src/song.c
 src/test.c
 src/undo.c

@@ -139,7 +139,7 @@ void song_update_title( song_t *song )
 	bool_t finish = FALSE;
 	song_info_t *info;
 
-	if (song == NULL)
+	if (song == NULL || song->m_default_title != NULL)
 		return;
 
 	/* Free current title */
