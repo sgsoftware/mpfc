@@ -171,6 +171,7 @@ void help_init_player( help_screen_t *help )
 	help_add(help, _("k or <Up>:\t Move one line up"));
 	help_add(help, _("u or <PgUp>:\t Move one screen up"));
 	help_add(help, _("d or <PgDn>:\t Move one screen down"));
+	help_add(help, _("gg:\t\t Move to play list begin"));
 	help_add(help, _("G:\t\t Move to play list end"));
 	help_add(help, _("<Number>G:\t Move to line <Number>"));
 	help_add(help, _("J:\t\t Move play list one line down"));
@@ -183,8 +184,8 @@ void help_init_player( help_screen_t *help )
 	help_add(help, _("v:\t\t Stop playing"));
 	help_add(help, _("b:\t\t Next song"));
 	help_add(help, _("z:\t\t Previous song"));
-	help_add(help, _("<:\t\t Scroll song 10 seconds up"));
-	help_add(help, _(">:\t\t Scroll song 10 seconds down"));
+	help_add(help, _("<:\t\t Scroll song 10 seconds back"));
+	help_add(help, _(">:\t\t Scroll song 10 seconds forth"));
 	help_add(help, _("<Number>gt:\t Go to <Number>th second in song"));
 	help_add(help, _("+:\t\t Increase volume"));
 	help_add(help, _("-:\t\t Decrease volume"));
@@ -205,7 +206,7 @@ void help_init_player( help_screen_t *help )
 	help_add(help, _("e:\t\t Launch equalizer window"));
 	help_add(help, _("R:\t\t Set/unset shuffle play mode"));
 	help_add(help, _("L:\t\t Set/unset loop play mode"));
-	help_add(help, _("o:\t\t Variables mini-manager"));
+	help_add(help, _("o:\t\t Variables manager"));
 	help_add(help, _("O:\t\t Show logger window"));
 	help_add(help, _("U:\t\t Undo"));
 	help_add(help, _("D:\t\t Redo"));

@@ -284,7 +284,7 @@ int logger_get_level( logger_t *log )
 {
 	char *s = cfg_get_var(log->m_cfg, "log-level");
 	if (s == NULL)
-		return -1;
+		return 1;
 	else if (!strcmp(s, "none"))
 		return -1;
 	else if (!strcmp(s, "low"))

@@ -7,13 +7,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: mpfc 1.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-10-11 01:32+0400\n"
+"POT-Creation-Date: 2004-10-11 11:00+0400\n"
 "PO-Revision-Date: 2003-02-13 09:15+0300\n"
 "Last-Translator: Sergey E. Galanov <sgsoftware@mail.ru>\n"
 "Language-Team: Russian <sgsoftware@mail.ru>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=KOI8-R\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; \tplural=n%10==1 && n%100!=11 ? 0 : \tn%10>=2 && n%"
+"10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 
 #: src/browser.c:94
 msgid "File browser"
@@ -85,8 +87,8 @@ msgid "MPFC Equalizer"
 msgstr "Эквалайзер MPFC"
 
 #: src/eqwnd.c:217
-msgid "Load preset froma Winamp EQF file"
-msgstr "Загрузить из файла Winamp EQF"
+msgid "Load preset from a Winamp EQF file"
+msgstr "Загрузить пресет из файла Winamp EQF"
 
 #: src/eqwnd.c:218 src/player.c:1770 src/player.c:2016
 msgid "&Name: "
@@ -112,323 +114,327 @@ msgstr "Нажмите <Пробел>, чтобы увидеть следующий экран, и <q>, чтобы выйти\n"
 msgid "q:\t\t Quit program"
 msgstr "q:\t\t Выйти из программы"
 
-#: src/help_screen.c:170 src/help_screen.c:242
+#: src/help_screen.c:170 src/help_screen.c:243
 msgid "j or <Down>:\t Move one line down"
 msgstr "j или <Вниз>:\t Спуститься на одну строку"
 
-#: src/help_screen.c:171 src/help_screen.c:243
+#: src/help_screen.c:171 src/help_screen.c:244
 msgid "k or <Up>:\t Move one line up"
 msgstr "k или <Вверх>:\t Подняться на одну строку"
 
-#: src/help_screen.c:172 src/help_screen.c:244
+#: src/help_screen.c:172 src/help_screen.c:245
 msgid "u or <PgUp>:\t Move one screen up"
 msgstr "u или <PgUp>:\t Подняться на один экран"
 
-#: src/help_screen.c:173 src/help_screen.c:245
+#: src/help_screen.c:173 src/help_screen.c:246
 msgid "d or <PgDn>:\t Move one screen down"
 msgstr "d или <PgDn>:\t Спуститься на один экран"
 
 #: src/help_screen.c:174
+msgid "gg:\t\t Move to play list begin"
+msgstr "gg:\t\t Переместиться в начало плей-листа"
+
+#: src/help_screen.c:175
 msgid "G:\t\t Move to play list end"
 msgstr "G:\t\t Переместиться в конец плей-листа"
 
-#: src/help_screen.c:175
+#: src/help_screen.c:176
 msgid "<Number>G:\t Move to line <Number>"
 msgstr "<Число>G:\t Переместиться на строку <Число>"
 
-#: src/help_screen.c:176
+#: src/help_screen.c:177
 msgid "J:\t\t Move play list one line down"
 msgstr "J:\t\t Опустить плей-лист на строку"
 
-#: src/help_screen.c:177
+#: src/help_screen.c:178
 msgid "K:\t\t Move play list one line up"
 msgstr "K:\t\t Поднять плей-лист на строку"
 
-#: src/help_screen.c:178
+#: src/help_screen.c:179
 msgid "<Number>M:\t Move play list to line <Number>"
 msgstr "<Число>M:\t Переместить плей-лист в строку <Число>"
 
-#: src/help_screen.c:179
+#: src/help_screen.c:180
 msgid "<Ret>:\t\t Start playing"
 msgstr "<Ret>:\t\t Начать воспроизведение"
 
-#: src/help_screen.c:180
+#: src/help_screen.c:181
 msgid "x:\t\t Play stopped song or start playing from begin"
 msgstr "x:\t\t Воспроизводит остановленную песню или начать сначала"
 
-#: src/help_screen.c:182
+#: src/help_screen.c:183
 msgid "c:\t\t Pause/unpause"
 msgstr "c:\t\t Пауза/продолжение"
 
-#: src/help_screen.c:183
+#: src/help_screen.c:184
 msgid "v:\t\t Stop playing"
 msgstr "v:\t\t Остановить воспроизведение"
 
-#: src/help_screen.c:184
+#: src/help_screen.c:185
 msgid "b:\t\t Next song"
 msgstr "b:\t\t Следующая песня"
 
-#: src/help_screen.c:185
+#: src/help_screen.c:186
 msgid "z:\t\t Previous song"
 msgstr "z:\t\t Предыдущая песня"
 
-#: src/help_screen.c:186
-msgid "<:\t\t Scroll song 10 seconds up"
+#: src/help_screen.c:187
+msgid "<:\t\t Scroll song 10 seconds back"
 msgstr "<:\t\t Сместиться на 10 секунд назад"
 
-#: src/help_screen.c:187
-msgid ">:\t\t Scroll song 10 seconds down"
+#: src/help_screen.c:188
+msgid ">:\t\t Scroll song 10 seconds forth"
 msgstr ">:\t\t Сместиться на 10 секунд вперед"
 
-#: src/help_screen.c:188
+#: src/help_screen.c:189
 msgid "<Number>gt:\t Go to <Number>th second in song"
 msgstr "<Число>gt:\t Сместиться к секунде <Число>"
 
-#: src/help_screen.c:189
+#: src/help_screen.c:190
 msgid "+:\t\t Increase volume"
 msgstr "+:\t\t Увеличить громкость"
 
-#: src/help_screen.c:190
+#: src/help_screen.c:191
 msgid "-:\t\t Decrease volume"
 msgstr "-:\t\t Уменьшить громкость"
 
-#: src/help_screen.c:191
+#: src/help_screen.c:192
 msgid "]:\t\t Increase balance"
 msgstr "]:\t\t Увеличить баланс"
 
-#: src/help_screen.c:192
+#: src/help_screen.c:193
 msgid "[:\t\t Decrease balance"
 msgstr "]:\t\t Уменьшить баланс"
 
-#: src/help_screen.c:193
+#: src/help_screen.c:194
 msgid "i:\t\t Song info editor"
 msgstr "i:\t\t Редактор информации о песне"
 
-#: src/help_screen.c:194
+#: src/help_screen.c:195
 msgid "a:\t\t Add songs"
 msgstr "a:\t\t Добавить песни"
 
-#: src/help_screen.c:195
+#: src/help_screen.c:196
 msgid "B:\t\t Launch file browser"
 msgstr "B:\t\t Вызвать броузер файлов"
 
-#: src/help_screen.c:196
+#: src/help_screen.c:197
 msgid "r:\t\t Remove songs"
 msgstr "r:\t\t Удалить песни"
 
-#: src/help_screen.c:197
+#: src/help_screen.c:198
 msgid "s:\t\t Save play list"
 msgstr "s:\t\t Сохранить плей-лист"
 
-#: src/help_screen.c:198
+#: src/help_screen.c:199
 msgid "S:\t\t Sort play list"
 msgstr "S:\t\t Сортировать плей-лист"
 
-#: src/help_screen.c:199
+#: src/help_screen.c:200
 msgid "V:\t\t Start visual mode"
 msgstr "V:\t\t Перейти в визуальный режим"
 
-#: src/help_screen.c:200
+#: src/help_screen.c:201
 msgid "C:\t\t Centrize view"
 msgstr "C:\t\t Центрировать экран"
 
-#: src/help_screen.c:201
+#: src/help_screen.c:202
 msgid "/:\t\t Search"
 msgstr "/:\t\t Поиск"
 
-#: src/help_screen.c:202
+#: src/help_screen.c:203
 msgid "\\:\t\t Advanced search"
 msgstr "\\:\t\t Продвинутый поиск"
 
-#: src/help_screen.c:203
+#: src/help_screen.c:204
 msgid "n:\t\t Go to next search match"
 msgstr "n:\t\t Перейти к следующему результату поиска"
 
-#: src/help_screen.c:204
+#: src/help_screen.c:205
 msgid "N:\t\t Go to previous search match"
 msgstr "N:\t\t Перейти в предыдущему результату поиска"
 
-#: src/help_screen.c:205
+#: src/help_screen.c:206
 msgid "e:\t\t Launch equalizer window"
 msgstr "e:\t\t Вызвать окно эквалайзера"
 
-#: src/help_screen.c:206
+#: src/help_screen.c:207
 msgid "R:\t\t Set/unset shuffle play mode"
 msgstr "R:\t\t Устаносить/сбросить случайный режим воспроизведения"
 
-#: src/help_screen.c:207
+#: src/help_screen.c:208
 msgid "L:\t\t Set/unset loop play mode"
 msgstr "L:\t\t Установить/сбросить кольцевой режим воспроизведения"
 
-#: src/help_screen.c:208
-msgid "o:\t\t Variables mini-manager"
-msgstr "o:\t\t Мини-менеджер переменных"
-
 #: src/help_screen.c:209
+msgid "o:\t\t Variables manager"
+msgstr "o:\t\t Менеджер переменных"
+
+#: src/help_screen.c:210
 msgid "O:\t\t Show logger window"
 msgstr "O:\t\t Показать окно журнала"
 
-#: src/help_screen.c:210
+#: src/help_screen.c:211
 msgid "U:\t\t Undo"
 msgstr "U:\t\t Отменить"
 
-#: src/help_screen.c:211
+#: src/help_screen.c:212
 msgid "D:\t\t Redo"
 msgstr "D:\t\t Восстановить"
 
-#: src/help_screen.c:212
+#: src/help_screen.c:213
 msgid "I:\t\t Reload songs information"
 msgstr "I:\t\t Перезагрузить информацию о песнях"
 
-#: src/help_screen.c:213
+#: src/help_screen.c:214
 msgid "P:\t\t Reload plugins"
 msgstr "P:\t\t Перезагрузить плагины"
 
-#: src/help_screen.c:214
+#: src/help_screen.c:215
 msgid "ps:\t\t Set play bounds"
 msgstr "ps:\t\t Установить границы воспроизведения"
 
-#: src/help_screen.c:215
+#: src/help_screen.c:216
 msgid "p<Ret>:\t\t Set play bounds and play"
 msgstr "p<Ввод>:\t Установить границы и начать воспроизведение"
 
-#: src/help_screen.c:216
+#: src/help_screen.c:217
 msgid "pc:\t\t Clear play bounds"
 msgstr "pc:\t\t Сбросить границы воспроизведения"
 
-#: src/help_screen.c:217
+#: src/help_screen.c:218
 msgid "!:\t\t Execute command"
 msgstr "!:\t\t Выполнить команду"
 
-#: src/help_screen.c:218
+#: src/help_screen.c:219
 msgid "m<Letter>:\t Set mark <Letter>"
 msgstr "m<Буква>:\t Установить метку <Буква>"
 
-#: src/help_screen.c:219
+#: src/help_screen.c:220
 msgid "`<Letter>:\t Go to mark <Letter>"
 msgstr "`<Буква>:\t Перейти к метке <Буква>"
 
-#: src/help_screen.c:220
+#: src/help_screen.c:221
 msgid "``:\t\t Go to previous position"
 msgstr "``:\t\t Перейти к предыдущей позиции"
 
-#: src/help_screen.c:221
+#: src/help_screen.c:222
 msgid "<Backspace>:\t Go to previous time"
 msgstr "<Backspace>:\t Перейти к предыдущему времени"
 
-#: src/help_screen.c:223
+#: src/help_screen.c:224
 msgid "Window library bindings"
 msgstr "Клавиши оконной библиотеки"
 
-#: src/help_screen.c:224
+#: src/help_screen.c:225
 msgid "^l:\t\t Redisplay screen"
 msgstr "^l:\t\t Обновить экран"
 
-#: src/help_screen.c:225
+#: src/help_screen.c:226
 msgid "<Alt>-,:\t Set focus to previous window"
 msgstr "<Alt>-,:\t Переместить фокус к предыдущему окну"
 
-#: src/help_screen.c:226
+#: src/help_screen.c:227
 msgid "<Alt>-.:\t Set focus to next window"
 msgstr "<Alt>-.:\t Переместить фокус к следующему окну"
 
-#: src/help_screen.c:227
+#: src/help_screen.c:228
 msgid "<Alt>-c:\t Close window"
 msgstr "<Alt>-c:\t Закрыть окно"
 
-#: src/help_screen.c:228
+#: src/help_screen.c:229
 msgid "<Alt>-m:\t Maximize/minimize window"
 msgstr "<Alt>-m:\t Максимизировать/минимизировать окно"
 
-#: src/help_screen.c:229
+#: src/help_screen.c:230
 msgid "<Alt>-p:\t Change window position"
 msgstr "<Alt>-p:\t Изменить положение окна"
 
-#: src/help_screen.c:230
+#: src/help_screen.c:231
 msgid "<Alt>-s:\t Change window size"
 msgstr "<Alt>-s:\t Изменить размер окна"
 
-#: src/help_screen.c:231
+#: src/help_screen.c:232
 msgid "<Alt>-<letter>:\t Set focus to a dialog item marked by letter"
 msgstr "<Alt>-<буква>:\t Установить фокус на пункт диалога, помеченный буквой"
 
-#: src/help_screen.c:233
+#: src/help_screen.c:234
 msgid "<Ctrl>-g:\t Close dialog window"
 msgstr "<Ctrl>-g:\t Закрыть диалог"
 
-#: src/help_screen.c:235 src/help_screen.c:257 src/help_screen.c:269
+#: src/help_screen.c:236 src/help_screen.c:258 src/help_screen.c:270
 msgid "?:\t\t This help screen"
 msgstr "?:\t\t Этот экран помощи"
 
-#: src/help_screen.c:241
+#: src/help_screen.c:242
 msgid "q:\t\t Return to player"
 msgstr "q:\t\t Вернуться к плейеру"
 
-#: src/help_screen.c:246
+#: src/help_screen.c:247
 msgid "<Ret>:\t\t Go to the highlighted directory"
 msgstr "<Ret>:\t\t Зайти в подсвеченную директорию"
 
-#: src/help_screen.c:247
+#: src/help_screen.c:248
 msgid "h:\t\t Go to home directory"
 msgstr "h:\t\t Зайти в домашнюю директорию"
 
-#: src/help_screen.c:248
+#: src/help_screen.c:249
 msgid "<Backspace>:\t Move to parent directory"
 msgstr "<Backspace>:\t Зайти в родительский каталог"
 
-#: src/help_screen.c:249
+#: src/help_screen.c:250
 msgid "<Insert>:\t Select/deselect file"
 msgstr "<Insert>:\t Устаносить/снять выделение с файла"
 
-#: src/help_screen.c:250
+#: src/help_screen.c:251
 msgid "+:\t\t Select files matching a pattern"
 msgstr "+:\t\t Выбрать файлы, удовлетворяющие шаблону"
 
-#: src/help_screen.c:251
+#: src/help_screen.c:252
 msgid "-:\t\t Deselect files matching a pattern"
 msgstr "-:\t\t Снять выделение с файлов, удовлетворяющих шаблону"
 
-#: src/help_screen.c:252
+#: src/help_screen.c:253
 msgid "a:\t\t Add selected files to playlist"
 msgstr "a:\t\t Добавить выделенные файлы к плей-листу"
 
-#: src/help_screen.c:253
+#: src/help_screen.c:254
 msgid "r:\t\t Replace playlist files with the selected"
 msgstr "r:\t\t Заменить файлы в плей-листе на выбранные"
 
-#: src/help_screen.c:254
+#: src/help_screen.c:255
 msgid "c:\t\t Change directory"
 msgstr "c:\t\t Сменить каталог"
 
-#: src/help_screen.c:255
+#: src/help_screen.c:256
 msgid "i:\t\t Toggle song info mode"
 msgstr "i:\t\t Переключиться в режим информации о песне"
 
-#: src/help_screen.c:256
+#: src/help_screen.c:257
 msgid "s:\t\t Toggle search mode"
 msgstr "s:\t\t Переключиться в режим поиска"
 
-#: src/help_screen.c:263
+#: src/help_screen.c:264
 msgid "q or <Esc>:\t Return to player"
 msgstr "q or <Esc>:\t Вернуться к плейеру"
 
-#: src/help_screen.c:264
+#: src/help_screen.c:265
 msgid "h or <Left>:\t Move cursor left"
 msgstr "h или <Влево>:\t Переместить курсор влево"
 
-#: src/help_screen.c:265
+#: src/help_screen.c:266
 msgid "l or <Right>:\t Move cursor right"
 msgstr "l или <Вправо>:\t Переместить курсор вправо"
 
-#: src/help_screen.c:266
+#: src/help_screen.c:267
 msgid "j or <Down>:\t Move cursor down"
 msgstr "j или <Вниз>:\t Опустить курсор"
 
-#: src/help_screen.c:267
+#: src/help_screen.c:268
 msgid "k or <Up>:\t Move cursor up"
 msgstr "k или <Вверх>:\t Поднять курсор"
 
-#: src/help_screen.c:268
+#: src/help_screen.c:269
 msgid "p:\t\t Load Winamp EQF preset"
 msgstr "p:\t\t Загрузить пресет Winamp EQF"
 
@@ -463,7 +469,7 @@ msgstr "Не могу инициализировать плей-лист"
 
 #: src/player.c:324
 msgid "Player initialized"
-msgstr "Плей-лист инициализирован"
+msgstr "Плейер инициализирован"
 
 #: src/player.c:341
 msgid "Play list"
@@ -473,12 +479,12 @@ msgstr "Плей-лист"
 msgid "Left MPFC"
 msgstr "Вышли из MPFC"
 
-#: src/player.c:812 src/player.c:2370 src/player.c:2411
+#: src/player.c:812 src/player.c:2372 src/player.c:2413
 #, c-format
 msgid "String `%s' not found"
 msgstr "Строка `%s' не найдена"
 
-#: src/player.c:816 src/player.c:2374 src/player.c:2415
+#: src/player.c:816 src/player.c:2376 src/player.c:2417
 #, c-format
 msgid "String `%s' found at position %d"
 msgstr "Строка `%s' найдена в позиции %d"
@@ -594,8 +600,8 @@ msgid "S&tring: "
 msgstr "Строка (&t): "
 
 #: src/player.c:2015
-msgid "Mini variables manager"
-msgstr "Мини-менеджер переменных"
+msgid "Variables manager"
+msgstr "Менеджер переменных"
 
 #: src/player.c:2019
 msgid "&Value: "
@@ -653,54 +659,57 @@ msgstr "Жанр (&g)"
 msgid "C&omment"
 msgstr "Комментарии (&o)"
 
-#: src/player.c:2064
+#: src/player.c:2066
 #, c-format
-msgid "Removed %d songs"
-msgstr "Удалено %d песен"
+msgid "Removed %d song"
+msgid_plural "Removed %d songs"
+msgstr[0] "Удалена %d песня"
+msgstr[1] "Удалено %d песни"
+msgstr[2] "Удалено %d песен"
 
-#: src/player.c:2072
+#: src/player.c:2074
 msgid "Reload info"
 msgstr "Перезагрузить информацию"
 
-#: src/player.c:2073
+#: src/player.c:2075
 msgid "&Only in selected area"
 msgstr "Только в выделенной области (&o)"
 
-#: src/player.c:2088
+#: src/player.c:2090
 msgid "Repeat value"
 msgstr "Значение повтора"
 
-#: src/player.c:2090
+#: src/player.c:2092
 msgid "Enter count &value for the next command: "
 msgstr "Введите число повторений для следующей команды (&v): "
 
-#: src/player.c:2108
+#: src/player.c:2110
 msgid "Run/stop test"
 msgstr "Запустить/остановить тест"
 
-#: src/player.c:2109
+#: src/player.c:2111
 msgid "Tests"
 msgstr "Тесты"
 
-#: src/player.c:2110
+#: src/player.c:2112
 msgid "Test &1. Window library perfomance"
 msgstr "Тест &1. Производительность оконной библиотеки"
 
-#: src/player.c:2112
+#: src/player.c:2114
 msgid "&Stop job"
 msgstr "Остановить задачу (&s)"
 
-#: src/player.c:2142
+#: src/player.c:2144
 #, c-format
 msgid "Play list saved to %s"
 msgstr "Плей-лист сохранен в %s"
 
-#: src/player.c:2145
+#: src/player.c:2147
 #, c-format
 msgid "Unable to save play list to %s"
 msgstr "Не могу сохранить плей-лист в %s"
 
-#: src/player.c:2154
+#: src/player.c:2156
 msgid ""
 "\n"
 "[0;32;40mPress enter to continue"
@@ -710,8 +719,11 @@ msgstr ""
 
 #: src/plist.c:866
 #, c-format
-msgid "%i/%i songs; %i:%02i:%02i/%i:%02i:%02i"
-msgstr "%i/%i песен; %i:%02i:%02i/%i:%02i:%02i"
+msgid "%i/%i song; %i:%02i:%02i/%i:%02i:%02i"
+msgid_plural "%i/%i songs; %i:%02i:%02i/%i:%02i:%02i"
+msgstr[0] "%i/%i песня; %i:%02i:%02i/%i:%02i:%02i"
+msgstr[1] "%i/%i песни; %i:%02i:%02i/%i:%02i:%02i"
+msgstr[2] "%i/%i песен; %i:%02i:%02i/%i:%02i:%02i"
 
 #: src/iwt.c:173
 #, c-format

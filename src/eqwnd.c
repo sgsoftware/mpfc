@@ -214,7 +214,7 @@ void eqwnd_load_eqf_dlg( void )
 {
 	dialog_t *dlg;
 
-	dlg = dialog_new(wnd_root, _("Load preset froma Winamp EQF file"));
+	dlg = dialog_new(wnd_root, _("Load preset from a Winamp EQF file"));
 	filebox_new_with_label(WND_OBJ(dlg->m_vbox), _("&Name: "), "name", "", 
 			'n', 50);
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", eqwnd_on_load);

@@ -2012,7 +2012,7 @@ void player_var_manager( void )
 	button_t *btn;
 	vbox_t *vbox;
 
-	dlg = dialog_new(wnd_root, _("Mini variables manager"));
+	dlg = dialog_new(wnd_root, _("Variables manager"));
 	eb = editbox_new_with_label(WND_OBJ(dlg->m_vbox), _("&Name: "),
 			"name", "", 'n', PLAYER_EB_WIDTH);
 	eb->m_history = player_hist_lists[PLAYER_HIST_LIST_VAR_NAME];
@@ -2058,10 +2058,12 @@ void player_advanced_search_dialog( void )
 void player_rem_dialog( void )
 {
 	int was = player_plist->m_len;
+	int num;
 	
 	plist_rem(player_plist);
+	num = was - player_plist->m_len;
 	logger_message(player_log, 1,
-			_("Removed %d songs"), was - player_plist->m_len);
+			 ngettext("Removed %d song", "Removed %d songs", num), num);
 } /* End of 'player_rem_dialog' function */
 
 /* Launch info reloading dialog */

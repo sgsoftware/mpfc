@@ -863,7 +863,8 @@ void plist_display( plist_t *pl, wnd_t *wnd )
 			s_time += pl->m_list[i]->m_len;
 	}
 	wnd_apply_style(wnd, "plist-time-style");
-	sprintf(time_text, _("%i/%i songs; %i:%02i:%02i/%i:%02i:%02i"),
+	sprintf(time_text, ngettext("%i/%i song; %i:%02i:%02i/%i:%02i:%02i",
+				"%i/%i songs; %i:%02i:%02i/%i:%02i:%02i", pl->m_len),
 			(end >= 0 && pl->m_len > 0) ? end - start + 1 : 0, pl->m_len,
 			s_time / 3600, (s_time % 3600) / 60, s_time % 60,
 			l_time / 3600, (l_time % 3600) / 60, l_time % 60);
