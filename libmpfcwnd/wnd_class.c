@@ -74,5 +74,20 @@ void wnd_class_free( wnd_class_t *klass )
 	free(klass);
 } /* End of 'wnd_class_free' function */
 
+/* Call 'get_msg_info' function */
+wnd_msg_handler_t **wnd_class_get_msg_info( wnd_t *wnd, char *msg_name,
+		wnd_class_msg_callback_t *callback )
+{
+	wnd_class_t *klass;
+	for ( klass = wnd->m_class; klass != NULL; klass = klass->m_parent )
+	{
+		wnd_msg_handler_t **h = klass->m_get_info(wnd, msg_name,
+				callback);
+		if (h != NULL)
+			return h;
+	}
+	return NULL;
+} /* End of 'wnd_class_get_msg_info' function */
+
 /* End of 'wnd_class.c' file */
 

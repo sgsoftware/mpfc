@@ -194,7 +194,7 @@ void wnd_msg_add_handler( wnd_t *wnd, char *msg_name, void *h )
 	assert(h);
 
 	/* Obtain handlers chain */
-	chain = wnd->m_class->m_get_info(wnd, msg_name, NULL);
+	chain = wnd_class_get_msg_info(wnd, msg_name, NULL);
 
 	/* Allocate memory for handler item */
 	handler = (wnd_msg_handler_t *)malloc(sizeof(*handler));
@@ -220,7 +220,7 @@ void wnd_msg_rem_handler( wnd_t *wnd, char *msg_name )
 	wnd_msg_handler_t **chain;
 
 	assert(wnd);
-	chain = wnd->m_class->m_get_info(wnd, msg_name, NULL);
+	chain = wnd_class_get_msg_info(wnd, msg_name, NULL);
 	assert(*chain);
 
 	/* Delete handler and move pointer */
@@ -241,8 +241,16 @@ void wnd_msg_queue_remove_by_window( wnd_msg_queue_t *queue, wnd_t *wnd,
 	for ( item = queue->m_base; item != NULL; )
 	{
 		wnd_t *target = item->m_msg.m_wnd;
-		if (target == wnd || (with_descendants && 
-					wnd_is_descendant(wnd, target)))
+		bool_t suits = (target == wnd);
+		for ( ; with_descendants && target != NULL; target = target->m_parent )
+		{
+			if (target == wnd)
+			{
+				suits = TRUE;
+				break;
+			}
+		}
+		if (suits)
 		{
 			struct wnd_msg_queue_item_t *prev = item->m_prev;
 			wnd_msg_rem(queue, item);

@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Interface for window
  *               classes handling functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 9.08.2004
+ * LAST UPDATE : 13.08.2004
  * NOTE        : Module prefix 'wnd_class'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -63,6 +63,10 @@ wnd_class_t *wnd_class_new( wnd_global_data_t *global, char *name,
 
 /* Free window class */
 void wnd_class_free( wnd_class_t *klass );
+
+/* Call 'get_msg_info' function */
+wnd_msg_handler_t **wnd_class_get_msg_info( wnd_t *wnd, char *msg_name,
+		wnd_class_msg_callback_t *callback );
 
 #endif
 

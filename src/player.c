@@ -36,6 +36,7 @@
 #include "browser.h"
 #include "cfg.h"
 #include "colors.h"
+#include "wnd_dialog.h"
 #include "eqwnd.h"
 #include "error.h"
 #include "file.h"
@@ -990,6 +991,14 @@ void *player_timer_func( void *arg )
 	return NULL;
 } /* End of 'player_timer_func' function */
 
+/* Display song adding dialog box */
+void player_add_dialog( void )
+{
+	dialog_t *dlg;
+
+	dlg = dialog_new("Add songs", player_wnd, 10, 10, 30, 10, 0);
+} /* End of 'player_add_dialog' function */
+
 #if 0
 /* Process add file dialog */
 void player_add_dialog( void )
@@ -1684,7 +1693,7 @@ void player_handle_action( int action )
 
 	/* Add a file */
 	case KBIND_ADD:
-//		player_add_dialog();
+		player_add_dialog();
 		break;
 
 	/* Add an object */

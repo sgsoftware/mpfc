@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. 'basic' window class
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 9.08.2004
+ * LAST UPDATE : 13.08.2004
  * NOTE        : Module prefix 'wnd_basic'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -127,10 +127,10 @@ wnd_msg_data_t wnd_msg_noargs_new( void )
 } /* End of 'wnd_msg_noargs_new' function */
 
 /* Callback function for no-arguments messages */
-wnd_msg_retcode_t wnd_basic_callback_noargs( wnd_t *wnd, 
+wnd_msg_retcode_t wnd_basic_callback_noargs( wnd_t *wnd,
 		wnd_msg_handler_t *handler, wnd_msg_data_t *msg_data )
 {
-	return ((wnd_msg_retcode_t (*)(wnd_t *))(handler->m_func))(wnd);
+	return WND_MSG_NOARGS_HANDLER(handler)(wnd);
 } /* End of 'wnd_basic_callback_noargs' function */
 
 /* Create data for key-related message */
@@ -147,12 +147,11 @@ wnd_msg_data_t wnd_msg_key_new( wnd_key_t *keycode )
 } /* End of 'wnd_msg_key_new' function */
 
 /* Callback function for keyboard messages */
-wnd_msg_retcode_t wnd_basic_callback_key( wnd_t *wnd, 
+wnd_msg_retcode_t wnd_basic_callback_key( wnd_t *wnd,
 		wnd_msg_handler_t *handler, wnd_msg_data_t *msg_data )
 {
 	wnd_msg_key_t *d = (wnd_msg_key_t *)(msg_data->m_data);
-	return ((wnd_msg_retcode_t (*)(wnd_t *, wnd_key_t *))(handler->m_func))
-		(wnd, &d->m_keycode);
+	return WND_MSG_KEY_HANDLER(handler)(wnd, &d->m_keycode);
 } /* End of 'wnd_basic_callback_key' function */
 
 /* Create data for parent reposition message */
@@ -177,12 +176,11 @@ wnd_msg_data_t wnd_msg_parent_repos_new( int px, int py, int pw, int ph,
 } /* End of 'wnd_msg_parent_repos_new' function */
 
 /* Callback function for parent reposition message */
-wnd_msg_retcode_t wnd_basic_callback_parent_repos( wnd_t *wnd, 
+wnd_msg_retcode_t wnd_basic_callback_parent_repos( wnd_t *wnd,
 		wnd_msg_handler_t *handler, wnd_msg_data_t *msg_data )
 {
 	wnd_msg_parent_repos_t *d = (wnd_msg_parent_repos_t *)(msg_data->m_data);
-	return ((wnd_msg_retcode_t (*)(wnd_t *, int, int, int, int, 
-				int, int, int, int))(handler->m_func))(wnd,
+	return WND_MSG_PARENT_REPOS_HANDLER(handler)(wnd,
 					d->m_prev_x, d->m_prev_y, d->m_prev_w, d->m_prev_h,
 					d->m_new_x, d->m_new_y, d->m_new_w, d->m_new_h);
 } /* End of 'wnd_basic_callback_parent_repos' function */
@@ -209,16 +207,15 @@ wnd_msg_retcode_t wnd_basic_callback_mouse( wnd_t *wnd,
 		wnd_msg_handler_t *handler, wnd_msg_data_t *msg_data )
 {
 	wnd_msg_mouse_t *d = (wnd_msg_mouse_t *)(msg_data->m_data);
-	return ((wnd_msg_retcode_t (*)(wnd_t *, int, int, wnd_mouse_event_t,
-				wnd_mouse_button_t))(handler->m_func))(wnd,
-				d->m_x, d->m_y, d->m_type, d->m_button);
+	return WND_MSG_MOUSE_HANDLER(handler)(wnd, d->m_x, d->m_y, 
+			d->m_type, d->m_button);
 } /* End of 'wnd_basic_callback_mouse' function */
 
 /* Callback for destructor */
-wnd_msg_retcode_t wnd_basic_callback_destructor( wnd_t *wnd,
+wnd_msg_retcode_t wnd_basic_callback_destructor( wnd_t *wnd, 
 		wnd_msg_handler_t *handler, wnd_msg_data_t *msg_data )
 {
-	((void (*)(wnd_t *))(handler->m_func))(wnd);
+	WND_MSG_DESTRUCTOR_HANDLER(handler)(wnd);
 	return WND_MSG_RETCODE_OK;
 } /* End of 'wnd_basic_callback_destructor' function */
 

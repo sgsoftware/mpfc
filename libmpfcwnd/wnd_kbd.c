@@ -158,7 +158,7 @@ bool_t wnd_kbd_extract_code( wnd_key_t *code, int *buf, int *len )
 		if (*len == 1)
 			return FALSE;
 		code->m_key = buf[1];
-		code->m_alt = TRUE;
+		code->m_alt = (code->m_key != KEY_ESCAPE);
 		memmove(buf, &buf[2], (*len) - 2);
 		(*len) -= 2;
 	}

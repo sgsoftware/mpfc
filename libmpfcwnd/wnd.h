@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Interface for basic window
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 23.07.2004
+ * LAST UPDATE : 13.08.2004
  * NOTE        : Module prefix 'wnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -323,8 +323,9 @@ int wnd_string2attrib( char *str );
 void wnd_sync_screen( wnd_t *wnd );
 
 /* Call message handlers chain */
-wnd_msg_retcode_t wnd_call_handler( wnd_t *wnd, wnd_msg_handler_t *h,
-		wnd_msg_callback_t callback, wnd_msg_data_t *data );
+wnd_msg_retcode_t wnd_call_handler( wnd_t *wnd, char *msg_name,
+		wnd_msg_handler_t *h, wnd_msg_callback_t callback, 
+		wnd_msg_data_t *data );
 
 /* Call window destructor */
 void wnd_call_destructor( wnd_t *wnd );
@@ -344,9 +345,6 @@ void wnd_repos( wnd_t *wnd, int x, int y, int width, int height );
 
 /* Toggle the window maximization flag */
 void wnd_toggle_maximize( wnd_t *wnd );
-
-/* Check if specified window is another windows descendant */
-bool_t wnd_is_descendant( wnd_t *wnd, wnd_t *base );
 
 /* Reset the global focus */
 void wnd_set_global_focus( wnd_global_data_t *global );

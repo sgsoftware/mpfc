@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Window functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 24.07.2004
+ * LAST UPDATE : 13.08.2004
  * NOTE        : Module prefix 'wnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -388,11 +388,12 @@ void wnd_main( wnd_t *wnd_root )
 			/* Choose appropriate callback for calling handler */
 			target = msg.m_wnd;
 			assert(target);
-			handler = *target->m_class->m_get_info(target, msg.m_name, 
+			handler = *wnd_class_get_msg_info(target, msg.m_name, 
 					&callback);
 
 			/* Call handler */
-			ret = wnd_call_handler(target, handler, callback, &msg.m_data);
+			ret = wnd_call_handler(target, msg.m_name, handler, callback, 
+					&msg.m_data);
 			wnd_msg_free(&msg);
 			if (ret == WND_MSG_RETCODE_EXIT)
 				break;
@@ -906,15 +907,26 @@ void wnd_sync_screen( wnd_t *wnd )
 } /* End of 'wnd_sync_screen' function */
 
 /* Call message handlers chain */
-wnd_msg_retcode_t wnd_call_handler( wnd_t *wnd, wnd_msg_handler_t *handler, 
-		wnd_msg_callback_t callback, wnd_msg_data_t *data )
+wnd_msg_retcode_t wnd_call_handler( wnd_t *wnd, char *msg_name,
+		wnd_msg_handler_t *handler, wnd_msg_callback_t callback, 
+		wnd_msg_data_t *data )
 {
 	wnd_msg_retcode_t ret;
-	for ( ; handler != NULL; handler = handler->m_next )
+	for ( ; handler != NULL; )
 	{
 		ret = callback(wnd, handler, data);
+		/* Stop handling */
 		if (ret == WND_MSG_RETCODE_STOP || ret == WND_MSG_RETCODE_EXIT)
 			return ret;
+		/* Switch message handling to the parent */
+		else if (ret == WND_MSG_RETCODE_PASS_TO_PARENT && wnd->m_parent != NULL)
+		{
+			wnd = wnd->m_parent;
+			handler = *wnd_class_get_msg_info(wnd, msg_name, &callback);
+		}
+		/* Use next handler */
+		else
+			handler = handler->m_next;
 	}
 	return ret;
 } /* End of 'wnd_call_handler' function */
@@ -923,7 +935,8 @@ wnd_msg_retcode_t wnd_call_handler( wnd_t *wnd, wnd_msg_handler_t *handler,
 void wnd_call_destructor( wnd_t *wnd )
 {
 	assert(wnd);
-	wnd_call_handler(wnd, wnd->m_destructor, wnd_callback_destructor, NULL);
+	wnd_call_handler(wnd, "destructor", wnd->m_destructor, 
+			wnd_callback_destructor, NULL);
 } /* End of 'wnd_call_destructor' function */
 
 /* Callback for destructor */
@@ -1093,24 +1106,6 @@ void wnd_toggle_maximize( wnd_t *wnd )
 				wnd->m_parent->m_client_h);
 	}
 } /* End of 'wnd_toggle_maximize' function */
-
-/* Check if specified window is another windows descendant */
-bool_t wnd_is_descendant( wnd_t *wnd, wnd_t *base )
-{
-	wnd_t *child;
-
-	assert(base);
-
-	if (wnd == NULL)
-		return FALSE;
-	
-	for ( child = wnd->m_child; child != NULL; child = child->m_next )
-	{
-		if (child == base || wnd_is_descendant(wnd, child))
-			return TRUE;
-	}
-	return FALSE;
-} /* End of 'wnd_is_descendant' function */
 
 /* Reset the global focus */
 void wnd_set_global_focus( wnd_global_data_t *global )

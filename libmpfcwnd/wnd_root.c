@@ -49,9 +49,7 @@ wnd_msg_handler_t **wnd_root_get_msg_info( wnd_t *wnd, char *msg_name,
 			(*callback) = wnd_basic_callback_noargs;
 		return &(WND_ROOT_OBJ(wnd)->m_on_update_screen);
 	}
-
-	/* Search in parent class messages */
-	return (wnd->m_class->m_parent->m_get_info)(wnd, msg_name, callback);
+	return NULL;
 } /* End of 'wnd_root_get_msg_info' function */
 
 /* 'keydown' message handler */

@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Interface for message 
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 28.06.2004
+ * LAST UPDATE : 12.08.2004
  * NOTE        : Module prefix 'wnd_msg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -60,7 +60,8 @@ enum tag_wnd_msg_retcode_t
 {
 	WND_MSG_RETCODE_OK = 0,
 	WND_MSG_RETCODE_STOP,
-	WND_MSG_RETCODE_EXIT
+	WND_MSG_RETCODE_PASS_TO_PARENT,
+	WND_MSG_RETCODE_EXIT,
 };
 
 /* Message handler type.

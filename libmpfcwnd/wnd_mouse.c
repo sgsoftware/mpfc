@@ -144,9 +144,9 @@ wnd_t *wnd_mouse_find_cursor_child( wnd_t *wnd, int x, int y )
 	for ( child = wnd->m_focus_child; child != NULL; 
 			child = child->m_lower_sibling )
 	{
-		if (x >= child->m_x && y >= child->m_y && 
-				x < child->m_x + child->m_width &&
-				y < child->m_y + child->m_height)
+		int cl = child->m_screen_x, ct = child->m_screen_y,
+			cr = cl + child->m_width, cb = ct + child->m_height;
+		if (x >= cl && x < cr && y >= ct && y < cb)
 		{
 			found_child = child;
 			break;
@@ -158,8 +158,7 @@ wnd_t *wnd_mouse_find_cursor_child( wnd_t *wnd, int x, int y )
 		return wnd;
 
 	/* Now go recursively into the found child */
-	return wnd_mouse_find_cursor_child(found_child, x - found_child->m_x,
-			y - found_child->m_y);
+	return wnd_mouse_find_cursor_child(found_child, x, y);
 } /* End of 'wnd_mouse_find_cursor_child' function */
 
 /* Determine the mouse driver type */

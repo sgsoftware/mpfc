@@ -187,7 +187,7 @@ void player_stop_timer( void );
 /* Timer thread function */
 void *player_timer_func( void *arg );
 
-/* Process add file dialog */
+/* Display song adding dialog box */
 void player_add_dialog( void );
 
 /* Process save play list dialog */
