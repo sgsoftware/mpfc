@@ -240,6 +240,9 @@ struct tag_wnd_t
 	/* Window value */
 	byte m_level;
 
+	/* Window invalidity flag */
+	bool_t m_is_invalid;
+
 	/* Configuration list for storing window parameters */
 	cfg_node_t *m_cfg_list;
 
@@ -290,8 +293,7 @@ struct tag_wnd_t
 #define wnd_postinit(wnd) \
 	WND_FLAGS(wnd) |= WND_FLAG_INITIALIZED;	\
 	wnd_set_global_focus(WND_GLOBAL(wnd)); \
-	wnd_global_update_visibility(WND_ROOT(wnd)); \
-	wnd_invalidate(WND_OBJ(wnd));
+	wnd_global_update_visibility(WND_ROOT(wnd)); 
 
 /* Initialize window system */
 wnd_t *wnd_init( cfg_node_t *cfg_list );
@@ -336,6 +338,9 @@ void wnd_init_pairs( void );
 
 /* Convert color is our format to color is NCURSES format */
 int wnd_color_our2curses( wnd_color_t col );
+
+/* Redisplay all invalid windows */
+bool_t wnd_check_invalid( wnd_t *wnd );
 
 /* Draw window decorations */
 void wnd_draw_decorations( wnd_t *wnd );

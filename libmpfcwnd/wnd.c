@@ -258,6 +258,7 @@ bool_t wnd_construct( wnd_t *wnd, wnd_t *parent, char *title, int x, int y,
 	wnd->m_client_y = 0;
 	wnd->m_client_w = width;
 	wnd->m_client_h = height;
+	wnd->m_is_invalid = TRUE;
 	wnd->m_fg_color = WND_COLOR_WHITE;
 	wnd->m_bg_color = WND_COLOR_BLACK;
 	wnd->m_attrib = 0;
@@ -404,15 +405,26 @@ void wnd_main( wnd_t *wnd_root )
 					&callback);
 
 			/* Call handler */
+			if (!strcmp(msg.m_name, "display"))
+				target->m_is_invalid = FALSE;
 			ret = wnd_call_handler(target, msg.m_name, handler, callback, 
 					&msg.m_data);
 			wnd_msg_free(&msg);
 			if (ret == WND_MSG_RETCODE_EXIT)
 				break;
-		}
 
-		/* Wait a little */
-		util_wait();
+			/* Check for invalid windows */
+			if (wnd_check_invalid(wnd_root))
+				wnd_msg_send(wnd_root, "update_screen",
+						wnd_msg_update_screen_new());
+		}
+		else
+		{
+			if (wnd_check_invalid(wnd_root))
+				wnd_msg_send(wnd_root, "update_screen",
+						wnd_msg_update_screen_new());
+			util_wait();
+		}
 	}
 } /* End of 'wnd_main' function */
 
@@ -463,6 +475,29 @@ int wnd_color_our2curses( wnd_color_t col )
 	}
 	return COLOR_WHITE;
 } /* End of 'wnd_color_our2curses' function */
+
+/* Redisplay all invalid windows */
+bool_t wnd_check_invalid( wnd_t *wnd )
+{
+	bool_t need_update = FALSE;
+	wnd_t *child;
+
+	/* Invalidate this window */
+	if (wnd->m_is_invalid)
+	{
+		wnd_msg_send(wnd, "erase_back", wnd_msg_erase_back_new());
+		wnd_send_repaint(wnd, TRUE);
+		return TRUE;
+	}
+
+	/* Check children */
+	for ( child = wnd->m_child; child != NULL; child = child->m_next )
+	{
+		if (wnd_check_invalid(child))
+			need_update = TRUE;
+	}
+	return need_update;
+} /* End of 'wnd_check_invalid' function */
 
 /* Draw window decorations */
 void wnd_draw_decorations( wnd_t *wnd )
@@ -878,14 +913,8 @@ void wnd_prev_focus( wnd_t *wnd )
 /* Invalidate window */
 void wnd_invalidate( wnd_t *wnd )
 {
-	wnd_t *child;
-
-	if (wnd == NULL)
-		return;
-
-	wnd_msg_send(wnd, "erase_back", wnd_msg_erase_back_new());
-	wnd_send_repaint(wnd, TRUE);
-	wnd_msg_send(WND_ROOT(wnd), "update_screen", wnd_msg_update_screen_new());
+	/* Mark window as invalid */
+	wnd->m_is_invalid = TRUE;
 } /* End of 'wnd_invalidate' function */
 
 /* Send repainting messages to a window */
