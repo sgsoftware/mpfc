@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Printing functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 23.07.2004
+ * LAST UPDATE : 13.08.2004
  * NOTE        : Module prefix 'wnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -88,7 +88,7 @@ void wnd_putc( wnd_t *wnd, dword ch )
 		return;
 
 	/* Print character */
-	if (wnd_pos_visible(wnd, wnd->m_cursor_x, wnd->m_cursor_y, TRUE))
+	if (wnd_pos_visible(wnd, wnd->m_cursor_x, wnd->m_cursor_y))
 	{
 		struct wnd_display_buf_t *buf = &WND_DISPLAY_BUF(wnd);
 		int y = WND_CLIENT2SCREEN_Y(wnd, wnd->m_cursor_y),
@@ -97,6 +97,7 @@ void wnd_putc( wnd_t *wnd, dword ch )
 		buf->m_data[pos].m_attr = wnd->m_attrib | 
 			COLOR_PAIR(wnd->m_fg_color * WND_COLOR_NUMBER + wnd->m_bg_color);
 		buf->m_data[pos].m_char = ch;
+		buf->m_data[pos].m_wnd = wnd;
 	}
 
 	/* Advance cursor */
@@ -249,55 +250,63 @@ bool_t wnd_cursor_in_client( wnd_t *wnd )
 } /* End of 'wnd_cursor_in_client' function */
 
 /* Check that position inside the window is visible */
-bool_t wnd_pos_visible( wnd_t *wnd, int x, int y, bool_t check_children )
+bool_t wnd_pos_visible( wnd_t *wnd, int x, int y )
 {
-	int px, py, absx, absy;
-	wnd_t *child;
+	wnd_t *owning, *wnd_anc[WND_MAX_LEVEL], *own_anc[WND_MAX_LEVEL], *parent;
+	int i, com_anc;
+	int scrx, scry;
 
-	assert(wnd);
-
-	/* Check if cursor is outside the window */
-	absx = WND_CLIENT2ABS_X(wnd, x);
-	absy = WND_CLIENT2ABS_Y(wnd, y);
-	if (absx < 0 || absy < 0 || absx >= wnd->m_width || absy >= wnd->m_height)
+	/* Check that this position belongs to the window */
+	scrx = WND_CLIENT2SCREEN_X(wnd, x);
+	scry = WND_CLIENT2SCREEN_Y(wnd, y);
+	if (scrx < wnd->m_screen_x || scry < wnd->m_screen_y ||
+			scrx >= wnd->m_screen_x + wnd->m_width ||
+			scry >= wnd->m_screen_y + wnd->m_height)
 		return FALSE;
 
-	/* Check that position is not overlapped by our children */
-	if (check_children)
+	/* Check that this position is visible inside parent */
+	for ( parent = wnd->m_parent; parent != NULL; parent = parent->m_parent )
 	{
-		for ( child = wnd->m_child; child != NULL; child = child->m_next )
-		{
-			if (x >= child->m_x && y >= child->m_y &&
-					x < child->m_x + child->m_width &&
-					y < child->m_y + child->m_height)
-				return FALSE;
-		}
-	}
-
-	/* Calculate position in parent coordinates */
-	if (WND_IS_ROOT(wnd))
-		return TRUE;
-	px = absx + wnd->m_x;
-	py = absy + wnd->m_y;
-
-	/* Check that this position inside parent window is visible */
-	if (px >= WND_WIDTH(wnd->m_parent) || py >= WND_HEIGHT(wnd->m_parent))
-		return FALSE;
-	if (!wnd_pos_visible(wnd->m_parent, px, py, FALSE))
-		return FALSE;
-
-	/* Check that this position is not overlapped by our siblings */
-	for ( child = wnd->m_parent->m_child; child != NULL; child = child->m_next )
-	{
-		if (child->m_zval <= wnd->m_zval)
-			continue;
-		if (px >= child->m_x && px < child->m_x + child->m_width &&
-				py >= child->m_y && py < child->m_y + child->m_height)
+		int left = parent->m_screen_x + parent->m_client_x,
+			right = left + parent->m_client_w,
+			top = parent->m_screen_y + parent->m_client_y,
+			bottom = top + parent->m_client_h;
+		if (scrx < left || scry < top || scrx >= right || scry >= bottom)
 			return FALSE;
 	}
 
-	/* Position is visible */
-	return TRUE;
+	/* Nobody owns this position yet or overwrite own character */
+	owning = WND_DISPLAY_BUF_ENTRY(wnd, scrx, scry).m_wnd;
+	if (owning == NULL || wnd == owning)
+		return TRUE;
+
+	/* Check that position is valid inside the owning window
+	 * (it could be moved) */
+	if (scrx < owning->m_screen_x || scry < owning->m_screen_y ||
+			scrx >= owning->m_screen_x + owning->m_width ||
+			scry >= owning->m_screen_y + owning->m_height)
+		return TRUE;
+
+	/* List windows ancestors */
+	for ( parent = wnd, i = wnd->m_level - 1; parent != NULL;
+			parent = parent->m_parent, i -- )
+		wnd_anc[i] = parent;
+	for ( parent = owning, i = owning->m_level - 1; parent != NULL;
+			parent = parent->m_parent, i -- )
+		own_anc[i] = parent;
+
+	/* Find first common ancestor */
+	for ( com_anc = 0; wnd_anc[com_anc] == own_anc[com_anc]; com_anc ++ );
+	com_anc --;
+
+	/* One of the windows is another's ancestor */
+	if (wnd_anc[com_anc] == wnd)
+		return FALSE;
+	else if (wnd_anc[com_anc] == owning)
+		return TRUE;
+
+	/* Look at z-values of the branches */
+	return (wnd_anc[com_anc + 1]->m_zval > own_anc[com_anc + 1]->m_zval);
 } /* End of 'wnd_pos_visible' function */
 
 /* End of 'wnd_print.c' file */

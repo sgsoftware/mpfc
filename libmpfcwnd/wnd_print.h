@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Interface for printing 
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 29.06.2004
+ * LAST UPDATE : 13.08.2004
  * NOTE        : Module prefix 'wnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -120,8 +120,7 @@ int wnd_printf( struct tag_wnd_t *wnd, wnd_print_flags_t flags,
 bool_t wnd_cursor_in_client( struct tag_wnd_t *wnd );
 
 /* Check that position inside the window is visible */
-bool_t wnd_pos_visible( struct tag_wnd_t *wnd, int x, int y, 
-		bool_t check_children );
+bool_t wnd_pos_visible( struct tag_wnd_t *wnd, int x, int y );
 
 #endif
 

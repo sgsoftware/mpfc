@@ -77,6 +77,7 @@ wnd_t *wnd_init( cfg_node_t *cfg_list )
 	{
 		db_data[i].m_char = ' ';
 		db_data[i].m_attr = 0;
+		db_data[i].m_wnd = NULL;
 	}
 	global->m_display_buf.m_width = COLS;
 	global->m_display_buf.m_height = LINES;
@@ -213,6 +214,10 @@ bool_t wnd_construct( wnd_t *wnd, char *title, wnd_t *parent, int x, int y,
 
 	assert(wnd);
 
+	/* Check level */
+	if (parent != NULL && parent->m_level >= WND_MAX_LEVEL)
+		return FALSE;
+
 	/* Maximize window */
 	if (parent != NULL && (flags & WND_FLAG_MAXIMIZED))
 	{
@@ -267,6 +272,7 @@ bool_t wnd_construct( wnd_t *wnd, char *title, wnd_t *parent, int x, int y,
 	wnd->m_id = ++wnd->m_global->m_last_id;
 	wnd->m_mode = WND_MODE_NORMAL;
 	wnd->m_cursor_hidden = FALSE;
+	wnd->m_level = (parent == NULL ? 0 : parent->m_level + 1);
 
 	/* Calculate client area depending on the window flags */
 	if (wnd->m_flags & WND_FLAG_BORDER)

@@ -112,15 +112,25 @@ struct tag_wnd_global_data_t
 	/* Message queue */
 	wnd_msg_queue_t *m_msg_queue;
 
-	/* Display buffers */
+	/* Display buffer */
 	struct wnd_display_buf_t
 	{
+		/* Screen image */
 		struct wnd_display_buf_symbol_t
 		{
+			/* Character code */
 			chtype m_char;
+			/* Character attribute */
 			int m_attr;
+			/* Window that has put this character */
+			wnd_t *m_wnd;
 		} *m_data;
+
+		/* Buffer size */
 		int m_width, m_height;
+
+		/* Dirtyness flag. If TRUE then the entire screen should be
+		 * repainted discarding all the optimization information */
 		bool_t m_dirty;
 	} m_display_buf;
 
@@ -156,7 +166,7 @@ struct tag_wnd_t
 	wnd_t *m_lower_sibling;
 
 	/* The number of children */
-	int m_num_children;
+	byte m_num_children;
 
 	/* Focus child */
 	struct tag_wnd_t *m_focus_child;
@@ -211,10 +221,13 @@ struct tag_wnd_t
 	wnd_mode_t m_mode;
 
 	/* Window z-value */
-	int m_zval;
+	byte m_zval;
 
 	/* Window identifier */
 	int m_id;
+
+	/* Window value */
+	byte m_level;
 
 	/* Configuration list for storing window parameters */
 	cfg_node_t *m_cfg_list;
@@ -237,6 +250,8 @@ struct tag_wnd_t
 #define WND_CURSES(wnd)			(WND_GLOBAL(wnd)->m_curses_wnd)
 #define WND_LAST_ID(wnd)		(WND_GLOBAL(wnd)->m_last_id)
 #define WND_DISPLAY_BUF(wnd)	(WND_GLOBAL(wnd)->m_display_buf)
+#define WND_DISPLAY_BUF_ENTRY(wnd, x, y)	\
+	(WND_DISPLAY_BUF(wnd).m_data[(y) * WND_DISPLAY_BUF(wnd).m_width + (x)])
 #define WND_MSG_QUEUE(wnd)		(WND_GLOBAL(wnd)->m_msg_queue)
 #define WND_KBD_DATA(wnd)		(WND_GLOBAL(wnd)->m_kbd_data)
 #define WND_MOUSE_DATA(wnd)		(WND_GLOBAL(wnd)->m_mouse_data)
@@ -252,6 +267,9 @@ struct tag_wnd_t
 		WND_OBJ(wnd)->m_client_x + (x))
 #define WND_CLIENT2SCREEN_Y(wnd, y) (WND_OBJ(wnd)->m_screen_y + \
 		WND_OBJ(wnd)->m_client_y + (y))
+
+/* The maximal window level */
+#define WND_MAX_LEVEL	16
 
 /* A macro for closing window */
 #define wnd_close(wnd) (wnd_msg_send(wnd, "close", wnd_msg_close_new()))

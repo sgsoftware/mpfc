@@ -70,6 +70,20 @@ wnd_msg_retcode_t wnd_default_on_keydown( wnd_t *wnd, wnd_key_t key )
 wnd_msg_retcode_t wnd_default_on_close( wnd_t *wnd )
 {
 	wnd_t *parent;
+	struct wnd_display_buf_t *db = &WND_DISPLAY_BUF(wnd);
+	int pos, size;
+
+	/* Remove this window chars from the display buffer */
+	size = db->m_width * db->m_height;
+	for ( pos = 0; pos < size; pos ++ )
+	{
+		wnd_t *w;
+		for ( w = db->m_data[pos].m_wnd; w != NULL; w = w->m_parent )
+		{
+			if (w == wnd)
+				db->m_data[pos].m_wnd = NULL;
+		}
+	}
 
 	/* Remove the window from the parent */
 	parent = wnd->m_parent;
