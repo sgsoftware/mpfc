@@ -5,8 +5,8 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG MPFC. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 31.08.2003
- * NOTE        : None.
+ * LAST UPDATE : 6.09.2003
+ * NOTE        : Module prefix 'player'.
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 
@@ -113,6 +113,9 @@ bool player_store_undo = TRUE;
 /* Var manager cursor position */
 int player_var_mngr_pos = -1;
 
+/* Play boundaries */
+int player_start = -1, player_end = -1;
+
 /* Initialize player */
 bool player_init( int argc, char *argv[] )
 {
@@ -216,7 +219,8 @@ void player_deinit( void )
 	int i;
 	
 	/* Save information about place in song where we stop */
-	cfg_set_var_int(cfg_list, "cur_song", player_plist->m_cur_song, CFG_RUNTIME);
+	cfg_set_var_int(cfg_list, "cur_song", 
+			player_plist->m_cur_song, CFG_RUNTIME);
 	cfg_set_var_int(cfg_list, "cur_time", player_cur_time, CFG_RUNTIME);
 	player_save_cfg_vars(cfg_list, "cur_song;cur_time");
 	
@@ -571,7 +575,7 @@ void *player_thread( void *arg )
 
 		/* Start timer thread */
 		pthread_create(&player_timer_tid, NULL, player_timer_func, 0);
-		wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
+		//wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
 	
 		/* Play */
 		while (!player_end_track)
@@ -1016,29 +1020,41 @@ void player_eq_dialog( void )
 /* Skip some songs */
 void player_skip_songs( int num )
 {
+	int len, base;
+	
 	if (player_plist == NULL || !player_plist->m_len)
 		return;
 	
 	/* Change current song */
+	len = (player_start < 0) ? player_plist->m_len : 
+		(player_end - player_start + 1);
+	base = (player_start < 0) ? 0 : player_start;
 	if (cfg_get_var_int(cfg_list, "shuffle_play"))
 	{
 		int initial = player_plist->m_cur_song;
 
 		while (player_plist->m_cur_song == initial)
-			player_plist->m_cur_song = rand() % player_plist->m_len;
+			player_plist->m_cur_song = base + (rand() % len);
 	}
 	else 
 	{
-		player_plist->m_cur_song += num;
+		int s, cur = player_plist->m_cur_song;
+		if (player_start >= 0 && (cur < player_start || cur > player_end))
+			s = -1;
+		else 
+			s = cur - base;
+		s += num;
 		if (cfg_get_var_int(cfg_list, "loop_play"))
 		{
-			while (player_plist->m_cur_song < 0)
-				player_plist->m_cur_song += player_plist->m_len;
-			player_plist->m_cur_song %= player_plist->m_len;
+			while (s < 0)
+				s += len;
+			s %= len;
+			player_plist->m_cur_song = s + base;
 		}
-		else if (player_plist->m_cur_song < 0 || 
-					player_plist->m_cur_song >= player_plist->m_len)
+		else if (s < 0 || s >= len)
 			player_plist->m_cur_song = -1;
+		else
+			player_plist->m_cur_song = s + base;
 	}
 
 	/* Start or end play */
@@ -1348,7 +1364,31 @@ void player_handle_action( int action )
 	case KBIND_REDO:
 		undo_fw(player_ul);
 		break;
-		
+
+	/* Reload info */
+	case KBIND_RELOAD_INFO:
+		plist_reload_info(player_plist);
+		break;
+
+	/* Set play boundaries */
+	case KBIND_SET_PLAY_BOUNDS:
+		PLIST_GET_SEL(player_plist, player_start, player_end);
+		break;
+
+	/* Clear play boundaries */
+	case KBIND_CLEAR_PLAY_BOUNDS:
+		player_start = player_end = -1;
+		break;
+
+	/* Set play boundaries and play from area beginning */
+	case KBIND_PLAY_BOUNDS:
+		PLIST_GET_SEL(player_plist, player_start, player_end);
+		if (!player_plist->m_len)
+			break;
+		player_plist->m_cur_song = player_start;
+		player_play(0);
+		break;
+
 	/* Digit means command repeation value edit */
 	case KBIND_DIG_1:
 	case KBIND_DIG_2:
@@ -1466,7 +1506,8 @@ void player_var_mngr_notify( wnd_t *wnd, dword data )
 			
 		/* Read new variable */
 		player_var_mngr_pos = lb->m_cursor;
-		ebox_set_text(eb, cfg_list->m_vars[player_var_mngr_pos].m_val);
+		ebox_set_text(eb, cfg_get_var(cfg_list, 
+					lb->m_list[player_var_mngr_pos].m_name));
 	}
 	/* Save list */
 	else if (id == PLAYER_VAR_MNGR_SAVE && act == BTN_CLICKED)

@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: konsamp 0.1\n"
-"POT-Creation-Date: 2003-08-26 15:48+0400\n"
+"POT-Creation-Date: 2003-09-03 22:02+0400\n"
 "PO-Revision-Date: 2003-02-13 09:15+0300\n"
 "Last-Translator: Sergey E. Galanov <sgsoftware@mail.ru>\n"
 "Language-Team: Russian <sgsoftware@mail.ru>\n"
@@ -19,98 +19,98 @@ msgstr ""
 msgid "Initialization error : %s\n"
 msgstr "Ошибка инициализии : %s\n"
 
-#: src/player.c:528
+#: src/player.c:545
 msgid "Unable to initialize output plugin"
 msgstr "Не могу инициализировать выходной плагин"
 
-#: src/player.c:710
+#: src/player.c:727
 msgid "Enter file (or directory) name: "
 msgstr "Введите имя файла (или каталога): "
 
-#: src/player.c:735
+#: src/player.c:752
 msgid "Enter file name: "
 msgstr "Введите имя файла: "
 
-#: src/player.c:748
+#: src/player.c:765
 msgid "Play list saved"
 msgstr "Плей-лист сохранен"
 
-#: src/player.c:749
+#: src/player.c:766
 msgid "Unable to save play list"
 msgstr "Не могу сохранить плей-лист"
 
-#: src/player.c:763
+#: src/player.c:780
 #, c-format
 msgid "Removed %i songs"
 msgstr "Удалено %i песен"
 
-#: src/player.c:776
+#: src/player.c:793
 msgid "Sort globally? (Yes/No)"
 msgstr "Сортировать глобально? (Yes/No)"
 
-#: src/player.c:788
+#: src/player.c:805
 msgid "Sort by: (T)itle, (F)ile name, (P)ath and file name"
 msgstr "Сортировать по: Заголовку(T), Имени файла(F), Пути и имени(P)"
 
-#: src/player.c:820
+#: src/player.c:837
 msgid "Enter search string: "
 msgstr "Введите строку для поиска: "
 
-#: src/player.c:832 src/player.c:1270
+#: src/player.c:849 src/player.c:1296
 msgid "String not found"
 msgstr "Строка не найдена"
 
-#: src/player.c:834 src/player.c:1272
+#: src/player.c:851 src/player.c:1298
 msgid "String found"
 msgstr "Строка найдена"
 
-#: src/player.c:868
+#: src/player.c:887
 msgid "Song name: "
 msgstr "Название песни: "
 
-#: src/player.c:870
+#: src/player.c:889
 msgid "Artist name: "
 msgstr "Исполнитель: "
 
-#: src/player.c:872
+#: src/player.c:891
 msgid "Album name: "
 msgstr "Альбом: "
 
-#: src/player.c:874
+#: src/player.c:893
 msgid "Year: "
 msgstr "Год: "
 
-#: src/player.c:876
+#: src/player.c:895
 msgid "Track No: "
 msgstr ""
 
-#: src/player.c:878
+#: src/player.c:897
 msgid "Comments: "
 msgstr "Комментарии: "
 
-#: src/player.c:880
+#: src/player.c:899
 msgid "Genre: "
 msgstr "Жанр: "
 
-#: src/player.c:1032
+#: src/player.c:1058
 msgid "Variables manager"
 msgstr ""
 
-#: src/player.c:1081
+#: src/player.c:1107
 #, fuzzy
 msgid "Enter object name: "
 msgstr "Введите имя файла: "
 
-#: src/player.c:1338
+#: src/player.c:1364
 msgid "Enter repeat value for the next command: "
 msgstr "Введите число повторений для следующей команды: "
 
-#: src/player.c:1373
+#: src/player.c:1399
 #, fuzzy
 msgid "Enter variable name: "
 msgstr "Введите имя файла: "
 
-#: src/player.c:1392
+#: src/player.c:1418
 #, fuzzy
 msgid "Enter variable value: "
 msgstr "Введите имя файла: "

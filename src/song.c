@@ -174,7 +174,7 @@ void song_get_title_from_info( song_t *song )
 	fmt = cfg_get_var(cfg_list, "title_format");
 	str = song->m_title;
 	*str = 0;
-	if (strcmp(fmt, "0"))
+	if (*fmt && strcmp(fmt, "0") && strcmp(fmt, "1"))
 	{
 		for ( ; *fmt && !finish; fmt ++ )
 		{

@@ -66,6 +66,12 @@ typedef struct
 #define PLIST_SORT_BY_NAME  1
 #define PLIST_SORT_BY_PATH  2
 
+/* Get real selection start and end */
+#define PLIST_GET_SEL(pl, start, end) \
+	(((pl)->m_sel_start < (pl)->m_sel_end) ? ((start) = (pl)->m_sel_start, \
+	 	(end) = (pl)->m_sel_end) : ((end) = (pl)->m_sel_start, \
+	 	(start) = (pl)->m_sel_end))
+
 /* Create a new play list */
 plist_t *plist_new( int start_pos, int height );
 
@@ -124,6 +130,9 @@ void plist_add_obj( plist_t *pl, char *name );
 
 /* Set song information */
 void plist_set_song_info( plist_t *pl, int index );
+
+/* Reload all songs information */
+void plist_reload_info( plist_t *pl );
 
 #endif
 

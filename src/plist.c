@@ -46,12 +46,6 @@
 #define PLIST_ASSERT(pl) if ((pl) == NULL) return
 #define PLIST_ASSERT_RET(pl, ret) if ((pl) == NULL) return (ret)
 
-/* Get real selection start and end */
-#define PLIST_GET_SEL(pl, start, end) \
-	(((pl)->m_sel_start < (pl)->m_sel_end) ? ((start) = (pl)->m_sel_start, \
-	 	(end) = (pl)->m_sel_end) : ((end) = (pl)->m_sel_start, \
-	 	(start) = (pl)->m_sel_end))
-
 /* Create a new play list */
 plist_t *plist_new( int start_pos, int height )
 {
@@ -930,6 +924,22 @@ void plist_set_song_info( plist_t *pl, int index )
 	wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
 	plist_unlock(pl);
 } /* End of 'plist_set_song_info' function */
+
+/* Reload all songs information */
+void plist_reload_info( plist_t *pl )
+{
+	int i;
+	
+	if (pl == NULL || !pl->m_len)
+		return;
+
+	/* Update info */
+	for ( i = 0; i < pl->m_len; i ++ )
+		song_update_info(pl->m_list[i]);
+
+	/* Redisplay */
+	wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
+} /* End of 'plist_reload_info' function */
 
 /* End of 'plist.c' file */
 
