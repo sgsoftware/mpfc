@@ -1185,6 +1185,20 @@ void player_handle_action( int action )
 	case KBIND_VAR_MANAGER:
 		player_var_manager();
 		break;
+
+	/* Move play list */
+	case KBIND_PLIST_DOWN:
+		plist_move_sel(player_plist, (player_repval == 0) ? 1 : player_repval, 
+				TRUE);
+		break;
+	case KBIND_PLIST_UP:
+		plist_move_sel(player_plist, (player_repval == 0) ? -1 : 
+				-player_repval, TRUE);
+		break;
+	case KBIND_PLIST_MOVE:
+		plist_move_sel(player_plist, (player_repval == 0) ? 
+				1 : player_repval - 1, FALSE);
+		break;
 		
 	/* Digit means command repeation value edit */
 	case KBIND_DIG_1:

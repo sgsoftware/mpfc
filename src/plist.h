@@ -3,10 +3,10 @@
  ******************************************************************/
 
 /* FILE NAME   : plist.h
- * PURPOSE     : SG Konsamp. Interface fort play list manipulation
+ * PURPOSE     : SG MPFC. Interface fort play list manipulation
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 27.07.2003
+ * LAST UPDATE : 5.08.2003
  * NOTE        : Module prefix 'plist'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -101,6 +101,9 @@ bool plist_search( plist_t *pl, char *str, int dir );
 
 /* Move cursor in play list */
 void plist_move( plist_t *pl, int y, bool relative );
+
+/* Move selection in play list */
+void plist_move_sel( plist_t *pl, int y, bool relative );
 
 /* Centrize view */
 void plist_centrize( plist_t *pl );

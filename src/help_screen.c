@@ -5,7 +5,7 @@
 /* FILE NAME   : help_screen.c
  * PURPOSE     : SG MPFC. Help screen functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 4.08.2003
+ * LAST UPDATE : 5.08.2003
  * NOTE        : Module prefix 'help'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -83,6 +83,9 @@ bool help_init( help_screen_t *help, wnd_t *parent, int x, int y,
 	help_add(help, _("d or <PgDn>:\t Move one screen down"));
 	help_add(help, _("G:\t\t Move to play list end"));
 	help_add(help, _("<Number>G:\t Move to line <Number>"));
+	help_add(help, _("J:\t\t Move play list one line down"));
+	help_add(help, _("K:\t\t Move play list one line up"));
+	help_add(help, _("<Number>M:\t Move play list to line <Number>"));
 	help_add(help, _("<Ret>:\t\t Start playing"));
 	help_add(help, _("x:\t\t Play stopped song or start playing from"
 				" begin"));

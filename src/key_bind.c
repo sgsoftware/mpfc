@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Key bindings management functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 3.08.2003
+ * LAST UPDATE : 4.08.2003
  * NOTE        : Module prefix 'kbind'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -104,6 +104,9 @@ void kbind_init( void )
 	kbind_add(KBIND_DIG_7, 1, '7');
 	kbind_add(KBIND_DIG_8, 1, '8');
 	kbind_add(KBIND_DIG_9, 1, '9');
+	kbind_add(KBIND_PLIST_DOWN, 1, 'J');
+	kbind_add(KBIND_PLIST_UP, 1, 'K');
+	kbind_add(KBIND_PLIST_MOVE, 1, 'M');
 
 	/* Read bindings from configuration */
 	kbind_read_from_cfg();
@@ -281,6 +284,12 @@ int kbind_var2act( char *name )
 		return KBIND_LOOP;
 	else if (!strcmp(name, "kbind_var_manager"))
 		return KBIND_VAR_MANAGER;
+	else if (!strcmp(name, "kbind_plist_down"))
+		return KBIND_PLIST_DOWN;
+	else if (!strcmp(name, "kbind_plist_up"))
+		return KBIND_PLIST_UP;
+	else if (!strcmp(name, "kbind_plist_move"))
+		return KBIND_PLIST_MOVE;
 	return -1;
 } /* End of 'kbind_var2act' function */
 
@@ -299,7 +308,6 @@ void kbind_set_var( int action, char *val )
 		if (val[i] == ';' && !(i > 0 && val[i - 1] == '\\'))
 		{
 			str[j] = 0;
-			util_log("Here\n");
 			kbind_parse_cfg_str(action, str);
 			j = 0;
 		}

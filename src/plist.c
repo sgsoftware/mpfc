@@ -3,10 +3,10 @@
  ******************************************************************/
 
 /* FILE NAME   : plist.c
- * PURPOSE     : SG Konsamp. Play list manipulation
+ * PURPOSE     : SG MPFC. Play list manipulation
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 28.07.2003
+ * LAST UPDATE : 5.08.2003
  * NOTE        : Module prefix 'plist'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -693,6 +693,52 @@ void plist_add_obj( plist_t *pl, char *name )
 	/* Update screen */
 	wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
 } /* End of 'plist_add_obj' function */
+
+/* Move selection in play list */
+void plist_move_sel( plist_t *pl, int y, bool relative )
+{
+	int start, end, i, j;
+	
+	if (pl == NULL)
+		return;
+
+	/* Check boundaries */
+	PLIST_GET_SEL(pl, start, end);
+	if (start < 0 || end < 0)
+		return;
+	if (relative)
+		y = start + y;
+	if (y < 0)
+		y = 0;
+	else if (y >= pl->m_len - (end - start))
+		y = pl->m_len - (end - start) - 1;
+
+	/* Move */
+	if (y - start < 0)
+	{
+		for ( i = start, j = 0; i <= end; i ++, j ++ )
+		{
+			song_t *s = pl->m_list[y + j];
+			pl->m_list[y + j] = pl->m_list[i];
+			pl->m_list[i] = s;
+		}
+	}
+	else
+	{
+		for ( i = end, j = end - start; i >= start; i --, j -- )
+		{
+			song_t *s = pl->m_list[y + j];
+			pl->m_list[y + j] = pl->m_list[i];
+			pl->m_list[i] = s;
+		}
+	}
+
+	/* Update selection indecies and current song */
+	pl->m_sel_start += (y - start);
+	pl->m_sel_end += (y - start);
+	if (pl->m_cur_song >= start && pl->m_cur_song <= end)
+		pl->m_cur_song += (y - start);
+} /* End of 'plist_move_sel' function */
 
 /* End of 'plist.c' file */
 
