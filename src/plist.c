@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "types.h"
+#include "colors.h"
 #include "error.h"
 #include "inp.h"
 #include "plist.h"
@@ -559,12 +560,26 @@ void plist_display( plist_t *pl, wnd_t *wnd )
 		
 		/* Set respective print attributes */
 		if (j >= start && j <= end)
+		{
+			if (j == pl->m_cur_song)
+				col_set_color(wnd, COL_EL_PLIST_TITLE_CUR_SEL);
+			else
+				col_set_color(wnd, COL_EL_PLIST_TITLE_SEL);
+		}
+		else
+		{
+			if (j == pl->m_cur_song)
+				col_set_color(wnd, COL_EL_PLIST_TITLE_CUR);
+			else
+				col_set_color(wnd, COL_EL_PLIST_TITLE);
+		}
+	/*	if (j >= start && j <= end)
 			attrib = A_REVERSE;
 		else
 			attrib = A_NORMAL;
 		if (j == pl->m_cur_song)
 			attrib |= A_BOLD;
-		wnd_set_attrib(wnd, attrib);
+		wnd_set_attrib(wnd, attrib);*/
 		
 		/* Print song title or blank line (if we are after end of list) */
 		if (j < pl->m_len)
@@ -591,7 +606,8 @@ void plist_display( plist_t *pl, wnd_t *wnd )
 		else
 			wnd_printf(wnd, "\n");
 	}
-	wnd_set_attrib(wnd, A_NORMAL);
+	col_set_color(wnd, COL_EL_DEFAULT);
+//	wnd_set_attrib(wnd, A_NORMAL);
 
 	/* Display play list time */
 	if (pl->m_len)
@@ -601,11 +617,13 @@ void plist_display( plist_t *pl, wnd_t *wnd )
 		for ( i = start; i <= end; i ++ )
 			s_time += pl->m_list[i]->m_len;
 	}
+	col_set_color(wnd, COL_EL_PLIST_TIME);
 	sprintf(time_text, "%i:%02i:%02i/%i:%02i:%02i",
 			s_time / 3600, (s_time % 3600) / 60, s_time % 60,
 			l_time / 3600, (l_time % 3600) / 60, l_time % 60);
 	wnd_move(wnd, wnd->m_width - strlen(time_text) - 1, wnd_gety(wnd));
 	wnd_printf(wnd, "%s\n", time_text);
+	col_set_color(wnd, COL_EL_DEFAULT);
 } /* End of 'plist_display' function */
 
 /* Lock play list */

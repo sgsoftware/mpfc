@@ -5,7 +5,7 @@
 /* FILE NAME   : help_screen.c
  * PURPOSE     : SG MPFC. Help screen functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 27.07.2003
+ * LAST UPDATE : 4.08.2003
  * NOTE        : Module prefix 'help'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "types.h"
+#include "colors.h"
 #include "error.h"
 #include "help_screen.h"
 #include "window.h"
@@ -127,20 +128,24 @@ void help_display( wnd_t *wnd, dword data )
 	
 	/* Print title */
 	wnd_clear(wnd, FALSE);
+	col_set_color(wnd, COL_EL_HELP_TITLE);
 	strcpy(title, _("MPFC Help Screen"));
 	wnd_move(wnd, (wnd->m_width - strlen(title)) / 2, 0);
-	wnd_set_attrib(wnd, A_BOLD);
 	wnd_printf(wnd, "%s\n\n", title);
-	wnd_set_attrib(wnd, A_NORMAL);
+	col_set_color(wnd, COL_EL_DEFAULT);
 
 	/* Print keys */
+	col_set_color(wnd, COL_EL_HELP_STRINGS);
 	for ( i = h->m_screen_size * h->m_screen; 
 			i < h->m_num_items && i < h->m_screen_size * (h->m_screen + 1);
 	   		i ++ )  
 		wnd_printf(wnd, "%s\n", h->m_items[i]);
+	col_set_color(wnd, COL_EL_DEFAULT);
 
 	wnd_move(wnd, 0, wnd->m_height - 1);
+	col_set_color(wnd, COL_EL_STATUS);
 	wnd_printf(wnd, "Press <Space> to see next screen and <q> to exit\n");
+	col_set_color(wnd, COL_EL_DEFAULT);
 	
 	wnd_move(wnd, wnd->m_width - 1, wnd->m_height - 1);
 } /* End of 'help_display' function */

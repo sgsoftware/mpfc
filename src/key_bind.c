@@ -20,7 +20,7 @@
  * GNU General Public License for more details.
  *  
  * You should have received a copy of the GNU General Public 
-  License along with this program; if not, write to the Free 
+ * License along with this program; if not, write to the Free 
  * Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, 
  * MA 02111-1307, USA.
  */
@@ -68,8 +68,8 @@ void kbind_init( void )
 	kbind_add(KBIND_PLAY, 1, 'x');
 	kbind_add(KBIND_PAUSE, 1, 'c');
 	kbind_add(KBIND_STOP, 1, 'v');
-	kbind_add(KBIND_NEXT, 1, 'z');
-	kbind_add(KBIND_PREV, 1, 'b');
+	kbind_add(KBIND_NEXT, 1, 'b');
+	kbind_add(KBIND_PREV, 1, 'z');
 	kbind_add(KBIND_TIME_FW, 2, 'l', 't');
 	kbind_add(KBIND_TIME_BW, 2, 'h', 't');
 	kbind_add(KBIND_TIME_MOVE, 2, 'g', 't');

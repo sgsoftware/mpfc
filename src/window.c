@@ -5,7 +5,7 @@
 /* FILE NAME   : window.c
  * PURPOSE     : SG Konsamp. Window functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 28.07.2003
+ * LAST UPDATE : 3.08.2003
  * NOTE        : Module prefix 'wnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -51,6 +51,9 @@ pthread_t wnd_kbd_tid;
 
 /* Keyboard thread termination flag */
 bool wnd_end_kbd_thread = FALSE;
+
+/* Number of initialized color pairs */
+int wnd_num_pairs = 0;
 
 /* Create a new root window */
 wnd_t *wnd_new_root( void )
@@ -132,6 +135,7 @@ bool wnd_init( wnd_t *wnd, wnd_t *parent, int x, int y, int w, int h )
 		cbreak();
 		noecho();
 		keypad(wnd->m_wnd, TRUE);
+		start_color();
 		w = COLS;
 		h = LINES;
 	}
@@ -612,6 +616,30 @@ void wnd_redisplay( wnd_t *wnd )
 /*	touchwin(wnd->m_wnd);
 	refresh();*/
 } /* End of 'wnd_redisplay' function */
+
+/* Initialize color pair */
+int wnd_init_pair( int fg, int bg )
+{
+	int i;
+	
+	/* Search for existing color pair respecting to this color */
+	for ( i = 1; i <= wnd_num_pairs; i ++ )
+	{
+		short f, b;
+
+		pair_content(i, &f, &b);
+		if (f == fg && b == bg)
+			return i;
+	}
+
+	/* Pair not found - create new one */
+	if (wnd_num_pairs < COLOR_PAIRS - 1)
+	{
+		init_pair(++wnd_num_pairs, fg, bg);
+		return wnd_num_pairs;
+	}
+	return 0;
+} /* End of 'wnd_init_pair' function */
 
 /* End of 'window.c' file */
 

@@ -5,7 +5,7 @@
 /* FILE NAME   : editbox.c
  * PURPOSE     : SG Konsamp. Edit box functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 24.04.2003
+ * LAST UPDATE : 4.08.2003
  * NOTE        : Module prefix 'ebox'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "types.h"
+#include "colors.h"
 #include "dlgbox.h"
 #include "editbox.h"
 #include "error.h"
@@ -96,10 +97,13 @@ void ebox_display( wnd_t *wnd, dword data )
 
 	/* Print label */
 	wnd_move(wnd, 0, 0);
+	col_set_color(wnd, COL_EL_DLG_ITEM_TITLE);
 	wnd_printf(wnd, "%s", box->m_label);
 
 	/* Print edit box text */
+	col_set_color(wnd, COL_EL_DLG_ITEM_CONTENT);
 	wnd_printf(wnd, "%s\n", &box->m_text[box->m_scrolled]);
+	col_set_color(wnd, COL_EL_DEFAULT);
 
 	/* Move cursor to respective place */
 	wnd_move(wnd, strlen(box->m_label) + box->m_cursor - box->m_scrolled, 0);

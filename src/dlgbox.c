@@ -5,7 +5,7 @@
 /* FILE NAME   : dlgbox.c
  * PURPOSE     : SG Konsamp. Dialog box functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 23.04.2003
+ * LAST UPDATE : 4.08.2003
  * NOTE        : Module prefix 'dlg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -26,6 +26,7 @@
 
 #include <stdlib.h>
 #include "types.h"
+#include "colors.h"
 #include "dlgbox.h"
 #include "error.h"
 #include "util.h"
@@ -98,7 +99,10 @@ void dlg_display( wnd_t *wnd, dword data )
 	wnd_print_char(wnd, ACS_ULCORNER);
 	for ( i = 1; i < (wnd->m_width - 2 - len) / 2 - 1; i ++ )
 		wnd_print_char(wnd, ACS_HLINE);
+	col_set_color(wnd, COL_EL_DLG_TITLE);
 	wnd_printf(wnd, " %s ", dlg->m_caption);
+	col_set_color(wnd, COL_EL_DEFAULT);
+	wnd_set_attrib(wnd, A_BOLD);
 	for ( i = wnd_getx(wnd); i < wnd->m_width - 2; i ++ )
 		wnd_print_char(wnd, ACS_HLINE);
 	wnd_print_char(wnd, ACS_URCORNER);

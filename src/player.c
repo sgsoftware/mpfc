@@ -3,9 +3,9 @@
  ******************************************************************/
 
 /* FILE NAME   : player.c
- * PURPOSE     : SG Konsamp. Main player functions implementation.
+ * PURPOSE     : SG MPFC. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 1.08.2003
+ * LAST UPDATE : 4.08.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -31,6 +31,7 @@
 #include "types.h"
 #include "cfg.h"
 #include "choice_ctrl.h"
+#include "colors.h"
 #include "dlgbox.h"
 #include "editbox.h"
 #include "eqwnd.h"
@@ -117,6 +118,9 @@ bool player_init( int argc, char *argv[] )
 
 	/* Initialize key bindings */
 	kbind_init();
+
+	/* Initialize colors */
+	col_init();
 	
 	/* Initialize plugin manager */
 	pmng_init();
@@ -275,8 +279,12 @@ void player_display( wnd_t *wnd, dword data )
 	/* Display head */
 	wnd_move(wnd, 0, 0);
 	if (player_plist->m_cur_song == -1)
+	{
+		col_set_color(wnd, COL_EL_ABOUT);
 		wnd_printf(wnd, "SG Software Media Player For Console\n"
-				"version 0.2\n");
+				"version 0.3\n");
+		col_set_color(wnd, COL_EL_DEFAULT);
+	}
 	else
 	{
 		char title[80];
@@ -289,12 +297,17 @@ void player_display( wnd_t *wnd, dword data )
 		}
 		else
 			strcpy(title, s->m_title);
-		wnd_printf(wnd, "%s\n%i:%02i/%i:%02i\n", title, 
+		col_set_color(wnd, COL_EL_CUR_TITLE);
+		wnd_printf(wnd, "%s\n", title);
+		col_set_color(wnd, COL_EL_CUR_TIME);
+		wnd_printf(wnd, "%i:%02i/%i:%02i\n", 
 				player_cur_time / 60, player_cur_time % 60,
 				s->m_len / 60, s->m_len % 60);
+		col_set_color(wnd, COL_EL_DEFAULT);
 	}
 
 	/* Display play modes */
+	col_set_color(wnd, COL_EL_PLAY_MODES);
 	if (cfg_get_var_int(cfg_list, "shuffle_play"))
 	{
 		wnd_move(wnd, wnd->m_width - 13, 1);
@@ -305,6 +318,7 @@ void player_display( wnd_t *wnd, dword data )
 		wnd_move(wnd, wnd->m_width - 5, 1);
 		wnd_printf(wnd, "Loop");
 	}
+	col_set_color(wnd, COL_EL_DEFAULT);
 
 	/* Display different slidebars */
 	player_display_slider(wnd, 0, 2, wnd->m_width - 24, 
@@ -316,8 +330,10 @@ void player_display( wnd_t *wnd, dword data )
 	plist_display(player_plist, wnd);
 
 	/* Print message */
+	col_set_color(wnd, COL_EL_STATUS);
 	wnd_move(wnd, 0, wnd->m_height - 2);
 	wnd_printf(wnd, "%s\n", player_msg);
+	col_set_color(wnd, COL_EL_DEFAULT);
 
 	/* Hide cursor */
 	wnd_move(wnd, wnd->m_width - 1, wnd->m_height - 1);
@@ -850,6 +866,7 @@ void player_display_slider( wnd_t *wnd, int x, int y, int width,
 {
 	int i, slider_pos;
 	
+	col_set_color(wnd, COL_EL_SLIDER);
 	wnd_move(wnd, x, y);
 	slider_pos = (range) ? (pos * width / range) : 0;
 	for ( i = 0; i <= width; i ++ )
@@ -859,6 +876,7 @@ void player_display_slider( wnd_t *wnd, int x, int y, int width,
 		else 
 			wnd_printf(wnd, "=");
 	}
+	col_set_color(wnd, COL_EL_DEFAULT);
 } /* End of 'player_display_slider' function */
 
 /* Process equalizer dialog */

@@ -158,6 +158,9 @@ void wnd_clear( wnd_t *wnd, bool start_from_cursor );
 /* Totally redisplay window */
 void wnd_redisplay( wnd_t *wnd );
 
+/* Initialize color pair */
+int wnd_init_pair( int fg, int bg );
+
 #endif
 
 /* End of 'window.h' file */
