@@ -357,7 +357,6 @@ void *wnd_kbd_thread( void *arg )
 		}
 		else
 		{
-			util_log("got key %d\n", key);
 			buf[buf_ptr ++] = (char)key;
 		}
 	}
