@@ -28,4 +28,4 @@ AC_OUTPUT(Makefile src/Makefile libmpfc/Makefile \
 			plugins/input/radio/Makefile plugins/output/disk_writer/Makefile \
 			plugins/input/ogg/Makefile plugins/input/timidi/Makefile \
 			plugins/charset/Makefile plugins/charset/ru/Makefile \
-			doc/Makefile)
+			plugins/input/recorder/Makefile doc/Makefile)
