@@ -68,6 +68,7 @@ bool_t eqwnd_init( eq_wnd_t *eq, wnd_t *parent, int x, int y, int w, int h )
 	/* Register handlers */
 	wnd_register_handler(wnd, WND_MSG_DISPLAY, eqwnd_display);
 	wnd_register_handler(wnd, WND_MSG_KEYDOWN, eqwnd_handle_key);
+	wnd_register_handler(wnd, WND_MSG_MOUSE_LEFT_CLICK, eqwnd_handle_mouse);
 
 	/* Set fields */
 	eq->m_pos = 0;
@@ -88,7 +89,7 @@ void eqwnd_display( wnd_t *wnd, dword data )
 	eq_wnd_t *eq = (eq_wnd_t *)wnd;
 	int i;
 	int x;
-	char *str[11] = {"PREAMP", "60HZ", "170HZ", "310HZ", "600HZ",
+	char *str[EQWND_NUM_BANDS] = {"PREAMP", "60HZ", "170HZ", "310HZ", "600HZ",
 						"1KHZ", "3KHZ", "6KHZ", "12KHZ", "14KHZ", "16KHZ"};
 	
 	/* Print title */
@@ -100,7 +101,7 @@ void eqwnd_display( wnd_t *wnd, dword data )
 	wnd_set_attrib(wnd, A_NORMAL);
 
 	/* Display bands sliders */
-	for ( i = 0, x = 3; i < 11; i ++ )
+	for ( i = 0, x = 3; i < EQWND_NUM_BANDS; i ++ )
 	{
 		char name[20];
 		float val;
@@ -155,12 +156,12 @@ void eqwnd_handle_key( wnd_t *wnd, dword data )
 		break;
 	case 'j':
 	case KEY_DOWN:
-		eqwnd_set_var(eq->m_pos, -2.);
+		eqwnd_set_var(eq->m_pos, -2., TRUE);
 		player_eq_changed = TRUE;
 		break;
 	case 'k':
 	case KEY_UP:
-		eqwnd_set_var(eq->m_pos, 2.);
+		eqwnd_set_var(eq->m_pos, 2., TRUE);
 		player_eq_changed = TRUE;
 		break;
 	case 'p':
@@ -177,7 +178,7 @@ int eqwnd_display_slider( wnd_t *wnd, int x, int start_y, int end_y,
 	int h;
 	
 	h = end_y - start_y;
-	pos = ((-val) + 20.) * h / 40.;
+	pos = eqwnd_val2pos(val, h);
 	for ( i = 0; i <= h; i ++ )
 	{
 		wnd_move(wnd, x, i + start_y);
@@ -201,7 +202,7 @@ int eqwnd_display_slider( wnd_t *wnd, int x, int start_y, int end_y,
 } /* End of 'eqwnd_display_slider' function */
 
 /* Set equalizer variable value */
-void eqwnd_set_var( int pos, float val )
+void eqwnd_set_var( int pos, float val, bool_t rel )
 {
 	char str[20];
 	float cur_val;
@@ -210,8 +211,13 @@ void eqwnd_set_var( int pos, float val )
 	eqwnd_get_var_name(pos, str);
 
 	/* Update value */
-	cur_val = cfg_get_var_float(cfg_list, str);
-	cur_val += val;
+	if (rel)
+	{
+		cur_val = cfg_get_var_float(cfg_list, str);
+		cur_val += val;
+	}
+	else
+		cur_val = val;
 	if (cur_val < -20.)
 		cur_val = -20.;
 	else if (cur_val > 20.)
@@ -263,7 +269,7 @@ void eqwnd_load_eqf( char *filename )
 {
 	FILE *fd;
 	char header[31];
-	byte bands[11];
+	byte bands[EQWND_NUM_BANDS];
 	int i;
 
 	/* Open file */
@@ -280,7 +286,7 @@ void eqwnd_load_eqf( char *filename )
 			fclose(fd);
 			return;
 		}
-		if (fread(bands, 1, 11, fd) != 11)
+		if (fread(bands, 1, EQWND_NUM_BANDS, fd) != EQWND_NUM_BANDS)
 		{
 			fclose(fd);
 			return;
@@ -303,6 +309,50 @@ void eqwnd_load_eqf( char *filename )
 	/* Report about changing */
 	player_eq_changed = TRUE;
 } /* End of 'eqwnd_load_eqf' function */
+
+/* Handle mouse left button click */
+void eqwnd_handle_mouse( wnd_t *wnd, dword data )
+{
+	int mx = WND_MOUSE_X(data), my = WND_MOUSE_Y(data), i;
+	eq_wnd_t *eq = (eq_wnd_t *)wnd;
+
+	/* Check if this point is inside any of the band sliders */
+	for ( i = 0; i < EQWND_NUM_BANDS; i ++ )
+	{
+		int x, y, w, h;
+
+		eqwnd_get_slider_pos(i, &x, &y, &w, &h);
+		if (mx >= x && my >= y && mx <= x + w && my <= y + h)
+		{
+			eq->m_pos = i;
+			eqwnd_set_var(i, eqwnd_pos2val(my - y, h), FALSE);
+			break;
+		}
+	}
+} /* End of 'eqwnd_handle_mouse' function */
+
+/* Get equalizer band slider position */
+void eqwnd_get_slider_pos( int band, int *x, int *y, int *w, int *h )
+{
+	*x = 2 + band * 6;
+	if (band > 0)
+		(*x) += 10;
+	*y = 2;
+	*w = 6;
+	*h = 20;
+} /* End of 'eqwnd_get_slider_pos' function */
+
+/* Convert band value to position */
+int eqwnd_val2pos( float val, int height )
+{
+	return ((-val) + 20.) * height / 40.;
+} /* End of 'eqwnd_val2pos' function */
+
+/* Convert position to band value */
+float eqwnd_pos2val( int pos, int height )
+{
+	return 20. - (pos * 40. / height);
+} /* End of 'eqwnd_pos2val' function */
 
 /* End of 'eqwnd.c' file */
 

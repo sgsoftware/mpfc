@@ -5,7 +5,7 @@
 /* FILE NAME   : eqwnd.h
  * PURPOSE     : SG MPFC. Interface for equalizer window functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 26.07.2003
+ * LAST UPDATE : 21.12.2003
  * NOTE        : Module prefix 'eqwnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -29,6 +29,9 @@
 
 #include "types.h"
 #include "window.h"
+
+/* Number of bands (including preamp) */
+#define EQWND_NUM_BANDS 11
 
 /* Equalizer window type */
 typedef struct tag_eq_wnd_t
@@ -55,6 +58,9 @@ void eqwnd_display( wnd_t *wnd, dword data );
 /* Handle key message */
 void eqwnd_handle_key( wnd_t *wnd, dword data );
 
+/* Handle mouse left button click */
+void eqwnd_handle_mouse( wnd_t *wnd, dword data );
+
 /* Display slider */
 int eqwnd_display_slider( wnd_t *wnd, int x, int start_y, int end_y,
 							bool_t hl, float val, char *str );
@@ -63,7 +69,7 @@ int eqwnd_display_slider( wnd_t *wnd, int x, int start_y, int end_y,
 void eqwnd_get_var_name( int pos, char *name );
 
 /* Set equalizer variable value */
-void eqwnd_set_var( int pos, float val );
+void eqwnd_set_var( int pos, float val, bool_t rel );
 
 /* Save equalizer parameters */
 void eqwnd_save_params( void );
@@ -73,6 +79,15 @@ void eqwnd_load_eqf_dlg( void );
 
 /* Load a Winamp EQF file */
 void eqwnd_load_eqf( char *filename );
+
+/* Get equalizer band slider position */
+void eqwnd_get_slider_pos( int band, int *x, int *y, int *w, int *h );
+
+/* Convert band value to position */
+int eqwnd_val2pos( float value, int height );
+
+/* Convert position to band value */
+float eqwnd_pos2val( int pos, int height );
 
 #endif
 
