@@ -31,13 +31,18 @@ static int alsa_size = 2;
 static int alsa_rate = 44100;
 static int alsa_channels = 2;
 
+static char *alsa_default_dev = "plughw:0,0";
+
 void alsa_end ();
+char *alsa_get_dev();
 
 bool_t alsa_start ()
 {
   int dir = 1;
+  char *dev;
 
-  if (snd_pcm_open (&handle, "plughw:0,0", SND_PCM_STREAM_PLAYBACK, 0) < 0)
+  dev = alsa_get_dev();
+  if (snd_pcm_open (&handle, dev, SND_PCM_STREAM_PLAYBACK, 0) < 0)
     return FALSE;
   hwparams = malloc (snd_pcm_hw_params_sizeof ());
   memset (hwparams, 0, snd_pcm_hw_params_sizeof());
@@ -167,6 +172,15 @@ void alsa_get_volume (int *left, int *right)
   snd_mixer_selem_get_playback_volume (elem, SND_MIXER_SCHN_FRONT_LEFT, (long*)left);
   snd_mixer_selem_get_playback_volume (elem, SND_MIXER_SCHN_FRONT_RIGHT, (long*)right);
   snd_mixer_close (mix);
+}
+
+char *alsa_get_dev( void )
+{
+	char *dev;
+	dev = cfg_get_var(pmng_get_cfg(alsa_pmng), "alsa-device");
+	if (dev == NULL)
+		return alsa_default_dev;
+	return dev;
 }
 
 void outp_get_func_list (outp_func_list_t *fl)
