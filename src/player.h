@@ -5,7 +5,7 @@
 /* FILE NAME   : player.h
  * PURPOSE     : SG MPFC. Interface for main player functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 13.08.2003
+ * LAST UPDATE : 16.08.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -102,6 +102,9 @@ void player_seek( int sec, bool rel );
 /* Set volume */
 void player_set_vol( int vol, bool rel );
 
+/* Set balance */
+void player_set_bal( int bal, bool rel );
+
 /* Play song */
 void player_play( void );
 
@@ -183,6 +186,9 @@ void player_save_cfg_vars( cfg_list_t *list, char *vars );
 
 /* Save configuration list */
 void player_save_cfg_list( cfg_list_t *list, char *fname );
+
+/* Update volume */
+void player_update_vol( void );
 
 #endif
 

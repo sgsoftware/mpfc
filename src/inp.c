@@ -128,6 +128,8 @@ void inp_get_formats( in_plugin_t *p, char *buf )
 {
 	if (p != NULL && (p->m_fl.m_get_formats != NULL))
 		p->m_fl.m_get_formats(buf);
+	else
+		strcpy(buf, "");
 } /* End of 'inp_get_formats' function */
 	
 /* Get stream function */
@@ -151,6 +153,12 @@ void inp_get_audio_params( in_plugin_t *p, int *channels,
 {
 	if (p != NULL && (p->m_fl.m_get_audio_params != NULL))
 		p->m_fl.m_get_audio_params(channels, frequency, fmt);
+	else 
+	{
+		*channels = 0;
+		*frequency = 0;
+		*fmt = 0;
+	}
 } /* End of 'inp_get_audio_params' function */
 
 /* Set equalizer parameters */

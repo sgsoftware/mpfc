@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. OSS output plugin functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 1.08.2003
+ * LAST UPDATE : 16.08.2003
  * NOTE        : Module prefix 'oss'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -110,7 +110,7 @@ void oss_flush( void )
 } /* End of 'oss_flush' function */
 
 /* Set volume */
-void oss_set_volume( int vol )
+void oss_set_volume( int left, int right )
 {
 	int fd;
 	word v;
@@ -118,23 +118,24 @@ void oss_set_volume( int vol )
 	fd = open("/dev/mixer", O_WRONLY);
 	if (fd < 0)
 		return;
-	v = vol | (vol << 8);
+	v = right | (left << 8);
 	ioctl(fd, SOUND_MIXER_WRITE_VOLUME, &v);
 	close(fd);
 } /* End of 'oss_set_volume' function */
 
 /* Get volume */
-int oss_get_volume( void )
+void oss_get_volume( int *left, int *right )
 {
 	int fd;
 	word v;
 
 	fd = open("/dev/mixer", O_RDONLY);
 	if (fd < 0)
-		return 0;
+		return;
 	ioctl(fd, SOUND_MIXER_READ_VOLUME, &v);
 	close(fd);
-	return v & 0xFF;
+	*left = ((v >> 8) & 0xFF);
+	*right = (v & 0xFF);
 } /* End of 'oss_get_volume' function */
 
 /* Get function list */

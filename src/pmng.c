@@ -74,6 +74,8 @@ bool pmng_init( void )
 		char name[256];
 		
 		fgets(name, 256, fd);
+		if (feof(fd))
+			break;
 		if (name[strlen(name) - 1] == '\n')
 			name[strlen(name) - 1] = 0;
 		ip = inp_init(name);
@@ -97,6 +99,8 @@ bool pmng_init( void )
 		char name[256];
 		
 		fgets(name, 256, fd);
+		if (feof(fd))
+			break;
 		if (name[strlen(name) - 1] == '\n')
 			name[strlen(name) - 1] = 0;
 		ep = ep_init(name);
@@ -120,6 +124,8 @@ bool pmng_init( void )
 		char name[256];
 		
 		fgets(name, 256, fd);
+		if (feof(fd))
+			break;
 
 		if (name[strlen(name) - 1] == '\n')
 			name[strlen(name) - 1] = 0;
@@ -200,9 +206,7 @@ in_plugin_t *pmng_search_format( char *format )
 			{
 				ext[k] = 0;
 				if (!strcasecmp(ext, format))
-				{
 					return pmng_inp[i];
-				}
 				k = 0;
 			}
 			if (!formats[j])

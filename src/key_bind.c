@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Key bindings management functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 13.08.2003
+ * LAST UPDATE : 16.08.2003
  * NOTE        : Module prefix 'kbind'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -70,7 +70,9 @@ void kbind_init( void )
 	kbind_add(KBIND_STOP, 1, 'v');
 	kbind_add(KBIND_NEXT, 1, 'b');
 	kbind_add(KBIND_PREV, 1, 'z');
+	kbind_add(KBIND_TIME_FW, 1, '>');
 	kbind_add(KBIND_TIME_FW, 2, 'l', 't');
+	kbind_add(KBIND_TIME_BW, 1, '<');
 	kbind_add(KBIND_TIME_BW, 2, 'h', 't');
 	kbind_add(KBIND_TIME_MOVE, 2, 'g', 't');
 	kbind_add(KBIND_VOL_FW, 1, '+');
@@ -78,6 +80,11 @@ void kbind_init( void )
 	kbind_add(KBIND_VOL_BW, 1, '-');
 	kbind_add(KBIND_VOL_BW, 2, 'h', 'v');
 	kbind_add(KBIND_VOL_MOVE, 2, 'g', 'v');
+	kbind_add(KBIND_BAL_FW, 1, ']');
+	kbind_add(KBIND_BAL_FW, 2, 'l', 'b');
+	kbind_add(KBIND_BAL_BW, 1, '[');
+	kbind_add(KBIND_BAL_BW, 2, 'h', 'b');
+	kbind_add(KBIND_BAL_MOVE, 2, 'g', 'b');
 	kbind_add(KBIND_INFO, 1, 'i');
 	kbind_add(KBIND_ADD, 1, 'a');
 	kbind_add(KBIND_REM, 1, 'r');

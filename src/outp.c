@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Output plugin management functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 27.07.2003
+ * LAST UPDATE : 16.08.2003
  * NOTE        : Module prefix 'outp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -137,18 +137,19 @@ void outp_flush( out_plugin_t *p )
 } /* End of 'outp_flush' function */
 
 /* Set volume */
-void outp_set_volume( out_plugin_t *p, int vol )
+void outp_set_volume( out_plugin_t *p, int left, int right )
 {
 	if (p != NULL && (p->m_fl.m_set_volume != NULL))
-		p->m_fl.m_set_volume(vol);
+		p->m_fl.m_set_volume(left, right);
 } /* End of 'outp_set_volume' function */
 
 /* Get volume */
-int outp_get_volume( out_plugin_t *p )
+void outp_get_volume( out_plugin_t *p, int *left, int *right )
 {
 	if (p != NULL && (p->m_fl.m_get_volume != NULL))
-		return p->m_fl.m_get_volume();
-	return 0;
+		p->m_fl.m_get_volume(left, right);
+	else
+		*left = *right = 0;
 } /* End of 'outp_get_volume' function */
 
 /* End of 'outp.c' file */

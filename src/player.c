@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG MPFC. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 13.08.2003
+ * LAST UPDATE : 16.08.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -86,8 +86,9 @@ int player_cur_time = 0;
 /* Player status */
 int player_status = PLAYER_STATUS_STOPPED;
 
-/* Current volume */
+/* Current volume and balance */
 int player_volume = 0;
+int player_balance = 0;
 
 /* Has equalizer value changed */
 bool player_eq_changed = FALSE;
@@ -111,7 +112,7 @@ bool player_store_undo = TRUE;
 /* Initialize player */
 bool player_init( int argc, char *argv[] )
 {
-	int i;
+	int i, l, r;
 
 	/* Initialize configuration */
 	cfg_init();
@@ -170,7 +171,17 @@ bool player_init( int argc, char *argv[] )
 	pthread_create(&player_tid, NULL, player_thread, NULL);
 
 	/* Get volume */
-	player_volume = outp_get_volume(pmng_cur_out);
+	outp_get_volume(pmng_cur_out, &l, &r);
+	if (l > r)
+	{
+		player_volume = l;
+		player_balance = r * 50 / l;
+	}
+	else
+	{
+		player_volume = r;
+		player_balance = 100 - l * 50 / r;
+	}
 
 	/* Initialize equalizer */
 	player_eq_changed = FALSE;
@@ -353,6 +364,8 @@ void player_display( wnd_t *wnd, dword data )
 	/* Display different slidebars */
 	player_display_slider(wnd, 0, 2, wnd->m_width - 24, 
 			player_cur_time, (s == NULL) ? 0 : s->m_len);
+	player_display_slider(wnd, wnd->m_width - 22, 1, 20, 
+			player_balance, 100.);
 	player_display_slider(wnd, wnd->m_width - 22, 2, 20, 
 			player_volume, 100.);
 	
@@ -927,7 +940,7 @@ void player_set_vol( int vol, bool rel )
 		player_volume = 0;
 	else if (player_volume > 100)
 		player_volume = 100;
-	outp_set_volume(pmng_cur_out, player_volume);
+	player_update_vol();
 } /* End of 'player_set_vol' function */
 
 /* Display slider */
@@ -1131,6 +1144,14 @@ void player_handle_action( int action )
 		break;
 	case KBIND_VOL_BW:
 		player_set_vol((player_repval == 0) ? -5 : -5 * player_repval, TRUE);
+		break;
+
+	/* Increase/decrease balance */
+	case KBIND_BAL_FW:
+		player_set_bal((player_repval == 0) ? 5 : 5 * player_repval, TRUE);
+		break;
+	case KBIND_BAL_BW:
+		player_set_bal((player_repval == 0) ? -5 : -5 * player_repval, TRUE);
 		break;
 
 	/* Centrize view */
@@ -1519,6 +1540,35 @@ void player_save_cfg_list( cfg_list_t *list, char *fname )
 	/* Close file */
 	fclose(fd);
 } /* End of 'player_save_cfg_list' function */
+
+/* Set balance */
+void player_set_bal( int bal, bool rel )
+{
+	player_balance = (rel) ? player_balance + bal : bal;
+	if (player_balance < 0)
+		player_balance = 0;
+	else if (player_balance > 100)
+		player_balance = 100;
+	player_update_vol();
+} /* End of 'player_set_bal' function */
+
+/* Update volume */
+void player_update_vol( void )
+{
+	int l, r;
+
+	if (player_balance < 50)
+	{
+		l = player_volume;
+		r = player_volume * player_balance / 50;
+	}
+	else
+	{
+		r = player_volume;
+		l = player_volume * (100 - player_balance) / 50;
+	}
+	outp_set_volume(pmng_cur_out, l, r);
+} /* End of 'player_update_vol' function */
 
 /* End of 'player.c' file */
 
