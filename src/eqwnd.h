@@ -89,6 +89,9 @@ int eqwnd_val2pos( float value, int height );
 /* Convert position to band value */
 float eqwnd_pos2val( int pos, int height );
 
+/* Show help screen */
+void eqwnd_help( eq_wnd_t *eq );
+
 #endif
 
 /* End of 'eqwnd.h' file */

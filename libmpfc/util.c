@@ -245,5 +245,19 @@ void util_replace_char( char *str, char from, char to )
 	}
 } /* End of 'util_replace_char' function */
 
+/* Get file directory name */
+void util_get_dir_name( char *dir, char *filename )
+{
+	char *s = strrchr(filename, '/');
+
+	if (s == NULL)
+		strcpy(dir, "");
+	else
+	{
+		strncpy(dir, filename, s - filename);
+		dir[s - filename] = 0;
+	}
+} /* End of 'util_get_dir_name' function */
+
 /* End of 'util.c' file */
 

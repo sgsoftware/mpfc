@@ -30,6 +30,7 @@
 #include "error.h"
 #include "eqwnd.h"
 #include "file_input.h"
+#include "help_screen.h"
 #include "player.h"
 #include "window.h"
 #include "util.h"
@@ -165,6 +166,9 @@ void eqwnd_handle_key( wnd_t *wnd, dword data )
 		break;
 	case 'p':
 		eqwnd_load_eqf_dlg();
+		break;
+	case '?':
+		eqwnd_help(eq);
 		break;
 	}
 } /* End of 'eqwnd_handle_key' function */
@@ -352,6 +356,16 @@ float eqwnd_pos2val( int pos, int height )
 {
 	return 20. - (pos * 40. / height);
 } /* End of 'eqwnd_pos2val' function */
+
+/* Show help screen */
+void eqwnd_help( eq_wnd_t *eq )
+{
+	help_screen_t *h;
+
+	h = help_new(WND_OBJ(eq), HELP_EQWND, 0, 0, WND_WIDTH(eq), WND_HEIGHT(eq));
+	wnd_run(h);
+	wnd_destroy(h);
+} /* End of 'eqwnd_help' function */
 
 /* End of 'eqwnd.c' file */
 

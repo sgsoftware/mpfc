@@ -48,13 +48,24 @@ typedef struct tag_help_screen_t
 	/* Items */
 	char **m_items;
 	int m_num_items;
+
+	/* Title */
+	char *m_title;
+
+	/* Help screen type */
+	int m_type;
 } help_screen_t;
 
+/* Help screen types */
+#define HELP_PLAYER 0
+#define HELP_BROWSER 1
+#define HELP_EQWND 2
+
 /* Create new help screen */
-help_screen_t *help_new( wnd_t *parent, int x, int y, int w, int h );
+help_screen_t *help_new( wnd_t *parent, int type, int x, int y, int w, int h );
 
 /* Initialize help screen */
-bool_t help_init( help_screen_t *help, wnd_t *parent, int x, int y, 
+bool_t help_init( help_screen_t *help, int type, wnd_t *parent, int x, int y, 
 	   int w, int h );
 
 /* Destroy help screen */
@@ -68,6 +79,15 @@ void help_handle_key( wnd_t *wnd, dword data );
 
 /* Add item */
 void help_add( help_screen_t *h, char *name );
+
+/* Initialize help screen in player mode */
+void help_init_player( help_screen_t *h );
+
+/* Initialize help screen in browser mode */
+void help_init_browser( help_screen_t *h );
+
+/* Initialize help screen in equalizer window mode */
+void help_init_eqwnd( help_screen_t *h );
 
 #endif
 

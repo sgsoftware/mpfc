@@ -1329,7 +1329,8 @@ void player_help( void )
 {
 	help_screen_t *h;
 
-	h = help_new(wnd_root, 0, 0, wnd_root->m_width, wnd_root->m_height);
+	h = help_new(wnd_root, HELP_PLAYER, 0, 0, wnd_root->m_width, 
+			wnd_root->m_height);
 	wnd_run(h);
 	wnd_destroy(h);
 } /* End of 'player_help' function */

@@ -146,6 +146,9 @@ void fb_print_file( browser_t *fb, struct browser_list_item *item );
 /* Print info column */
 void fb_print_info_col( browser_t *fb, int id, struct browser_list_item *item );
 
+/* Show help screen */
+void fb_help( browser_t *fb );
+
 #endif
 
 /* End of 'browser.h' file */

@@ -1,11 +1,11 @@
 \input texinfo @c -*-texinfo-*-
 @c %**start of header
 @setfilename mpfc.info
-@settitle MPFC 1.0
+@settitle MPFC 1.2
 @c %**end of header
 
 @copying
-This manual describes the SG Music Player For Linux Console, version 1.0.
+This manual describes the SG Music Player For Linux Console, version 1.2.
 
 Copyright @copyright{} 2003 SG Software.
 @end copying
@@ -27,9 +27,9 @@ Copyright @copyright{} 2003 SG Software.
 
 @ifinfo
 @node Top, Introduction, (dir), (dir)
-@top MPFC 1.0
+@top MPFC 1.2
 
-This manual documents version 1.0 of SG MPFC, media player for Linux console.
+This manual documents version 1.2 of SG MPFC, media player for Linux console.
 
 Copyright @copyright{} 2003 SG Software
 
@@ -301,8 +301,21 @@ list. Launch it using @kbd{B} command. To select/deselect file press
 @kbd{@key{INSERT}} key. Also you may select or deselect a group of files
 matching a specified pattern. To do this press @kbd{+} (for select) or
 @kbd{-} (for deselect) key and enter the pattern. After you have selected
-the files you can add them to play list by pressing @kbd{a} key. To exit
-press @kbd{q}.
+the files you can add them to play list by pressing @kbd{a} key. You may press
+@kbd{h} to go to your home directory or @kbd{@key{BACKSPACE}} to go to the
+parent directory. 
+
+File browser always is in one of two modes: normal or song info. In normal 
+mode file names are displayed. In song info mode some parts of song info
+are displayed. To control what parts exactly and screen space reserved for
+them you can use special variables: ``fb-fname-len'' (for file name),
+``fb-title-len'' (for song name), ``fb-artist-name'' (for artist), 
+``fb-album-len'', ``fb-year-len'', ``fb-genre-len'', ``fb-comments-len'',
+``fb-track-len'' and ``fb-time-len'' (for song length). Note that these fields
+appear in the latter order and you can't change it. To switch between normal
+and song info modes press @kbd{i}.
+
+To exit browser press @kbd{q}.
 
 @node Save, Sort, File browser, Playlist management
 @subsection Save

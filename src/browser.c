@@ -34,6 +34,7 @@
 #include "colors.h"
 #include "editbox.h"
 #include "error.h"
+#include "help_screen.h"
 #include "player.h"
 #include "plist.h"
 #include "song_info.h"
@@ -251,6 +252,11 @@ void fb_handle_key( wnd_t *wnd, dword data )
 	case '+':
 	case '-':
 		fb_select_pattern(fb, key == '+');
+		break;
+
+	/* Show help */
+	case '?':
+		fb_help(fb);
 		break;
 	}
 } /* End of 'fb_handle_key' function */
@@ -751,6 +757,17 @@ void fb_print_info_col( browser_t *fb, int id,
 	if (next_size > 0)
 		wnd_print_char(wnd, ACS_VLINE);
 } /* End of 'fb_print_info_col' function */
+
+/* Show help screen */
+void fb_help( browser_t *fb )
+{
+	help_screen_t *h;
+
+	h = help_new(WND_OBJ(fb), HELP_BROWSER, 0, 0, WND_WIDTH(fb), 
+			WND_HEIGHT(fb));
+	wnd_run(h);
+	wnd_destroy(h);
+} /* End of 'fb_help' function */
 
 /* End of 'browser.c' file */
 

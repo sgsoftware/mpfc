@@ -40,7 +40,6 @@
 #define REC_MIC 0
 #define REC_LINE 1
 #define REC_CD 2
-#define REC_PCM 3
 
 /* Plugins manager */
 static pmng_t *rec_pmng = NULL;
@@ -63,8 +62,6 @@ static int rec_name2src( char *filename )
 		return REC_LINE;
 	else if (!strcmp(filename, "cd"))
 		return REC_CD;
-	else if (!strcmp(filename, "pcm"))
-		return REC_PCM;
 	else
 		return -1;
 } /* End of 'rec_name2src' function */
@@ -95,9 +92,6 @@ bool_t rec_start( char *filename )
 			break;
 		case REC_CD:
 			mask = SOUND_MASK_CD;
-			break;
-		case REC_PCM:
-			mask = SOUND_MASK_PCM;
 			break;
 		}
 		ioctl(mixer_fd, SOUND_MIXER_WRITE_RECSRC, &mask);
@@ -150,8 +144,6 @@ str_t *rec_set_song_title( char *filename )
 		return str_new(_("Line-in"));
 	case REC_CD:
 		return str_new(_("Audio CD"));
-	case REC_PCM:
-		return str_new(_("PCM"));
 	default:
 		return NULL;
 	}
@@ -173,8 +165,6 @@ song_t **rec_init_obj_songs( char *name, int *num_songs )
 	else if (!strcmp(name, "line"))
 		source = REC_LINE;
 	else if (!strcmp(name, "cd"))
-		source = REC_CD;
-	else if (!strcmp(name, "pcm"))
 		source = REC_CD;
 	if (source < 0)
 		return NULL;
