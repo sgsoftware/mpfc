@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG MPFC. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 27.09.2003
+ * LAST UPDATE : 2.10.2003
  * NOTE        : Module prefix 'player'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -1511,6 +1511,11 @@ void player_handle_action( int action )
 	/* Go back */
 	case KBIND_GOBACK:
 		player_go_back();
+		break;
+
+	/* Reload plugins */
+	case KBIND_RELOAD_PLUGINS:
+		pmng_load_plugins();
 		break;
 
 	/* Digit means command repeation value edit */

@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for key bindings management
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 29.09.2003
+ * LAST UPDATE : 2.10.2003
  * NOTE        : Module prefix 'kbind'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -144,7 +144,8 @@
 #define KBIND_GOBACK			111
 #define KBIND_ADVANCED_SEARCH	112
 #define KBIND_TIME_BACK			113
-#define KBIND_NUM_ACTIONS		114
+#define KBIND_RELOAD_PLUGINS	114
+#define KBIND_NUM_ACTIONS		115
 
 /* The maximal key sequence length */
 #define KBIND_MAX_SEQ_LEN 10

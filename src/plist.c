@@ -25,18 +25,15 @@
  * MA 02111-1307, USA.
  */
 
-#include <dirent.h>
-#include <glob.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <unistd.h>
 #include "types.h"
 #include "colors.h"
 #include "error.h"
+#include "finder.h"
 #include "inp.h"
 #include "player.h"
 #include "plist.h"
@@ -103,8 +100,6 @@ bool_t plist_add( plist_t *pl, char *filename )
 {
 	int i, num = 0;
 	char fname[256];
-	struct stat stat_info;
-	glob_t gl;
 
 	/* Do nothing if path is empty */
 	if (!filename[0])
@@ -121,31 +116,9 @@ bool_t plist_add( plist_t *pl, char *filename )
 		strcpy(fn, fname);
 		sprintf(fname, "%s/%s", wd, fn);
 	}
-	else if (*filename == '~' && *(filename + 1) == '/')
-	{
-		sprintf(fname, "%s/%s", getenv("HOME"), &filename[2]);
-	}
 
-	/* Do globbing */
-	memset(&gl, 0, sizeof(gl));
-	if (glob(fname, 0, NULL, &gl))
-	{
-		globfree(&gl);
-		return FALSE;
-	}
-	
-	/* Add files */
-	for ( i = 0; i < gl.gl_pathc; i ++ )
-	{
-		/* Determine file type (directory or regular) and make respective
-		 * actions */
-		stat(gl.gl_pathv[i], &stat_info);
-		if (S_ISDIR(stat_info.st_mode))
-			num = plist_add_dir(pl, gl.gl_pathv[i]);
-		else if (S_ISREG(stat_info.st_mode))
-			num = plist_add_one_file(pl, gl.gl_pathv[i]);
-	}
-	globfree(&gl);
+	/* Find songs */
+	num = find_do(fname, "*", plist_find_handler, pl);
 
 	/* Set info */
 	for ( i = 0; i < pl->m_len; i ++ )
@@ -184,45 +157,6 @@ int plist_add_one_file( plist_t *pl, char *filename )
 	else
 		return plist_add_song(pl, filename, NULL, 0, -1);
 } /* End of 'plist_add_one_file' function */
-
-/* Add a directory to play list */
-int plist_add_dir( plist_t *pl, char *filename )
-{
-	struct dirent **de;
-	int num = 0, len, n, i;
-	
-	PLIST_ASSERT_RET(pl, 0);
-
-	/* Read directory */
-	len = strlen(filename);
-	n = scandir(filename, &de, 0, alphasort);
-	if (n < 0)
-		return 0;
-	for ( i = 0; i < n; i ++ )
-	{
-		struct stat s;
-		char *str, *name = de[i]->d_name;
-
-		/* Skip '.' and '..' */
-		if (!strcmp(name, ".") || !strcmp(name, ".."))
-			continue;
-
-		/* Add file or directory */
-		str = (char *)malloc(len + strlen(name) + 2);
-		strcpy(str, filename);
-		str[len] = '/';
-		strcpy(&str[len + 1], name);
-		free(de[i]);
-		stat(str, &s);
-		if (S_ISDIR(s.st_mode))
-			num += plist_add_dir(pl, str);
-		else if (S_ISREG(s.st_mode))
-			num += plist_add_one_file(pl, str);
-		free(str);
-	}
-	free(de);
-	return num;
-} /* End of 'plist_add_dir' function */
 
 /* Add a song to play list */
 int plist_add_song( plist_t *pl, char *filename, char *title, int len, 
@@ -1026,6 +960,12 @@ void plist_reload_info( plist_t *pl )
 	for ( i = 0; i < pl->m_len; i ++ )
 		sat_push(pl, i);
 } /* End of 'plist_reload_info' function */
+
+/* Handler for file finder */
+int plist_find_handler( char *name, void *data )
+{
+	return plist_add_one_file((plist_t *)data, name);
+} /* End of 'plist_find_handler' function */
 
 /* End of 'plist.c' file */
 

@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Key bindings management functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 29.09.2003
+ * LAST UPDATE : 2.10.2003
  * NOTE        : Module prefix 'kbind'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -119,9 +119,9 @@ void kbind_init( void )
 	kbind_add(KBIND_UNDO, 1, 'U');
 	kbind_add(KBIND_REDO, 1, 'D');
 	kbind_add(KBIND_RELOAD_INFO, 1, 'I');
-	kbind_add(KBIND_SET_PLAY_BOUNDS, 2, 'P', 's');
-	kbind_add(KBIND_CLEAR_PLAY_BOUNDS, 2, 'P', 'c');
-	kbind_add(KBIND_PLAY_BOUNDS, 2, 'P', '\n');
+	kbind_add(KBIND_SET_PLAY_BOUNDS, 2, 'p', 's');
+	kbind_add(KBIND_CLEAR_PLAY_BOUNDS, 2, 'p', 'c');
+	kbind_add(KBIND_PLAY_BOUNDS, 2, 'p', '\n');
 	kbind_add(KBIND_EXEC, 1, '!');
 	kbind_add(KBIND_MARKA, 2, 'm', 'a');
 	kbind_add(KBIND_MARKB, 2, 'm', 'b');
@@ -177,6 +177,7 @@ void kbind_init( void )
 	kbind_add(KBIND_GOZ, 2, '`', 'z');
 	kbind_add(KBIND_GOBACK, 2, '`', '`');
 	kbind_add(KBIND_TIME_BACK, 1, KEY_BACKSPACE);
+	kbind_add(KBIND_RELOAD_PLUGINS, 1, 'P');
 
 	/* Read bindings from configuration */
 	kbind_read_from_cfg();
@@ -484,6 +485,8 @@ int kbind_var2act( char *name )
 		return KBIND_GOBACK;
 	else if (!strcmp(name, "kbind_time_back"))
 		return KBIND_TIME_BACK;
+	else if (!strcmp(name, "kbind_reload_plugins"))
+		return KBIND_RELOAD_PLUGINS;
 	return -1;
 } /* End of 'kbind_var2act' function */
 

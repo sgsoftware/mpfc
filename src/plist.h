@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for play list manipulation
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 27.09.2003
+ * LAST UPDATE : 2.10.2003
  * NOTE        : Module prefix 'plist'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -102,9 +102,6 @@ int plist_add_song( plist_t *pl, char *filename, char *title, int len,
 /* Add a play list file to play list */
 int plist_add_list( plist_t *pl, char *filename );
 
-/* Add a directory to play list */
-int plist_add_dir( plist_t *pl, char *filename );
-
 /* Low level song adding */
 bool_t __plist_add_song( plist_t *pl, char *filename, char *title, int len,
 	   int where );
@@ -147,6 +144,9 @@ void plist_set_song_info( plist_t *pl, int index );
 
 /* Reload all songs information */
 void plist_reload_info( plist_t *pl );
+
+/* Handler for file finder */
+int plist_find_handler( char *name, void *data );
 
 #endif
 

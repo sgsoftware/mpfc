@@ -5,7 +5,7 @@
 /* FILE NAME   : help_screen.c
  * PURPOSE     : SG MPFC. Help screen functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 16.08.2003
+ * LAST UPDATE : 2.10.2003
  * NOTE        : Module prefix 'help'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -120,9 +120,10 @@ bool_t help_init( help_screen_t *help, wnd_t *parent, int x, int y,
 	help_add(help, _("U:\t\t Undo"));
 	help_add(help, _("R:\t\t Redo"));
 	help_add(help, _("I:\t\t Reload songs information"));
-	help_add(help, _("Ps:\t\t Set play bounds"));
-	help_add(help, _("P<Ret>:\t\t Set play bounds and play"));
-	help_add(help, _("Pc:\t\t Clear play bounds"));
+	help_add(help, _("P:\t\t Reload plugins"));
+	help_add(help, _("ps:\t\t Set play bounds"));
+	help_add(help, _("p<Ret>:\t\t Set play bounds and play"));
+	help_add(help, _("pc:\t\t Clear play bounds"));
 	help_add(help, _("!:\t\t Execute command"));
 	help_add(help, _("m<Letter>:\t Set mark <Letter>"));
 	help_add(help, _("`<Letter>:\t Go to mark <Letter>"));

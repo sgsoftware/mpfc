@@ -9,7 +9,8 @@ mpfc_SOURCES = main.c types.h error.h error.c player.c player.h \
 					listbox.c listbox.h help_screen.c help_screen.h \
 					sat.c sat.h eqwnd.c eqwnd.h key_bind.c key_bind.h \
 					colors.c colors.h history.c history.h button.c button.h \
-					combobox.c combobox.h undo.c undo.h label.c label.h
+					combobox.c combobox.h undo.c undo.h label.c label.h \
+					finder.c finder.h
 EXTRA_DIST = .mpfcrc
 
 localedir = $(datadir)/locale

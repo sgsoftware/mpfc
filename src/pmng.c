@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Plugins manager functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 28.07.2003
+ * LAST UPDATE : 2.10.2003
  * NOTE        : Module prefix 'pmng'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -30,6 +30,7 @@
 #include "types.h"
 #include "cfg.h"
 #include "ep.h"
+#include "finder.h"
 #include "inp.h"
 #include "outp.h"
 #include "pmng.h"
@@ -53,97 +54,7 @@ out_plugin_t *pmng_cur_out = NULL;
 /* Initialize plugins */
 bool_t pmng_init( void )
 {
-	in_plugin_t *ip;
-	out_plugin_t *op;
-	effect_plugin_t *ep;
-	FILE *fd;
-	char str[256];
-	
-	/* Initialize input plugins */ 
-	if (cfg_get_var_int(cfg_list, "plugins_search_subdirs"))
-		sprintf(str, "find %s/input/ 2>/dev/null | grep \"\\.so$\"", 
-				cfg_get_var(cfg_list, "lib_dir"));
-	else
-		sprintf(str, "ls %s/input/*.so 2>/dev/null", 
-				cfg_get_var(cfg_list, "lib_dir"));
-	fd = popen(str, "r");
-	if (fd == NULL)
-		return FALSE;
-	while (!feof(fd))
-	{
-		char name[256];
-		
-		fgets(name, 256, fd);
-		if (feof(fd))
-			break;
-		if (name[strlen(name) - 1] == '\n')
-			name[strlen(name) - 1] = 0;
-		ip = inp_init(name);
-		if (ip != NULL)
-			pmng_add_in(ip);
-	}
-	pclose(fd);
-
-	/* Initialize effect plugins */ 
-	if (cfg_get_var_int(cfg_list, "plugins_search_subdirs"))
-		sprintf(str, "find %s/effect/ 2>/dev/null | grep \"\\.so$\"", 
-				cfg_get_var(cfg_list, "lib_dir"));
-	else
-		sprintf(str, "ls %s/effect/*.so 2>/dev/null", 
-				cfg_get_var(cfg_list, "lib_dir"));
-	fd = popen(str, "r");
-	if (fd == NULL)
-		return FALSE;
-	while (!feof(fd))
-	{
-		char name[256];
-		
-		fgets(name, 256, fd);
-		if (feof(fd))
-			break;
-		if (name[strlen(name) - 1] == '\n')
-			name[strlen(name) - 1] = 0;
-		ep = ep_init(name);
-		if (ep != NULL)
-			pmng_add_effect(ep);
-	}
-	pclose(fd);
-
-	/* Initialize output plugins */ 
-	if (cfg_get_var_int(cfg_list, "plugins_search_subdirs"))
-		sprintf(str, "find %s/output/ 2>/dev/null | grep \"\\.so$\"", 
-				cfg_get_var(cfg_list, "lib_dir"));
-	else
-		sprintf(str, "ls %s/output/*.so 2>/dev/null", 
-				cfg_get_var(cfg_list, "lib_dir"));
-	fd = popen(str, "r");
-	if (fd == NULL)
-		return FALSE;
-	while (!feof(fd))
-	{
-		char name[256];
-		
-		fgets(name, 256, fd);
-		if (feof(fd))
-			break;
-
-		if (name[strlen(name) - 1] == '\n')
-			name[strlen(name) - 1] = 0;
-		op = outp_init(name);
-		if (op != NULL)
-		{
-			int i, j;
-			char str1[256], str2[256];
-			
-			pmng_add_out(op);
-
-			/* Choose this plugin if it is set in options */
-			if (!strcmp(op->m_name, cfg_get_var(cfg_list, "output_plugin")))
-				pmng_cur_out = op;
-		}
-	}
-	pclose(fd);
-
+	pmng_load_plugins();
 	return TRUE;
 } /* End of 'pmng_init' function */
 
@@ -254,6 +165,107 @@ in_plugin_t *pmng_search_inp_by_name( char *name )
 			return pmng_inp[i];
 	return NULL;
 } /* End of 'pmng_search_inp_by_name' function */
+
+/* Load plugins */
+void pmng_load_plugins( void )
+{
+	char path[256];
+	int type;
+
+	/* Load input plugins */
+	type = PMNG_IN;
+	sprintf(path, "%s/input", cfg_get_var(cfg_list, "lib_dir"));
+	find_do(path, "*.so", pmng_find_handler, &type);
+
+	/* Load output plugins */
+	type = PMNG_OUT;
+	sprintf(path, "%s/output", cfg_get_var(cfg_list, "lib_dir"));
+	find_do(path, "*.so", pmng_find_handler, &type);
+
+	/* Load effect plugins */
+	type = PMNG_EFFECT;
+	sprintf(path, "%s/effect", cfg_get_var(cfg_list, "lib_dir"));
+	find_do(path, "*.so", pmng_find_handler, &type);
+} /* End of 'pmng_load_plugins' function */
+
+/* Plugin finder handler */
+int pmng_find_handler( char *name, void *data )
+{
+	int type = *(int *)data;
+
+	/* Check if this plugin is not loaded already */
+	if (pmng_is_loaded(name, type))
+		return 0;
+
+	/* Input plugin */
+	if (type == PMNG_IN)
+	{
+		in_plugin_t *ip;
+
+		ip = inp_init(name);
+		if (ip != NULL)
+			pmng_add_in(ip);
+	}
+	/* Output plugin */
+	else if (type == PMNG_OUT)
+	{
+		out_plugin_t *op;
+		
+		op = outp_init(name);
+		if (op != NULL)
+		{
+			int i, j;
+			char str1[256], str2[256];
+			
+			pmng_add_out(op);
+
+			/* Choose this plugin if it is set in options */
+			if (!strcmp(op->m_name, cfg_get_var(cfg_list, "output_plugin")))
+				pmng_cur_out = op;
+		}
+	}
+	/* Effect plugin */
+	else if (type == PMNG_EFFECT)
+	{
+		effect_plugin_t *ep;
+		
+		ep = ep_init(name);
+		if (ep != NULL)
+			pmng_add_effect(ep);
+	}
+	return 0;
+} /* End of 'pmng_find_handler' function */
+
+/* Check if specified plugin is already loaded */
+bool_t pmng_is_loaded( char *name, int type )
+{
+	char sn[256];
+	int i;
+	
+	/* Get plugin short name */
+	util_get_plugin_short_name(sn, name);
+	
+	/* Search */
+	switch (type)
+	{
+	case PMNG_IN:
+		for ( i = 0; i < pmng_num_inp; i ++ )
+			if (!strcmp(sn, pmng_inp[i]->m_name))
+				return TRUE;
+		break;
+	case PMNG_OUT:
+		for ( i = 0; i < pmng_num_outp; i ++ )
+			if (!strcmp(sn, pmng_outp[i]->m_name))
+				return TRUE;
+		break;
+	case PMNG_EFFECT:
+		for ( i = 0; i < pmng_num_ep; i ++ )
+			if (!strcmp(sn, pmng_ep[i]->m_name))
+				return TRUE;
+		break;
+	}
+	return FALSE;
+} /* End of 'pmng_is_loaded' function */
 
 /* End of 'pmng.c' file */
 
