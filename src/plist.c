@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Play list manipulation
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 26.07.2003
+ * LAST UPDATE : 28.07.2003
  * NOTE        : Module prefix 'plist'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -30,7 +30,9 @@
 #include <stdio.h>
 #include "types.h"
 #include "error.h"
+#include "inp.h"
 #include "plist.h"
+#include "pmng.h"
 #include "sat.h"
 #include "song.h"
 #include "util.h"
@@ -617,6 +619,62 @@ void plist_unlock( plist_t *pl )
 {
 	pthread_mutex_unlock(&pl->m_mutex);
 } /* End of 'plist_unlock' function */
+
+/* Add an object */
+void plist_add_obj( plist_t *pl, char *name )
+{
+	char plugin_name[256], obj_name[256];
+	in_plugin_t *inp;
+	int num_songs, was_len, i;
+	song_t **s;
+	
+	if (pl == NULL)
+		return;
+
+	/* Get respective input plugin name */
+	for ( i = 0; name[i] && name[i] != ':'; i ++ );
+	memcpy(plugin_name, name, i);
+	plugin_name[i] = 0;
+
+	/* Search for this plugin */
+	inp = pmng_search_inp_by_name(plugin_name);
+	if (inp == NULL)
+		return;
+
+	/* Initialize songs */
+	if (name[i])
+		strcpy(obj_name, &name[i + 1]);
+	else
+		strcpy(obj_name, "");
+	s = inp_init_obj_songs(inp, obj_name, &num_songs);
+	if (s == NULL || !num_songs)
+		return;
+
+	/* Add these songs to play list */
+	plist_lock(pl);
+	was_len = pl->m_len;
+	pl->m_len += num_songs;
+	if (pl->m_list == NULL)
+		pl->m_list = (song_t **)malloc(sizeof(song_t *) * pl->m_len);
+	else
+		pl->m_list = (song_t **)realloc(pl->m_list, 
+				sizeof(song_t *) * pl->m_len);
+	memcpy(&pl->m_list[was_len], s, 
+			sizeof(song_t *) * num_songs);
+	for ( i = was_len; i < pl->m_len; i ++ )
+		pl->m_list[i]->m_inp = inp;
+	plist_unlock(pl);
+
+	/* If list was empty - put cursor to the first song */
+	if (!was_len)
+	{
+		pl->m_sel_start = pl->m_sel_end = 0;
+		pl->m_visual = FALSE;
+	}
+
+	/* Update screen */
+	wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
+} /* End of 'plist_add_obj' function */
 
 /* End of 'plist.c' file */
 

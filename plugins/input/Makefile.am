@@ -1,1 +1,1 @@
-SUBDIRS = mp3 wav
+SUBDIRS = mp3 wav audiocd

@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Interface fort play list manipulation
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 13.05.2003
+ * LAST UPDATE : 27.07.2003
  * NOTE        : Module prefix 'plist'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -113,6 +113,9 @@ void plist_lock( plist_t *pl );
 
 /* Unlock play list */
 void plist_unlock( plist_t *pl );
+
+/* Add an object */
+void plist_add_obj( plist_t *pl, char *name );
 
 #endif
 

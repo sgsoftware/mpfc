@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Plugins manager functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 27.07.2003
+ * LAST UPDATE : 28.07.2003
  * NOTE        : Module prefix 'pmng'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -193,7 +193,7 @@ in_plugin_t *pmng_search_format( char *format )
 		char formats[128], ext[10];
 		int j, k = 0;
 	   
-		pmng_inp[i]->m_fl.m_get_formats(formats);
+		inp_get_formats(pmng_inp[i], formats);
 		for ( j = 0;; ext[k ++] = formats[j ++] )
 		{
 			if (formats[j] == 0 || formats[j] == ';')
@@ -237,6 +237,17 @@ int pmng_apply_effects( byte *data, int len, int fmt, int freq, int channels )
 	}
 	return l;
 } /* End of 'pmng_apply_effects' function */
+
+/* Search for input plugin with specified name */
+in_plugin_t *pmng_search_inp_by_name( char *name )
+{
+	int i;
+
+	for ( i = 0; i < pmng_num_inp; i ++ )
+		if (!strcmp(name, pmng_inp[i]->m_name))
+			return pmng_inp[i];
+	return NULL;
+} /* End of 'pmng_search_inp_by_name' function */
 
 /* End of 'pmng.c' file */
 

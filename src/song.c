@@ -46,8 +46,7 @@ song_t *song_new( char *filename, char *title, int len )
 	in_plugin_t *inp;
 
 	/* Get song extension */
-	for ( i = strlen(filename) - 1; i >= 0 && filename[i] != '.'; i -- );
-	ext = &filename[i + 1];
+	ext = util_get_ext(filename);
 
 	/* Choose appropriate input plugin */
 	inp = pmng_search_format(ext);

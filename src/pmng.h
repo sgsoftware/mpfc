@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Interface for plugins manager 
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 27.07.2003
+ * LAST UPDATE : 28.07.2003
  * NOTE        : Module prefix 'pmng'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -68,6 +68,9 @@ in_plugin_t *pmng_search_format( char *format );
 
 /* Apply effect plugins */
 int pmng_apply_effects( byte *data, int len, int fmt, int freq, int channels );
+
+/* Search for input plugin with specified name */
+in_plugin_t *pmng_search_inp_by_name( char *name );
 
 #endif
 

@@ -140,6 +140,9 @@ void player_skip_songs( int num );
 /* Launch variables manager */
 void player_var_manager( void );
 
+/* Launch add object dialog */
+void player_add_obj_dialog( void );
+
 #endif
 
 /* End of 'player.h' file */

@@ -5,7 +5,7 @@
 /* FILE NAME   : window.c
  * PURPOSE     : SG Konsamp. Window functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 28.04.2003
+ * LAST UPDATE : 28.07.2003
  * NOTE        : Module prefix 'wnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -538,6 +538,11 @@ void *wnd_kbd_thread( void *arg )
 			/* Send message about this key to current focus window */
 			else
 			{
+				if (key == KEY_REFRESH)
+				{
+					util_log("Here\n");
+					wnd_redisplay(wnd_root);
+				}
 				wnd_send_msg(wnd_focus, WND_MSG_KEYDOWN, (dword)key);
 			}
 		}
@@ -597,6 +602,16 @@ void wnd_clear( wnd_t *wnd, bool start_from_cursor )
 	for ( i = (start_from_cursor ? wnd_gety(wnd) : 0); i < wnd->m_height; i ++ )
 		wnd_printf(wnd, "\n");
 } /* End of 'wnd_clear' function */
+
+/* Totally redisplay window */
+void wnd_redisplay( wnd_t *wnd )
+{
+	wnd_clear(wnd, FALSE);
+	wrefresh(wnd->m_wnd);
+	wnd_display(wnd);
+/*	touchwin(wnd->m_wnd);
+	refresh();*/
+} /* End of 'wnd_redisplay' function */
 
 /* End of 'window.c' file */
 

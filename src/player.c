@@ -5,8 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG Konsamp. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 27.07.2003
-ls
+ * LAST UPDATE : 29.07.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -356,6 +355,11 @@ void player_handle_key( wnd_t *wnd, dword data )
 		player_add_dialog();
 		break;
 
+	/* Add an object */
+	case 'A':
+		player_add_obj_dialog();
+		break;
+
 	/* Save play list */
 	case 's':
 		player_save_dialog();
@@ -607,6 +611,8 @@ void player_end_play( void )
 /* Player thread function */
 void *player_thread( void *arg )
 {
+	bool no_outp = FALSE;
+	
 	/* Main loop */
 	while (!player_end_thread)
 	{
@@ -642,11 +648,12 @@ void *player_thread( void *arg )
 			wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
 			continue;
 		}
+		no_outp = inp_get_flags(s->m_inp) & INP_NO_OUTP;
 
 		/* Start output plugin */
-		if (pmng_cur_out == NULL || 
+		if (!no_outp && (pmng_cur_out == NULL || 
 				(!cfg_get_var_int(cfg_list, "silent_mode") && 
-					!outp_start(pmng_cur_out)))
+					!outp_start(pmng_cur_out))))
 		{
 			strcpy(player_msg, _("Unable to initialize output plugin"));
 //			wnd_send_msg(wnd_root, WND_MSG_USER, PLAYER_MSG_END_TRACK);
@@ -657,10 +664,13 @@ void *player_thread( void *arg )
 		}
 
 		/* Set audio parameters */
-		inp_get_audio_params(s->m_inp, &ch, &freq, &fmt);
-		outp_set_channels(pmng_cur_out, 2);
-		outp_set_freq(pmng_cur_out, freq);
-		outp_set_fmt(pmng_cur_out, fmt);
+		if (!no_outp)
+		{
+			inp_get_audio_params(s->m_inp, &ch, &freq, &fmt);
+			outp_set_channels(pmng_cur_out, 2);
+			outp_set_freq(pmng_cur_out, freq);
+			outp_set_fmt(pmng_cur_out, fmt);
+		}
 
 		/* Set equalizer */
 		inp_set_eq(s->m_inp);
@@ -692,25 +702,28 @@ void *player_thread( void *arg )
 					dword new_fmt;
 					
 					/* Update audio parameters if they have changed */
-					inp_get_audio_params(s->m_inp, &new_ch, &new_freq, 
-							&new_fmt);
-					if (ch != new_ch || freq != new_freq || fmt != new_fmt)
+					if (!no_outp)
 					{
-						ch = new_ch;
-						freq = new_freq;
-						fmt = new_fmt;
+						inp_get_audio_params(s->m_inp, &new_ch, &new_freq, 
+								&new_fmt);
+						if (ch != new_ch || freq != new_freq || fmt != new_fmt)
+						{
+							ch = new_ch;
+							freq = new_freq;
+							fmt = new_fmt;
 						
-						outp_flush(pmng_cur_out);
-						outp_set_channels(pmng_cur_out, 2);
-						outp_set_freq(pmng_cur_out, freq);
-						outp_set_fmt(pmng_cur_out, fmt);
-					}
+							outp_flush(pmng_cur_out);
+							outp_set_channels(pmng_cur_out, 2);
+							outp_set_freq(pmng_cur_out, freq);
+							outp_set_fmt(pmng_cur_out, fmt);
+						}
 
-					/* Apply effects */
-					size = pmng_apply_effects(buf, size, fmt, freq, 2);
+						/* Apply effects */
+						size = pmng_apply_effects(buf, size, fmt, freq, 2);
 					
-					/* Send to output plugin */
-					outp_play(pmng_cur_out, buf, size);
+						/* Send to output plugin */
+						outp_play(pmng_cur_out, buf, size);
+					}
 				}
 				else
 				{
@@ -723,7 +736,8 @@ void *player_thread( void *arg )
 		}
 
 		/* Wait until we really stop playing */
-		outp_flush(pmng_cur_out);
+		if (!no_outp)
+			outp_flush(pmng_cur_out);
 
 		/* Stop timer thread */
 		player_stop_timer();
@@ -732,7 +746,8 @@ void *player_thread( void *arg )
 		inp_end(s->m_inp);
 
 		/* End output plugin */
-		outp_end(pmng_cur_out);
+		if (!no_outp)
+			outp_end(pmng_cur_out);
 
 		/* Send message about track end */
 		if (!player_end_track)
@@ -1136,6 +1151,28 @@ void player_var_manager( void )
 	util_log("Setting %s to %s\n", name, val);
 	cfg_set_var(cfg_list, name, val);
 } /* End of 'player_var_manager' function */
+
+/* Launch add object dialog */
+void player_add_obj_dialog( void )
+{
+	editbox_t *ebox;
+
+	/* Create edit box for path input */
+	ebox = ebox_new(wnd_root, 0, wnd_root->m_height - 1, 
+			wnd_root->m_width, 1, 256, _("Enter object name: "), "");
+	if (ebox != NULL)
+	{
+		/* Run message loop */
+		wnd_run(ebox);
+
+		/* Add object if enter was pressed */
+		if (ebox->m_last_key == '\n')
+			plist_add_obj(player_plist, ebox->m_text);
+
+		/* Destroy edit box */
+		wnd_destroy(ebox);
+	}
+} /* End of 'player_add_obj_dialog' function */
 
 /* End of 'player.c' file */
 
