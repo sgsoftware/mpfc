@@ -163,6 +163,9 @@ struct tag_wnd_global_data_t
 
 	/* Logger */
 	logger_t *m_log;
+
+	/* Mutex for curses operations */
+	pthread_mutex_t m_curses_mutex;
 };
 
 /* Window type */
@@ -299,6 +302,7 @@ struct tag_wnd_t
 #define WND_CLASSES(wnd)		(WND_GLOBAL(wnd)->m_wnd_classes)
 #define WND_LIB_ACTIVE(wnd)		(WND_GLOBAL(wnd)->m_lib_active)
 #define WND_LOG(wnd)			(WND_GLOBAL(wnd)->m_log)
+#define WND_CURSES_MUTEX(wnd)	(WND_GLOBAL(wnd)->m_curses_mutex)
 
 /* Convert client coordinates to absolute window or screen */
 #define WND_CLIENT2ABS_X(wnd, x) (WND_OBJ(wnd)->m_client_x + (x))

@@ -1,3 +1,12 @@
+2004-11-04	Sergey E. Galanov	<sgsoftware@mail.ru>
+
+	* libmpfcwnd/wnd.c, libmpfcwnd/wnd.h, libmpfcwnd/wnd_kbd.c:
+	  screen messing up bug fixed.
+
+2004-11-03	Sergey E. Galanov	<sgsoftware@mail.ru>
+	
+	* plugins/output/alsa/alsa.c: moved ALSA plugin error output to the logger.
+
 2004-10-31	Sergey E. Galanov	<sgsoftware@mail.ru>
 	
 	* libmpfcwnd/wnd_multiview_dialog.c, libmpfcwnd/wnd_multiview_dialog.h,

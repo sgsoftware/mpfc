@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Window functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 22.09.2004
+ * LAST UPDATE : 4.11.2004
  * NOTE        : Module prefix 'wnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -50,6 +50,7 @@ wnd_t *wnd_init( cfg_node_t *cfg_list, logger_t *log )
 	struct wnd_display_buf_symbol_t *db_data = NULL;
 	int i, len;
 	bool_t force_terminal_bg;
+	pthread_mutex_t curses_mutex;
 
 	/* Initialize NCURSES */
 	wnd = initscr();
@@ -66,6 +67,7 @@ wnd_t *wnd_init( cfg_node_t *cfg_list, logger_t *log )
 		assume_default_colors(-1, -1);
 	}
 	wnd_init_pairs(force_terminal_bg);
+	pthread_mutex_init(&curses_mutex, NULL);
 
 	/* Initialize global data */
 	global = (wnd_global_data_t *)malloc(sizeof(wnd_global_data_t));
@@ -77,6 +79,7 @@ wnd_t *wnd_init( cfg_node_t *cfg_list, logger_t *log )
 	global->m_states_stack_pos = 0;
 	global->m_lib_active = TRUE;
 	global->m_invalid_exist = TRUE;
+	global->m_curses_mutex = curses_mutex;
 
 	/* Initialize display buffer */
 	len = COLS * LINES;
@@ -380,6 +383,7 @@ void wnd_deinit( wnd_t *wnd_root )
 	wnd_kbind_free(global->m_kbind_data);
 	wnd_kbd_free(global->m_kbd_data);
 	wnd_msg_queue_free(global->m_msg_queue);
+	pthread_mutex_destroy(&global->m_curses_mutex);
 
 	/* Free window classes */
 	for ( klass = global->m_wnd_classes; klass != NULL; )
@@ -1044,6 +1048,9 @@ void wnd_sync_screen( wnd_t *wnd )
 	int x = 0, y = 0;
 	wnd_t *wnd_focus;
 	static bool_t prev_cursor_state = TRUE;
+	static int count = 0;
+
+	pthread_mutex_lock(&WND_CURSES_MUTEX(wnd));
 
 	/* Clear screen if buffer is dirty */
 	if (buf->m_dirty)
@@ -1100,6 +1107,7 @@ void wnd_sync_screen( wnd_t *wnd )
 	/* Refresh screen */
 	refresh();
 	buf->m_dirty = FALSE;
+	pthread_mutex_unlock(&WND_CURSES_MUTEX(wnd));
 } /* End of 'wnd_sync_screen' function */
 
 /* Call message handlers chain */
@@ -1175,7 +1183,9 @@ wnd_msg_retcode_t wnd_repos_on_key( wnd_t *wnd, wnd_key_t key )
 
 	assert(wnd);
 	assert(real_wnd);
-	assert(real_wnd->m_mode != WND_MODE_NORMAL);
+
+	if (real_wnd->m_mode == WND_MODE_NORMAL)
+		return WND_MSG_RETCODE_OK;
 
 	/* Choose new window parameters */
 	x = real_wnd->m_x;

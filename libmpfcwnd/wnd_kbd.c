@@ -287,6 +287,7 @@ void *wnd_kbd_thread( void *arg )
 	wnd_key_t keycode;
 	struct timeval was_tv, now_tv;
 	int was_btn;
+	int key;
 
 	gettimeofday(&was_tv, NULL);
 	for ( ; !data->m_end_thread; ) 
@@ -304,9 +305,11 @@ void *wnd_kbd_thread( void *arg )
 					wnd_mouse_button_t btn;
 
 					/* Get event parameters */
+					pthread_mutex_lock(&WND_CURSES_MUTEX(wnd_root));
 					btn = getch() - 040;
 					x = getch() - 040 - 1;
 					y = getch() - 040 - 1;
+					pthread_mutex_unlock(&WND_CURSES_MUTEX(wnd_root));
 					type = WND_MOUSE_DOWN;
 					switch (btn)
 					{
@@ -349,7 +352,9 @@ void *wnd_kbd_thread( void *arg )
 		}
 
 		/* Read key into buffer */
-		int key = getch();
+		pthread_mutex_lock(&WND_CURSES_MUTEX(wnd_root));
+		key = getch();
+		pthread_mutex_unlock(&WND_CURSES_MUTEX(wnd_root));
 		if (key == ERR)
 		{
 			util_wait();
