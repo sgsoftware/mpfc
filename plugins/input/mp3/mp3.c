@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. MP3 input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.12.2003
+ * LAST UPDATE : 28.12.2003
  * NOTE        : Module prefix 'mp3'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -475,30 +475,52 @@ bool_t mp3_get_info( char *filename, song_info_t *info )
 		for ( ;; )
 		{	
 			id3_frame_t f;
+			int size = 1;
 			
 			/* Get next frame */
 			id3_next_frame(tag, &f);
 			
 			/* Handle frame */
 			if (!strcmp(f.m_name, ID3_FRAME_TITLE))
-				strcpy(info->m_name, f.m_val);
+			{
+				strncpy(info->m_name, f.m_val, size = sizeof(info->m_name));
+				info->m_name[size - 1] = 0;
+			}
 			else if (!strcmp(f.m_name, ID3_FRAME_ARTIST))
-				strcpy(info->m_artist, f.m_val);
+			{
+				strncpy(info->m_artist, f.m_val, size = sizeof(info->m_artist));
+				info->m_artist[size - 1] = 0;
+			}
 			else if (!strcmp(f.m_name, ID3_FRAME_ALBUM))
-				strcpy(info->m_album, f.m_val);
+			{
+				strncpy(info->m_album, f.m_val, size = sizeof(info->m_album));
+				info->m_album[size - 1] = 0;
+			}
 			else if (!strcmp(f.m_name, ID3_FRAME_YEAR))
-				strcpy(info->m_year, f.m_val);
+			{
+				strncpy(info->m_year, f.m_val, size = sizeof(info->m_year));
+				info->m_year[size - 1] = 0;
+			}
 			else if (!strcmp(f.m_name, ID3_FRAME_TRACK))
-				strcpy(info->m_track, f.m_val);
+			{
+				strncpy(info->m_track, f.m_val, size = sizeof(info->m_track));
+				info->m_track[size - 1] = 0;
+			}
 			else if (!strcmp(f.m_name, ID3_FRAME_COMMENT))
-				strcpy(info->m_comments, f.m_val);
+			{
+				strncpy(info->m_comments, f.m_val, 
+						size = sizeof(info->m_comments));
+				info->m_comments[size - 1] = 0;
+			}
 			else if (!strcmp(f.m_name, ID3_FRAME_GENRE))
 			{
 				byte genre = mp3_get_genre(f.m_val);
 				if (genre == 0xFE)
 				{
 					info->m_genre = GENRE_ID_OWN_STRING;
-					strcpy(info->m_genre_data.m_text, f.m_val);
+					strncpy(info->m_genre_data.m_text, f.m_val,
+							size = sizeof(info->m_genre_data.m_text));
+					info->m_genre_data.m_text[size - 1] = 0;
 				}
 				else
 				{
