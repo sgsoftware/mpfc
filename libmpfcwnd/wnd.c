@@ -55,7 +55,7 @@ wnd_t *wnd_init( cfg_node_t *cfg_list )
 	start_color();
 	cbreak();
 	noecho();
-	keypad(wnd, TRUE);
+	//keypad(wnd, TRUE);
 	nodelay(wnd, TRUE);
 	wnd_init_pairs();
 

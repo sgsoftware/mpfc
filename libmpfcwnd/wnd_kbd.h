@@ -62,11 +62,11 @@
 #define KEY_CTRL_Y		25
 #define KEY_CTRL_Z		26
 #define KEY_CTRL_LSB	27
-#define KEY_ESCAPE		27
 #define KEY_CTRL_BSLASH	28
 #define KEY_CTRL_RSB	29
 #define KEY_CTRL_CAT	30
 #define KEY_CTRL_USCORE	31
+#define WND_KEY_UNDEF 0xFFFF
 
 /* Forward declaration of window */
 struct tag_wnd_t;
@@ -74,18 +74,36 @@ struct tag_wnd_t;
 /* Keyboard thread data type */
 typedef struct tag_wnd_kbd_data_t
 {
+	/* Thread data */
 	pthread_t m_tid;
 	bool_t m_end_thread;
-	struct tag_wnd_t *m_wnd_root;
+
+	/* Pointer to the root window */
+	wnd_t *m_wnd_root;
+
+	/* Known escape sequences list */
+	struct wnd_kbd_seq_t
+	{
+		char *m_str;
+		int m_code;
+		struct wnd_kbd_seq_t *m_next;
+	} *m_seq, *m_last_seq;
 } wnd_kbd_data_t;
 
 /* Key identification type */
 typedef word wnd_key_t;
 #define WND_KEY_WITH_ALT(ch)	((ch) | 0x8000)
 #define WND_KEY_IS_WITH_ALT(ch)	(((ch) & 0x8000) ? ((ch) & 0x7FFF) : 0)
+#define KEY_ESCAPE WND_KEY_WITH_ALT(27)
 
 /* Initialize keyboard management system */
-wnd_kbd_data_t *wnd_kbd_init( struct tag_wnd_t *wnd_root );
+wnd_kbd_data_t *wnd_kbd_init( wnd_t *wnd_root );
+
+/* Initialize the escape sequences list */
+void wnd_kbd_init_seq( wnd_kbd_data_t *data );
+
+/* Add a sequence to the list */
+void wnd_kbd_add_seq( wnd_kbd_data_t *data, char *seq, int code );
 
 /* Uninitialize keyboard management system */
 void wnd_kbd_free( wnd_kbd_data_t *data );
@@ -94,7 +112,15 @@ void wnd_kbd_free( wnd_kbd_data_t *data );
 void *wnd_kbd_thread( void *arg );
 
 /* Extract real key code from the keys buffer */
-bool_t wnd_kbd_extract_code( wnd_key_t *key_info, int *buf, int *len );
+bool_t wnd_kbd_extract_code( wnd_kbd_data_t *data, wnd_key_t *key_info, 
+		char *buf, int *len );
+
+/* Test sequence for matches in the list */
+int wnd_kbd_test_seq( wnd_kbd_data_t *data, char *seq, int len, 
+		wnd_key_t *code );
+
+/* Remove a sequence from the buffer */
+void wnd_kbd_rem_from_buf( char *buf, int pos, int *len );
 
 #endif
 
