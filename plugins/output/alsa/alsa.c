@@ -23,6 +23,9 @@
 #include "cfg.h"
 #include "outp.h"
 #include "pmng.h"
+#include "wnd.h"
+#include "wnd_dialog.h"
+#include "wnd_editbox.h"
 
 static snd_pcm_t *handle = NULL;
 static snd_pcm_hw_params_t *hwparams = NULL;
@@ -37,7 +40,7 @@ static char *alsa_default_dev = "plughw:0,0";
 
 static char *alsa_desc = "ALSA output plugin";
 static char *alsa_author = 
-		"Thadeu Lima de Souza Cascardo <cascardo@minaslivre.org>\n"
+		"Thadeu Lima de Souza Cascardo <cascardo@minaslivre.org>; "
 		"Sergey E. Galanov <sgsoftware@mail.ru>";
 static cfg_node_t *alsa_cfg = NULL;
 
@@ -257,10 +260,31 @@ void alsa_resume( void )
 	alsa_paused = FALSE;
 }
 
+wnd_msg_retcode_t alsa_on_configure( wnd_t *wnd )
+{
+	editbox_t *eb = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "device"));
+	assert(eb);
+	cfg_set_var(alsa_cfg, "device", EDITBOX_TEXT(eb));
+	return WND_MSG_RETCODE_OK;
+}
+
+void alsa_configure( wnd_t *parent )
+{
+	dialog_t *dlg;
+	editbox_t *eb;
+
+	dlg = dialog_new(parent, _("Configure ALSA plugin"));
+	eb = editbox_new_with_label(WND_OBJ(dlg->m_vbox), _("&Device: "), 
+			"device", cfg_get_var(alsa_cfg, "device"), 'd', 50);
+	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", alsa_on_configure);
+	dialog_arrange_children(dlg);
+}
+
 void plugin_exchange_data (plugin_data_t *pd)
 {
   pd->m_desc = alsa_desc;
   pd->m_author = alsa_author;
+  pd->m_configure = alsa_configure;
   OUTP_DATA(pd)->m_start = alsa_start;
   OUTP_DATA(pd)->m_end = alsa_end;
   OUTP_DATA(pd)->m_play = alsa_play;

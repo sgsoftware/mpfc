@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Interface for dialog 
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 18.10.2004
+ * LAST UPDATE : 30.10.2004
  * NOTE        : Module prefix 'dialog'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -48,7 +48,17 @@ typedef struct
 
 	/* Buttons box */
 	hbox_t *m_hbox;
+
+	/* First focus branch */
+	wnd_t *m_first_branch;
 } dialog_t;
+
+/* Flags for dialog items iteration */
+typedef enum
+{
+	DIALOG_ITERATE_CYCLE = 1 << 0,
+	DIALOG_ITERATE_ZORDER = 1 << 1
+} dialog_iterate_flags_t;
 
 /* Convert some window to dialog type */
 #define DIALOG_OBJ(wnd)		((dialog_t *)wnd)
@@ -62,11 +72,15 @@ bool_t dialog_construct( dialog_t *dlg, wnd_t *parent, char *title );
 /* Find dialog item by its ID */
 dlgitem_t *dialog_find_item( dialog_t *dlg, char *id );
 
+/* Update dialog size (after some child changes its child) */
+void dialog_update_size( dialog_t *dlg );
+
 /* Arrange dialog items */
 void dialog_arrange_children( dialog_t *dlg );
 
 /* Dialog items iterator */
-dlgitem_t *dialog_iterate_items( dialog_t *dlg, dlgitem_t *di, bool_t cycle );
+dlgitem_t *dialog_iterate_items( dialog_t *dlg, dlgitem_t *di, 
+		dialog_iterate_flags_t flags );
 
 /* Handle 'ok_clicked' message */
 wnd_msg_retcode_t dialog_on_ok( wnd_t *wnd );

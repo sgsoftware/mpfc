@@ -269,6 +269,12 @@ void player_repval_dialog( int dig );
 /* Launch test management dialog */
 void player_test_dialog( void );
 
+/* Launch plugin manager dialog */
+void player_pmng_dialog( void );
+
+/* Synchronize plugin manager dialog items with current item */
+void player_pmng_dialog_sync( dialog_t *dlg );
+
 /***
  * Dialog message handlers
  ***/
@@ -332,6 +338,25 @@ wnd_msg_retcode_t player_on_test( wnd_t *wnd );
 
 /* Handle 'close' message for logger view */
 wnd_msg_retcode_t player_logview_on_close( wnd_t *wnd );
+
+/* Handle 'changed' message for plugins manager list boxes */
+wnd_msg_retcode_t player_pmng_dialog_on_list_change( wnd_t *wnd, int index );
+
+/* Handle 'selection_changed' message for plugins manager list box */
+wnd_msg_retcode_t player_pmng_dialog_on_list_sel_change( wnd_t *wnd, 
+		int index );
+
+/* Handle 'clicked' message for plugins manager 'enable effect' checkbox */
+wnd_msg_retcode_t player_pmng_dialog_on_effect_clicked( wnd_t *wnd );
+
+/* Handle 'clicked' message for plugins manager configure buttons */
+wnd_msg_retcode_t player_pmng_dialog_on_configure( wnd_t *wnd );
+
+/* Handle 'clicked' message for plugins manager reload button */
+wnd_msg_retcode_t player_pmng_dialog_on_reload( wnd_t *wnd );
+
+/* Destructor for plugins manager */
+void player_pmng_dialog_destructor( wnd_t *wnd );
 
 /***
  * Variables change handlers

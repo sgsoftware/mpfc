@@ -21,11 +21,16 @@
 #include <sys/soundcard.h>
 #include <unistd.h>
 #include "types.h"
+#include "cfg.h"
 #include "outp.h"
 #include "pmng.h"
+#include "wnd.h"
+#include "wnd_dialog.h"
+#include "wnd_editbox.h"
 
 static int sock = -1;
 static pmng_t *esd_pmng = NULL;
+static cfg_node_t *esd_cfg = NULL;
 static esd_format_t esd_format = ESD_STREAM | ESD_PLAY;
 static esd_format_t esd_fmt = ESD_BITS16;
 static int esd_rate = 44100;
@@ -39,8 +44,7 @@ void esd_end ();
 
 bool_t esd_start ()
 {
-  cfg_list_t *cfg = pmng_get_cfg (esd_pmng);
-  char *host = cfg_get_var (cfg, "esd-host");
+  char *host = cfg_get_var (esd_cfg, "host");
   if (host == NULL)
     host = "localhost";
   sock = esd_play_stream (esd_format | esd_fmt | esd_channels, esd_rate, host, NULL);
@@ -117,10 +121,31 @@ void esd_set_fmt (dword fmt)
   esd_start ();
 }
 
+wnd_msg_retcode_t esd_on_configure( wnd_t *wnd )
+{
+	editbox_t *eb = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "host"));
+	assert(eb);
+	cfg_set_var(esd_cfg, "host", EDITBOX_TEXT(eb));
+	return WND_MSG_RETCODE_OK;
+}
+
+void esd_configure( wnd_t *parent )
+{
+	dialog_t *dlg;
+	editbox_t *eb;
+
+	dlg = dialog_new(parent, _("Configure ESD plugin"));
+	eb = editbox_new_with_label(WND_OBJ(dlg->m_vbox), _("&Host: "), 
+			"host", cfg_get_var(esd_cfg, "host"), 'h', 50);
+	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", esd_on_configure);
+	dialog_arrange_children(dlg);
+}
+
 void plugin_exchange_data (plugin_data_t *pd)
 {
   pd->m_desc = esd_desc;
   pd->m_author = esd_author;
+  pd->m_configure = esd_configure;
   OUTP_DATA(pd)->m_start = esd_start;
   OUTP_DATA(pd)->m_end = esd_end;
   OUTP_DATA(pd)->m_play = esd_play;
@@ -128,4 +153,5 @@ void plugin_exchange_data (plugin_data_t *pd)
   OUTP_DATA(pd)->m_set_freq = esd_set_rate;
   OUTP_DATA(pd)->m_set_fmt = esd_set_fmt;
   esd_pmng = pd->m_pmng;
+  esd_cfg = pd->m_cfg;
 }

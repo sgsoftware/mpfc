@@ -37,12 +37,18 @@ bool_t dlgitem_construct( dlgitem_t *di, wnd_t *parent, char *title, char *id,
 		char letter, dlgitem_flags_t flags )
 {
 	wnd_t *wnd = WND_OBJ(di);
+	wnd_class_t *klass;
+	wnd_flags_t wnd_flags = 0;
 	assert(di);
 
 	/* Initialize window part */
-	if (!wnd_construct(wnd, parent, title, 0, 0, 0, 0, 
-				(flags & DLGITEM_BORDER) ? 
-				(WND_FLAG_BORDER | WND_FLAG_CAPTION) : 0))
+	if (flags & DLGITEM_BORDER)
+	{
+		wnd_flags |= WND_FLAG_BORDER;
+		if (title != NULL)
+			wnd_flags |= WND_FLAG_CAPTION;
+	}
+	if (!wnd_construct(wnd, parent, title, 0, 0, 0, 0, wnd_flags))
 		return FALSE;
 
 	/* Initialize message map */
@@ -56,8 +62,16 @@ bool_t dlgitem_construct( dlgitem_t *di, wnd_t *parent, char *title, char *id,
 	di->m_set_pos = set_pos;
 	di->m_letter = letter;
 	di->m_flags = flags;
-	di->m_dialog = (!strcmp(parent->m_class->m_name, "dialog")) ? parent : 
-			DLGITEM_OBJ(parent)->m_dialog;
+	for ( klass = parent->m_class; klass != NULL; klass = klass->m_parent )
+	{
+		if (!strcmp(klass->m_name, "dialog"))
+		{
+			di->m_dialog = parent;
+			break;
+		}
+	}
+	if (di->m_dialog == NULL)
+		di->m_dialog = DLGITEM_OBJ(parent)->m_dialog;
 	return TRUE;
 } /* End of 'dlgitem_construct' function */
 
@@ -105,7 +119,7 @@ wnd_msg_retcode_t dlgitem_on_keydown( wnd_t *wnd, wnd_key_t key )
 		dlgitem_t *child;
 		for ( child = DLGITEM_OBJ(dlg->m_child);
 				child != NULL; child = dialog_iterate_items(DIALOG_OBJ(dlg),
-					child, FALSE) )
+					child, DIALOG_ITERATE_ZORDER) )
 		{
 			if (!(child->m_flags & DLGITEM_NOTABSTOP) &&
 					(child->m_letter == without_alt))
@@ -134,7 +148,8 @@ wnd_msg_retcode_t dlgitem_on_action( wnd_t *wnd, char *action )
 		child = starting;
 		do
 		{
-			child = dialog_iterate_items(DIALOG_OBJ(dlg), child, TRUE);
+			child = dialog_iterate_items(DIALOG_OBJ(dlg), child, 
+					DIALOG_ITERATE_CYCLE);
 		} while (child != starting && (child->m_flags & DLGITEM_NOTABSTOP));
 		wnd_set_focus(WND_OBJ(child));
 	}

@@ -5,7 +5,7 @@
 /* FILE NAME   : plugin.h
  * PURPOSE     : MPFC Library. Interface for common plugins data.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 8.10.2004
+ * LAST UPDATE : 29.10.2004
  * NOTE        : Module prefix 'plugin'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -41,7 +41,8 @@ typedef enum
 	PLUGIN_TYPE_INPUT = 1 << 0,
 	PLUGIN_TYPE_OUTPUT = 1 << 1,
 	PLUGIN_TYPE_EFFECT = 1 << 2,
-	PLUGIN_TYPE_CHARSET = 1 << 3
+	PLUGIN_TYPE_CHARSET = 1 << 3,
+	PLUGIN_TYPE_ALL = 0xFFFFFF
 } plugin_type_t;
 
 /* Common plugin data for exchange with plugin */
@@ -68,8 +69,11 @@ typedef struct
 	/* Plugin author string */
 	char *m_author;
 
+	/* Launch configuration dialog function */
+	void (*m_configure)( wnd_t *parent );
+
 	/* Reserved data */
-	byte m_reserved[36];
+	byte m_reserved[32];
 } plugin_data_t;
 
 /* Common plugin object */
@@ -110,6 +114,9 @@ char *plugin_get_desc( plugin_t *p );
 
 /* Get plugin author string */
 char *plugin_get_author( plugin_t *p );
+
+/* Launch configuration dialog */
+void plugin_configure( plugin_t *p, wnd_t *parent );
 
 /* Get plugin manager */
 struct tag_pmng_t *plugin_get_pmng( plugin_t *p );

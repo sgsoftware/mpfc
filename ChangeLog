@@ -1,3 +1,24 @@
+2004-10-31	Sergey E. Galanov	<sgsoftware@mail.ru>
+	
+	* libmpfcwnd/wnd_multiview_dialog.c, libmpfcwnd/wnd_multiview_dialog.h,
+	  libmpfcwnd/wnd_views.c, libmpfcwnd/wnd_views.h, libmpfc/wnd_dialog.c,
+	  libmpfc/wnd_dialog.h, libmpfcwnd/wnd_dlgitem.c, libmpfcwnd/Makefile.am:
+	  implemented multiview dialogs.
+	* libmpfcwnd/wnd_listbox.c, libmpfcwnd/wnd_listbox.h: implemented listbox.
+	* src/player.c, src/player.h, libmpfc/plugin_mng.c, src/pmng.h, 
+	  src/help_screen.c, libmpfcwnd/wnd_editbox.h, libmpfcwnd/wnd_editbox.c,
+	  libmpfcwnd/wnd_label.h, libmpfcwnd/wnd_label.h: 
+	  implemented plugins manager.
+	* libmpfc/plugin.c, src/plugin.h: plugin configuration through dialog
+	  support added.
+	* plugins/effect/echo/echo.c, plugins/input/audiocd/audiocd.c,
+	  plugins/input/audiocd/cddb.c, plugins/input/audiocd/cddb.h,
+	  plugins/input/mp3/mp3.c, pluigns/input/ogg/ogg.c, 
+	  plugins/input/radio/radio.c, plugins/output/output/alsa.c,
+	  plugins/output/disk_writer/writer.c, plugins/output/esd/esd.c,
+	  plugins/output/oss/oss.c: configuration for some plugins written.
+	* doc/mpfc.texi: documentation updated.
+
 2004-10-25	Sergey E. Galanov	<sgsoftware@mail.ru>
 
 	* Released MPFC 1.3.4.
@@ -5,7 +26,7 @@
 2004-10-24	Sergey E. Galanov	<sgsoftware@mail.ru>
 
 	* mpfc.pc.in, configure.in, Makefile.am, libmpfc/Makefile.am,
-	* libmpfcwnd/Makefile.am, src/types.h:	implemeted pkg-config stuff.
+	  libmpfcwnd/Makefile.am, src/types.h:	implemeted pkg-config stuff.
 
 2004-10-17	Sergey E. Galanov	<sgsoftware@mail.ru>
 

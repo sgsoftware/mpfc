@@ -122,6 +122,12 @@ pmng_iterator_t pmng_start_iteration( pmng_t *pmng, plugin_type_t type_mask );
 /* Make an iteration */
 plugin_t *pmng_iterate( pmng_iterator_t *iter );
 
+/* Check if effect is enabled */
+bool_t pmng_is_effect_enabled( pmng_t *pmng, plugin_t *ep );
+
+/* Enable/disable effect */
+void pmng_enable_effect( pmng_t *pmng, plugin_t *ep, bool_t enable );
+
 #endif
 
 /* End of 'pmng.h' file */

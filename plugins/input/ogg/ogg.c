@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Ogg Vorbis input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 27.08.2004
+ * LAST UPDATE : 31.10.2004
  * NOTE        : Module prefix 'ogg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -39,6 +39,9 @@
 #include "song_info.h"
 #include "util.h"
 #include "vcedit.h"
+#include "wnd.h"
+#include "wnd_checkbox.h"
+#include "wnd_dialog.h"
 
 /* Ogg Vorbis file object */
 static OggVorbis_File ogg_vf;
@@ -57,7 +60,7 @@ static pmng_t *ogg_pmng = NULL;
 static char ogg_filename[MAX_FILE_NAME] = "";
 
 /* Song info to save after play end */
-song_info_t *ogg_info = NULL;
+static song_info_t *ogg_info = NULL;
 
 /* Audio information of the current song */
 static vorbis_info *ogg_vi = NULL;
@@ -82,6 +85,10 @@ static logger_t *ogg_log;
 
 /* Configuration list */
 static cfg_node_t *ogg_cfg;
+
+/* Plugin info */
+static char *ogg_desc = "OggVorbis plugin";
+static char *ogg_author = "Sergey E. Galanov <sgsoftware@mail.ru>";
 
 /* Start playing with an opened file descriptor */
 bool_t ogg_start_with_fd( char *filename, file_t *fd )
@@ -419,9 +426,35 @@ song_info_t *ogg_get_info( char *filename, int *len )
 	return si;
 } /* End of 'ogg_get_info' function */
 
+/* Handle 'ok_clicked' message for configuration dialog */
+wnd_msg_retcode_t ogg_on_configure( wnd_t *wnd )
+{
+	checkbox_t *cb = CHECKBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd),
+				"always_use_utf8"));
+	assert(cb);
+	cfg_set_var_bool(ogg_cfg, "always-use-utf8", cb->m_checked);
+	return WND_MSG_RETCODE_OK;
+} /* End of 'ogg_on_configure' function */
+
+/* Launch configuration dialog */
+void ogg_configure( wnd_t *parent )
+{
+	dialog_t *dlg;
+
+	dlg = dialog_new(parent, _("Configure OggVorbis plugin"));
+	checkbox_new(WND_OBJ(dlg->m_vbox),
+			_("Always use &UTF-8"), "always_use_utf8", 'u', 
+			cfg_get_var_bool(ogg_cfg, "always-use-utf8"));
+	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", ogg_on_configure);
+	dialog_arrange_children(dlg);
+} /* End of 'ogg_configure' function */
+
 /* Exchange data with main program */
 void plugin_exchange_data( plugin_data_t *pd )
 {
+	pd->m_desc = ogg_desc;
+	pd->m_author = ogg_author;
+	pd->m_configure = ogg_configure;
 	INP_DATA(pd)->m_start = ogg_start;
 	INP_DATA(pd)->m_end = ogg_end;
 	INP_DATA(pd)->m_get_stream = ogg_get_stream;

@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Library. Common plugins functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 10.10.2004
+ * LAST UPDATE : 29.10.2004
  * NOTE        : Module prefix 'plugin'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -168,6 +168,13 @@ wnd_t *plugin_get_root_wnd( plugin_t *p )
 	else
 		return NULL;
 } /* End of 'plugin_get_root_wnd' function */
+
+/* Launch configuration dialog */
+void plugin_configure( plugin_t *p, wnd_t *parent )
+{
+	if (p != NULL && p->m_pd->m_configure != NULL)
+		(p->m_pd->m_configure)(parent);
+} /* End of 'plugin_configure' function */
 
 /* End of 'plugin.c' file */
 

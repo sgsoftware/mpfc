@@ -36,6 +36,7 @@
 #include <linux/videodev.h>
 #include "types.h"
 #include "inp.h"
+#include "logger.h"
 #include "mystring.h"
 #include "pmng.h"
 #include "song.h"
@@ -47,6 +48,9 @@
 
 /* Plugins manager */
 static pmng_t *rad_pmng = NULL;
+
+/* Logger */
+static logger_t *rad_log = NULL;
 
 /* Audio device */
 static int audio_fd = -1;
@@ -68,18 +72,22 @@ bool_t rad_start( char *filename )
 	int mixer_fd;
 
 	if ((fd = open("/dev/radio0", O_RDONLY)) < 0)
+	{
+		logger_error(rad_log, 0, "Unable to open /dev/radio0");
 		return FALSE;
+	}
 	ioctl(fd, VIDIOCGAUDIO, &va);
 	va.flags = 0;
 	va.volume = 8192;
 	va.audio = 0;
 	va.balance = 32768;
 	vt.tuner = 0;
-	ioctl(fd, VIDIOCSTUNER, &vt);
+	ioctl(fd, VIDIOCGTUNER, &vt);
 	freq = rad_name2freq(filename);
 	f = (int)(freq * 16000.);
 	if (vt.rangelow > 0 && (f < vt.rangelow || f > vt.rangehigh))
 	{
+		logger_error(rad_log, 0, "Frequency is out of range");
 		close(fd);
 		fd = -1;
 		return FALSE;
@@ -227,6 +235,8 @@ void plugin_exchange_data( plugin_data_t *pd )
 	INP_DATA(pd)->m_resume = rad_resume;
 	INP_DATA(pd)->m_set_song_title = rad_set_song_title;
 	INP_DATA(pd)->m_vfs_stat = rad_stat;
+	rad_pmng = pd->m_pmng;
+	rad_log = pd->m_logger;
 } /* End of 'plugin_exchange_data' function */
 
 /* End of 'radio.c' file */

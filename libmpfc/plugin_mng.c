@@ -134,16 +134,14 @@ int pmng_apply_effects( pmng_t *pmng, byte *data, int len, int fmt,
 	iter = pmng_start_iteration(pmng, PLUGIN_TYPE_EFFECT);
 	for ( ;; )
 	{
-		char name[256];
-		effect_plugin_t *ep;
+		plugin_t *ep;
 		
 		/* Apply effect plugin if it is enabled */
-		ep = EFFECT_PLUGIN(pmng_iterate(&iter));
+		ep = pmng_iterate(&iter);
 		if (ep == NULL)
 			break;
-		snprintf(name, sizeof(name), "enable-effect-%s", PLUGIN(ep)->m_name);
-		if (cfg_get_var_int(pmng->m_cfg_list, name))
-			l = ep_apply(ep, data, l, fmt, freq, channels);
+		if (pmng_is_effect_enabled(pmng, ep))
+			l = ep_apply(EFFECT_PLUGIN(ep), data, l, fmt, freq, channels);
 	}
 	return l;
 } /* End of 'pmng_apply_effects' function */
@@ -415,6 +413,22 @@ plugin_t *pmng_iterate( pmng_iterator_t *iter )
 	return (iter->m_index >= pmng->m_num_plugins ? NULL : 
 			pmng->m_plugins[iter->m_index ++]);
 } /* End of 'pmng_iterate' function */
+
+/* Check if effect is enabled */
+bool_t pmng_is_effect_enabled( pmng_t *pmng, plugin_t *ep )
+{
+	char name[256];
+	snprintf(name, sizeof(name), "enable-effect-%s", ep->m_name);
+	return cfg_get_var_bool(pmng->m_cfg_list, name);
+} /* End of 'pmng_is_effect_enabled' function */
+
+/* Enable/disable effect */
+void pmng_enable_effect( pmng_t *pmng, plugin_t *ep, bool_t enable )
+{
+	char name[256];
+	snprintf(name, sizeof(name), "enable-effect-%s", ep->m_name);
+	cfg_set_var_bool(pmng->m_cfg_list, name, enable);
+} /* End of 'pmng_enable_effect' function */
 
 /* End of 'pmng.c' file */
 

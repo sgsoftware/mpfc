@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Edit box functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 18.10.2004
+ * LAST UPDATE : 29.10.2004
  * NOTE        : Module prefix 'editbox'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -85,8 +85,9 @@ bool_t editbox_construct( editbox_t *eb, wnd_t *parent, char *id, char *text,
 	wnd_msg_add_handler(wnd, "destructor", editbox_destructor);
 
 	/* Initialize edit box fields */
-	eb->m_text = str_new(text);
+	eb->m_text = str_new(text == NULL ? "" : text);
 	eb->m_width = width;
+	eb->m_editable = TRUE;
 	editbox_move(eb, STR_LEN(eb->m_text));
 	eb->m_text_before_hist = str_new("");
 	return TRUE;
@@ -133,8 +134,7 @@ void editbox_get_desired_size( dlgitem_t *di, int *width, int *height )
 void editbox_set_text( editbox_t *eb, char *text )
 {
 	assert(eb);
-	assert(text);
-	str_copy_cptr(eb->m_text, text);
+	str_copy_cptr(eb->m_text, text == NULL ? "" : text);
 	editbox_move(eb, /*EDITBOX_LEN(eb)*/0);
 	eb->m_modified = TRUE;
 	wnd_msg_send(WND_OBJ(eb), "changed", editbox_changed_new());
@@ -209,7 +209,7 @@ wnd_msg_retcode_t editbox_on_keydown( wnd_t *wnd, wnd_key_t key )
 	editbox_t *eb = EDITBOX_OBJ(wnd);
 
 	/* Append char to the text */
-	if (key >= ' ' && key <= 0xFF)
+	if (key >= ' ' && key <= 0xFF && eb->m_editable)
 	{
 		editbox_addch(eb, key);
 		eb->m_state_changed = TRUE;
@@ -228,31 +228,43 @@ wnd_msg_retcode_t editbox_on_action( wnd_t *wnd, char *action )
 	/* Delete previous char */
 	if (!strcasecmp(action, "del_left"))
 	{
-		editbox_delch(eb, eb->m_cursor - 1);
-		wnd_msg_send(WND_OBJ(eb), "changed", editbox_changed_new());
+		if (eb->m_editable)
+		{
+			editbox_delch(eb, eb->m_cursor - 1);
+			wnd_msg_send(WND_OBJ(eb), "changed", editbox_changed_new());
+		}
 	}
 	/* Delete current character */
 	else if (!strcasecmp(action, "del_right"))
 	{
-		editbox_delch(eb, eb->m_cursor);
-		wnd_msg_send(WND_OBJ(eb), "changed", editbox_changed_new());
+		if (eb->m_editable)
+		{
+			editbox_delch(eb, eb->m_cursor);
+			wnd_msg_send(WND_OBJ(eb), "changed", editbox_changed_new());
+		}
 	}
 	/* Kill text from current position to the start */
 	else if (!strcasecmp(action, "kill_to_start"))
 	{
-		while (eb->m_cursor != 0)
-			editbox_delch(eb, eb->m_cursor - 1);
-		wnd_msg_send(WND_OBJ(eb), "changed", editbox_changed_new());
+		if (eb->m_editable)
+		{
+			while (eb->m_cursor != 0)
+				editbox_delch(eb, eb->m_cursor - 1);
+			wnd_msg_send(WND_OBJ(eb), "changed", editbox_changed_new());
+		}
 	}
 	/* Kill text from current position to the end */
 	else if (!strcasecmp(action, "kill_to_end"))
 	{
-		int count = EDITBOX_LEN(eb) - eb->m_cursor;
-		int was_cursor = eb->m_cursor;
-		for ( ; count > 0; count -- )
-			editbox_delch(eb, was_cursor);
-		editbox_move(eb, was_cursor);
-		wnd_msg_send(WND_OBJ(eb), "changed", editbox_changed_new());
+		if (eb->m_editable)
+		{
+			int count = EDITBOX_LEN(eb) - eb->m_cursor;
+			int was_cursor = eb->m_cursor;
+			for ( ; count > 0; count -- )
+				editbox_delch(eb, was_cursor);
+			editbox_move(eb, was_cursor);
+			wnd_msg_send(WND_OBJ(eb), "changed", editbox_changed_new());
+		}
 	}
 	/* Move cursor right */
 	else if (!strcasecmp(action, "move_right"))

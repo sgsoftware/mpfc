@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. MP3 input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 06.02.2004
+ * LAST UPDATE : 31.10.2004
  * NOTE        : Module prefix 'mp3'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -42,6 +42,9 @@
 #include "pmng.h"
 #include "song_info.h"
 #include "util.h"
+#include "wnd.h"
+#include "wnd_checkbox.h"
+#include "wnd_dialog.h"
 
 #define MP3_IN_BUF_SIZE (5*8192)
 
@@ -940,11 +943,35 @@ static void mp3_remove_tag( char *filename )
 	logger_message(mp3_log, 1, _("OK"));
 } /* End of 'mp3_remove_tag' function */
 
+/* Handle 'ok_clicked' message for configuration dialog */
+wnd_msg_retcode_t mp3_on_configure( wnd_t *wnd )
+{
+	checkbox_t *cb = CHECKBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd),
+				"quick_getlen"));
+	assert(cb);
+	cfg_set_var_bool(mp3_cfg, "quick-get-len", cb->m_checked);
+	return WND_MSG_RETCODE_OK;
+} /* End of 'mp3_on_configure' function */
+
+/* Launch configuration dialog */
+void mp3_configure( wnd_t *parent )
+{
+	dialog_t *dlg;
+
+	dlg = dialog_new(parent, _("Configure mp3 plugin"));
+	checkbox_new(WND_OBJ(dlg->m_vbox),
+			_("&Quick length calculation"), "quick_getlen", 'u', 
+			cfg_get_var_bool(mp3_cfg, "quick-get-len"));
+	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", mp3_on_configure);
+	dialog_arrange_children(dlg);
+} /* End of 'mp3_configure' function */
+
 /* Exchange data with main program */
 void plugin_exchange_data( plugin_data_t *pd )
 {
 	pd->m_desc = mp3_desc;
 	pd->m_author = mp3_author;
+	pd->m_configure = mp3_configure;
 	INP_DATA(pd)->m_start = mp3_start;
 	INP_DATA(pd)->m_start_with_fd = mp3_start_with_fd;
 	INP_DATA(pd)->m_end = mp3_end;

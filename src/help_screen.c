@@ -197,6 +197,7 @@ void help_init_player( help_screen_t *help )
 	help_add(help, _("r:\t\t Remove songs"));
 	help_add(help, _("s:\t\t Save play list"));
 	help_add(help, _("S:\t\t Sort play list"));
+	help_add(help, _("P:\t\t Launch plugins manager"));
 	help_add(help, _("V:\t\t Start visual mode"));
 	help_add(help, _("C:\t\t Centrize view"));
 	help_add(help, _("/:\t\t Search"));
@@ -211,7 +212,6 @@ void help_init_player( help_screen_t *help )
 	help_add(help, _("U:\t\t Undo"));
 	help_add(help, _("D:\t\t Redo"));
 	help_add(help, _("I:\t\t Reload songs information"));
-	help_add(help, _("P:\t\t Reload plugins"));
 	help_add(help, _("ps:\t\t Set play bounds"));
 	help_add(help, _("p<Ret>:\t\t Set play bounds and play"));
 	help_add(help, _("pc:\t\t Clear play bounds"));

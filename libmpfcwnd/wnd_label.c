@@ -29,6 +29,7 @@
 #include <string.h>
 #include "types.h"
 #include "wnd.h"
+#include "wnd_dialog.h"
 #include "wnd_dlgitem.h"
 #include "wnd_label.h"
 
@@ -78,11 +79,22 @@ bool_t label_construct( label_t *l, wnd_t *parent, char *text, char *id,
 	return TRUE;
 } /* End of 'label_construct' function */
 
+/* Create a label with another label */
+label_t *label_new_with_label( wnd_t *parent, char *title, char *text,
+		char *id, label_flags_t flags )
+{
+	hbox_t *hbox;
+	hbox = hbox_new(parent, NULL, 0);
+	label_new(WND_OBJ(hbox), title, NULL, 0);
+	return label_new(WND_OBJ(hbox), text, id, flags);
+} /* End of 'label_new_with_label' function */
+
 /* Set label text */
 void label_set_text( label_t *l, char *text )
 {
 	wnd_set_title(WND_OBJ(l), text);
 	l->m_text = text;
+	dialog_update_size(DIALOG_OBJ(DLGITEM_OBJ(l)->m_dialog));
 } /* End of 'label_set_text' function */
 
 /* Calculate size desired by this label */

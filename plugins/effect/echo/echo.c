@@ -30,6 +30,10 @@
 #include "ep.h"
 #include "pmng.h"
 #include "util.h"
+#include "wnd.h"
+#include "wnd_checkbox.h"
+#include "wnd_dialog.h"
+#include "wnd_editbox.h"
 
 #define CLAMP(x, low, high)  (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
 
@@ -72,8 +76,6 @@ int echo_apply( byte *d, int len, int fmt, int srate, int nch )
 	del = cfg_get_var_int(echo_cfg, "delay");
 	volume = cfg_get_var_int(echo_cfg, "volume");
 	feedback = cfg_get_var_int(echo_cfg, "feedback");
-	util_log("delay = %d, volume = %d, feedback = %d\n", del, volume, 
-			feedback);
 
 	if (!buffer)
 		buffer = (short *)malloc(BUFFER_BYTES + 2);
@@ -129,11 +131,51 @@ void plugin_set_cfg_default( cfg_node_t *list )
 	cfg_set_var_int(list, "feedback", 50);
 } /* End of 'echo_set_cfg_default' function */
 
+/* Handle 'ok_clicked' message for configuration dialog */
+wnd_msg_retcode_t echo_on_configure( wnd_t *wnd )
+{
+	editbox_t *eb_delay, *eb_volume, *eb_feedback;
+	checkbox_t *cb_surround;
+	
+	/* Get controls */
+	eb_delay = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "delay"));
+	eb_volume = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "volume"));
+	eb_feedback = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "feedback"));
+	cb_surround = CHECKBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "surround"));
+	assert(eb_delay && eb_volume && eb_feedback && cb_surround);
+	
+	/* Set values */
+	cfg_set_var(echo_cfg, "delay", EDITBOX_TEXT(eb_delay));
+	cfg_set_var(echo_cfg, "volume", EDITBOX_TEXT(eb_volume));
+	cfg_set_var(echo_cfg, "feedback", EDITBOX_TEXT(eb_feedback));
+	cfg_set_var_bool(echo_cfg, "surround-enable", cb_surround->m_checked);
+	return WND_MSG_RETCODE_OK;
+} /* End of 'echo_on_configure' function */
+
+/* Launch configuration dialog */
+void echo_configure( wnd_t *parent )
+{
+	dialog_t *dlg;
+
+	dlg = dialog_new(parent, _("Configure echo plugin"));
+	editbox_new_with_label(WND_OBJ(dlg->m_vbox), _("&Delay: "), 
+			"delay", cfg_get_var(echo_cfg, "delay"), 'd', 50);
+	editbox_new_with_label(WND_OBJ(dlg->m_vbox), _("&Volume: "), 
+			"volume", cfg_get_var(echo_cfg, "volume"), 'v', 50);
+	editbox_new_with_label(WND_OBJ(dlg->m_vbox), _("&Feedback: "), 
+			"feedback", cfg_get_var(echo_cfg, "feedback"), 'f', 50);
+	checkbox_new(WND_OBJ(dlg->m_vbox), _("Enable s&urround"), "surround", 
+			'u', cfg_get_var_bool(echo_cfg, "surround-enable"));
+	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", echo_on_configure);
+	dialog_arrange_children(dlg);
+} /* End of 'echo_configure' function */
+
 /* Exchange data with main program */
 void plugin_exchange_data( plugin_data_t *pd )
 {
 	pd->m_desc = echo_desc;
 	pd->m_author = echo_author;
+	pd->m_configure = echo_configure;
 	EP_DATA(pd)->m_apply = echo_apply;
 	echo_pmng = pd->m_pmng;
 	echo_cfg = pd->m_cfg;

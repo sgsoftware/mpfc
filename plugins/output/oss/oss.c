@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. OSS output plugin functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 11.08.2004
+ * LAST UPDATE : 30.10.2004
  * NOTE        : Module prefix 'oss'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -34,6 +34,9 @@
 #include "cfg.h"
 #include "outp.h"
 #include "pmng.h"
+#include "wnd.h"
+#include "wnd_dialog.h"
+#include "wnd_editbox.h"
 
 /* Audio device file handle */
 static int oss_fd = -1;
@@ -156,11 +159,34 @@ void oss_get_volume( int *left, int *right )
 	*right = (v & 0xFF);
 } /* End of 'oss_get_volume' function */
 
+/* Handle 'ok_clicked' message for configuration dialog */
+wnd_msg_retcode_t oss_on_configure( wnd_t *wnd )
+{
+	editbox_t *eb = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "device"));
+	assert(eb);
+	cfg_set_var(oss_cfg, "device", EDITBOX_TEXT(eb));
+	return WND_MSG_RETCODE_OK;
+} /* End of 'oss_on_configure' function */
+
+/* Launch configuration dialog */
+void oss_configure( wnd_t *parent )
+{
+	dialog_t *dlg;
+	editbox_t *eb;
+
+	dlg = dialog_new(parent, _("Configure OSS plugin"));
+	eb = editbox_new_with_label(WND_OBJ(dlg->m_vbox), _("&Device: "), 
+			"device", cfg_get_var(oss_cfg, "device"), 'd', 50);
+	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", oss_on_configure);
+	dialog_arrange_children(dlg);
+} /* End of 'oss_configure' function */
+
 /* Exchange data with main program */
 void plugin_exchange_data( plugin_data_t *pd )
 {
 	pd->m_desc = oss_desc;
 	pd->m_author = oss_author;
+	pd->m_configure = oss_configure;
 	OUTP_DATA(pd)->m_start = oss_start;
 	OUTP_DATA(pd)->m_end = oss_end;
 	OUTP_DATA(pd)->m_play = oss_play;

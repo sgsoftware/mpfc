@@ -58,6 +58,8 @@
 #include "wnd_editbox.h"
 #include "wnd_filebox.h"
 #include "wnd_label.h"
+#include "wnd_listbox.h"
+#include "wnd_multiview_dialog.h"
 #include "wnd_radio.h"
 #include "wnd_root.h"
 
@@ -637,6 +639,7 @@ bool_t player_init_cfg( void )
 	cfg_set_var_int(cfg_list, "play-from-stop", 1);
 	cfg_set_var(cfg_list, "lib-dir", LIBDIR"/mpfc");
 	cfg_set_var_bool(cfg_list, "equalizer.enable-on-change", TRUE);
+	cfg_set_var_bool(cfg_list, "autosave-plugins-params", TRUE);
 
 	/* Read configuration files */
 	cfg_rcfile_read(cfg_list, player_cfg_autosave_file);
@@ -670,6 +673,10 @@ void player_save_cfg( void )
 			continue;
 		cfg_rcfile_save_node(fd, node, NULL);
 	}
+
+	/* Save plugins parameters if need */
+	if (cfg_get_var_bool(cfg_list, "autosave-plugins-params"))
+		cfg_rcfile_save_node(fd, cfg_search_node(cfg_list, "plugins"), NULL);
 	fclose(fd);
 } /* End of 'player_save_cfg' function */
 
@@ -1020,11 +1027,6 @@ wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action )
 		if (letter >= 'a' && letter <= 'z')
 			player_goto_mark(letter);
 	}
-	/* Reload plugins */
-	else if (!strcasecmp(action, "reload_plugins"))
-	{
-		pmng_load_plugins(player_pmng);
-	}
 	/* Launch file browser */
 	else if (!strcasecmp(action, "file_browser"))
 	{
@@ -1034,6 +1036,11 @@ wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action )
 	else if (!strcasecmp(action, "test"))
 	{
 		player_test_dialog();
+	}
+	/* Launch plugins manager */
+	else if (!strcasecmp(action, "plugins_manager"))
+	{
+		player_pmng_dialog();
 	}
 	/* Launch logger view */
 	else if (!strcasecmp(action, "log"))
@@ -1583,6 +1590,7 @@ void *player_thread( void *arg )
 		int disp_count;
 		dword in_flags, out_flags;
 		file_t *fd = NULL;
+		out_plugin_t *cur_outp = NULL;
 
 		/* Skip to next iteration if there is nothing to play */
 		if (player_plist->m_cur_song < 0 || 
@@ -1634,6 +1642,7 @@ void *player_thread( void *arg )
 			wnd_invalidate(player_wnd);
 			continue;
 		}
+		cur_outp = player_pmng->m_cur_out;
 
 		/* Set audio parameters */
 		/*if (!no_outp)
@@ -1710,10 +1719,10 @@ void *player_thread( void *arg )
 							freq = new_freq;
 							fmt = new_fmt;
 						
-							outp_flush(player_pmng->m_cur_out);
-							outp_set_channels(player_pmng->m_cur_out, ch);
-							outp_set_freq(player_pmng->m_cur_out, freq);
-							outp_set_fmt(player_pmng->m_cur_out, fmt);
+							outp_flush(cur_outp);
+							outp_set_channels(cur_outp, ch);
+							outp_set_freq(cur_outp, freq);
+							outp_set_fmt(cur_outp, fmt);
 						}
 
 						/* Apply effects */
@@ -1721,7 +1730,7 @@ void *player_thread( void *arg )
 								fmt, freq, ch);
 					
 						/* Send to output plugin */
-						outp_play(player_pmng->m_cur_out, buf, size);
+						outp_play(cur_outp, buf, size);
 					}
 					else
 						util_wait();
@@ -1742,7 +1751,7 @@ void *player_thread( void *arg )
 		if (!no_outp)
 		{
 			logger_debug(player_log, "outp_flush");
-			outp_flush(player_pmng->m_cur_out);
+			outp_flush(cur_outp);
 		}
 
 		/* Stop timer thread */
@@ -1766,8 +1775,9 @@ void *player_thread( void *arg )
 		if (!no_outp)
 		{
 			logger_debug(player_log, "outp_end");
-			outp_end(player_pmng->m_cur_out);
+			outp_end(cur_outp);
 		}
+		cur_outp = NULL;
 
 		/* Update screen */
 		wnd_invalidate(player_wnd);
@@ -2217,6 +2227,175 @@ void player_test_dialog( void )
 	dialog_arrange_children(dlg);
 } /* End of 'player_test_dialog' function */
 
+/* Data for plugins manager */
+enum
+{
+	PLAYER_PMNG_INPUT = 0,
+	PLAYER_PMNG_OUTPUT,
+	PLAYER_PMNG_EFFECT,
+	PLAYER_PMNG_CHARSET,
+	PLAYER_PMNG_COUNT
+};
+typedef struct 
+{
+	char *m_title, *m_btn_title, *m_name;
+	char m_letter;
+	vbox_t *m_view;
+	hbox_t *m_hbox;
+	listbox_t *m_list;
+	vbox_t *m_vbox;
+	editbox_t *m_author, *m_desc;
+	button_t *m_configure;
+	checkbox_t *m_enabled_cb;
+} player_pmng_view_t; 
+
+/* Launch plugin manager dialog */
+void player_pmng_dialog( void )
+{
+	mview_dialog_t *mvd;
+	pmng_iterator_t iter;
+	player_pmng_view_t *views;
+	checkbox_t *cb;
+	button_t *reload_btn;
+	int i;
+
+	/* Initialize basic views data */
+	views = (player_pmng_view_t *)malloc(sizeof(*views) * PLAYER_PMNG_COUNT);
+	memset(views, 0, sizeof(*views) * PLAYER_PMNG_COUNT);
+	views[PLAYER_PMNG_INPUT].m_title = _("Input");
+	views[PLAYER_PMNG_INPUT].m_btn_title = _("&Input");
+	views[PLAYER_PMNG_INPUT].m_name = "input";
+	views[PLAYER_PMNG_INPUT].m_letter = 'i';
+	views[PLAYER_PMNG_OUTPUT].m_title = _("Output");
+	views[PLAYER_PMNG_OUTPUT].m_btn_title = _("&Output");
+	views[PLAYER_PMNG_OUTPUT].m_name = "output";
+	views[PLAYER_PMNG_OUTPUT].m_letter = 'o';
+	views[PLAYER_PMNG_EFFECT].m_title = _("Effect");
+	views[PLAYER_PMNG_EFFECT].m_btn_title = _("&Effect");
+	views[PLAYER_PMNG_EFFECT].m_name = "effect";
+	views[PLAYER_PMNG_EFFECT].m_letter = 'e';
+	views[PLAYER_PMNG_CHARSET].m_title = _("Charset");
+	views[PLAYER_PMNG_CHARSET].m_btn_title = _("C&harset");
+	views[PLAYER_PMNG_CHARSET].m_name = "charset";
+	views[PLAYER_PMNG_CHARSET].m_letter = 'h';
+
+	/* Create dialog and views */
+	mvd = mview_dialog_new(wnd_root, _("Plugins manager"));
+	/* reload_btn = button_new(WND_OBJ(mvd), _("Reload plugins"), "reload", 'r');
+	wnd_msg_add_handler(WND_OBJ(DIALOG_OBJ(mvd)->m_hbox), "clicked", 
+			player_pmng_dialog_on_reload);*/
+	cfg_set_var_ptr(WND_OBJ(mvd)->m_cfg_list, "views", views);
+	wnd_msg_add_handler(WND_OBJ(mvd), "destructor",
+			player_pmng_dialog_destructor);
+	for ( i = 0; i < PLAYER_PMNG_COUNT; i ++ )
+	{
+		player_pmng_view_t *v = &views[i];
+		v->m_view = vbox_new(WND_OBJ(mvd->m_views), v->m_title, 0);
+		mview_dialog_add_view(mvd, v->m_view, v->m_btn_title, v->m_letter);
+	}
+
+	/* Create boxes */
+	for ( i = 0; i < PLAYER_PMNG_COUNT; i ++ )
+	{
+		char list_id[20];
+		player_pmng_view_t *v = &views[i];
+
+		v->m_hbox = hbox_new(WND_OBJ(v->m_view), NULL, 1);
+		snprintf(list_id, sizeof(list_id), "%s_list", v->m_name);
+		v->m_list = listbox_new(WND_OBJ(v->m_hbox), NULL, list_id, 'l', 
+				i == PLAYER_PMNG_OUTPUT ? LISTBOX_SELECTABLE : 0, 20, 10);
+		if (i == PLAYER_PMNG_OUTPUT)
+			wnd_msg_add_handler(WND_OBJ(v->m_list), "selection_changed",
+					player_pmng_dialog_on_list_sel_change);
+		wnd_msg_add_handler(WND_OBJ(v->m_list), "changed", 
+				player_pmng_dialog_on_list_change);
+		v->m_vbox = vbox_new(WND_OBJ(v->m_hbox), NULL, 0);
+	}
+
+	/* Fill plugin lists */
+	iter = pmng_start_iteration(player_pmng, PLUGIN_TYPE_ALL);
+	for ( ;; )
+	{
+		int index = 0;
+		plugin_t *p = pmng_iterate(&iter);
+		if (p == NULL)
+			break;
+
+		if (p->m_type == PLUGIN_TYPE_INPUT)
+			index = PLAYER_PMNG_INPUT;
+		else if (p->m_type == PLUGIN_TYPE_OUTPUT)
+			index = PLAYER_PMNG_OUTPUT;
+		else if (p->m_type == PLUGIN_TYPE_EFFECT)
+			index = PLAYER_PMNG_EFFECT;
+		else if (p->m_type == PLUGIN_TYPE_CHARSET)
+			index = PLAYER_PMNG_CHARSET;
+		listbox_add(views[index].m_list, p->m_name, p);
+	}
+
+	/* Set plugins info controls */
+	views[PLAYER_PMNG_EFFECT].m_enabled_cb = cb =
+		checkbox_new(WND_OBJ(views[PLAYER_PMNG_EFFECT].m_vbox),
+				_("Effect is ena&bled"), "enabled", 'b', FALSE);
+	wnd_msg_add_handler(WND_OBJ(cb), "clicked",
+			player_pmng_dialog_on_effect_clicked);
+	for ( i = 0; i < PLAYER_PMNG_COUNT; i ++ )
+	{
+		char desc_id[20], author_id[20], conf_id[20];
+		player_pmng_view_t *v = &views[i];
+
+		snprintf(desc_id, sizeof(desc_id), "%s_desc", v->m_name);
+		v->m_desc = editbox_new_with_label(WND_OBJ(v->m_view), 
+				_("&Description: "), desc_id, "", 'd', 70);
+		v->m_desc->m_editable = FALSE;
+		snprintf(author_id, sizeof(author_id), "%s_author", v->m_name);
+		v->m_author = editbox_new_with_label(WND_OBJ(v->m_view), 
+				_("&Author: "), author_id, "", 'a', 70);
+		v->m_author->m_editable = FALSE;
+		snprintf(conf_id, sizeof(conf_id), "%s_conf", v->m_name);
+		v->m_configure = button_new(WND_OBJ(v->m_vbox), _("Con&figure"), 
+				conf_id, 'f');
+		wnd_msg_add_handler(WND_OBJ(v->m_configure), "clicked",
+				player_pmng_dialog_on_configure);
+	}
+	player_pmng_dialog_sync(DIALOG_OBJ(mvd));
+
+	/* Set proper focus branches */
+	dialog_arrange_children(DIALOG_OBJ(mvd));
+	for ( i = PLAYER_PMNG_COUNT - 1; i >= 0; i -- )
+		wnd_set_focus(WND_OBJ(views[i].m_list));
+} /* End of 'player_pmng_dialog' function */
+
+/* Synchronize plugin manager dialog items with current item */
+void player_pmng_dialog_sync( dialog_t *dlg )
+{
+	int i;
+	player_pmng_view_t *views = 
+		(player_pmng_view_t *)cfg_get_var_ptr(WND_OBJ(dlg)->m_cfg_list,
+			"views");
+	assert(views);
+
+	/* Synchronize views */
+	for ( i = 0; i < PLAYER_PMNG_COUNT; i ++ )
+	{
+		player_pmng_view_t *v = &views[i];
+		int index = v->m_list->m_cursor;
+		plugin_t *p = (plugin_t *)v->m_list->m_list[index].m_data;
+
+		/* Get info */
+		char *author = plugin_get_author(p);
+		char *desc = plugin_get_desc(p);
+
+		/* Set labels */
+		editbox_set_text(v->m_author, author == NULL ? "" : author);
+		editbox_set_text(v->m_desc, desc == NULL ? "" : desc);
+
+		/* Synchronize effect checkbox */
+		if (i == PLAYER_PMNG_EFFECT)
+			v->m_enabled_cb->m_checked = pmng_is_effect_enabled(player_pmng, p);
+	}
+	wnd_invalidate(WND_OBJ(dlg));
+} /* End of 'player_pmng_dialog_sync' function */
+
 /*****
  *
  * Dialog messages handlers
@@ -2630,6 +2809,95 @@ wnd_msg_retcode_t player_logview_on_close( wnd_t *wnd )
 	return WND_MSG_RETCODE_OK;
 } /* End of 'player_logview_on_close' function */
 
+/* Handle 'changed' message for plugins manager list boxes */
+wnd_msg_retcode_t player_pmng_dialog_on_list_change( wnd_t *wnd, int index )
+{
+	player_pmng_dialog_sync(DIALOG_OBJ(DLGITEM_OBJ(wnd)->m_dialog));
+	return WND_MSG_RETCODE_OK;
+} /* End of 'player_pmng_dialog_on_list_change' function */
+
+/* Handle 'selection_changed' message for plugins manager list box */
+wnd_msg_retcode_t player_pmng_dialog_on_list_sel_change( wnd_t *wnd, 
+		int index )
+{
+	player_pmng_view_t *views;
+	wnd_t *dlg;
+
+	dlg = DLGITEM_OBJ(wnd)->m_dialog;
+	views = (player_pmng_view_t *)cfg_get_var_ptr(dlg->m_cfg_list, "views");
+	assert(views);
+	player_pmng->m_cur_out = index < 0 ? NULL :
+		OUTPUT_PLUGIN(views[PLAYER_PMNG_OUTPUT].m_list->m_list[index].m_data);
+	return WND_MSG_RETCODE_OK;
+} /* End of 'player_pmng_dialog_on_list_sel_change' function */
+
+/* Handle 'clicked' message for plugins manager 'enable effect' checkbox */
+wnd_msg_retcode_t player_pmng_dialog_on_effect_clicked( wnd_t *wnd )
+{
+	plugin_t *ep;
+	checkbox_t *cb = CHECKBOX_OBJ(wnd);
+	wnd_t *dlg;
+	player_pmng_view_t *views;
+	listbox_t *lb;
+
+	/* Enable/disable effect */
+	dlg = DLGITEM_OBJ(wnd)->m_dialog;
+	views = (player_pmng_view_t *)cfg_get_var_ptr(dlg->m_cfg_list, "views");
+	assert(views);
+	lb = views[PLAYER_PMNG_EFFECT].m_list;
+	ep = (plugin_t *)lb->m_list[lb->m_cursor].m_data;
+	pmng_enable_effect(player_pmng, ep, cb->m_checked);
+	return WND_MSG_RETCODE_OK;
+} /* End of 'player_pmng_dialog_on_effect_clicked' function */
+
+/* Handle 'clicked' message for plugins manager configure buttons */
+wnd_msg_retcode_t player_pmng_dialog_on_configure( wnd_t *wnd )
+{
+	player_pmng_view_t *v = NULL;
+	player_pmng_view_t *views; 
+	wnd_t *dlg;
+	plugin_t *p;
+	int i, index;
+
+	/* Determine our view */
+	dlg = DLGITEM_OBJ(wnd)->m_dialog;
+	views = (player_pmng_view_t *)cfg_get_var_ptr(dlg->m_cfg_list, "views");
+	assert(views);
+	for ( i = 0; i < PLAYER_PMNG_COUNT; i ++ )
+	{
+		if (views[i].m_configure == (button_t *)wnd)
+		{
+			v = &views[i];
+			break;
+		}
+	}
+	assert(v);
+
+	/* Get corresponding plugin */
+	index = v->m_list->m_cursor;
+	p = (plugin_t *)v->m_list->m_list[index].m_data;
+
+	/* Call configure */
+	plugin_configure(p, wnd_root);
+	return WND_MSG_RETCODE_OK;
+} /* End of 'player_pmng_dialog_on_configure' function */
+
+/* Handle 'clicked' message for plugins manager reload button */
+wnd_msg_retcode_t player_pmng_dialog_on_reload( wnd_t *wnd )
+{
+	pmng_load_plugins(player_pmng);
+	return WND_MSG_RETCODE_OK;
+} /* End of 'player_pmng_dialog_on_reload' function */
+
+/* Destructor for plugins manager */
+void player_pmng_dialog_destructor( wnd_t *wnd )
+{
+	player_pmng_view_t *views = 
+		(player_pmng_view_t *)cfg_get_var_ptr(wnd->m_cfg_list, "views");
+	assert(views);
+	free(views);
+} /* End of 'player_pmng_dialog_destructor' function */
+
 /*****
  *
  * Variables change handlers
@@ -2784,7 +3052,7 @@ void player_class_set_default_styles( cfg_node_t *list )
 	cfg_set_var(list, "kbind.exec", "!");
 	cfg_set_var(list, "kbind.goback", "``");
 	cfg_set_var(list, "kbind.time_back", "<Backspace>");
-	cfg_set_var(list, "kbind.reload_plugins", "P");
+	cfg_set_var(list, "kbind.plugins_manager", "P");
 	cfg_set_var(list, "kbind.file_browser", "B");
 	//cfg_set_var(list, "kbind.test", "T");
 	cfg_set_var(list, "kbind.log", "O");

@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Disk writer output plugin functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 11.08.2003
+ * LAST UPDATE : 30.10.2004
  * NOTE        : Module prefix 'dw'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -31,6 +31,9 @@
 #include "file.h"
 #include "outp.h"
 #include "pmng.h"
+#include "wnd.h"
+#include "wnd_dialog.h"
+#include "wnd_editbox.h"
 
 /* Header size */
 #define DW_HEAD_SIZE 44
@@ -170,11 +173,33 @@ void dw_set_fmt( dword fmt )
 	dw_fmt = fmt;
 } /* End of 'dw_set_bits' function */
 
+/* Handle 'ok_clicked' message for configuration dialog */
+wnd_msg_retcode_t dw_on_configure( wnd_t *wnd )
+{
+	editbox_t *eb = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "path"));
+	assert(eb);
+	cfg_set_var(dw_cfg, "path", EDITBOX_TEXT(eb));
+	return WND_MSG_RETCODE_OK;
+} /* End of 'dw_on_configure' function */
+
+/* Launch configuration dialog */
+void dw_configure( wnd_t *parent )
+{
+	dialog_t *dlg;
+
+	dlg = dialog_new(parent, _("Configure disk writer plugin"));
+	filebox_new_with_label(WND_OBJ(dlg->m_vbox), _("P&ath to store: "), 
+			"path", cfg_get_var(dw_cfg, "path"), 'a', 50);
+	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", dw_on_configure);
+	dialog_arrange_children(dlg);
+} /* End of 'dw_configure' function */
+
 /* Exchange data with main program */
 void plugin_exchange_data( plugin_data_t *pd )
 {
 	pd->m_desc = dw_desc;
 	pd->m_author = dw_author;
+	pd->m_configure = dw_configure;
 	OUTP_DATA(pd)->m_start = dw_start;
 	OUTP_DATA(pd)->m_end = dw_end;
 	OUTP_DATA(pd)->m_play = dw_play;

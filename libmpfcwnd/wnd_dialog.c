@@ -108,7 +108,7 @@ dlgitem_t *dialog_find_item( dialog_t *dlg, char *id )
 	assert(id);
 
 	for ( child = DLGITEM_OBJ(WND_OBJ(dlg)->m_child); child != NULL; 
-			child = dialog_iterate_items(dlg, child, FALSE) )
+			child = dialog_iterate_items(dlg, child, 0) )
 	{
 		if (child->m_id != NULL && !strcmp(child->m_id, id))
 			return child;
@@ -116,8 +116,8 @@ dlgitem_t *dialog_find_item( dialog_t *dlg, char *id )
 	return NULL;
 } /* End of 'dialog_find_item' function */
 
-/* Arrange dialog items */
-void dialog_arrange_children( dialog_t *dlg )
+/* Update dialog size (after some child changes its child) */
+void dialog_update_size( dialog_t *dlg )
 {
 	wnd_t *wnd = WND_OBJ(dlg);
 	dlgitem_t *child;
@@ -143,48 +143,80 @@ void dialog_arrange_children( dialog_t *dlg )
 	/* Set child position */
 	dlgitem_set_pos(child, 0, 0, width, height);
 
+	/* Repaint dialog */
+	wnd_global_update_visibility(WND_ROOT(wnd));
+	wnd_invalidate(wnd->m_parent);
+} /* End of 'dialog_update_size' function */
+
+/* Arrange dialog items */
+void dialog_arrange_children( dialog_t *dlg )
+{
+	wnd_t *starting;
+	dlgitem_t *child;
+
+	/* Update size */
+	dialog_update_size(dlg);
+
 	/* Set focus to the first child */
-	for ( child = DLGITEM_OBJ(WND_OBJ(dlg->m_vbox)->m_child); child != NULL; 
-			child = DLGITEM_OBJ(WND_OBJ(child)->m_next) )
+	if (dlg->m_first_branch == NULL)
+		starting = WND_OBJ(dlg->m_vbox)->m_child;
+	else
+		starting = dlg->m_first_branch;
+	for ( child = DLGITEM_OBJ(starting); 
+			child != NULL; child = DLGITEM_OBJ(WND_OBJ(child)->m_next) )
 	{
 		if (!(DLGITEM_FLAGS(child) & DLGITEM_PACK_END))
 			break;
 	}
 	while (DLGITEM_FLAGS(child) & DLGITEM_NOTABSTOP)
-		child = dialog_iterate_items(dlg, child, FALSE);
+		child = dialog_iterate_items(dlg, child, 0);
 	wnd_set_focus(WND_OBJ(child));
-
-	/* Repaint dialog */
-	wnd_global_update_visibility(WND_ROOT(wnd));
-	wnd_invalidate(wnd->m_parent);
 } /* End of 'dialog_arrange_children' function */
 
 /* Dialog items iterator */
-dlgitem_t *dialog_iterate_items( dialog_t *dlg, dlgitem_t *di, bool_t cycle )
+dlgitem_t *dialog_iterate_items( dialog_t *dlg, dlgitem_t *di, 
+		dialog_iterate_flags_t flags )
 {
 	wnd_t *wnd = WND_OBJ(di), *parent;
+	int child_offset, next_offset;
 
 	assert(dlg);
 
+	/* Determine offset of child and next pointers depending of flags */
+	if (flags & DIALOG_ITERATE_ZORDER)
+	{
+		child_offset = ((byte *)(&wnd->m_focus_child) - (byte *)wnd);
+		next_offset = ((byte *)(&wnd->m_lower_sibling) - (byte *)wnd);
+	}
+	else
+	{
+		child_offset = ((byte *)(&wnd->m_child) - (byte *)wnd);
+		next_offset = ((byte *)(&wnd->m_next) - (byte *)wnd);
+	}
+#define DIALOG_ITERATE_CHILD(w) DLGITEM_OBJ(*(wnd_t **)((byte *)(w) + \
+			child_offset))
+#define DIALOG_ITERATE_NEXT(w) DLGITEM_OBJ(*(wnd_t **)((byte *)(w) + \
+			next_offset))
+
 	/* First try to continue with current item child */
-	if (wnd->m_child != NULL)
-		return DLGITEM_OBJ(wnd->m_child);
+	if (DIALOG_ITERATE_CHILD(wnd) != NULL)
+		return DIALOG_ITERATE_CHILD(wnd);
 
 	/* Next try current item sibling */
-	if (wnd->m_next != NULL)
-		return DLGITEM_OBJ(wnd->m_next);
+	if (DIALOG_ITERATE_NEXT(wnd) != NULL)
+		return DIALOG_ITERATE_NEXT(wnd);
 
 	/* Next our parent's sibling */
 	for ( parent = wnd->m_parent; parent != WND_OBJ(dlg); 
 			parent = parent->m_parent )
 	{
-		if (parent->m_next != NULL)
-			return DLGITEM_OBJ(parent->m_next);
+		if (DIALOG_ITERATE_NEXT(parent) != NULL)
+			return DIALOG_ITERATE_NEXT(parent);
 	}
 
 	/* Full cycle is done */
-	if (cycle)
-		return DLGITEM_OBJ(WND_OBJ(dlg)->m_child);
+	if (flags & DIALOG_ITERATE_CYCLE)
+		return DIALOG_ITERATE_CHILD(dlg);
 	return NULL;
 } /* End of 'dialog_iterate_items' function */
 

@@ -62,6 +62,10 @@ label_t *label_new( wnd_t *parent, char *text, char *id, label_flags_t flags );
 bool_t label_construct( label_t *l, wnd_t *parent, char *text, char *id,
 		label_flags_t flags );
 
+/* Create a label with another label */
+label_t *label_new_with_label( wnd_t *parent, char *title, char *text,
+		char *id, label_flags_t flags );
+
 /* Set label text */
 void label_set_text( label_t *l, char *text );
 

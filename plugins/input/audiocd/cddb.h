@@ -31,6 +31,10 @@
 #include "types.h"
 #include "song_info.h"
 
+/* Categories list */
+extern char *cddb_cats[];
+extern int cddb_num_cats;
+
 /* Initialize CDDB entry for currently playing disc */
 bool_t cddb_read( void );
 

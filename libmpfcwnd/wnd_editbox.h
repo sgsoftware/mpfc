@@ -79,6 +79,9 @@ typedef struct
 
 	/* Edit box state changed */
 	bool_t m_state_changed;
+
+	/* Is this edit box editable */
+	bool_t m_editable;
 } editbox_t;
 
 /* Convert window object to edit box type */

@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC AudioCD input plugin. CDDB support 
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 22.11.2003
+ * LAST UPDATE : 31.10.2004
  * NOTE        : Module prefix 'cddb'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -49,6 +49,12 @@
 static char **cddb_data = NULL;
 static int cddb_data_len = 0;
 static bool_t cddb_server_found = TRUE;
+
+/* Categories list */
+char *cddb_cats[] = { "blues", "classical", "country", "data", "folk",
+						"jazz", "misc", "newage", "reggae", "rock",
+						"soundtrack" };
+int cddb_num_cats = sizeof(cddb_cats) / sizeof(cddb_cats[0]);
 
 /* Initialize CDDB entry for currently playing disc */
 bool_t cddb_read( void )
@@ -673,12 +679,13 @@ char *cddb_make_post_string( char *email, char *category )
 /* Check if specified category is valid */
 bool_t cddb_valid_category( char *cat )
 {
-	return (!strcmp(cat, "blues") || !strcmp(cat, "classical") || 
-			!strcmp(cat, "country") || !strcmp(cat, "data") ||
-			!strcmp(cat, "folk") || !strcmp(cat, "jazz") ||
-			!strcmp(cat, "misc") || !strcmp(cat, "newage") ||
-			!strcmp(cat, "reggae") || !strcmp(cat, "rock") ||
-			!strcmp(cat, "soundtrack"));
+	int i;
+	for ( i = 0; i < cddb_num_cats; i ++ )
+	{
+		if (!strcmp(cat, cddb_cats[i]))
+			return TRUE;
+	}
+	return FALSE;
 } /* End of 'cdbd_valid_category' function */
 
 /* End of 'cddb.c' file */

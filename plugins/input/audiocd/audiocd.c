@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Audio CD input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 19.12.2003
+ * LAST UPDATE : 31.10.2004
  * NOTE        : Module prefix 'acd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -41,6 +41,10 @@
 #include "song.h"
 #include "song_info.h"
 #include "util.h"
+#include "wnd.h"
+#include "wnd_combobox.h"
+#include "wnd_dialog.h"
+#include "wnd_editbox.h"
 
 /* Get track number from filename */
 #define acd_fname2trk(name) (strncmp(name, "/track", 6) ? -1 : \
@@ -535,11 +539,55 @@ int acd_stat( char *name, struct stat *sb )
 	return ENOENT;
 } /* End of 'acd_stat' function */
 
+/* Handle 'ok_clicked' message for configuration dialog */
+wnd_msg_retcode_t acd_on_configure( wnd_t *wnd )
+{
+	editbox_t *device_eb, *host_eb, *cat_eb, *email_eb;
+	
+	device_eb = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "device"));
+	host_eb = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "host"));
+	cat_eb = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "category"));
+	email_eb = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "email"));
+	assert(device_eb && host_eb && cat_eb && email_eb);
+	cfg_set_var(acd_cfg, "device", EDITBOX_TEXT(device_eb));
+	cfg_set_var(acd_cfg, "cddb-host", EDITBOX_TEXT(host_eb));
+	cfg_set_var(acd_cfg, "cddb-email", EDITBOX_TEXT(email_eb));
+	cfg_set_var(acd_cfg, "cddb-category", EDITBOX_TEXT(cat_eb));
+	return WND_MSG_RETCODE_OK;
+} /* End of 'acd_on_configure' function */
+
+/* Launch configuration dialog */
+void acd_configure( wnd_t *parent )
+{
+	dialog_t *dlg;
+	combo_t *category;
+	vbox_t *vbox;
+	int i;
+
+	dlg = dialog_new(parent, _("Configure AudioCD plugin"));
+	editbox_new_with_label(WND_OBJ(dlg->m_vbox), _("CD &device: "), 
+			"device", cfg_get_var(acd_cfg, "device"), 'd', 50);
+	vbox = vbox_new(WND_OBJ(dlg->m_vbox), _("CDDB parameters"), 0);
+	editbox_new_with_label(WND_OBJ(vbox), _("&Host: "), 
+			"host", cfg_get_var(acd_cfg, "cddb-host"), 'h', 50);
+	editbox_new_with_label(WND_OBJ(vbox), _("&Email: "), 
+			"email", cfg_get_var(acd_cfg, "cddb-email"), 'e', 50);
+	category = combo_new_with_label(WND_OBJ(vbox), _("Disc c&ategory: "),
+			"category", "", 'a', 50, cddb_num_cats + 1);
+	for ( i = 0; i < cddb_num_cats; i ++ )
+		combo_add_item(category, cddb_cats[i]);
+	editbox_set_text(EDITBOX_OBJ(category), 
+			cfg_get_var(acd_cfg, "cddb-category"));
+	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", acd_on_configure);
+	dialog_arrange_children(dlg);
+} /* End of 'acd_configure' function */
+
 /* Exchange data with main program */
 void plugin_exchange_data( plugin_data_t *pd )
 {
 	pd->m_desc = acd_desc;
 	pd->m_author = acd_author;
+	pd->m_configure = acd_configure;
 	INP_DATA(pd)->m_start = acd_start;
 	INP_DATA(pd)->m_end = acd_end;
 	INP_DATA(pd)->m_get_stream = acd_get_stream;
