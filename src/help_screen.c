@@ -5,7 +5,7 @@
 /* FILE NAME   : help_screen.c
  * PURPOSE     : SG MPFC. Help screen functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 4.02.2004
+ * LAST UPDATE : 11.03.2004
  * NOTE        : Module prefix 'help'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -259,7 +259,9 @@ void help_init_browser( help_screen_t *help )
 	help_add(help, _("+:\t\t Select files matching a pattern"));
 	help_add(help, _("-:\t\t Deselect files matching a pattern"));
 	help_add(help, _("a:\t\t Add selected files to playlist"));
+	help_add(help, _("r:\t\t Replace playlist files with the selected"));
 	help_add(help, _("i:\t\t Toggle song info mode"));
+	help_add(help, _("s:\t\t Toggle search mode"));
 	help_add(help, _("?:\t\t This help screen"));
 } /* End of 'help_init_browser' function */
 

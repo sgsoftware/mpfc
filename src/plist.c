@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Play list manipulation
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 3.02.2004
+ * LAST UPDATE : 11.03.2004
  * NOTE        : Module prefix 'plist'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -1292,6 +1292,18 @@ plist_set_t *plist_set_dup( plist_set_t *set )
 		plist_set_add(s, node->m_name);
 	return s;
 } /* End of 'plist_set_dup' function */
+
+/* Clear play list */
+void plist_clear( plist_t *pl )
+{
+	if (pl == NULL)
+		return;
+
+	pl->m_sel_start = 0;
+	pl->m_sel_end = pl->m_len - 1;
+	plist_rem(pl);
+	pl->m_visual = FALSE;
+} /* End of 'plist_clear' function */
 
 /* End of 'plist.c' file */
 

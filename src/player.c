@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG MPFC. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 4.02.2004
+ * LAST UPDATE : 11.03.2004
  * NOTE        : Module prefix 'player'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -145,6 +145,9 @@ pmng_t *player_pmng = NULL;
 /* User configuration file name */
 char player_cfg_file[MAX_FILE_NAME] = "";
 
+/* Previous file browser session directory name */
+char player_fb_dir[MAX_FILE_NAME] = "";
+
 /* Initialize player */
 bool_t player_init( int argc, char *argv[] )
 {
@@ -187,6 +190,10 @@ bool_t player_init( int argc, char *argv[] )
 
 	/* Initialize colors */
 	col_init();
+
+	/* Initialize file browser directory */
+	getcwd(player_fb_dir, sizeof(player_fb_dir));
+	strcat(player_fb_dir, "/");
 	
 	/* Initialize plugin manager */
 	player_pmng = pmng_init(cfg_list, player_print_msg);
@@ -2504,14 +2511,12 @@ void player_save_info_dlg( wnd_t *wnd )
 void player_file_browser( void )
 {
 	browser_t *fb;
-	char dir[MAX_FILE_NAME];
 
 	/* Create browser and run it */
-	getcwd(dir, sizeof(dir));
-	strcat(dir, "/");
 	fb = fb_new(wnd_root, 0, 0, wnd_root->m_width, wnd_root->m_height - 2,
-			dir);
+			player_fb_dir);
 	wnd_run(fb);
+	util_strncpy(player_fb_dir, fb->m_cur_dir, sizeof(player_fb_dir));
 	wnd_destroy(fb);
 } /* End of 'player_file_browser' function */
 

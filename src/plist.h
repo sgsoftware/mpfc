@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for play list manipulation
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 7.01.2004
+ * LAST UPDATE : 11.03.2004
  * NOTE        : Module prefix 'plist'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -157,6 +157,9 @@ void plist_sort( plist_t *pl, bool_t global, int criteria );
 
 /* Remove selected songs from play list */
 void plist_rem( plist_t *pl );
+
+/* Clear play list */
+void plist_clear( plist_t *pl );
 
 /* Search for string */
 bool_t plist_search( plist_t *pl, char *str, int dir, int criteria );

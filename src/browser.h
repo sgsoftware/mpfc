@@ -5,7 +5,7 @@
 /* FILE NAME   : browser.h
  * PURPOSE     : SG MPFC. Interface for file browser functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 8.02.2004
+ * LAST UPDATE : 11.03.2004
  * NOTE        : Module prefix 'fb'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -69,6 +69,13 @@ typedef struct tag_browser_t
 
 	/* Is info mode active? */
 	bool_t m_info_mode;
+
+	/* Is search mode active? */
+	bool_t m_search_mode;
+
+	/* Current search string */
+	char m_search_str[MAX_FILE_NAME];
+	int m_search_str_len;
 } browser_t;
 
 /* Change selection of an item */
@@ -121,6 +128,9 @@ void fb_go_to_dir( browser_t *fb );
 
 /* Add selected files to play list */
 void fb_add2plist( browser_t *fb );
+
+/* Replace files in playlist with selected files  */
+void fb_replace_plist( browser_t *fb );
 
 /* Select/deselect files matching a pattern */
 void fb_select_pattern( browser_t *fb, bool_t sel );

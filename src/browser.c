@@ -5,7 +5,7 @@
 /* FILE NAME   : browser.c
  * PURPOSE     : SG MPFC. File browser functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 2.01.2004
+ * LAST UPDATE : 11.03.2004
  * NOTE        : Module prefix 'fb'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -107,6 +107,9 @@ bool_t fb_init( browser_t *fb, wnd_t *parent, int x, int y, int w,
 	fb->m_scrolled = 0;
 	fb->m_height = h - 3;
 	fb->m_info_mode = FALSE;
+	fb->m_search_mode = FALSE;
+	strcpy(fb->m_search_str, "");
+	fb->m_search_str_len = 0;
 	fb_load_files(fb);
 	WND_OBJ(fb)->m_flags |= (WND_INITIALIZED);
 	return TRUE;
@@ -167,6 +170,16 @@ void fb_display( wnd_t *wnd, dword data )
 	col_set_color(wnd, COL_EL_DEFAULT);
 	wnd_clear(wnd, TRUE);
 
+	/* Print search stuff */
+	if (fb->m_search_mode)
+	{
+		wnd_move(wnd, 0, wnd->m_height - 1);
+		wnd_set_attrib(wnd, A_BOLD);
+		wnd_printf(wnd, "Enter name you want to search: ");
+		wnd_set_attrib(wnd, A_NORMAL);
+		wnd_printf(wnd, "%s", fb->m_search_str);
+	}
+
 	/* Remove cursor */
 	wnd_move(wnd, wnd->m_width - 1, wnd->m_height - 1);
 } /* End of 'fb_display' function */
@@ -174,12 +187,71 @@ void fb_display( wnd_t *wnd, dword data )
 /* Handle key pressing */
 void fb_handle_key( wnd_t *wnd, dword data )
 {
-	int key = (int)data;
+	int key = (int)data, i;
 	browser_t *fb = (browser_t *)wnd;
 	char str[MAX_FILE_NAME];
 
 	if (fb == NULL)
 		return;
+
+	/* Handle key in search mode */
+	if (fb->m_search_mode)
+	{
+		bool_t dont_exit = FALSE;
+
+		if (key == 27)
+		{
+			fb->m_search_mode = FALSE;
+			fb->m_search_str[fb->m_search_str_len = 0] = 0;
+		}
+		else if (key >= ' ' && key <= 0xFF)
+		{
+			struct browser_list_item *item;
+			char *str;
+
+			fb->m_search_str[fb->m_search_str_len ++] = key;
+			fb->m_search_str[fb->m_search_str_len] = 0;
+
+			for ( i = 0; i < fb->m_num_files; i ++ )
+			{
+				item = &fb->m_files[i];
+				if (fb->m_info_mode && !(item->m_type & 
+							(FB_ITEM_DIR | FB_ITEM_UPDIR)) && 
+						item->m_info != NULL && item->m_info->m_name != NULL)
+					str = item->m_info->m_name;
+				else 
+					str = item->m_name;
+				if (!strncasecmp(str, fb->m_search_str, fb->m_search_str_len))
+					break;
+			}
+
+			if (i < fb->m_num_files)
+				fb_move_cursor(fb, i, FALSE);
+			else
+				fb->m_search_str[--fb->m_search_str_len] = 0;
+		}
+		else if (key == KEY_BACKSPACE)
+		{
+			if (fb->m_search_str_len > 0)
+				fb->m_search_str[--fb->m_search_str_len] = 0;
+			else
+			{
+				fb->m_search_mode = FALSE;
+				fb->m_search_str[fb->m_search_str_len = 0] = 0;
+			}
+		}
+		else if (key == '\n' || key == KEY_IC || key == KEY_RIGHT ||
+					key == KEY_LEFT || key == KEY_DOWN || key == KEY_UP ||
+					key == KEY_NPAGE || key == KEY_PPAGE || key == KEY_HOME ||
+					key == KEY_END)
+		{
+			fb->m_search_mode = FALSE;
+			fb->m_search_str[fb->m_search_str_len = 0] = 0;
+			dont_exit = TRUE;
+		}
+		if (!dont_exit)
+			return;
+	}
 
 	switch (key)
 	{
@@ -236,9 +308,19 @@ void fb_handle_key( wnd_t *wnd, dword data )
 		fb_add2plist(fb);
 		break;
 
+	/* Replace files in playlist with select files */
+	case 'r':
+		fb_replace_plist(fb);
+		break;
+ 
 	/* Toggle song info mode */
 	case 'i':
 		fb_toggle_info(fb);
+		break;
+
+	/* Toggle search mode */
+	case 's':
+		fb->m_search_mode = !fb->m_search_mode;
 		break;
 
 	/* Select/deselect files */
@@ -514,13 +596,17 @@ void fb_go_to_dir( browser_t *fb )
 void fb_add2plist( browser_t *fb )
 {
 	int i;
+	plist_set_t *set;
 
 	if (fb == NULL)
 		return;
 
+	set = plist_set_new();
 	for ( i = 1; i < fb->m_num_files; i ++ )
 		if (fb->m_files[i].m_type & FB_ITEM_SEL)
-			plist_add(player_plist, fb->m_files[i].m_full_name);
+			plist_set_add(set, fb->m_files[i].m_full_name);
+	plist_add_set(player_plist, set);
+	plist_set_free(set);
 } /* End of 'fb_add2plist' function */
 
 /* Select/deselect files matching a pattern */
@@ -769,6 +855,27 @@ void fb_help( browser_t *fb )
 	wnd_run(h);
 	wnd_destroy(h);
 } /* End of 'fb_help' function */
+
+/* Replace files in playlist with selected files  */
+void fb_replace_plist( browser_t *fb )
+{
+	int i;
+	plist_set_t *set;
+
+	if (fb == NULL)
+		return;
+
+	/* Clear playlist first */
+	plist_clear(player_plist);
+
+	/* Add these files */
+	set = plist_set_new();
+	for ( i = 1; i < fb->m_num_files; i ++ )
+		if (fb->m_files[i].m_type & FB_ITEM_SEL)
+			plist_set_add(set, fb->m_files[i].m_full_name);
+	plist_add_set(player_plist, set);
+	plist_set_free(set);
+} /* End of 'fb_replace_plist' function */
 
 /* End of 'browser.c' file */
 
