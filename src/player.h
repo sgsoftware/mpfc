@@ -121,7 +121,7 @@ extern vfs_t *player_vfs;
 bool_t player_init( int argc, char *argv[] );
 
 /* Unitialize player */
-void player_deinit( void );
+void player_deinit( wnd_t *wnd_root );
 
 /* Initialize the player window */
 wnd_t *player_wnd_new( wnd_t *parent );
@@ -185,6 +185,9 @@ wnd_msg_retcode_t player_on_mouse_ldouble( wnd_t *wnd, int x, int y,
 
 /* Handle user message */
 wnd_msg_retcode_t player_on_user( wnd_t *wnd, int id, void *data );
+
+/* Signal handler */
+void player_handle_signal( int signum );
 
 /***
  * Playing-related functions

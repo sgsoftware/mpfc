@@ -846,7 +846,7 @@ void fb_print_info_col( browser_t *fb, int id, struct browser_list_item *item )
 /* Show help screen */
 void fb_help( browser_t *fb )
 {
-	help_new(WND_OBJ(fb), HELP_BROWSER);
+	help_new(WND_ROOT(fb), HELP_BROWSER);
 } /* End of 'fb_help' function */
 
 /* Replace files in playlist with selected files  */

@@ -210,7 +210,7 @@ void help_init_player( help_screen_t *help )
 	help_add(help, _("R:\t\t Set/unset shuffle play mode"));
 	help_add(help, _("L:\t\t Set/unset loop play mode"));
 	help_add(help, _("o:\t\t Variables mini-manager"));
-	help_add(help, _("O:\t\t Advanced variables manager"));
+	help_add(help, _("O:\t\t Show logger window"));
 	help_add(help, _("U:\t\t Undo"));
 	help_add(help, _("D:\t\t Redo"));
 	help_add(help, _("I:\t\t Reload songs information"));

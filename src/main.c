@@ -53,7 +53,7 @@ int main( int argc, char *argv[] )
 	player_run();
 
 	/* Unitialize player and exit */
-	player_deinit();
+//	player_deinit();
 	return 0;
 } /* End of 'main' function */
 

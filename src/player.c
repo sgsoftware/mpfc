@@ -171,6 +171,9 @@ logger_view_t *player_logview = NULL;
 /* VFS data */
 vfs_t *player_vfs = NULL;
 
+/* Main thread ID */
+pthread_t player_main_tid = 0; 
+
 /*****
  *
  * Initialization/deinitialization functions
@@ -186,8 +189,9 @@ bool_t player_init( int argc, char *argv[] )
 	char *str_time;
 
 	/* Set signal handlers */
-/*	signal(SIGINT, player_handle_signal);
-	signal(SIGTERM, player_handle_signal);*/
+	player_main_tid = pthread_self();
+	signal(SIGINT, player_handle_signal);
+	signal(SIGTERM, player_handle_signal);
 	
 	/* Initialize configuration */
 	snprintf(player_cfg_file, sizeof(player_cfg_file), 
@@ -223,6 +227,7 @@ bool_t player_init( int argc, char *argv[] )
 				_("Window system initialization failed"));
 		return FALSE;
 	}
+	wnd_msg_add_handler(wnd_root, "destructor", player_deinit);
 	player_wnd = player_wnd_new(wnd_root);
 	if (player_wnd == NULL)
 	{
@@ -365,7 +370,7 @@ wnd_t *player_wnd_new( wnd_t *parent )
 } /* End of 'player_wnd_new' function */
 
 /* Unitialize player */
-void player_deinit( void )
+void player_deinit( wnd_t *wnd_root )
 {
 	int i;
 
@@ -750,8 +755,12 @@ void player_save_cfg_list( cfg_node_t *list, char *fname )
 /* Signal handler */
 void player_handle_signal( int signum )
 {
+	if (pthread_self() != player_main_tid)
+		return;
 	if (signum == SIGINT || signum == SIGTERM)
-		player_deinit();
+	{
+		wnd_close(wnd_root);
+	}
 } /* End of 'player_handle_signal' function */
 
 /*****

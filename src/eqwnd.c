@@ -354,7 +354,7 @@ float eqwnd_pos2val( int pos, int height )
 /* Show help screen */
 void eqwnd_help( eq_wnd_t *eq )
 {
-	help_new(WND_OBJ(eq), HELP_EQWND);
+	help_new(WND_ROOT(eq), HELP_EQWND);
 } /* End of 'eqwnd_help' function */
 
 /* Initialize equalizer window class */
