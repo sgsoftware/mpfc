@@ -177,11 +177,13 @@ song_t **rad_init_obj_songs( char *name, int *num_songs )
 	(*num_songs) = 1;
 	s = (song_t **)malloc(sizeof(song_t *));
 	s[0] = (song_t *)malloc(sizeof(song_t));
+	memset(s[0], 0, sizeof(song_t));
 	snprintf(s[0]->m_file_name, sizeof(s[0]->m_file_name), "radio:%f", freq);
 	s[0]->m_title = rad_set_song_title(s[0]->m_file_name);
 	s[0]->m_len = 0;
 	s[0]->m_info = NULL;
 	s[0]->m_inp = NULL;
+	s[0]->m_ref_count = 1;
 	return s;
 } /* End of 'rad_init_obj_songs' function */
 

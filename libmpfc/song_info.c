@@ -63,7 +63,7 @@ song_info_t *si_dup( song_info_t *info )
 {
 	song_info_t *si;
 	
-	if (si == NULL)
+	if (info == NULL)
 		return NULL;
 
 	/* Allocate memory */

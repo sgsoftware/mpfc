@@ -309,12 +309,12 @@ song_t **acd_init_obj_songs( char *name, int *num_songs )
 		if (acd_tracks_info[i].m_data)
 			continue;
 		s[j ++] = song = (song_t *)malloc(sizeof(song_t));
+		memset(song, 0, sizeof(*song));
 		snprintf(song->m_file_name, sizeof(song->m_file_name),
 				"audiocd:track%02d", acd_tracks_info[i].m_number);
 		song->m_title = acd_set_song_title(song->m_file_name);
 		song->m_len = acd_tracks_info[i].m_len;
-		song->m_inp = NULL;
-		song->m_info = NULL;
+		song->m_ref_count = 1;
 
 		if (track)
 			break;
