@@ -46,9 +46,7 @@ int main( int argc, char *argv[] )
 	/* Initialize player */
 	if (!player_init(argc, argv))
 	{
-		fprintf(stderr, _("Initialization error : %s\n"), 
-				error_get_text(error_get_last()));
-		return 0;
+		return 1;
 	}
 
 	/* Run player */

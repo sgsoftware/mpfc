@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Songs manipulation functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 15.09.2004
+ * LAST UPDATE : 22.09.2004
  * NOTE        : Module prefix 'song'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -29,7 +29,6 @@
 #include <string.h>
 #include "types.h"
 #include "cfg.h"
-#include "error.h"
 #include "file.h"
 #include "inp.h"
 #include "mystring.h"
@@ -59,10 +58,7 @@ song_t *song_new( vfs_file_t *file, char *title, int len )
 	/* Try to allocate memory for new song */
 	song = (song_t *)malloc(sizeof(song_t));
 	if (song == NULL)
-	{
-		error_set_code(ERROR_NO_MEMORY);
 		return NULL;
-	}
 	memset(song, 0, sizeof(*song));
 
 	/* Set song fields */
@@ -226,7 +222,7 @@ in_plugin_t *song_get_inp( song_t *song, file_t **fd )
 		song->m_inp = pmng_search_format(player_pmng, song->m_file_ext);
 	if (song->m_inp == NULL)
 	{
-		file_t *cfd = file_open(song->m_file_name, "rb", player_print_msg);
+		file_t *cfd = file_open(song->m_file_name, "rb", player_log);
 		if (cfd == NULL)
 			return NULL;
 		song->m_inp = pmng_search_content_type(player_pmng,

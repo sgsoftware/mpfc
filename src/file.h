@@ -5,7 +5,7 @@
 /* FILE NAME   : file.h
  * PURPOSE     : SG MPFC. Interface for file library functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 25.10.2003
+ * LAST UPDATE : 22.09.2004
  * NOTE        : Module prefix 'file'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -29,6 +29,7 @@
 
 #include <stdio.h>
 #include "types.h"
+#include "logger.h"
 #include "mystring.h"
 
 /* Function used to print messages */
@@ -43,8 +44,8 @@ typedef struct tag_file_t
 	/* File type */
 	byte m_type;
 
-	/* Message-printing function */
-	file_print_msg_t m_print;
+	/* Logger object */
+	logger_t *m_log;
 
 	/* Additional data */
 	void *m_data;
@@ -55,7 +56,7 @@ typedef struct tag_file_t
 #define FILE_TYPE_HTTP		1
 
 /* Open a file */
-file_t *file_open( char *filename, char *mode, file_print_msg_t printer );
+file_t *file_open( char *filename, char *mode, logger_t *log );
 
 /* Close file */
 int file_close( file_t *f );
@@ -89,9 +90,6 @@ char *file_get_content_type( file_t *f );
 
 /* Get file type */
 byte file_get_type( char *name );
-
-/* Print message */
-void file_print_msg( file_t *f, char *format, ... );
 
 #endif
 

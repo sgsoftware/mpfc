@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "types.h"
-#include "error.h"
 #include "history.h"
 
 /* Initialize list */
@@ -38,10 +37,7 @@ hist_list_t *hist_list_new( void )
 	/* Allocate memory for list */
 	l = (hist_list_t *)malloc(sizeof(hist_list_t));
 	if (l == NULL)
-	{
-		error_set_code(ERROR_NO_MEMORY);
 		return NULL;
-	}
 
 	/* Set fields */
 	l->m_head = l->m_tail = l->m_cur = NULL;

@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Window functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 11.09.2004
+ * LAST UPDATE : 22.09.2004
  * NOTE        : Module prefix 'wnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -31,11 +31,12 @@
 #include <sys/ioctl.h>
 #include "types.h"
 #include "cfg.h"
+#include "logger.h"
 #include "wnd.h"
 #include "wnd_root.h"
 
 /* Initialize window system and create root window */
-wnd_t *wnd_init( cfg_node_t *cfg_list )
+wnd_t *wnd_init( cfg_node_t *cfg_list, logger_t *log )
 {
 	WINDOW *wnd = NULL;
 	wnd_t *wnd_root = NULL;
@@ -92,6 +93,7 @@ wnd_t *wnd_init( cfg_node_t *cfg_list )
 	if (cfg_wnd == NULL)
 		goto failed;
 	global->m_root_cfg = cfg_wnd;
+	global->m_log = log;
 	global->m_classes_cfg = cfg_new_list(cfg_wnd, "classes", 
 			NULL, CFG_NODE_MEDIUM_LIST, 0);
 

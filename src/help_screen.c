@@ -28,7 +28,6 @@
 #include <string.h>
 #include "types.h"
 #include "colors.h"
-#include "error.h"
 #include "help_screen.h"
 #include "wnd.h"
 
@@ -43,10 +42,7 @@ help_screen_t *help_new( wnd_t *parent, int type )
 	/* Allocate memory */
 	help = (help_screen_t *)malloc(sizeof(help_screen_t));
 	if (help == NULL)
-	{
-		error_set_code(ERROR_NO_MEMORY);
 		return NULL;
-	}
 	memset(help, 0, sizeof(*help));
 	WND_OBJ(help)->m_class = help_class_init(WND_GLOBAL(parent));
 

@@ -5,7 +5,7 @@
 /* FILE NAME   : file.c
  * PURPOSE     : SG MPFC. File library functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.02.2004
+ * LAST UPDATE : 22.09.2004
  * NOTE        : Module prefix 'file'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -32,7 +32,7 @@
 #include "file_reg.h"
 
 /* Open a file */
-file_t *file_open( char *filename, char *mode, file_print_msg_t printer )
+file_t *file_open( char *filename, char *mode, logger_t *log )
 {
 	file_t *f;
 	
@@ -43,7 +43,7 @@ file_t *file_open( char *filename, char *mode, file_print_msg_t printer )
 
 	/* Save parameters */
 	f->m_name = strdup(filename);
-	f->m_print = printer;
+	f->m_log = log;
 	f->m_data = NULL;
 	
 	/* Get file type from its name and call respective open function */
@@ -155,21 +155,6 @@ byte file_get_type( char *name )
 		return FILE_TYPE_HTTP;
 	return FILE_TYPE_REGULAR;
 } /* End of 'file_get_type' function */
-
-/* Print message */
-void file_print_msg( file_t *f, char *format, ... )
-{
-	va_list ap;
-	char msg[256];
-	
-	if (f == NULL || f->m_print == NULL)
-		return;
-
-	va_start(ap, format);
-	vsnprintf(msg, sizeof(msg), format, ap);
-	va_end(ap);
-	f->m_print(msg);
-} /* End of 'file_print_msg' function */
 
 /* Set minimal buffer size */
 void file_set_min_buf_size( file_t *f, int size )

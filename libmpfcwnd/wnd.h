@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Interface for basic window
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 11.09.2004
+ * LAST UPDATE : 22.09.2004
  * NOTE        : Module prefix 'wnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -31,6 +31,7 @@
 #include <curses.h>
 #include "types.h"
 #include "cfg.h"
+#include "logger.h"
 #include "wnd_class.h"
 #include "wnd_basic.h"
 #include "wnd_def_handlers.h"
@@ -155,6 +156,9 @@ struct tag_wnd_global_data_t
 
 	/* Do any invalid windows exist now? */
 	bool_t m_invalid_exist;
+
+	/* Logger */
+	logger_t *m_log;
 };
 
 /* Window type */
@@ -288,6 +292,7 @@ struct tag_wnd_t
 #define WND_CLASSES_CFG(wnd)	(WND_GLOBAL(wnd)->m_classes_cfg)
 #define WND_CLASSES(wnd)		(WND_GLOBAL(wnd)->m_wnd_classes)
 #define WND_LIB_ACTIVE(wnd)		(WND_GLOBAL(wnd)->m_lib_active)
+#define WND_LOG(wnd)			(WND_GLOBAL(wnd)->m_log)
 
 /* Convert client coordinates to absolute window or screen */
 #define WND_CLIENT2ABS_X(wnd, x) (WND_OBJ(wnd)->m_client_x + (x))
@@ -311,7 +316,7 @@ struct tag_wnd_t
 	wnd_invalidate(WND_PARENT(wnd) == NULL ? WND_OBJ(wnd) : WND_PARENT(wnd))
 
 /* Initialize window system */
-wnd_t *wnd_init( cfg_node_t *cfg_list );
+wnd_t *wnd_init( cfg_node_t *cfg_list, logger_t *log );
 
 /* Create a window */
 wnd_t *wnd_new( wnd_t *parent, char *title, int x, int y, 

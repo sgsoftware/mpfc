@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG MPFC. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 15.09.2004
+ * LAST UPDATE : 22.09.2004
  * NOTE        : Module prefix 'player'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -29,6 +29,7 @@
 #include <fcntl.h>
 #include <sys/soundcard.h>
 #include <stdio.h>
+#include <stdlib.h>
 #define __USE_GNU
 #include <string.h>
 #include <unistd.h>
@@ -37,11 +38,12 @@
 #include "cfg.h"
 #include "colors.h"
 #include "eqwnd.h"
-#include "error.h"
 #include "file.h"
 #include "help_screen.h"
 #include "iwt.h"
 #include "key_bind.h"
+#include "logger.h"
+#include "logger_view.h"
 #include "player.h"
 #include "plist.h"
 #include "pmng.h"
@@ -159,6 +161,10 @@ wnd_t *player_wnd = NULL;
 /* Configuration list */
 cfg_node_t *cfg_list = NULL;
 
+/* Logger */
+logger_t *player_log = NULL;
+logger_view_t *player_logview = NULL;
+
 /* Standard value for edit boxes width */
 #define PLAYER_EB_WIDTH	50
 
@@ -176,6 +182,8 @@ bool_t player_init( int argc, char *argv[] )
 {
 	int i, l, r;
 	plist_set_t *set;
+	time_t t;
+	char *str_time;
 
 	/* Set signal handlers */
 /*	signal(SIGINT, player_handle_signal);
@@ -185,19 +193,46 @@ bool_t player_init( int argc, char *argv[] )
 	snprintf(player_cfg_file, sizeof(player_cfg_file), 
 			"%s/.mpfcrc", getenv("HOME"));
 	if (!player_init_cfg())
+	{
+		fprintf(stderr, _("Unable to initialize configuration"));
 		return FALSE;
+	}
+
+	/* Initialize logger */
+	player_log = logger_new(cfg_list, cfg_get_var(cfg_list, "log-file"));
+	if (player_log == NULL)
+	{
+		fprintf(stderr, _("Unable to initialize log system"));
+		return FALSE;
+	}
+	logger_attach_handler(player_log, player_on_log_msg, NULL);
+	t = time(NULL);
+	str_time = ctime(&t);
+	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_LOW, 
+			_("MPFC 1.3.1 Log\n%s"), str_time);
+	free(str_time);
 
 	/* Parse command line */
 	if (!player_parse_cmd_line(argc, argv))
 		return FALSE;
 
 	/* Initialize window system */
-	wnd_root = wnd_init(cfg_list);
+	wnd_root = wnd_init(cfg_list, player_log);
 	if (wnd_root == NULL)
+	{
+		logger_message(player_log, LOGGER_MSG_FATAL, LOGGER_LEVEL_LOW,
+				_("Window system initialization failed"));
 		return FALSE;
+	}
 	player_wnd = player_wnd_new(wnd_root);
 	if (player_wnd == NULL)
+	{
+		logger_message(player_log, LOGGER_MSG_FATAL, LOGGER_LEVEL_LOW,
+				_("Unable to initialize play list window"));
 		return FALSE;
+	}
+	player_logview = logview_new(wnd_root, player_log);
+	wnd_set_focus(player_wnd);
 
 	/* Initialize key bindings */
 	kbind_init();
@@ -210,7 +245,7 @@ bool_t player_init( int argc, char *argv[] )
 	strcat(player_fb_dir, "/");
 	
 	/* Initialize plugin manager */
-	player_pmng = pmng_init(cfg_list, player_print_msg);
+	player_pmng = pmng_init(cfg_list, player_log);
 
 	/* Initialize VFS */
 	player_vfs = vfs_init(player_pmng);
@@ -228,6 +263,8 @@ bool_t player_init( int argc, char *argv[] )
 	player_plist = plist_new(3);
 	if (player_plist == NULL)
 	{
+		logger_message(player_log, LOGGER_MSG_FATAL, LOGGER_LEVEL_LOW,
+				_("Play list initialization failed"));
 		return FALSE;
 	}
 
@@ -289,6 +326,8 @@ bool_t player_init( int argc, char *argv[] )
 	}
 
 	/* Exit */
+	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_LOW, 
+			_("Player initialized"));
 	return TRUE;
 } /* End of 'player_init' function */
 
@@ -370,11 +409,6 @@ void player_deinit( void )
 	}
 
 	/* Free memory allocated for strings */
-	if (player_msg != NULL)
-	{
-		free(player_msg);
-		player_msg = NULL;
-	}
 	if (player_search_string != NULL)
 	{
 		free(player_search_string);
@@ -394,6 +428,14 @@ void player_deinit( void )
 	undo_free(player_ul);
 	player_ul = NULL;
 	vfs_free(player_vfs);
+
+	/* Free logger */
+	if (player_log != NULL)
+	{
+		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_LOW,
+				_("Left MPFC"));
+		logger_free(player_log);
+	}
 
 	/* Uninitialize configuration manager */
 	cfg_free_node(cfg_list, TRUE);
@@ -462,6 +504,8 @@ bool_t player_parse_cmd_line( int argc, char *argv[] )
 /* Initialize configuration */
 bool_t player_init_cfg( void )
 {
+	char *log_file;
+
 	/* Initialize root configuration list and variables handlers */
 	cfg_list = cfg_new_list(NULL, "", NULL, CFG_NODE_BIG_LIST, 0);
 	cfg_new_var(cfg_list, "cur-song", CFG_NODE_RUNTIME, NULL, NULL);
@@ -480,6 +524,12 @@ bool_t player_init_cfg( void )
 			player_handle_kbind_scheme);
 
 	/* Set default variable values */
+	log_file = (char *)malloc(strlen(getenv("HOME")) + 
+			strlen("/.mpfc/log") + 1);
+	strcpy(log_file, getenv("HOME"));
+	strcat(log_file, "/.mpfc/log");
+	cfg_set_var(cfg_list, "log-file", log_file);
+	free(log_file);
 	cfg_set_var(cfg_list, "output-plugin", "oss");
 	cfg_set_var_int(cfg_list, "mp3-quick-get-len", 1);
 	cfg_set_var_int(cfg_list, "save-playlist-on-exit", 1);
@@ -700,7 +750,7 @@ void player_handle_action( int action )
 	int was_song, was_time;
 
 	/* Clear message string */
-	player_print_msg("");
+	//player_print_msg("");
 
 	was_pos = player_plist->m_sel_end;
 	was_song = player_plist->m_cur_song;
@@ -877,9 +927,13 @@ void player_handle_action( int action )
 		if (!plist_search(player_plist, player_search_string, 
 					(action == KBIND_NEXT_MATCH) ? 1 : -1, 
 					player_search_criteria))
-			player_print_msg(_("String not found"));
+			logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
+					_("String `%s' not found"), 
+					player_search_string);
 		else
-			player_print_msg(_("String found"));
+			logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
+					_("String `%s' found at position %d"), player_search_string,
+					player_plist->m_sel_end);
 		break;
 
 	/* Show equalizer dialog */
@@ -1071,32 +1125,10 @@ void player_handle_action( int action )
 		player_last_song = was_song;
 		player_last_song_time = was_time;
 	}
-} /* End of 'player_handle_action' function */
 
-/* Message printer */
-void player_print_msg( char *fmt, ... )
-{
-	int len = 256, n;
-	va_list ap;
-
-	if (player_msg != NULL)
-		free(player_msg);
-	player_msg = (char *)malloc(len);
-	for ( ;; )
-	{
-		va_start(ap, fmt);
-		n = vsnprintf(player_msg, len, fmt, ap);
-		va_end(ap);
-		if (n > -1 && n < len)
-			break;
-		else if (n > -1)
-			len = n + 1;
-		else
-			len *= 2;
-		player_msg = (char *)realloc(player_msg, len);
-	}
+	/* Repaint */
 	wnd_invalidate(player_wnd);
-} /* End of 'player_print_msg' function */
+} /* End of 'player_handle_action' function */
 
 /* Handle left-button click */
 wnd_msg_retcode_t player_on_mouse_ldown( wnd_t *wnd, int x, int y,
@@ -1331,6 +1363,16 @@ void player_display_slider( wnd_t *wnd, int x, int y, int width,
 			wnd_putchar(wnd, 0,  '=');
 	}
 } /* End of 'player_display_slider' function */
+
+/* Handle new log message */
+void player_on_log_msg( logger_t *log, void *data, 
+		struct logger_message_t *msg )
+{
+	/* Print message to status line */
+	player_msg = msg->m_message;
+	wnd_invalidate(player_wnd);
+	wnd_invalidate(WND_OBJ(player_logview));
+} /* End of 'player_on_log_msg' function */
 
 /*****
  *
@@ -1593,7 +1635,7 @@ void *player_thread( void *arg )
 		if (player_plist->m_cur_song < 0 || 
 				player_status == PLAYER_STATUS_STOPPED)
 		{
-			util_delay(0, 100000L);
+			util_wait();
 			continue;
 		}
 
@@ -1607,8 +1649,8 @@ void *player_thread( void *arg )
 		if (!inp_start(inp, s->m_file_name, fd))
 		{
 			player_next_track();
-			error_set_code(ERROR_UNKNOWN_FILE_TYPE);
-			player_print_msg("%s", error_text);
+			logger_message(player_log, LOGGER_MSG_ERROR, LOGGER_LEVEL_LOW,
+					_("Input plugin for file %s failed"), s->m_file_name);
 			wnd_invalidate(player_wnd);
 			continue;
 		}
@@ -1627,7 +1669,8 @@ void *player_thread( void *arg )
 				(!cfg_get_var_int(cfg_list, "silent-mode") && 
 					!outp_start(player_pmng->m_cur_out))))
 		{
-			player_print_msg(_("Unable to initialize output plugin"));
+			logger_message(player_log, LOGGER_MSG_ERROR, LOGGER_LEVEL_LOW,
+					_("Output plugin initialization failed"));
 //			wnd_send_msg(wnd_root, WND_MSG_USER, PLAYER_MSG_END_TRACK);
 			inp_end(inp);
 			player_status = PLAYER_STATUS_STOPPED;
@@ -2150,7 +2193,8 @@ void player_rem_dialog( void )
 	int was = player_plist->m_len;
 	
 	plist_rem(player_plist);
-	player_print_msg(_("Removed %i songs"), was - player_plist->m_len);
+	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
+			_("Removed %d songs"), was - player_plist->m_len);
 } /* End of 'player_rem_dialog' function */
 
 /* Launch info reloading dialog */
@@ -2235,8 +2279,12 @@ wnd_msg_retcode_t player_on_save( wnd_t *wnd )
 	editbox_t *eb = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "name"));
 	assert(eb);
 	res = plist_save(player_plist, EDITBOX_TEXT(eb));
-	player_print_msg((res) ? _("Play list saved") : 
-					_("Unable to save play list"));
+	if (res)
+		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
+				_("Play list saved to %s"), EDITBOX_TEXT(eb));
+	else
+		logger_message(player_log, LOGGER_MSG_ERROR, LOGGER_LEVEL_DEFAULT,
+				_("Unable to save play list to %s"), EDITBOX_TEXT(eb));
 	return WND_MSG_RETCODE_OK;
 } /* End of 'player_on_save' function */
 
@@ -2460,9 +2508,13 @@ wnd_msg_retcode_t player_on_search( wnd_t *wnd )
 	player_search_criteria = PLIST_SEARCH_TITLE;
 	if (!plist_search(player_plist, player_search_string, 1, 
 				player_search_criteria))
-		player_print_msg(_("String not found"));
+		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
+				_("String `%s' not found"), 
+				player_search_string);
 	else
-		player_print_msg(_("String found"));
+		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
+				_("String `%s' found at position %d"), player_search_string,
+				player_plist->m_sel_end);
 	return WND_MSG_RETCODE_OK;
 } /* End of 'player_on_search' function */
 
@@ -2495,9 +2547,13 @@ wnd_msg_retcode_t player_on_adv_search( wnd_t *wnd )
 		return WND_MSG_RETCODE_OK;
 	if (!plist_search(player_plist, player_search_string, 1, 
 				player_search_criteria))
-		player_print_msg(_("String not found"));
+		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
+				_("String `%s' not found"), 
+				player_search_string);
 	else
-		player_print_msg(_("String found"));
+		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
+				_("String `%s' found at position %d"), player_search_string,
+				player_plist->m_sel_end);
 	return WND_MSG_RETCODE_OK;
 } /* End of 'player_on_adv_search' function */
 

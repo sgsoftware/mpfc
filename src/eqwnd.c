@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #include "types.h"
 #include "cfg.h"
-#include "error.h"
 #include "eqwnd.h"
 #include "help_screen.h"
 #include "player.h"
@@ -47,10 +46,7 @@ eq_wnd_t *eqwnd_new( wnd_t *parent )
 	/* Allocate memory */
 	eq = (eq_wnd_t *)malloc(sizeof(eq_wnd_t));
 	if (eq == NULL)
-	{
-		error_set_code(ERROR_NO_MEMORY);
 		return NULL;
-	}
 	memset(eq, 0, sizeof(*eq));
 	WND_OBJ(eq)->m_class = eqwnd_class_init(WND_GLOBAL(parent));
 

@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for plugins manager 
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 17.09.2004
+ * LAST UPDATE : 22.09.2004
  * NOTE        : Module prefix 'pmng'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -33,6 +33,7 @@
 #include "csp.h"
 #include "ep.h"
 #include "inp.h"
+#include "logger.h"
 #include "outp.h"
 #include "vfs.h"
 
@@ -41,9 +42,6 @@
 #define PMNG_OUT	 1
 #define PMNG_EFFECT	 2
 #define PMNG_CHARSET 3
-
-/* Message printer function type */
-typedef void (*pmng_print_msg_t)( char *fmt, ... );
 
 /* Plugin manager type */
 typedef struct tag_pmng_t
@@ -70,12 +68,12 @@ typedef struct tag_pmng_t
 	/* Configuration variables list */
 	cfg_node_t *m_cfg_list;
 
-	/* Message printing function */
-	pmng_print_msg_t m_printer;
+	/* Logger object */
+	logger_t *m_log;
 } pmng_t;
 
 /* Initialize plugins */
-pmng_t *pmng_init( cfg_node_t *list, pmng_print_msg_t print_msg );
+pmng_t *pmng_init( cfg_node_t *list, logger_t *log );
 
 /* Unitialize plugins */
 void pmng_free( pmng_t *pmng );
@@ -120,8 +118,8 @@ cs_plugin_t *pmng_find_charset( pmng_t *pmng, char *name, int *index );
 /* Get configuration variables list */
 cfg_node_t *pmng_get_cfg( pmng_t *pmng );
 
-/* Get message printer */
-pmng_print_msg_t pmng_get_printer( pmng_t *pmng );
+/* Get logger */
+logger_t *pmng_get_logger( pmng_t *pmng );
 
 /* Create a plugin name */
 char *pmng_create_plugin_name( char *filename );

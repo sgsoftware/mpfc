@@ -32,7 +32,6 @@
 #include <unistd.h>
 #include "types.h"
 #include "colors.h"
-#include "error.h"
 #include "file.h"
 #include "inp.h"
 #include "player.h"
@@ -55,10 +54,7 @@ plist_t *plist_new( int start_pos )
 	/* Try to allocate memory for play list object */
 	pl = (plist_t *)malloc(sizeof(plist_t));
 	if (pl == NULL)
-	{
-		error_set_code(ERROR_NO_MEMORY);
 		return NULL;
-	}
 
 	/* Set play list fields */
 	pl->m_start_pos = start_pos;
@@ -131,7 +127,6 @@ int plist_add_one_file( plist_t *pl, vfs_file_t *file, char *title, int len,
 	if (pl->m_list == NULL)
 	{
 		pl->m_len = 0;
-		error_set_code(ERROR_NO_MEMORY);
 		plist_unlock(pl);
 		return 0;
 	}
@@ -197,18 +192,12 @@ int plist_add_m3u( plist_t *pl, char *filename )
 	/* Try to open file */
 	fd = file_open(filename, "rt", NULL);
 	if (fd == NULL)
-	{
-		error_set_code(ERROR_NO_SUCH_FILE);
 		return 0;
-	}
 
 	/* Read file head */
 	file_gets(str, sizeof(str), fd);
 	if (strncmp(str, "#EXTM3U", 7))
-	{
-		error_set_code(ERROR_UNKNOWN_FILE_TYPE);
 		return 0;
-	}
 		
 	/* Read file contents */
 	while (!file_eof(fd))
@@ -265,10 +254,7 @@ int plist_add_pls( plist_t *pl, char *filename )
 	/* Try to open file */
 	fd = file_open(filename, "rt", NULL);
 	if (fd == NULL)
-	{
-		error_set_code(ERROR_NO_SUCH_FILE);
 		return 0;
-	}
 
 	/* Read header */
 	file_gets(str, sizeof(str), fd);
@@ -419,10 +405,7 @@ bool_t plist_save_m3u( plist_t *pl, char *filename )
 	/* Try to create file */
 	fd = util_fopen(filename, "wt");
 	if (fd == NULL)
-	{
-		error_set_code(ERROR_NO_SUCH_FILE);
 		return FALSE;
-	}
 	
 	/* Write list head */
 	fprintf(fd, "#EXTM3U\n");
@@ -447,10 +430,7 @@ bool_t plist_save_pls( plist_t *pl, char *filename )
 	/* Try to create file */
 	fd = util_fopen(filename, "wt");
 	if (fd == NULL)
-	{
-		error_set_code(ERROR_NO_SUCH_FILE);
 		return FALSE;
-	}
 	
 	/* Write list head */
 	fprintf(fd, "[playlist]\nnumberofentries=%d\n", pl->m_len);

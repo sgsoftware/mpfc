@@ -5,7 +5,7 @@
 /* FILE NAME   : player.h
  * PURPOSE     : SG MPFC. Interface for main player functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 15.09.2004
+ * LAST UPDATE : 22.09.2004
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -29,6 +29,7 @@
 
 #include "types.h"
 #include "cfg.h"
+#include "logger.h"
 #include "plist.h"
 #include "pmng.h"
 #include "undo.h"
@@ -106,6 +107,9 @@ extern wnd_t *player_wnd;
 /* Configuration list */
 extern cfg_node_t *cfg_list;
 
+/* Logger */
+extern logger_t *player_log;
+
 /* VFS data */
 extern vfs_t *player_vfs;
 
@@ -154,8 +158,9 @@ wnd_msg_retcode_t player_on_display( wnd_t *wnd );
 void player_display_slider( wnd_t *wnd, int x, int y, int width, 
 	   int pos, int range );
 
-/* Message printer */
-void player_print_msg( char *format, ... );
+/* Handle new log message */
+void player_on_log_msg( logger_t *log, void *data, 
+		struct logger_message_t *msg );
 
 /* Play list window closing handler */
 wnd_msg_retcode_t player_on_close( wnd_t *wnd );

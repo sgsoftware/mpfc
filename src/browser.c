@@ -31,7 +31,6 @@
 #include "types.h"
 #include "browser.h"
 #include "colors.h"
-#include "error.h"
 #include "help_screen.h"
 #include "player.h"
 #include "plist.h"
@@ -73,10 +72,7 @@ browser_t *fb_new( wnd_t *parent, char *dir )
 	/* Allocate memory */
 	fb = (browser_t *)malloc(sizeof(browser_t));
 	if (fb == NULL)
-	{
-		error_set_code(ERROR_NO_MEMORY);
 		return NULL;
-	}
 	memset(fb, 0, sizeof(*fb));
 	WND_OBJ(fb)->m_class = fb_class_init(WND_GLOBAL(parent));
 

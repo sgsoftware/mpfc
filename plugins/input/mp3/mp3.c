@@ -36,6 +36,7 @@
 #include "file.h"
 #include "genre_list.h"
 #include "inp.h"
+#include "logger.h"
 #include "mp3.h"
 #include "myid3.h"
 #include "pmng.h"
@@ -102,8 +103,8 @@ static pmng_t *mp3_pmng = NULL;
 /* Current song header */
 struct mad_header mp3_head;
 
-/* Message printer */
-void (*mp3_print_msg)( char *fmt, ... );
+/* Logger */
+static logger_t *mp3_log = NULL;
 
 /* Get song information */
 static song_info_t *mp3_read_info( char *filename, int *len, int *nf );
@@ -117,7 +118,7 @@ bool_t mp3_start_with_fd( char *filename, file_t *fd )
 	/* Open file */
 	if (fd == NULL)
 	{
-		mp3_fd = file_open(filename, "rb", mp3_print_msg);
+		mp3_fd = file_open(filename, "rb", mp3_log);
 		if (mp3_fd == NULL)
 			return FALSE;
 	}
@@ -216,7 +217,7 @@ static int mp3_get_len_correct( char *filename, int *num_frames )
 	}
 	
 	/* Open file */
-	fd = file_open(filename, "rb", mp3_print_msg);
+	fd = file_open(filename, "rb", mp3_log);
 	if (fd == NULL)
 		return 0;
 
@@ -380,7 +381,7 @@ int mp3_get_xing_frames( char *filename )
 	bool_t found = FALSE;
 	
 	/* Open file */
-	fd = file_open(filename, "rb", mp3_print_msg);
+	fd = file_open(filename, "rb", mp3_log);
 	if (fd == NULL)
 		goto end;
 
@@ -906,10 +907,8 @@ int mp3_get_cur_time( void )
 /* Remove ID3 tags */
 static void mp3_remove_tag( char *filename )
 {
-	if (mp3_print_msg != NULL)
-	{
-		mp3_print_msg(_("Removing tag from file %s"), filename);
-	}
+	logger_message(mp3_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
+			 _("Removing tag from file %s"), filename);
 	if (strcmp(filename, mp3_file_name))
 	{
 		id3_remove(filename);
@@ -930,8 +929,8 @@ static void mp3_remove_tag( char *filename )
 			mp3_cur_info = si;
 		}
 	}
-	if (mp3_print_msg != NULL)
-		mp3_print_msg(_("OK"));
+	logger_message(mp3_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
+			 _("OK"));
 } /* End of 'mp3_remove_tag' function */
 
 /* Get functions list */
@@ -949,7 +948,7 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_set_eq = mp3_set_eq;
 	fl->m_get_cur_time = mp3_get_cur_time;
 	mp3_pmng = fl->m_pmng;
-	mp3_print_msg = pmng_get_printer(mp3_pmng);
+	mp3_log = pmng_get_logger(mp3_pmng);
 
 	fl->m_num_spec_funcs = 1;
 	fl->m_spec_funcs = (inp_spec_func_t *)malloc(sizeof(inp_spec_func_t) * 
@@ -1080,7 +1079,7 @@ static void mp3_read_header( char *filename, struct mad_header *head )
 		return;
 
 	/* Open file */
-	fd = file_open(filename, "rb", mp3_print_msg);
+	fd = file_open(filename, "rb", mp3_log);
 	if (fd == NULL)
 		return;
 

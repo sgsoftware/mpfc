@@ -551,7 +551,8 @@ void cddb_submit( char *filename )
 	/* Check data */
 	if (cddb_data == NULL)
 	{
-		acd_print_msg(_("CDDB submit error: no existing info found"));
+		logger_message(acd_log, LOGGER_MSG_ERROR, LOGGER_LEVEL_DEFAULT,
+				_("CDDB submit error: no existing info found"));
 		return;
 	}
 	
@@ -559,14 +560,15 @@ void cddb_submit( char *filename )
 	email = cfg_get_var(pmng_get_cfg(acd_pmng), "cddb-email");
 	if (strlen(email) <= 1)
 	{
-		acd_print_msg(_("CDDB submit error: you must specify your email "
-					"address"));
+		logger_message(acd_log, LOGGER_MSG_ERROR, LOGGER_LEVEL_DEFAULT,
+				_("CDDB submit error: you must specify your email address"));
 		return;
 	}
 	category = cfg_get_var(pmng_get_cfg(acd_pmng), "cddb-category");
 	if (!cddb_valid_category(category))
 	{
-		acd_print_msg(_("CDDB submit error: you must specify your category"));
+		logger_message(acd_log, LOGGER_MSG_ERROR, LOGGER_LEVEL_DEFAULT,
+				_("CDDB submit error: you must specify your category"));
 		return;
 	}
 

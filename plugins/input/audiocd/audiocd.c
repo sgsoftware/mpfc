@@ -70,11 +70,11 @@ static bool_t acd_first_time = TRUE;
 /* The next track */
 static char acd_next_song[MAX_FILE_NAME] = "";
 
-/* Message printer */
-pmng_print_msg_t acd_print_msg = NULL;
-
 /* Audio device */
 static int audio_fd = -1;
+
+/* Logger */
+static logger_t *acd_log = NULL;
 
 /* Prepare cdrom for ioctls */
 static int acd_prepare_cd( void )
@@ -547,7 +547,7 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_vfs_readdir = acd_readdir;
 	fl->m_vfs_stat = acd_stat;
 	acd_pmng = fl->m_pmng;
-	acd_print_msg = pmng_get_printer(acd_pmng);
+	acd_log = pmng_get_logger(acd_pmng);
 
 	fl->m_num_spec_funcs = 2;
 	fl->m_spec_funcs = (inp_spec_func_t *)malloc(sizeof(inp_spec_func_t) * 
@@ -559,20 +559,6 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_spec_funcs[1].m_flags = INP_SPEC_SAVE_INFO;
 	fl->m_spec_funcs[1].m_func = cddb_submit;
 } /* End of 'inp_get_func_list' function */
-
-/* Print message */
-void acd_print( char *format, ... )
-{
-	char msg[1024];
-	va_list ap;
-
-	va_start(ap, format);
-	vsnprintf(msg, sizeof(msg), format, ap);
-	va_end(ap);
-	
-	if (acd_print_msg != NULL)
-		acd_print_msg(msg);
-} /* End of 'acd_print' function */
 
 /* Set song title */
 str_t *acd_set_song_title( char *filename )

@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Info saver thread functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 27.08.2004
+ * LAST UPDATE : 22.09.2004
  * NOTE        : Module prefix 'iwt'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -165,12 +165,12 @@ void *iwt_thread( void *arg )
 		/* Pop song */
 		if ((song = iwt_pop()) != NULL)
 		{
-			player_print_msg(_("Saving info to file %s"), song->m_file_name);
 			inp_save_info(song_get_inp(song, NULL), 
 					song->m_file_name, song->m_info);
 			song_update_info(song);
 			song_free(song);
-			player_print_msg(_("Saved"));
+			logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
+				_("Saved info to file %s"), song->m_file_name);
 		}
 
 		/* Wait a little */

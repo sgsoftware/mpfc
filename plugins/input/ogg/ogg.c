@@ -77,8 +77,8 @@ static ov_callbacks ogg_callbacks = { ogg_file_read, ogg_file_seek,
 /* Mutex for synchronizing operations */
 static pthread_mutex_t ogg_mutex;
 
-/* Message printer */
-pmng_print_msg_t ogg_print_msg = NULL;
+/* Logger */
+static logger_t *ogg_log;
 
 /* Start playing with an opened file descriptor */
 bool_t ogg_start_with_fd( char *filename, file_t *fd )
@@ -89,7 +89,7 @@ bool_t ogg_start_with_fd( char *filename, file_t *fd )
 	/* Open file */
 	if (fd == NULL)
 	{
-		fd = file_open(filename, "rb", ogg_print_msg);
+		fd = file_open(filename, "rb", ogg_log);
 		if (fd == NULL)
 			return FALSE;
 	}
@@ -376,7 +376,7 @@ song_info_t *ogg_get_info( char *filename, int *len )
 	}
 
 	/* Open file */
-	fd = file_open(filename, "rb", ogg_print_msg);
+	fd = file_open(filename, "rb", ogg_log);
 	if (fd == NULL)
 		return NULL;
 	if (ov_open_callbacks(fd, &vf, NULL, 0, ogg_callbacks) < 0)
@@ -429,7 +429,7 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_save_info = ogg_save_info;
 	fl->m_get_info = ogg_get_info;
 	ogg_pmng = fl->m_pmng;
-	ogg_print_msg = pmng_get_printer(ogg_pmng);
+	ogg_log = pmng_get_logger(ogg_pmng);
 } /* End of 'ogg_get_func_list' function */
 
 /* Initialize genres list */

@@ -29,6 +29,7 @@
 #define __SG_MPFC_AUDIOCD_H__
 
 #include "types.h"
+#include "logger.h"
 #include "mystring.h"
 #include "pmng.h"
 #include "song_info.h"
@@ -70,6 +71,9 @@ typedef struct
 	(((acd_tracks_info[acd_num_tracks - 1].m_end_min * 60 + \
 				acd_tracks_info[acd_num_tracks - 1].m_end_sec) * 75 + \
 				acd_tracks_info[acd_num_tracks - 1].m_end_frm) / 75)
+
+/* Logger */
+extern logger_t *acd_log;
 
 /* Get song info */
 song_info_t *acd_get_info( char *filename, int *len );

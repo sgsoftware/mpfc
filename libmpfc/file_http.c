@@ -82,13 +82,15 @@ file_t *fhttp_open( file_t *f, char *mode )
 		fhttp_parse_url(name, &host_name, &file_name, &port);
 
 		/* Get host address */
-		file_print_msg(f, _("Getting address of host %s"), host_name);
+		logger_message(f->m_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
+				 _("Getting address of host %s"), host_name);
 		he = gethostbyname(host_name);
 		if (he == NULL)
 		{
 			goto close;
 		}
-		file_print_msg(f, _("OK"));
+		logger_message(f->m_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
+				_("OK"));
 
 		/* Initialize socket and connect */
 		data->m_sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -98,14 +100,17 @@ file_t *fhttp_open( file_t *f, char *mode )
 		their_addr.sin_port = htons(port);
 		their_addr.sin_addr = *((struct in_addr *)he->h_addr);
 		memset(&(their_addr.sin_zero), 0, 8);
-		file_print_msg(f, _("Connecting to %s"), host_name);
+		logger_message(f->m_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
+				_("Connecting to %s"), host_name);
 		if (connect(data->m_sock, (struct sockaddr *)&their_addr, 
 					sizeof(struct sockaddr)) < 0)
 			goto close;
-		file_print_msg(f, _("OK"));
+		logger_message(f->m_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
+				_("OK"));
 
 		/* Send request for file we need */
-		file_print_msg(f, _("Sending request for file %s"), file_name);
+		logger_message(f->m_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
+				_("Sending request for file %s"), file_name);
 		snprintf(str, sizeof(str), 
 				"GET /%s HTTP/1.0\r\nHost: %s\r\nUser-Agent: mpfc/1.0"
 				"\r\n\r\n", file_name, host_name);
@@ -113,7 +118,8 @@ file_t *fhttp_open( file_t *f, char *mode )
 			goto close;
 
 		/* Get HTTP header */
-		file_print_msg(f, _("Getting HTTP header"));
+		logger_message(f->m_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
+				_("Getting HTTP header"));
 		ph = header = (char *)malloc(hs = data->m_portion_size);
 		for ( read_size = 0;; )
 		{
@@ -158,7 +164,8 @@ file_t *fhttp_open( file_t *f, char *mode )
 			data->m_read_size = read_size - end - 1;
 			memcpy(data->m_buf, &header[end + 1], data->m_read_size);
 			free(header);
-			file_print_msg(f, _("OK"));
+			logger_message(f->m_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
+					_("OK"));
 			break;
 		}
 		else if (code / 100 == 3)
@@ -174,7 +181,8 @@ file_t *fhttp_open( file_t *f, char *mode )
 			else
 				name = strdup("");
 			free(header);
-			file_print_msg(f, _("Redirect to %s"), name);
+			logger_message(f->m_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
+					_("Redirect to %s"), name);
 			continue;
 		}
 close:
@@ -183,7 +191,8 @@ close:
 		free(name);
 		free(file_name);
 		free(host_name);
-		file_print_msg(f, _("Failure!"));
+		logger_message(f->m_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
+				_("Failure"));
 		file_close(f);
 		return NULL;
 	}
@@ -251,14 +260,17 @@ size_t fhttp_read( void *buf, size_t size, size_t nmemb, file_t *f )
 		
 		/* Wait */
 		pp = data->m_read_size * 100 / data->m_min_buf_size;
-		file_print_msg(f, _("Filling buffer: %d%% done"), pp);
+		logger_message(f->m_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
+				_("Filling buffer: %d%% done"), pp);
 		while (data->m_read_size <= data->m_min_buf_size && !data->m_finished)
 		{
 			int p = data->m_read_size * 100 / data->m_min_buf_size;
 			if ((p / 10) != (pp / 10))
-				file_print_msg(f, _("Filling buffer: %d%% done"), p);
+				logger_message(f->m_log, LOGGER_MSG_NORMAL, 
+						LOGGER_LEVEL_DEFAULT, 
+						_("Filling buffer: %d%% done"), p);
 			pp = p;
-			usleep(1);
+			util_wait();
 		}
 	}
 

@@ -39,7 +39,7 @@
 #include "vfs.h"
 
 /* Initialize plugins */
-pmng_t *pmng_init( cfg_node_t *list, pmng_print_msg_t print_msg )
+pmng_t *pmng_init( cfg_node_t *list, logger_t *log )
 {
 	pmng_t *pmng;
 
@@ -49,7 +49,7 @@ pmng_t *pmng_init( cfg_node_t *list, pmng_print_msg_t print_msg )
 		return NULL;
 	memset(pmng, 0, sizeof(pmng_t));
 	pmng->m_cfg_list = list;
-	pmng->m_printer = print_msg;
+	pmng->m_log = log;
 	
 	/* Load plugins */
 	if (!pmng_load_plugins(pmng))
@@ -420,14 +420,14 @@ cfg_node_t *pmng_get_cfg( pmng_t *pmng )
 		return pmng->m_cfg_list;
 } /* End of 'pmng_get_cfg' function */
 
-/* Get message printer */
-pmng_print_msg_t pmng_get_printer( pmng_t *pmng )
+/* Get logger */
+logger_t *pmng_get_logger( pmng_t *pmng )
 {
 	if (pmng != NULL)
-		return pmng->m_printer;
+		return pmng->m_log;
 	else
 		return NULL;
-} /* End of 'pmng_get_printer' function */
+} /* End of 'pmng_get_log' function */
 
 /* Create a plugin name */
 char *pmng_create_plugin_name( char *filename )
