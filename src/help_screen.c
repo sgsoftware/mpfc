@@ -44,6 +44,8 @@ help_screen_t *help_new( wnd_t *parent, int type )
 		error_set_code(ERROR_NO_MEMORY);
 		return NULL;
 	}
+	memset(help, 0, sizeof(*help));
+	WND_OBJ(help)->m_class = wnd_basic_class_init(WND_GLOBAL(parent));
 
 	/* Initialize help screen */
 	if (!help_construct(help, parent, type))
@@ -51,6 +53,8 @@ help_screen_t *help_new( wnd_t *parent, int type )
 		free(help);
 		return NULL;
 	}
+	WND_FLAGS(help) |= WND_FLAG_INITIALIZED;
+	wnd_invalidate(WND_OBJ(help));
 	return help;
 } /* End of 'help_new' function */
 
@@ -68,9 +72,9 @@ bool_t help_construct( help_screen_t *help, wnd_t *parent, int type )
 		return FALSE;
 
 	/* Register handlers */
-	wnd_msg_add_handler(&wnd->m_on_display, help_on_display);
-	wnd_msg_add_handler(&wnd->m_on_keydown, help_on_keydown);
-	wnd_msg_add_handler(&wnd->m_destructor, help_destructor);
+	wnd_msg_add_handler(wnd, "display", help_on_display);
+	wnd_msg_add_handler(wnd, "keydown", help_on_keydown);
+	wnd_msg_add_handler(wnd, "destructor", help_destructor);
 
 	/* Set fields */
 	help->m_screen = 0;

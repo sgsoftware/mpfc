@@ -92,13 +92,18 @@ void wnd_msg_rem( wnd_msg_queue_t *queue, struct wnd_msg_queue_item_t *item )
 } /* End of 'wnd_msg_rem' function */
 
 /* Send a message */
-void wnd_msg_send( wnd_t *wnd, wnd_msg_type_t type, wnd_msg_data_t data )
+void wnd_msg_send( wnd_t *wnd, char *name, wnd_msg_data_t data )
 {
 	wnd_msg_queue_t *queue;
 	struct wnd_msg_queue_item_t *node;
 
 	assert(wnd);
+	assert(name);
 	assert(WND_GLOBAL(wnd));
+
+	/* We can not send messages to the non-initialized windows */
+	if (!(WND_FLAGS(wnd) & WND_FLAG_INITIALIZED))
+		return;
 
 	/* Lock queue */
 	queue = WND_MSG_QUEUE(wnd);
@@ -109,7 +114,7 @@ void wnd_msg_send( wnd_t *wnd, wnd_msg_type_t type, wnd_msg_data_t data )
 	node = (struct wnd_msg_queue_item_t *)malloc(
 			sizeof(struct wnd_msg_queue_item_t));
 	node->m_msg.m_wnd = wnd;
-	node->m_msg.m_type = type;
+	node->m_msg.m_name = strdup(name);
 	node->m_msg.m_data = data;
 	node->m_next = NULL;
 	node->m_prev = NULL;
@@ -175,15 +180,21 @@ void wnd_msg_free( wnd_msg_t *msg )
 			(msg->m_data.m_destructor)(msg->m_data.m_data);
 		free(msg->m_data.m_data);
 	}
+	free(msg->m_name);
 } /* End of 'wnd_msg_free' function */
 
 /* Add a handler to the handlers chain */
-void wnd_msg_add_handler( wnd_msg_handler_t **chain, void *h )
+void wnd_msg_add_handler( wnd_t *wnd, char *msg_name, void *h )
 {
 	wnd_msg_handler_t *handler;
+	wnd_msg_handler_t **chain;
 
-	assert(chain);
+	assert(wnd);
+	assert(msg_name);
 	assert(h);
+
+	/* Obtain handlers chain */
+	chain = wnd->m_class->m_get_info(wnd, msg_name, NULL);
 
 	/* Allocate memory for handler item */
 	handler = (wnd_msg_handler_t *)malloc(sizeof(*handler));
@@ -203,11 +214,13 @@ void wnd_msg_add_handler( wnd_msg_handler_t **chain, void *h )
 } /* End of 'wnd_msg_add_handler' function */
 
 /* Remove handler from the handlers chain beginning */
-void wnd_msg_rem_handler( wnd_msg_handler_t **chain )
+void wnd_msg_rem_handler( wnd_t *wnd, char *msg_name )
 {
 	wnd_msg_handler_t *next;
+	wnd_msg_handler_t **chain;
 
-	assert(chain);
+	assert(wnd);
+	chain = wnd->m_class->m_get_info(wnd, msg_name, NULL);
 	assert(*chain);
 
 	/* Delete handler and move pointer */

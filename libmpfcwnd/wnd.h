@@ -31,13 +31,14 @@
 #include <curses.h>
 #include "types.h"
 #include "cfg.h"
-#include "wnd_common_msg.h"
+#include "wnd_class.h"
+#include "wnd_basic.h"
 #include "wnd_def_handlers.h"
 #include "wnd_kbd.h"
 #include "wnd_mouse.h"
 #include "wnd_msg.h"
 #include "wnd_print.h"
-#include "wnd_root.h"
+#include "wnd_types.h"
 
 /* Window flags */
 typedef enum
@@ -51,6 +52,7 @@ typedef enum
 								WND_FLAG_CLOSE_BOX | WND_FLAG_MAX_BOX,
 	WND_FLAG_OWN_DECOR		= 1 << 5,
 	WND_FLAG_MAXIMIZED		= 1 << 6,
+	WND_FLAG_INITIALIZED	= 1 << 7,
 } wnd_flags_t;
 
 /* States for pushing/popping */
@@ -77,13 +79,13 @@ struct tag_wnd_t;
 typedef void (*wnd_destructor_t)( struct tag_wnd_t *wnd );
 
 /* Window system global data structure */
-typedef struct tag_wnd_global_data_t
+struct tag_wnd_global_data_t
 {
 	/* Root window */
-	struct tag_wnd_t *m_root;
+	wnd_t *m_root;
 
 	/* Focus window */
-	struct tag_wnd_t *m_focus;
+	wnd_t *m_focus;
 
 	/* NCURSES window */
 	WINDOW *m_curses_wnd;
@@ -95,7 +97,7 @@ typedef struct tag_wnd_global_data_t
 #define WND_STATES_STACK_SIZE 32
 	struct wnd_state_data_t
 	{
-		struct tag_wnd_t *m_wnd;
+		wnd_t *m_wnd;
 		wnd_state_t m_mask;
 		wnd_color_t m_fg_color;
 		wnd_color_t m_bg_color;
@@ -123,26 +125,35 @@ typedef struct tag_wnd_global_data_t
 	} m_display_buf;
 
 	/* Mouse data */
-	wnd_mouse_data_t m_mouse_data;
-} wnd_global_data_t;
+	wnd_mouse_data_t *m_mouse_data;
+
+	/* Root window configuration list */
+	cfg_node_t *m_root_cfg;
+
+	/* Window classes data */
+	wnd_class_t *m_wnd_classes;
+};
 
 /* Window type */
-typedef struct tag_wnd_t
+struct tag_wnd_t
 {
 	/* Window title */
 	char *m_title;
+
+	/* Window class */
+	wnd_class_t *m_class;
 
 	/* Window flags */
 	wnd_flags_t m_flags;
 
 	/* Parent window */
-	struct tag_wnd_t *m_parent;
+	wnd_t *m_parent;
 
 	/* First child and next and siblings */
-	struct tag_wnd_t *m_child, *m_next, *m_prev;
+	wnd_t *m_child, *m_next, *m_prev;
 
 	/* Sibling with next z value */
-	struct tag_wnd_t *m_lower_sibling;
+	wnd_t *m_lower_sibling;
 
 	/* The number of children */
 	int m_num_children;
@@ -158,7 +169,6 @@ typedef struct tag_wnd_t
 					  *m_on_keydown,
 					  *m_on_close,
 					  *m_on_erase_back,
-					  *m_on_update_screen,
 					  *m_on_parent_repos,
 					  *m_on_mouse_ldown,
 					  *m_on_mouse_mdown,
@@ -211,7 +221,7 @@ typedef struct tag_wnd_t
 
 	/* Global data */
 	wnd_global_data_t *m_global;
-} wnd_t;
+};
 
 /* Helper macros */
 #define WND_OBJ(wnd)		((wnd_t *)(wnd))
@@ -229,9 +239,11 @@ typedef struct tag_wnd_t
 #define WND_DISPLAY_BUF(wnd)	(WND_GLOBAL(wnd)->m_display_buf)
 #define WND_MSG_QUEUE(wnd)		(WND_GLOBAL(wnd)->m_msg_queue)
 #define WND_KBD_DATA(wnd)		(WND_GLOBAL(wnd)->m_kbd_data)
-#define WND_MOUSE_DATA(wnd)		(&(WND_GLOBAL(wnd)->m_mouse_data))
+#define WND_MOUSE_DATA(wnd)		(WND_GLOBAL(wnd)->m_mouse_data)
 #define WND_STATES_STACK(wnd)	(WND_GLOBAL(wnd)->m_states_stack)
 #define WND_STATES_POS(wnd)		(WND_GLOBAL(wnd)->m_states_stack_pos)
+#define WND_ROOT_CFG(wnd)		(WND_GLOBAL(wnd)->m_root_cfg)
+#define WND_CLASSES(wnd)		(WND_GLOBAL(wnd)->m_wnd_classes)
 
 /* Convert client coordinates to absolute window or screen */
 #define WND_CLIENT2ABS_X(wnd, x) (WND_OBJ(wnd)->m_client_x + (x))
@@ -242,8 +254,7 @@ typedef struct tag_wnd_t
 		WND_OBJ(wnd)->m_client_y + (y))
 
 /* A macro for closing window */
-#define wnd_close(wnd) (wnd_msg_send(wnd, WND_MSG_CLOSE, \
-			wnd_msg_data_close_new()))
+#define wnd_close(wnd) (wnd_msg_send(wnd, "close", wnd_msg_close_new()))
 
 /* Initialize window system */
 wnd_t *wnd_init( cfg_node_t *cfg_list );

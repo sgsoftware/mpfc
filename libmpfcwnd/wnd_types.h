@@ -1,11 +1,11 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2004 by SG Software.
  ******************************************************************/
 
-/* FILE NAME   : main.c
- * PURPOSE     : SG MPFC. Main program module.
+/* FILE NAME   : wnd_types.h
+ * PURPOSE     : MPFC Window Library. Basic types declarations.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 24.03.2004
+ * LAST UPDATE : 9.08.2004
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -24,40 +24,21 @@
  * MA 02111-1307, USA.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <locale.h>
-#include "error.h"
-#include "player.h"
-#include "wnd.h"
+#ifndef __SG_MPFC_WND_TYPES_H__
+#define __SG_MPFC_WND_TYPES_H__
 
-/* Main function */
-int main( int argc, char *argv[] )
-{
-	/* Initialize random numbers generator */
-	srand(time(NULL));
-	
-	/* Initialize gettext */
-	setlocale(LC_ALL, "");
-	bindtextdomain(PACKAGE, LOCALEDIR);
-	textdomain(PACKAGE);
-	
-	/* Initialize player */
-	if (!player_init(argc, argv))
-	{
-		fprintf(stderr, _("Initialization error : %s\n"), 
-				error_get_text(error_get_last()));
-		return 0;
-	}
+#include "types.h"
 
-	/* Run player */
-	player_run();
+/* Types */
+typedef struct tag_wnd_t wnd_t;
+typedef struct tag_wnd_global_data_t wnd_global_data_t;
+typedef struct tag_wnd_class_t wnd_class_t;
+typedef struct tag_wnd_msg_data_t wnd_msg_data_t;
+typedef struct tag_wnd_msg_t wnd_msg_t;
+typedef enum tag_wnd_msg_retcode_t wnd_msg_retcode_t;
+typedef struct tag_wnd_msg_handler_t wnd_msg_handler_t;
 
-	/* Unitialize player and exit */
-	player_deinit();
-	return 0;
-} /* End of 'main' function */
+#endif
 
-/* End of 'main.c' file */
+/* End of 'wnd_types.h' file */
 

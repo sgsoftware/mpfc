@@ -31,21 +31,40 @@
 #endif
 #include <stdlib.h>
 #include "wnd.h"
-#include "wnd_mouse.h"
 
 /* Initialize mouse */
-bool_t wnd_mouse_init( wnd_mouse_data_t *data )
+wnd_mouse_data_t *wnd_mouse_init( wnd_global_data_t *global )
 {
+	wnd_mouse_data_t *data;
+	bool_t ret = TRUE;
+
+	/* Create data */
+	data = (wnd_mouse_data_t *)malloc(sizeof(*data));
+	if (data == NULL)
+		return NULL;
+
+	/* Determine the driver */
+	data->m_driver = wnd_mouse_get_driver(global->m_root_cfg->m_parent);
+	data->m_root_wnd = global->m_root;
+	
+	/* Make driver-specific initialization */
 	switch (data->m_driver)
 	{
 #ifdef HAVE_LIBGPM
 	case WND_MOUSE_GPM:
-		return wnd_mouse_init_gpm(data);
+		ret = wnd_mouse_init_gpm(data);
+		break;
 #endif
 	case WND_MOUSE_XTERM:
-		return wnd_mouse_init_xterm(data);
+		ret = wnd_mouse_init_xterm(data);
+		break;
 	}
-	return FALSE;
+	if (!ret)
+	{
+		free(data);
+		return NULL;
+	}
+	return data;
 } /* End of 'wnd_mouse_init' function */
 
 #ifdef HAVE_LIBGPM
@@ -66,7 +85,8 @@ bool_t wnd_mouse_init_gpm( wnd_mouse_data_t *data )
 
 	/* Start thread */
 	data->m_end_thread = FALSE;
-	pthread_create(&data->m_tid, NULL, wnd_mouse_thread, data);
+	if (pthread_create(&data->m_tid, NULL, wnd_mouse_thread, data))
+		return FALSE;
 	return TRUE;
 } /* End of 'wnd_mouse_init_gpm' function */
 #endif
@@ -81,6 +101,7 @@ bool_t wnd_mouse_init_xterm( wnd_mouse_data_t *data )
 /* Free mouse-related stuff */
 void wnd_mouse_free( wnd_mouse_data_t *data )
 {
+	assert(data);
 	switch (data->m_driver)
 	{
 #ifdef HAVE_LIBGPM
@@ -92,6 +113,7 @@ void wnd_mouse_free( wnd_mouse_data_t *data )
 		wnd_mouse_free_xterm(data);
 		break;
 	}
+	free(data);
 } /* End of 'wnd_mouse_free' function */
 
 /* Free mouse in GPM mode */
@@ -141,7 +163,7 @@ wnd_t *wnd_mouse_find_cursor_child( wnd_t *wnd, int x, int y )
 } /* End of 'wnd_mouse_find_cursor_child' function */
 
 /* Determine the mouse driver type */
-wnd_mouse_driver_t wnd_get_mouse_type( cfg_node_t *cfg )
+wnd_mouse_driver_t wnd_mouse_get_driver( cfg_node_t *cfg )
 {
 	char *driver, *term;
 
@@ -235,7 +257,7 @@ void wnd_mouse_handle_event( wnd_mouse_data_t *data,
 		void *additional )
 {
 	wnd_t *wnd;
-	wnd_msg_type_t msg = WND_MSG_UNDEFINED;
+	char *msg = NULL;
 
 	/* Determine window to which this event is addressed */
 	wnd = wnd_mouse_find_cursor_wnd(data, x, y);
@@ -246,24 +268,24 @@ void wnd_mouse_handle_event( wnd_mouse_data_t *data,
 	if (type == WND_MOUSE_DOUBLE) 
 	{
 		if (btn == WND_MOUSE_LEFT)
-			msg = WND_MSG_MOUSE_LDOUBLE;
+			msg = "mouse_ldouble";
 		else if (btn == WND_MOUSE_RIGHT)
-			msg = WND_MSG_MOUSE_RDOUBLE;
+			msg = "mouse_rdouble";
 		else if (btn == WND_MOUSE_MIDDLE)
-			msg = WND_MSG_MOUSE_MDOUBLE;
+			msg = "mouse_mdouble";
 	}
 	else if (type == WND_MOUSE_DOWN) 
 	{
 		if (btn == WND_MOUSE_LEFT)
-			msg = WND_MSG_MOUSE_LDOWN;
+			msg = "mouse_ldown";
 		else if (btn == WND_MOUSE_RIGHT)
-			msg = WND_MSG_MOUSE_RDOWN;
+			msg = "mouse_rdown";
 		else if (btn == WND_MOUSE_MIDDLE)
-			msg = WND_MSG_MOUSE_MDOWN;
+			msg = "mouse_mdown";
 	}		
-	if (msg != WND_MSG_UNDEFINED)
+	if (msg != NULL)
 	{
-		wnd_msg_send(wnd, msg, wnd_msg_data_mouse_new(x, y, btn, type));
+		wnd_msg_send(wnd, msg, wnd_msg_mouse_new(x, y, btn, type));
 	}
 //	if (wnd != wnd_focus && msg >= 0)
 //		wnd_send_msg(wnd_focus, WND_MSG_MOUSE_OUTSIDE_FOCUS, 0);

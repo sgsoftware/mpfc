@@ -32,105 +32,76 @@
 #include "types.h"
 #include "cfg.h"
 #include "wnd.h"
+#include "wnd_root.h"
 
 /* Initialize window system and create root window */
 wnd_t *wnd_init( cfg_node_t *cfg_list )
 {
-	WINDOW *wnd;
-	wnd_t *wnd_root;
-	cfg_node_t *cfg_wnd;
-	wnd_global_data_t *global;
-	wnd_kbd_data_t *kbd_data;
-	wnd_msg_queue_t *msg_queue;
-	wnd_mouse_driver_t mouse_type;
+	WINDOW *wnd = NULL;
+	wnd_t *wnd_root = NULL;
+	cfg_node_t *cfg_wnd = NULL;
+	wnd_global_data_t *global = NULL;
+	wnd_kbd_data_t *kbd_data = NULL;
+	wnd_mouse_data_t *mouse_data = NULL;
+	wnd_msg_queue_t *msg_queue = NULL;
+	wnd_class_t *klass = NULL;
+	struct wnd_display_buf_symbol_t *db_data = NULL;
 	int i, len;
 
 	/* Initialize NCURSES */
 	wnd = initscr();
 	if (wnd == NULL)
-		return NULL;
+		goto failed;
 	start_color();
 	cbreak();
 	noecho();
 	keypad(wnd, TRUE);
 	nodelay(wnd, TRUE);
-
-	/* Initialize color pairs */
 	wnd_init_pairs();
-
-	/* Create root window */
-	wnd_root = (wnd_t *)malloc(sizeof(wnd_t));
-	if (wnd_root == NULL)
-	{
-		endwin();
-		return NULL;
-	}
-	memset(wnd_root, 0, sizeof(*wnd_root));
-	wnd_root->m_title = strdup("root");
-	wnd_root->m_flags = WND_FLAG_ROOT | WND_FLAG_OWN_DECOR;
-	wnd_root->m_child = wnd_root->m_next = wnd_root->m_prev = 
-		wnd_root->m_parent = NULL;
-	wnd_root->m_x = wnd_root->m_screen_x = 0;
-	wnd_root->m_y = wnd_root->m_screen_y = 0;
-	wnd_root->m_width = COLS;
-	wnd_root->m_height = LINES;
-	wnd_root->m_client_x = 0;
-	wnd_root->m_client_y = 0;
-	wnd_root->m_client_w = wnd_root->m_width;
-	wnd_root->m_client_h = wnd_root->m_height - 1;
-	wnd_root->m_cursor_x = wnd_root->m_cursor_y = 0;
-	wnd_root->m_fg_color = WND_COLOR_WHITE;
-	wnd_root->m_bg_color = WND_COLOR_BLACK;
-	wnd_root->m_attrib = 0;
-	wnd_root->m_zval = 0;
-	wnd_root->m_num_children = 0;
-	wnd_root->m_focus_child = NULL;
-	wnd_root->m_mode = WND_MODE_NORMAL;
-	wnd_root->m_cursor_hidden = TRUE;
-
-	/* Set root window specific handlers and the destructor */
-	wnd_msg_add_handler(&wnd_root->m_on_keydown, wnd_root_on_key);
-	wnd_msg_add_handler(&wnd_root->m_on_display, wnd_root_on_display);
-	wnd_msg_add_handler(&wnd_root->m_on_close, wnd_root_on_close);
-	wnd_msg_add_handler(&wnd_root->m_destructor, wnd_root_destructor);
-
-	/* Initialize message queue */
-	msg_queue = wnd_msg_queue_init();
-
-	/* Initialize keyboard module */
-	kbd_data = wnd_kbd_init(wnd_root);
 
 	/* Initialize global data */
 	global = (wnd_global_data_t *)malloc(sizeof(wnd_global_data_t));
-	global->m_root = wnd_root;
+	if (global == NULL)
+		goto failed;
+	memset(global, 0, sizeof(*global));
 	global->m_curses_wnd = wnd;
-	global->m_focus = wnd_root;
-	global->m_last_id = 0;
+	global->m_last_id = -1;
 	global->m_states_stack_pos = 0;
-	global->m_kbd_data = kbd_data;
-	global->m_msg_queue = msg_queue;
-	global->m_mouse_data.m_root_wnd = wnd_root;
-	wnd_root->m_global = global;
 
 	/* Initialize display buffer */
-	global->m_display_buf.m_width = COLS;
-	global->m_display_buf.m_height = LINES;
 	len = COLS * LINES;
-	global->m_display_buf.m_data = (struct wnd_display_buf_symbol_t *)malloc(
-			len * sizeof(*global->m_display_buf.m_data));
+	db_data = (struct wnd_display_buf_symbol_t *)malloc(len * sizeof(*db_data));
+	if (db_data == NULL)
+		goto failed;
 	for ( i = 0; i < len; i ++ )
 	{
-		global->m_display_buf.m_data[i].m_char = ' ';
-		global->m_display_buf.m_data[i].m_attr = 0;
+		db_data[i].m_char = ' ';
+		db_data[i].m_attr = 0;
 	}
+	global->m_display_buf.m_width = COLS;
+	global->m_display_buf.m_height = LINES;
+	global->m_display_buf.m_data = db_data;
 
-	/* Initialize mouse */
-	global->m_mouse_data.m_driver = wnd_get_mouse_type(cfg_list);
-	wnd_mouse_init(&global->m_mouse_data);
+	/* Initialize needed window classes */
+	klass = wnd_root_class_init(global);
+	if (klass == NULL)
+		goto failed;
+
+	/* Create root window */
+	wnd_root = (wnd_t *)malloc(sizeof(wnd_root_t));
+	if (wnd_root == NULL)
+		goto failed;
+	memset(wnd_root, 0, sizeof(wnd_root_t));
+	global->m_root = wnd_root;
+	wnd_root->m_global = global;
+	wnd_root->m_class = klass;
 
 	/* Initialize configuration */
 	cfg_wnd = cfg_new_list(cfg_list, "windows", CFG_NODE_MEDIUM_LIST |
 			CFG_NODE_RUNTIME, 0);
+	if (cfg_wnd == NULL)
+		goto failed;
+	global->m_root_cfg = cfg_wnd;
 	cfg_set_var(cfg_wnd, "caption-style", "green:black:bold");
 	cfg_set_var(cfg_wnd, "border-style", "white:black:bold");
 	cfg_set_var(cfg_wnd, "repos-border-style", "green:black:bold");
@@ -138,12 +109,64 @@ wnd_t *wnd_init( cfg_node_t *cfg_list )
 	cfg_set_var(cfg_wnd, "close-box-style", "red:black:bold");
 	cfg_set_var(cfg_wnd, "wndbar-style", "black:white");
 	cfg_set_var(cfg_wnd, "wndbar-focus-style", "black:green");
-	wnd_root->m_cfg_list = cfg_new_list(cfg_wnd, "0", 
-			CFG_NODE_MEDIUM_LIST | CFG_NODE_RUNTIME, 0);
 
+	/* Initialize window fields */
+	if (!wnd_construct(wnd_root, "root", NULL, 0, 0, COLS, LINES, 
+				WND_FLAG_ROOT | WND_FLAG_OWN_DECOR))
+		goto failed;
+	wnd_root->m_cursor_hidden = TRUE;
+
+	/* Set root window specific handlers and the destructor */
+	wnd_msg_add_handler(wnd_root, "keydown", wnd_root_on_keydown);
+	wnd_msg_add_handler(wnd_root, "display", wnd_root_on_display);
+	wnd_msg_add_handler(wnd_root, "close", wnd_root_on_close);
+	wnd_msg_add_handler(wnd_root, "update_screen", wnd_root_on_update_screen);
+	wnd_msg_add_handler(wnd_root, "destructor", wnd_root_destructor);
+
+	/* Initialize message queue */
+	msg_queue = wnd_msg_queue_init();
+	if (msg_queue == NULL)
+		goto failed;
+	global->m_msg_queue = msg_queue;
+
+	/* Initialize keyboard module */
+	kbd_data = wnd_kbd_init(wnd_root);
+	if (kbd_data == NULL)
+		goto failed;
+	global->m_kbd_data = kbd_data;
+
+	/* Initialize mouse */
+	mouse_data = wnd_mouse_init(global);
+	if (mouse_data == NULL)
+		goto failed;
+	global->m_mouse_data = mouse_data;
+	
 	/* Send display message to this window */
+	WND_FLAGS(wnd_root) |= WND_FLAG_INITIALIZED;
 	wnd_invalidate(wnd_root);
 	return wnd_root;
+
+	/* Code for handling some step failing */
+failed:
+	if (mouse_data != NULL)
+		wnd_mouse_free(mouse_data);
+	if (kbd_data != NULL)
+		wnd_kbd_free(kbd_data);
+	if (msg_queue != NULL)
+		wnd_msg_queue_free(msg_queue);
+	if (cfg_wnd != NULL)
+		cfg_free_node(cfg_wnd);
+	if (wnd_root != NULL)
+		free(wnd_root);
+	if (klass != NULL)
+		wnd_class_free(klass);
+	if (db_data != NULL)
+		free(db_data);
+	if (global != NULL)
+		free(global);
+	if (wnd != NULL)
+		endwin();
+	return NULL;
 } /* End of 'wnd_init' function */
 
 /* Create a window */
@@ -151,11 +174,19 @@ wnd_t *wnd_new( char *title, wnd_t *parent, int x, int y,
 				int width, int height, dword flags )
 {
 	wnd_t *wnd;
+	wnd_class_t *klass;
 
 	/* Allocate memory */
 	wnd = (wnd_t *)malloc(sizeof(wnd_t));
 	if (wnd == NULL)
 		return NULL;
+	memset(wnd, 0, sizeof(*wnd));
+
+	/* Set class first */
+	klass = wnd_basic_class_init(WND_GLOBAL(parent));
+	if (klass == NULL)
+		return NULL;
+	wnd->m_class = klass;
 
 	/* Initialize window */
 	if (!wnd_construct(wnd, title, parent, x, y, width, height, flags))
@@ -163,6 +194,8 @@ wnd_t *wnd_new( char *title, wnd_t *parent, int x, int y,
 		free(wnd);
 		return NULL;
 	}
+	WND_FLAGS(wnd) |= WND_FLAG_INITIALIZED;
+	wnd_invalidate(wnd);
 	return wnd;
 } /* End of 'wnd_new' function */
 
@@ -179,16 +212,32 @@ bool_t wnd_construct( wnd_t *wnd, char *title, wnd_t *parent, int x, int y,
 	wnd_t *child;
 
 	assert(wnd);
-	assert(parent);
-	assert(!(flags & WND_FLAG_ROOT));
+
+	/* Maximize window */
+	if (parent != NULL && (flags & WND_FLAG_MAXIMIZED))
+	{
+		x = parent->m_client_x;
+		y = parent->m_client_y;
+		width = parent->m_client_w;
+		height = parent->m_client_h;
+	}
 
 	/* Obtain window screen coordinates */
-	sx = parent->m_screen_x + parent->m_client_x + x;
-	sy = parent->m_screen_y + parent->m_client_y + y;
+	if (parent != NULL)
+	{
+		sx = parent->m_screen_x + parent->m_client_x + x;
+		sy = parent->m_screen_y + parent->m_client_y + y;
+	}
+	else
+	{
+		sx = x;
+		sy = y;
+	}
 
 	/* Set window fields */
-	memset(wnd, 0, sizeof(*wnd));
 	wnd->m_title = (title == NULL ? strdup("") : strdup(title));
+	if (wnd->m_title == NULL)
+		goto failed;
 	wnd->m_flags = flags;
 	wnd->m_child = NULL;
 	wnd->m_next = NULL;
@@ -209,7 +258,12 @@ bool_t wnd_construct( wnd_t *wnd, char *title, wnd_t *parent, int x, int y,
 	wnd->m_bg_color = WND_COLOR_BLACK;
 	wnd->m_attrib = 0;
 	wnd->m_cursor_x = wnd->m_cursor_y = 0;
-	wnd->m_global = parent->m_global;
+	wnd->m_pos_before_max.x = wnd->m_x;
+	wnd->m_pos_before_max.y = wnd->m_y;
+	wnd->m_pos_before_max.w = wnd->m_width;
+	wnd->m_pos_before_max.h = wnd->m_height;
+	if (parent != NULL)
+		wnd->m_global = parent->m_global;
 	wnd->m_id = ++wnd->m_global->m_last_id;
 	wnd->m_mode = WND_MODE_NORMAL;
 	wnd->m_cursor_hidden = FALSE;
@@ -227,46 +281,63 @@ bool_t wnd_construct( wnd_t *wnd, char *title, wnd_t *parent, int x, int y,
 		wnd->m_client_y ++;
 		wnd->m_client_h --;
 	}
+	else if (wnd->m_flags & WND_FLAG_ROOT)
+	{
+		wnd->m_client_h --;
+	}
 
 	/* Set z-value and focus information */
-	wnd->m_zval = wnd->m_parent->m_num_children;
-	wnd->m_lower_sibling = wnd->m_parent->m_focus_child;
-	wnd->m_parent->m_focus_child = wnd;
+	if (parent != NULL)
+	{
+		wnd->m_zval = parent->m_num_children;
+		wnd->m_lower_sibling = parent->m_focus_child;
+		parent->m_focus_child = wnd;
+	}
+	else
+	{
+		wnd->m_zval = 0;
+		wnd->m_lower_sibling = NULL;
+	}
+	WND_FOCUS(wnd) = wnd;
+
+	/* Write information of us into the windows hierarchy */
+	if (parent != NULL)
+	{
+		if (parent->m_child == NULL)
+			parent->m_child = wnd;
+		else
+		{
+			for ( child = parent->m_child; child->m_next != NULL; 
+					child = child->m_next );
+			child->m_next = wnd;
+			wnd->m_prev = child;
+		}
+		parent->m_num_children ++;
+	}
+
+	/* Initialize message map */
+	wnd_msg_add_handler(wnd, "display", wnd_default_on_display);
+	wnd_msg_add_handler(wnd, "keydown", wnd_default_on_keydown);
+	wnd_msg_add_handler(wnd, "close", wnd_default_on_close);
+	wnd_msg_add_handler(wnd, "erase_back", wnd_default_on_erase_back);
+	wnd_msg_add_handler(wnd, "parent_repos", wnd_default_on_parent_repos);
+	wnd_msg_add_handler(wnd, "destructor", wnd_default_destructor);
 
 	/* Initialize configuration list */
 	snprintf(cfg_name, sizeof(cfg_name), "%d", wnd->m_id);
-	wnd->m_cfg_list = cfg_new_list(wnd->m_parent->m_cfg_list->m_parent, 
+	wnd->m_cfg_list = cfg_new_list(WND_ROOT_CFG(wnd),
 			cfg_name, CFG_NODE_MEDIUM_LIST | CFG_NODE_RUNTIME, 0);
-
-	/* Write information of us into the windows hierarchy */
-	if (parent->m_child == NULL)
-		parent->m_child = wnd;
-	else
-	{
-		for ( child = parent->m_child; child->m_next != NULL; 
-				child = child->m_next );
-		child->m_next = wnd;
-		wnd->m_prev = child;
-	}
-	parent->m_num_children ++;
-
-	/* Each new window gains focus */
-	WND_FOCUS(wnd) = wnd;
-
-	/* Maximize window if need */
-	if (wnd->m_flags & WND_FLAG_MAXIMIZED)
-	{
-		wnd->m_flags &= ~WND_FLAG_MAXIMIZED;
-		wnd_toggle_maximize(wnd);
-		wnd->m_pos_before_max.x = wnd->m_x;
-		wnd->m_pos_before_max.y = wnd->m_y;
-		wnd->m_pos_before_max.w = wnd->m_width;
-		wnd->m_pos_before_max.h = wnd->m_height;
-	}
-	
-	/* Send display message to this window */
-	wnd_invalidate(wnd);
+	if (wnd->m_cfg_list == NULL)
+		goto failed;
 	return TRUE;
+
+	/* Failing management code */
+failed:
+	if (wnd->m_cfg_list != NULL)
+		cfg_free_node(wnd->m_cfg_list);
+	if (wnd->m_title != NULL)
+		free(wnd->m_title);
+	return FALSE;
 } /* End of 'wnd_construct' function */
 
 /* Run main window loop */
@@ -309,77 +380,19 @@ void wnd_main( wnd_t *wnd_root )
 		if (wnd_msg_get(WND_MSG_QUEUE(wnd_root), &msg))
 		{
 			/* Handle it */
-			wnd_msg_callback_t callback = NULL;
 			wnd_t *target;
+			wnd_msg_callback_t callback;
+			wnd_msg_handler_t *handler;
 			wnd_msg_retcode_t ret;
-			wnd_msg_handler_t *h;
 
 			/* Choose appropriate callback for calling handler */
 			target = msg.m_wnd;
 			assert(target);
-			if (msg.m_type == WND_MSG_DISPLAY)
-			{
-				callback = wnd_callback_display;
-				h = target->m_on_display;
-			}
-			else if (msg.m_type == WND_MSG_KEYDOWN)
-			{
-				callback = wnd_callback_keydown;
-				h = target->m_on_keydown;
-			}
-			else if (msg.m_type == WND_MSG_CLOSE)
-			{
-				callback = wnd_callback_close;
-				h = target->m_on_close;
-			}
-			else if (msg.m_type == WND_MSG_ERASE_BACK)
-			{
-				callback = wnd_callback_erase_back;
-				h = target->m_on_erase_back;
-			}
-			else if (msg.m_type == WND_MSG_UPDATE_SCREEN)
-			{
-				callback = wnd_callback_update_screen;
-				h = target->m_on_update_screen;
-			}
-			else if (msg.m_type == WND_MSG_PARENT_REPOS)
-			{
-				callback = wnd_callback_parent_repos;
-				h = target->m_on_parent_repos;
-			}
-			else if (msg.m_type == WND_MSG_MOUSE_LDOWN)
-			{
-				callback = wnd_callback_mouse;
-				h = target->m_on_mouse_ldown;
-			}
-			else if (msg.m_type == WND_MSG_MOUSE_MDOWN)
-			{
-				callback = wnd_callback_mouse;
-				h = target->m_on_mouse_mdown;
-			}
-			else if (msg.m_type == WND_MSG_MOUSE_RDOWN)
-			{
-				callback = wnd_callback_mouse;
-				h = target->m_on_mouse_rdown;
-			}
-			else if (msg.m_type == WND_MSG_MOUSE_LDOUBLE)
-			{
-				callback = wnd_callback_mouse;
-				h = target->m_on_mouse_ldouble;
-			}
-			else if (msg.m_type == WND_MSG_MOUSE_MDOUBLE)
-			{
-				callback = wnd_callback_mouse;
-				h = target->m_on_mouse_mdouble;
-			}
-			else if (msg.m_type == WND_MSG_MOUSE_RDOUBLE)
-			{
-				callback = wnd_callback_mouse;
-				h = target->m_on_mouse_rdouble;
-			}
+			handler = *target->m_class->m_get_info(target, msg.m_name, 
+					&callback);
 
 			/* Call handler */
-			ret = wnd_call_handler(target, h, callback, &msg.m_data);
+			ret = wnd_call_handler(target, handler, callback, &msg.m_data);
 			wnd_msg_free(&msg);
 			if (ret == WND_MSG_RETCODE_EXIT)
 				break;
@@ -841,13 +854,13 @@ void wnd_invalidate( wnd_t *wnd )
 	if (wnd == NULL)
 		return;
 
-	wnd_msg_send(wnd, WND_MSG_ERASE_BACK, wnd_msg_data_erase_back_new());
-	wnd_msg_send(wnd, WND_MSG_DISPLAY, wnd_msg_data_display_new());
+	wnd_msg_send(wnd, "erase_back", wnd_msg_erase_back_new());
+	wnd_msg_send(wnd, "display", wnd_msg_display_new());
 	for ( child = wnd->m_child; child != NULL; child = child->m_next )
 	{
 		wnd_invalidate(child);
 	}
-	wnd_msg_send(wnd, WND_MSG_UPDATE_SCREEN, wnd_msg_data_update_screen_new());
+	wnd_msg_send(WND_ROOT(wnd), "update_screen", wnd_msg_update_screen_new());
 } /* End of 'wnd_invalidate' function */
 
 /* Synchronize screen contents with display buffer */
@@ -897,11 +910,10 @@ wnd_msg_retcode_t wnd_call_handler( wnd_t *wnd, wnd_msg_handler_t *handler,
 		wnd_msg_callback_t callback, wnd_msg_data_t *data )
 {
 	wnd_msg_retcode_t ret;
-	for ( ;; handler = handler->m_next )
+	for ( ; handler != NULL; handler = handler->m_next )
 	{
 		ret = callback(wnd, handler, data);
-		if (handler == NULL || ret == WND_MSG_RETCODE_STOP || 
-				ret == WND_MSG_RETCODE_EXIT)
+		if (ret == WND_MSG_RETCODE_STOP || ret == WND_MSG_RETCODE_EXIT)
 			return ret;
 	}
 	return ret;
@@ -939,7 +951,7 @@ void wnd_set_mode( wnd_t *wnd, wnd_mode_t mode )
 	wnd->m_mode = mode;
 
 	/* Install new key handler for window parameters changing */
-	wnd_msg_add_handler(&wnd->m_on_keydown, wnd_repos_on_key);
+	wnd_msg_add_handler(wnd, "keydown", wnd_repos_on_key);
 	
 	/* Repaint window */
 	wnd_invalidate(wnd);
@@ -999,7 +1011,7 @@ wnd_msg_retcode_t wnd_repos_on_key( wnd_t *wnd, wnd_key_t *keycode )
 	if (not_changed && keycode->m_key == '\n')
 	{
 		wnd->m_mode = WND_MODE_NORMAL;
-		wnd_msg_rem_handler(&wnd->m_on_keydown);
+		wnd_msg_rem_handler(wnd, "keydown");
 		wnd_invalidate(wnd);
 		return WND_MSG_RETCODE_STOP;
 	}
@@ -1042,8 +1054,8 @@ void wnd_repos( wnd_t *wnd, int x, int y, int width, int height )
 
 	/* Inform children about our repositioning */
 	for ( child = wnd->m_child; child != NULL; child = child->m_next )
-		wnd_msg_send(child, WND_MSG_PARENT_REPOS, 
-				wnd_msg_data_parent_repos_new(px, py, pw, ph, x, y, 
+		wnd_msg_send(child, "parent_repos", 
+				wnd_msg_parent_repos_new(px, py, pw, ph, x, y, 
 					width, height));
 
 	/* Repaint window */
@@ -1118,8 +1130,7 @@ void wnd_redisplay( wnd_t *wnd )
 	assert(WND_GLOBAL(wnd));
 
 	WND_DISPLAY_BUF(wnd).m_dirty = TRUE;
-	wnd_msg_send(WND_ROOT(wnd), WND_MSG_UPDATE_SCREEN,
-			wnd_msg_data_update_screen_new());
+	wnd_msg_send(WND_ROOT(wnd), "update_screen", wnd_msg_update_screen_new());
 } /* End of 'wnd_redisplay' function */
 
 /* End of 'wnd.c' file */

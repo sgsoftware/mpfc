@@ -3,10 +3,10 @@
  ******************************************************************/
 
 /* FILE NAME   : wnd_root.h
- * PURPOSE     : MPFC Window Library. Interface for root window
- *               handlers.
+ * PURPOSE     : MPFC Window Library. Interface root window
+ *               specific functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 24.07.2004
+ * LAST UPDATE : 9.08.2004
  * NOTE        : Module prefix 'wnd_root'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -29,22 +29,56 @@
 #define __SG_MPFC_WND_ROOT_H__
 
 #include "types.h"
+#include "wnd.h"
+#include "wnd_basic.h"
+#include "wnd_class.h"
+#include "wnd_msg.h"
+#include "wnd_types.h"
 
-/* Further declarations */
-struct tag_wnd_t;
-enum wnd_msg_retcode_t;
+/* Root window type */
+typedef struct 
+{
+	/* Common window part */
+	wnd_t m_wnd;
 
-/* WND_MSG_KEYDOWN message handler */
-wnd_msg_retcode_t wnd_root_on_key( struct tag_wnd_t *wnd, wnd_key_t *keycode );
+	/* Message handlers */
+	wnd_msg_handler_t *m_on_update_screen;
+} wnd_root_t;
 
-/* WND_MSG_DISPLAY message handler */
-wnd_msg_retcode_t wnd_root_on_display( struct tag_wnd_t *wnd );
+/* Get root window object */
+#define WND_ROOT_OBJ(wnd)	((wnd_root_t *)wnd)
 
-/* WND_MSG_CLOSE message handler */
-wnd_msg_retcode_t wnd_root_on_close( struct tag_wnd_t *wnd );
+/* Register root window class */
+wnd_class_t *wnd_root_class_init( wnd_global_data_t *global );
 
-/* Root window destructor */
-void wnd_root_destructor( struct tag_wnd_t *wnd );
+/* Get message information for root window class */
+wnd_msg_handler_t **wnd_root_get_msg_info( wnd_t *wnd, char *msg_name,
+		wnd_class_msg_callback_t *callback );
+
+/*
+ * Root window specific messages stuff
+ */
+
+#define wnd_msg_update_screen_new	wnd_msg_noargs_new
+
+/*
+ * Root window message handlers
+ */
+
+/* 'keydown' message handler */
+wnd_msg_retcode_t wnd_root_on_keydown( wnd_t *wnd, wnd_key_t *keycode );
+
+/* 'display' message handler */
+wnd_msg_retcode_t wnd_root_on_display( wnd_t *wnd );
+
+/* 'close' message handler */
+wnd_msg_retcode_t wnd_root_on_close( wnd_t *wnd );
+
+/* 'update_screen' message handler */
+wnd_msg_retcode_t wnd_root_on_update_screen( wnd_t *wnd );
+
+/* Destructor */
+void wnd_root_destructor( wnd_t *wnd );
 
 #endif
 

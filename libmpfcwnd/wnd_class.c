@@ -1,0 +1,78 @@
+/******************************************************************
+ * Copyright (C) 2004 by SG Software.
+ ******************************************************************/
+
+/* FILE NAME   : wnd_class.c
+ * PURPOSE     : MPFC Window Library. Window classes handling 
+ *               functions implementation.
+ * PROGRAMMER  : Sergey Galanov
+ * LAST UPDATE : 9.08.2004
+ * NOTE        : Module prefix 'wnd_class'.
+ *
+ * This program is free software; you can redistribute it and/or 
+ * modify it under the terms of the GNU General Public License 
+ * as published by the Free Software Foundation; either version 2 
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *  
+ * You should have received a copy of the GNU General Public 
+ * License along with this program; if not, write to the Free 
+ * Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, 
+ * MA 02111-1307, USA.
+ */
+
+#include <stdlib.h>
+#include <string.h>
+#include "types.h"
+#include "wnd.h"
+
+/* Create a new window class */
+wnd_class_t *wnd_class_new( wnd_global_data_t *global, char *name,
+		wnd_class_t *parent, wnd_class_msg_get_info_t get_info_func )
+{
+	wnd_class_t *klass, *prev_klass = NULL;
+	int i;
+
+	assert(global);
+
+	/* Search classes list for this class */
+	for ( klass = global->m_wnd_classes; klass != NULL; klass = klass->m_next )
+	{
+		if (!strcmp(klass->m_name, name))
+			return klass;
+		prev_klass = klass;
+	}
+
+	/* Allocate memory for class */
+	klass = (wnd_class_t *)malloc(sizeof(*klass));
+	if (klass == NULL)
+		return NULL;
+
+	/* Fill class data */
+	klass->m_name = strdup(name);
+	klass->m_parent = parent;
+	klass->m_get_info = get_info_func;
+	klass->m_next = NULL;
+
+	/* Insert class to the classes table */
+	if (prev_klass == NULL)
+		global->m_wnd_classes = klass;
+	else
+		prev_klass->m_next = klass;
+	return klass;
+} /* End of 'wnd_class_new' function */
+
+/* Free window class */
+void wnd_class_free( wnd_class_t *klass )
+{
+	assert(klass);
+	free(klass->m_name);
+	free(klass);
+} /* End of 'wnd_class_free' function */
+
+/* End of 'wnd_class.c' file */
+

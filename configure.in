@@ -2,6 +2,10 @@ AC_INIT(src/main.c)
 AM_INIT_AUTOMAKE(mpfc, 1.2-11)
 AC_PROG_CC
 AC_PROG_LIBTOOL
+CFLAGS="-O0 -g"
+AC_SUBST(CFLAGS)
+OUTPUT_PLUGINS="oss disk_writer alsa"
+AC_SUBST(OUTPUT_PLUGINS)
 
 AM_CONFIG_HEADER(config.h)
 AM_GNU_GETTEXT
@@ -9,7 +13,7 @@ AM_GNU_GETTEXT
 # Check for ncurses
 LIBS_save=$LIBS
 AC_CHECK_HEADERS([curses.h],,[AC_MSG_ERROR(*** Can't find curses.h ***)])
-AC_CHECK_LIB(ncurses, initscr,,[AC_MSG_ERROR(*** Can't find ncurses library ***)])
+AC_CHECK_LIB(ncurses_g, initscr,,[AC_MSG_ERROR(*** Can't find ncurses library ***)])
 CURSES_LIBS="-lncurses"
 AC_SUBST(CURSES_LIBS)
 LIBS=$LIBS_save

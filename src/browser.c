@@ -73,6 +73,8 @@ browser_t *fb_new( wnd_t *parent, char *dir )
 		error_set_code(ERROR_NO_MEMORY);
 		return NULL;
 	}
+	memset(fb, 0, sizeof(*fb));
+	WND_OBJ(fb)->m_class = wnd_basic_class_init(WND_GLOBAL(parent));
 
 	/* Initialize window */
 	if (!fb_construct(fb, parent, dir))
@@ -80,6 +82,8 @@ browser_t *fb_new( wnd_t *parent, char *dir )
 		free(fb);
 		return NULL;
 	}
+	WND_FLAGS(fb) |= WND_FLAG_INITIALIZED;
+	wnd_invalidate(WND_OBJ(fb));
 	return fb;
 } /* End of 'fb_new' function */
 
@@ -94,13 +98,13 @@ bool_t fb_construct( browser_t *fb, wnd_t *parent, char *dir )
 		return FALSE;
 
 	/* Register handlers */
-	wnd_msg_add_handler(&wnd->m_on_display, fb_on_display);
-	wnd_msg_add_handler(&wnd->m_on_keydown, fb_on_keydown);
-	wnd_msg_add_handler(&wnd->m_on_mouse_ldown, fb_on_mouse_ldown);
-	wnd_msg_add_handler(&wnd->m_on_mouse_mdown, fb_on_mouse_mdown);
-	wnd_msg_add_handler(&wnd->m_on_mouse_rdown, fb_on_mouse_rdown);
-	wnd_msg_add_handler(&wnd->m_on_mouse_ldouble, fb_on_mouse_ldouble);
-	wnd_msg_add_handler(&wnd->m_destructor, fb_destructor);
+	wnd_msg_add_handler(wnd, "display", fb_on_display);
+	wnd_msg_add_handler(wnd, "keydown", fb_on_keydown);
+	wnd_msg_add_handler(wnd, "mouse_ldown", fb_on_mouse_ldown);
+	wnd_msg_add_handler(wnd, "mouse_mdown", fb_on_mouse_mdown);
+	wnd_msg_add_handler(wnd, "mouse_rdown", fb_on_mouse_rdown);
+	wnd_msg_add_handler(wnd, "mouse_ldouble", fb_on_mouse_ldouble);
+	wnd_msg_add_handler(wnd, "destructor", fb_destructor);
 
 	/* Set fields */
 	util_strncpy(fb->m_cur_dir, dir, sizeof(fb->m_cur_dir));

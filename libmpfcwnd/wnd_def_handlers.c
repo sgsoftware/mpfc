@@ -55,7 +55,7 @@ wnd_msg_retcode_t wnd_default_on_keydown( wnd_t *wnd, wnd_key_t *keycode )
 	/* Close window */
 	else if (keycode->m_key == 'c' && keycode->m_alt && 
 			(WND_FLAGS(wnd) & WND_FLAG_CLOSE_BOX))
-		wnd_msg_send(wnd, WND_MSG_CLOSE, wnd_msg_data_close_new());
+		wnd_close(wnd);
 	/* Maximize/minimize window */
 	else if (keycode->m_key == 'm' && keycode->m_alt && 
 			(WND_FLAGS(wnd) & WND_FLAG_CLOSE_BOX))
@@ -125,13 +125,6 @@ wnd_msg_retcode_t wnd_default_on_erase_back( wnd_t *wnd )
 	return WND_MSG_RETCODE_OK;
 } /* End of 'wnd_default_on_erase_back' function */
 
-/* Default WND_MSG_UPDATE_SCREEN message handler */
-wnd_msg_retcode_t wnd_default_on_update_screen( wnd_t *wnd )
-{
-	wnd_sync_screen(wnd);
-	return WND_MSG_RETCODE_OK;
-} /* End of 'wnd_default_on_update_screen' function */
-
 /* Default window destructor */
 void wnd_default_destructor( wnd_t *wnd )
 {
@@ -176,8 +169,8 @@ wnd_msg_retcode_t wnd_default_on_parent_repos( wnd_t *wnd,
 
 	/* Inform our children too */
 	for ( child = wnd->m_child; child != NULL; child = child->m_next )
-		wnd_msg_send(child, WND_MSG_PARENT_REPOS,
-				wnd_msg_data_parent_repos_new(was_x, was_y, was_w, was_h,
+		wnd_msg_send(child, "parent_repos",
+				wnd_msg_parent_repos_new(was_x, was_y, was_w, was_h,
 					wnd->m_x, wnd->m_y, wnd->m_width, wnd->m_height));
 	return WND_MSG_RETCODE_OK;
 } /* End of 'wnd_default_on_parent_repos' function */

@@ -30,56 +30,50 @@
 
 #include <pthread.h>
 #include "types.h"
-
-/* Forward declaration of window */
-struct tag_wnd_t;
-
-/* Message type */
-typedef dword wnd_msg_type_t;
-#define WND_MSG_UNDEFINED 0xFFFFFFFF
+#include "wnd_types.h"
 
 /* Message data type */
-typedef	struct
+struct tag_wnd_msg_data_t
 {
 	/* The message data */
 	void *m_data;
 
 	/* Destructor for freeing data type specific fields */
 	void (*m_destructor)( void *data );
-} wnd_msg_data_t;
+};
 
 /* Message type */
-typedef struct tag_wnd_msg_t 
+struct tag_wnd_msg_t 
 {
 	/* Message target window */
-	struct tag_wnd_t *m_wnd;
+	wnd_t *m_wnd;
 	
-	/* Message type */
-	wnd_msg_type_t m_type;
+	/* Message name */
+	char *m_name;
 
 	/* Message data */
 	wnd_msg_data_t m_data;
-} wnd_msg_t;
+};
 
 /* Message handler return code */
-typedef enum
+enum tag_wnd_msg_retcode_t
 {
 	WND_MSG_RETCODE_OK = 0,
 	WND_MSG_RETCODE_STOP,
 	WND_MSG_RETCODE_EXIT
-} wnd_msg_retcode_t;
+};
 
 /* Message handler type.
  * Message handler is actually a chain of functions. So we implement
  * it as linked list */
-typedef struct tag_wnd_msg_handler_t
+struct tag_wnd_msg_handler_t
 {
 	/* Pointer to handler function (should be casted to proper type) */
 	void *m_func;
 
 	/* Pointer to the next handler */
 	struct tag_wnd_msg_handler_t *m_next;
-} wnd_msg_handler_t;
+};
 
 /* Message callback function type */
 typedef wnd_msg_retcode_t (*wnd_msg_callback_t)( struct tag_wnd_t *wnd,
@@ -109,8 +103,7 @@ wnd_msg_queue_t *wnd_msg_queue_init( void );
 bool_t wnd_msg_get( wnd_msg_queue_t *queue, wnd_msg_t *msg );
 
 /* Send a message */
-void wnd_msg_send( struct tag_wnd_t *wnd, wnd_msg_type_t type, 
-		wnd_msg_data_t data );
+void wnd_msg_send( struct tag_wnd_t *wnd, char *name, wnd_msg_data_t data );
 
 /* Remove a given item from the queue */
 void wnd_msg_rem( wnd_msg_queue_t *queue, struct wnd_msg_queue_item_t *item );
@@ -132,10 +125,10 @@ void wnd_msg_queue_remove_by_window( wnd_msg_queue_t *queue,
 void wnd_msg_free( wnd_msg_t *msg );
 
 /* Add a handler to the handlers chain */
-void wnd_msg_add_handler( wnd_msg_handler_t **chain, void *h );
+void wnd_msg_add_handler( wnd_t *wnd, char *msg_name, void *handler );
 
 /* Remove handler from the handlers chain beginning */
-void wnd_msg_rem_handler( wnd_msg_handler_t **chain );
+void wnd_msg_rem_handler( wnd_t *wnd, char *msg_name );
 
 #endif
 

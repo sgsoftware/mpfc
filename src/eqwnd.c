@@ -47,6 +47,8 @@ eq_wnd_t *eqwnd_new( wnd_t *parent )
 		error_set_code(ERROR_NO_MEMORY);
 		return NULL;
 	}
+	memset(eq, 0, sizeof(*eq));
+	WND_OBJ(eq)->m_class = wnd_basic_class_init(WND_GLOBAL(parent));
 
 	/* Initialize equalizer window */
 	if (!eqwnd_construct(eq, parent))
@@ -54,6 +56,8 @@ eq_wnd_t *eqwnd_new( wnd_t *parent )
 		free(eq);
 		return NULL;
 	}
+	WND_FLAGS(eq) |= WND_FLAG_INITIALIZED;
+	wnd_invalidate(WND_OBJ(eq));
 	return eq;
 } /* End of 'eqwnd_new' function */
 
@@ -68,9 +72,9 @@ bool_t eqwnd_construct( eq_wnd_t *eq, wnd_t *parent )
 		return FALSE;
 
 	/* Register handlers */
-	wnd_msg_add_handler(&wnd->m_on_display, eqwnd_on_display);
-	wnd_msg_add_handler(&wnd->m_on_keydown, eqwnd_on_keydown);
-	wnd_msg_add_handler(&wnd->m_on_mouse_ldown, eqwnd_on_mouse_ldown);
+	wnd_msg_add_handler(wnd, "display", eqwnd_on_display);
+	wnd_msg_add_handler(wnd, "keydown", eqwnd_on_keydown);
+	wnd_msg_add_handler(wnd, "mouse_ldown", eqwnd_on_mouse_ldown);
 
 	/* Set fields */
 	wnd->m_cursor_hidden = TRUE;

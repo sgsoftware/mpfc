@@ -27,6 +27,7 @@
 
 #include <assert.h>
 #include <curses.h>
+#include <errno.h>
 #include <pthread.h>
 #include <sys/time.h>
 #include "types.h"
@@ -42,7 +43,11 @@ wnd_kbd_data_t *wnd_kbd_init( wnd_t *wnd_root )
 	wnd_kbd_data_t *data = (wnd_kbd_data_t *)malloc(sizeof(wnd_kbd_data_t));
 	data->m_end_thread = FALSE;
 	data->m_wnd_root = wnd_root;
-	pthread_create(&data->m_tid, NULL, wnd_kbd_thread, data);
+	if (pthread_create(&data->m_tid, NULL, wnd_kbd_thread, data))
+	{
+		free(data);
+		return NULL;
+	}
 	return data;
 } /* End of 'wnd_kbd_init' function */
 
@@ -78,8 +83,7 @@ void *wnd_kbd_thread( void *arg )
 			wnd_t *focus = WND_FOCUS(wnd_root);
 			if (focus != NULL)
 			{
-				wnd_msg_send(focus, WND_MSG_KEYDOWN, 
-						wnd_msg_data_key_new(&keycode));
+				wnd_msg_send(focus, "keydown", wnd_msg_key_new(&keycode));
 			}
 		}
 

@@ -29,9 +29,7 @@
 
 #include <pthread.h>
 #include "types.h"
-
-/* Further declaration */
-struct tag_wnd_t;
+#include "wnd_types.h"
 
 /* Mouse driver types */
 typedef enum
@@ -52,7 +50,7 @@ typedef struct
 	bool_t m_end_thread;
 
 	/* The root window */
-	struct tag_wnd_t *m_root_wnd;
+	wnd_t *m_root_wnd;
 } wnd_mouse_data_t;
 
 /* Mouse buttons */
@@ -71,7 +69,7 @@ typedef enum
 } wnd_mouse_event_t;
 
 /* Initialize mouse */
-bool_t wnd_mouse_init( wnd_mouse_data_t *data );
+wnd_mouse_data_t *wnd_mouse_init( wnd_global_data_t *global );
 
 /* Initialize mouse with GPM driver */
 bool_t wnd_mouse_init_gpm( wnd_mouse_data_t *data );
@@ -89,18 +87,16 @@ void wnd_mouse_free_gpm( wnd_mouse_data_t *data );
 void wnd_mouse_free_xterm( wnd_mouse_data_t *data );
 
 /* Determine the mouse driver type */
-wnd_mouse_driver_t wnd_get_mouse_type( cfg_node_t *cfg );
+wnd_mouse_driver_t wnd_mouse_get_driver( cfg_node_t *cfg );
 
 /* GPM Mouse thread function */
 void *wnd_mouse_thread( void *arg );
 
 /* Get window under which mouse cursor is */
-struct tag_wnd_t *wnd_get_wnd_under_cursor( wnd_mouse_data_t *data, 
-		int x, int y );
+wnd_t *wnd_get_wnd_under_cursor( wnd_mouse_data_t *data, int x, int y );
 
 /* Find a given window child that is under the cursor */
-struct tag_wnd_t *wnd_mouse_find_cursor_child( struct tag_wnd_t *wnd,
-		int x, int y );
+wnd_t *wnd_mouse_find_cursor_child( wnd_t *wnd, int x, int y );
 
 /* Handle the mouse event (send respective message) */
 void wnd_mouse_handle_event( wnd_mouse_data_t *data, 

@@ -26,6 +26,8 @@
 
 #include <getopt.h>
 #include <signal.h>
+#include <fcntl.h>
+#include <sys/soundcard.h>
 #include <stdio.h>
 #define __USE_GNU
 #include <string.h>
@@ -176,15 +178,14 @@ bool_t player_init( int argc, char *argv[] )
 		return FALSE;
 
 	/* Create window for play list */
-	player_wnd = wnd_new("Play list", wnd_root, 0, 0, 0, 0, 
+	player_wnd = wnd_new("Play list", wnd_root, 0, 0, 10, 10, 
 			WND_FLAG_FULL_BORDER | WND_FLAG_MAXIMIZED);
-	wnd_msg_add_handler(&player_wnd->m_on_display, player_on_display);
-	wnd_msg_add_handler(&player_wnd->m_on_keydown, player_on_keydown);
-	wnd_msg_add_handler(&player_wnd->m_on_close, player_on_close);
-	wnd_msg_add_handler(&player_wnd->m_on_mouse_ldown, player_on_mouse_ldown);
-	wnd_msg_add_handler(&player_wnd->m_on_mouse_mdown, player_on_mouse_mdown);
-	wnd_msg_add_handler(&player_wnd->m_on_mouse_ldouble, 
-			player_on_mouse_ldouble);
+	wnd_msg_add_handler(player_wnd, "display", player_on_display);
+	wnd_msg_add_handler(player_wnd, "keydown", player_on_keydown);
+	wnd_msg_add_handler(player_wnd, "close", player_on_close);
+	wnd_msg_add_handler(player_wnd, "mouse_ldown", player_on_mouse_ldown);
+	wnd_msg_add_handler(player_wnd, "mouse_mdown", player_on_mouse_mdown);
+	wnd_msg_add_handler(player_wnd, "mouse_ldouble", player_on_mouse_ldouble);
 	player_wnd->m_cursor_hidden = TRUE;
 
 	/* Initialize key bindings */
