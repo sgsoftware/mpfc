@@ -1,2 +1,2 @@
-ALL_PLUGINS = mp3 wav audiocd radio ogg timidi recorder
+ALL_PLUGINS = audiocd mp3 ogg wav
 SUBDIRS = @INPUT_PLUGINS@
