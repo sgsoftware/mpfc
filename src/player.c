@@ -2032,7 +2032,7 @@ void player_save_cfg_vars( cfg_list_t *list, char *vars )
 		if (vars[i] == ';' || vars[i] == '\0')
 		{
 			name = strndup(&vars[j], i - j);
-			j = i;
+			j = i + 1;
 			cfg_set_var(tlist, name, cfg_get_var(list, name));
 			free(name);
 			if (!vars[i])
