@@ -64,7 +64,8 @@ static int mp3_read( void *ptr, int size, file_t *fd );
 static void mp3_read_song_params( void );
 
 /* Read mp3 file header */
-static void mp3_read_header( char *filename, struct mad_header *head );
+static void mp3_read_header( char *filename, int data_offset,
+		struct mad_header *head );
 
 /* End of 'mp3.h' file */
 

@@ -443,6 +443,7 @@ static song_info_t *mp3_read_info( char *filename, int *len, int *nf )
 	id3_tag_t *tag;
 	char own_data[1024];
 	song_info_t *si = NULL;
+	int bytes2skip = 0;
 
 	/* Supported only for regular files; for others - 
 	 * output audio parameters */
@@ -507,6 +508,12 @@ static song_info_t *mp3_read_info( char *filename, int *len, int *nf )
 	tag = id3_read(filename);
 	if (tag != NULL)
 	{
+		/* Save tag size for skipping it */
+		if (tag->m_version == 2)
+		{
+			bytes2skip = tag->m_v2.m_stream_len;
+		}
+
 		/* Scan tag frames */
 		for ( ;; )
 		{	
@@ -549,7 +556,7 @@ static song_info_t *mp3_read_info( char *filename, int *len, int *nf )
 
 	/* Obtain additional song parameters */
 	mad_header_init(&head);
-	mp3_read_header(filename, &head);
+	mp3_read_header(filename, bytes2skip, &head);
 	if (head.bitrate)
 	{
 		int tpf;
@@ -615,6 +622,7 @@ static song_info_t *mp3_read_info( char *filename, int *len, int *nf )
 			si_set_own_data(si, own_data);
 	}
 	mad_header_finish(&head);
+
 	return si;
 } /* End of 'mp3_read_info' function */
 
@@ -1110,7 +1118,8 @@ static void mp3_read_song_params( void )
 } /* End of 'mp3_read_song_params' function */
 
 /* Read mp3 file header */
-static void mp3_read_header( char *filename, struct mad_header *head )
+static void mp3_read_header( char *filename, int data_offset, 
+		struct mad_header *head )
 {
 	struct mad_stream stream;
 	byte buffer[8192];
@@ -1124,6 +1133,7 @@ static void mp3_read_header( char *filename, struct mad_header *head )
 	fd = file_open(filename, "rb", mp3_log);
 	if (fd == NULL)
 		return;
+	file_seek(fd, data_offset, SEEK_SET);
 
 	/* Initialize MAD structures */
 	mad_stream_init(&stream);
