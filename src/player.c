@@ -540,10 +540,7 @@ void *player_thread( void *arg )
 	/* Get song length and information at first */
 	ifl = s->m_inp->m_fl;
 	s->m_len = ifl.m_get_len(s->m_file_name);
-	if (ifl.m_get_info(s->m_file_name, &si))
-		song_set_info(s, &si);
-	else
-		song_set_info(s, NULL);
+	song_update_info(s);
 
 	/* Start playing */
 	if (!ifl.m_start(s->m_file_name))

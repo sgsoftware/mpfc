@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Songs manipulation functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.03.2003
+ * LAST UPDATE : 20.04.2003
  * NOTE        : Module prefix 'song'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "types.h"
+#include "codepages.h"
 #include "error.h"
 #include "inp.h"
 #include "pmng.h"
@@ -130,7 +131,15 @@ void song_update_info( song_t *song )
 	song_info_t si;
 
 	if (song->m_inp->m_fl.m_get_info(song->m_file_name, &si))
+	{
+		/* Convert codepages */
+		cp_to_out(si.m_artist, si.m_artist);
+		cp_to_out(si.m_name, si.m_name);
+		cp_to_out(si.m_album, si.m_album);
+		cp_to_out(si.m_comments, si.m_comments);
+		
 		song_set_info(song, &si);
+	}
 	else
 		song_set_info(song, NULL);
 } /* End of 'song_update_info' function */

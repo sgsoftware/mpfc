@@ -1,0 +1,88 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2003 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# Sergey E. Galanov <sgsoftware@mail.ru>, 2003.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: konsamp 0.1\n"
+"POT-Creation-Date: 2003-04-20 12:23+0400\n"
+"PO-Revision-Date: 2003-02-13 09:15+0300\n"
+"Last-Translator: Sergey E. Galanov <sgsoftware@mail.ru>\n"
+"Language-Team: Russian <sgsoftware@mail.ru>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=KOI8-R\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/main.c:42
+#, c-format
+msgid "Initialization error : %s\n"
+msgstr "Ошибка инициализии : %s\n"
+
+#: src/player.c:327 src/player.c:806
+msgid "String not found"
+msgstr "Строка не найдена"
+
+#: src/player.c:329 src/player.c:808
+msgid "String found"
+msgstr "Строка найдена"
+
+#: src/player.c:347
+msgid "Enter repeat value for the next command: "
+msgstr "Введите число повторений для следующей команды: "
+
+#: src/player.c:684
+msgid "Enter file (or directory) name: "
+msgstr "Введите имя файла (или каталога): "
+
+#: src/player.c:697
+#, c-format
+msgid "Added %i songs"
+msgstr "Добавлено %i песен"
+
+#: src/player.c:714
+#, fuzzy
+msgid "Enter file name: "
+msgstr "Введите имя файла: "
+
+#: src/player.c:724
+msgid "Play list saved"
+msgstr "Плей-лист сохранен"
+
+#: src/player.c:725
+msgid "Unable to save play list"
+msgstr "Не могу сохранить плей-лист"
+
+#: src/player.c:739
+#, c-format
+msgid "Removed %i songs"
+msgstr "Удалено %i песен"
+
+#: src/player.c:752
+msgid "Sort globally? (Yes/No)"
+msgstr "Сортировать глобально? (Yes/No)"
+
+#: src/player.c:764
+msgid "Sort by: (T)itle, (F)ile name, (P)ath and file name"
+msgstr "Сортировать по: Заголовку(T), Имени файла(F), Пути и имени(P)"
+
+#: src/player.c:796
+msgid "Enter search string: "
+msgstr "Введите строку для поиска: "
+
+#~ msgid "No error"
+#~ msgstr "Нет ошибки"
+
+#, fuzzy
+#~ msgid "No such file or directory"
+#~ msgstr "Нет такого файла или директории"
+
+#~ msgid "No enough memory"
+#~ msgstr "Недостаточно памяти"
+
+#~ msgid "Curses library error"
+#~ msgstr "Ошибка библиотеки curses"
+
+#~ msgid "Unknown file type"
+#~ msgstr "Неизвестный формат файла"

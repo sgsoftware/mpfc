@@ -52,7 +52,7 @@ bool pmng_init( void )
 	FILE *fd;
 	
 	/* Initialize input plugins */ 
-	fd = popen("ls /usr/local/lib/konsamp/input/*.so", "r");
+	fd = popen("ls /usr/local/lib/mpfc/input/*.so", "r");
 	if (fd == NULL)
 		return FALSE;
 	while (!feof(fd))
@@ -68,7 +68,7 @@ bool pmng_init( void )
 	pclose(fd);
 
 	/* Initialize output plugins */ 
-	fd = popen("ls /usr/local/lib/konsamp/output/*.so", "r");
+	fd = popen("ls /usr/local/lib/mpfc/output/*.so", "r");
 	if (fd == NULL)
 		return FALSE;
 	while (!feof(fd))
