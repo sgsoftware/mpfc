@@ -566,5 +566,62 @@ void id3_copy2frame( id3_frame_t *f, byte **ptr, int size )
 	(*ptr) += size;
 } /* End of 'id3_copy2frame' function */
 
+/* Remove tags from file */
+void id3_remove( char *filename )
+{
+	FILE *fd;
+	byte *buf;
+	int file_size;
+
+	fd = fopen(filename, "rb");
+	if (fd == NULL)
+		return;
+	fseek(fd, 0, SEEK_END);
+	file_size = ftell(fd);
+	buf = (byte *)malloc(file_size);
+	if (buf == NULL)
+	{
+		fclose(fd);
+		return;
+	}
+	fseek(fd, 0, SEEK_SET);
+	fread(buf, 1, file_size, fd);
+	fclose(fd);
+
+	/* Find and remove ID3V2 */
+	if (file_size >= 10 && !strncmp(buf, "ID3", 3))
+	{
+		dword size;
+
+		/* Get ID3V2 size */
+		size = ID3_CONVERT_FROM_SYNCHSAFE(*(dword *)(buf + 6));
+
+		/* Calculate real size */
+		size += ID3_HEADER_SIZE;
+		if (*(buf + 5) & ID3_HAS_FOOTER)
+			size += ID3_FOOTER_SIZE;
+		
+		/* Remove tag */
+		memmove(buf, buf + size, file_size - size);
+		file_size -= size;
+	}
+
+	/* Find and remove ID3V1 */
+	if (file_size >= ID3_V1_TOTAL_SIZE && 
+			!strncmp(buf + file_size - ID3_V1_TOTAL_SIZE, "TAG", 3))
+		file_size -= ID3_V1_TOTAL_SIZE;
+
+	/* Save */
+	fd = fopen(filename, "wb");
+	if (fd == NULL)
+	{
+		free(buf);
+		return;
+	}
+	fwrite(buf, 1, file_size, fd);
+	fclose(fd);
+	free(buf);
+} /* End of 'id3_remove' function */
+
 /* End of 'id3.c' file */
 

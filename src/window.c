@@ -5,7 +5,7 @@
 /* FILE NAME   : window.c
  * PURPOSE     : SG MPFC. Window functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 2.09.2003
+ * LAST UPDATE : 10.09.2003
  * NOTE        : Module prefix 'wnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -703,6 +703,20 @@ void wnd_restore_curses( void )
 	wnd_curses_closed = FALSE;
 	refresh();
 } /* End of 'wnd_restore_curses' function */
+
+/* Find a child by its ID */
+wnd_t *wnd_find_child_by_id( wnd_t *parent, short id )
+{
+	wnd_t *child;
+
+	if (parent == NULL)
+		return NULL;
+
+	for ( child = parent->m_child; child != NULL; child = child->m_next )
+		if (WND_OBJ(child)->m_id == id)
+			return child;
+	return NULL;
+} /* End of 'wnd_find_child_by_id' function */
 
 /* End of 'window.c' file */
 

@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Input plugin management functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 10.10.2003
+ * LAST UPDATE : 9.11.2003
  * NOTE        : Module prefix 'inp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -84,6 +84,15 @@ void inp_free( in_plugin_t *p )
 	if (p != NULL)
 	{
 		dlclose(p->m_lib_handler);
+		if (p->m_fl.m_spec_funcs != NULL)
+		{
+			int i;
+
+			for ( i = 0; i < p->m_fl.m_num_spec_funcs; i ++ )
+				if (p->m_fl.m_spec_funcs[i].m_title != NULL)
+					free(p->m_fl.m_spec_funcs[i].m_title);
+			free(p->m_fl.m_spec_funcs);
+		}
 		free(p);
 	}
 } /* End of 'inp_free' function */
@@ -226,6 +235,32 @@ void inp_get_content_type( in_plugin_t *p, char *buf )
 		return p->m_fl.m_get_content_type(buf);
 	strcpy(buf, "");
 } /* End of 'inp_get_content_type' function */
+
+/* Get number of special functions */
+int inp_get_num_specs( in_plugin_t *p )
+{
+	if (p != NULL)
+		return p->m_fl.m_num_spec_funcs;
+	return 0;
+} /* End of 'inp_get_num_specs' function */
+
+/* Get special function title */
+char *inp_get_spec_title( in_plugin_t *p, int index )
+{
+	if (p != NULL && index >= 0 && index < p->m_fl.m_num_spec_funcs &&
+			p->m_fl.m_spec_funcs != NULL)
+		return p->m_fl.m_spec_funcs[index].m_title;
+	return NULL;
+} /* End of 'inp_get_spec_title' function */
+
+/* Call special function */
+void inp_spec_func( in_plugin_t *p, int index, char *filename )
+{
+	if (p != NULL && p->m_fl.m_spec_funcs != NULL && index >= 0 && 
+			index < p->m_fl.m_num_spec_funcs && 
+			p->m_fl.m_spec_funcs[index].m_func != NULL)
+		p->m_fl.m_spec_funcs[index].m_func(filename);
+} /* End of 'inp_spec_func' function */
 
 /* End of 'inp.c' file */
 

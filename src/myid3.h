@@ -135,6 +135,9 @@ void id3_next_frame( id3_tag_t *tag, id3_frame_t *frame );
 /* Set frame value */
 void id3_set_frame( id3_tag_t *tag, char *name, char *val );
 
+/* Remove tags from file */
+void id3_remove( char *filename );
+
 /* Free tag */
 void id3_free( id3_tag_t *tag );
 

@@ -50,6 +50,9 @@ bool_t label_init( label_t *l, wnd_t *parent, int x, int y, int w, int h,
 /* Destroy label */
 void label_destroy( wnd_t *wnd );
 
+/* Set label text */
+void label_set_text( label_t *l, char *text );
+
 /* Label display function */
 void label_display( wnd_t *wnd, dword data );
 

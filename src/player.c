@@ -67,7 +67,7 @@ char player_search_string[256] = "";
 int player_search_criteria = PLIST_SEARCH_TITLE;
 
 /* Message text */
-char player_msg[80] = "";
+char player_msg[1024] = "";
 
 /* Player thread ID */
 pthread_t player_tid = 0;
@@ -124,6 +124,11 @@ int player_last_pos = -1;
 
 /* Last position in song */
 int player_last_song = -1, player_last_song_time = -1;
+
+/* Information about currently opened info editor dialog */
+song_t *player_info_song = NULL;
+bool_t player_info_local = TRUE;
+int player_info_start = -1, player_info_end = -1;
 
 /* Initialize player */
 bool_t player_init( int argc, char *argv[] )
@@ -910,12 +915,13 @@ void player_info_dialog( void )
 	editbox_t *name, *album, *artist, *year, *comments, *track;
 	combobox_t *genre;
 	genre_list_t *glist;
-	int i, j, y = 1;
+	int i, j, y = 1, num_specs = 0, max_len;
 	int start, end;
 	bool_t name_common = TRUE, album_common = TRUE, artist_common = TRUE, 
 			year_common = TRUE,	comments_common = TRUE, track_common = TRUE, 
 			genre_common = TRUE;
-	bool_t local = FALSE;
+	bool_t local = TRUE;
+	label_t *label;
 
 	/* Get song object */
 	if (player_plist->m_sel_end < 0 || !player_plist->m_len)
@@ -1005,6 +1011,7 @@ void player_info_dialog( void )
 	dlg = dlg_new(wnd_root, 2, 2, wnd_root->m_width - 4, 21, 
 			cfg_get_var_int(cfg_list, "info-editor-show-full-name") ? 
 			s->m_file_name : util_get_file_short_name(s->m_file_name));
+	wnd_register_handler(dlg, WND_MSG_NOTIFY, player_info_notify);
 	if (!s->m_info->m_only_own)
 	{
 		name = ebox_new((wnd_t *)dlg, 2, y ++, WND_WIDTH(dlg) - 6, 1, 
@@ -1031,6 +1038,15 @@ void player_info_dialog( void )
 		if (s->m_info->m_genre == GENRE_ID_OWN_STRING)
 			cbox_set_text(genre, s->m_info->m_genre_data.m_text);
 
+		/* Set IDs */
+		WND_OBJ(name)->m_id = PLAYER_INFO_NAME;
+		WND_OBJ(artist)->m_id = PLAYER_INFO_ARTIST;
+		WND_OBJ(album)->m_id = PLAYER_INFO_ALBUM;
+		WND_OBJ(year)->m_id = PLAYER_INFO_YEAR;
+		WND_OBJ(track)->m_id = PLAYER_INFO_TRACK;
+		WND_OBJ(comments)->m_id = PLAYER_INFO_COMMENTS;
+		WND_OBJ(genre)->m_id = PLAYER_INFO_GENRE;
+
 		/* Set commonness flags */
 		name->m_grayed = !name_common;
 		artist->m_grayed = !artist_common;
@@ -1042,11 +1058,47 @@ void player_info_dialog( void )
 	}
 
 	/* Display own data */
-	label_new(WND_OBJ(dlg), 2, y + 1, WND_WIDTH(dlg) - 6, 
+	label = label_new(WND_OBJ(dlg), 2, y + 1, WND_WIDTH(dlg) - 6, 
 			WND_HEIGHT(dlg) - y - 1, s->m_info->m_own_data);
+	WND_OBJ(label)->m_id = PLAYER_INFO_LABEL;
+
+	/* Get the maximal length of special function title */
+	num_specs = inp_get_num_specs(s->m_inp);
+	max_len = 0;
+	for ( i = 0; i < num_specs; i ++ )
+	{
+		char *title = inp_get_spec_title(s->m_inp, i);
+		if (title != NULL)
+		{
+			int len = strlen(title);
+			if (len > max_len)
+				max_len = len;
+		}
+	}
+
+	/* Create buttons for special functions */
+	for ( i = 0; i < num_specs; i ++ )
+	{
+		button_t *btn;
+
+		btn = btn_new(WND_OBJ(dlg), WND_WIDTH(dlg) - max_len - 5, 
+				y + 1, max_len + 2, inp_get_spec_title(s->m_inp, i));
+		WND_OBJ(btn)->m_id = i;
+	}
+
+	/* Set global information about info editor (for notify function) */
+	player_info_song = s;
+	player_info_local = local;
+	player_info_start = start;
+	player_info_end = end;
 
 	/* Display dialog */
 	wnd_run(dlg);
+
+	/* Unset information */
+	player_info_song = NULL;
+	player_info_local = TRUE;
+	player_info_start = player_info_end = -1;
 
 	/* Save */
 	if (dlg->m_ok)
@@ -2091,6 +2143,74 @@ void player_info_reload_dialog( void )
 	/* Reload */
 	plist_reload_info(player_plist, g);
 } /* End of 'player_info_reload_dialog' function */
+
+/* Notify function for info editor */
+void player_info_notify( wnd_t *wnd, dword data )
+{
+	int i;
+
+	/* Call special functions */
+	if (player_info_local)
+	{
+		inp_spec_func(player_info_song->m_inp, data, 
+				player_info_song->m_file_name);
+		song_update_info(player_info_song);
+	}
+	else
+	{
+		in_plugin_t *inp = player_info_song->m_inp;
+		
+		for ( i = player_info_start; i <= player_info_end; i ++ )
+		{
+			if (PLIST_HAS_INFO(player_plist->m_list[i]) && 
+					inp == player_plist->m_list[i]->m_inp)
+				inp_spec_func(inp, data, player_plist->m_list[i]->m_file_name);
+			song_update_info(player_plist->m_list[i]);
+		}
+	}
+
+	/* Update dialog */
+	player_update_info_dlg(wnd);
+} /* End of 'player_info_notify' function */
+
+/* Update currently opened info editor dialog */
+void player_update_info_dlg( wnd_t *wnd )
+{
+	song_info_t *info;
+	combobox_t *genre;
+	
+	if (wnd == NULL || player_info_song == NULL || 
+			(info = player_info_song->m_info) == NULL)
+		return;
+
+	/* Update */
+	ebox_set_text((editbox_t *)wnd_find_child_by_id(wnd, PLAYER_INFO_NAME), 
+			info->m_name);
+	ebox_set_text((editbox_t *)wnd_find_child_by_id(wnd, PLAYER_INFO_ARTIST), 
+			info->m_artist);
+	ebox_set_text((editbox_t *)wnd_find_child_by_id(wnd, PLAYER_INFO_ALBUM), 
+			info->m_album);
+	ebox_set_text((editbox_t *)wnd_find_child_by_id(wnd, PLAYER_INFO_YEAR), 
+			info->m_year);
+	ebox_set_text((editbox_t *)wnd_find_child_by_id(wnd, PLAYER_INFO_TRACK), 
+			info->m_track);
+	ebox_set_text((editbox_t *)wnd_find_child_by_id(wnd, PLAYER_INFO_COMMENTS), 
+			info->m_comments);
+	genre = (combobox_t *)wnd_find_child_by_id(wnd, PLAYER_INFO_GENRE);
+	if (genre != NULL)
+	{
+		cbox_move_list_cursor(genre, FALSE, 
+				(info->m_genre == GENRE_ID_UNKNOWN ||
+				 info->m_genre == GENRE_ID_OWN_STRING) ? -1 : 
+				info->m_genre, FALSE, TRUE);
+		if (info->m_genre == GENRE_ID_OWN_STRING)
+			cbox_set_text(genre, info->m_genre_data.m_text);
+		else if (info->m_genre == GENRE_ID_UNKNOWN)
+			cbox_set_text(genre, "");
+	}
+	label_set_text((label_t *)wnd_find_child_by_id(wnd, PLAYER_INFO_LABEL),
+			info->m_own_data);
+} /* End of 'player_update_info_dlg' function */
 
 /* End of 'player.c' file */
 

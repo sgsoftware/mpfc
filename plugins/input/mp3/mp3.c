@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. MP3 input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 8.11.2003
+ * LAST UPDATE : 10.11.2003
  * NOTE        : Module prefix 'mp3'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -74,6 +74,9 @@ id3_tag_t *mp3_tag = NULL;
 
 /* Current song information */
 song_info_t mp3_cur_info;
+
+/* Whether we are about to remove tag? */
+bool_t mp3_need_rem_tag = FALSE;
 
 /* Genres list */
 genre_list_t *mp3_glist = NULL;
@@ -150,8 +153,14 @@ void mp3_end( void )
 		file_close(mp3_fd);
 		mp3_fd = NULL;
 
+		/* Remove tag */
+		if (mp3_need_rem_tag)
+		{
+			id3_remove(mp3_file_name);
+			mp3_need_rem_tag = FALSE;
+		}
 		/* Save tag */
-		if (mp3_tag != NULL)
+		else if (mp3_tag != NULL)
 		{
 			id3_write(mp3_tag, mp3_file_name);
 			id3_free(mp3_tag);
@@ -372,6 +381,7 @@ void mp3_save_info( char *filename, song_info_t *info )
 	id3_set_frame(tag, ID3_FRAME_GENRE, str);
 
 	/* Save tag or save it later */
+	mp3_need_rem_tag = FALSE;
 	if (!strcmp(filename, mp3_file_name))
 	{
 		mp3_tag = tag;
@@ -841,6 +851,39 @@ int mp3_get_cur_time( void )
 	return mp3_time;
 } /* End of 'mp3_get_cur_time' function */
 
+/* Remove ID3 tags */
+void mp3_remove_tag( char *filename )
+{
+	if (mp3_print_msg != NULL)
+	{
+		char msg[512];
+		sprintf(msg, _("Removing tag from file %s"), filename);
+		mp3_print_msg(msg);
+	}
+	if (strcmp(filename, mp3_file_name))
+	{
+		id3_remove(filename);
+	}
+	else
+	{
+		char *own;
+		
+		mp3_need_rem_tag = TRUE;
+		if (mp3_tag != NULL)
+		{
+			id3_free(mp3_tag);
+			mp3_tag = NULL;
+		}
+		own = strdup(mp3_cur_info.m_own_data);
+		memset(&mp3_cur_info, 0, sizeof(mp3_cur_info));
+		strcpy(mp3_cur_info.m_own_data, own);
+		mp3_cur_info.m_genre = GENRE_ID_OWN_STRING;
+		free(own);
+	}
+	if (mp3_print_msg != NULL)
+		mp3_print_msg(_("OK"));
+} /* End of 'mp3_remove_tag' function */
+
 /* Get functions list */
 void inp_get_func_list( inp_func_list_t *fl )
 {
@@ -858,6 +901,12 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_get_cur_time = mp3_get_cur_time;
 	fl->m_get_content_type = mp3_get_content_type;
 	mp3_print_msg = fl->m_print_msg;
+
+	fl->m_num_spec_funcs = 1;
+	fl->m_spec_funcs = (inp_spec_func_t *)malloc(sizeof(inp_spec_func_t) * 
+			fl->m_num_spec_funcs);
+	fl->m_spec_funcs[0].m_title = strdup("Remove ID3 tags");
+	fl->m_spec_funcs[0].m_func = mp3_remove_tag;
 } /* End of 'inp_get_func_list' function */
 
 /* This function is called when initializing module */
@@ -1046,9 +1095,9 @@ byte mp3_get_genre( char *str )
 			g += (*str - '0');
 		}
 
-		/* Any other symbol means not number */
+		/* Break on any other symbol */
 		else
-			return 0;
+			break;
 	}
 	return g;
 } /* End of 'mp3_get_genre' function */

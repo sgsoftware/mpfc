@@ -5,7 +5,7 @@
 /* FILE NAME   : window.h
  * PURPOSE     : SG MPFC. Interface for window functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 31.08.2003
+ * LAST UPDATE : 10.11.2003
  * NOTE        : Module prefix 'wnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -185,6 +185,9 @@ void wnd_close_curses( void );
 
 /* Restore curses */
 void wnd_restore_curses( void );
+
+/* Find a child by its ID */
+wnd_t *wnd_find_child_by_id( wnd_t *parent, short id );
 
 #endif
 

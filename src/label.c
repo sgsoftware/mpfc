@@ -5,7 +5,7 @@
 /* FILE NAME   : label.c
  * PURPOSE     : SG MPFC. Label functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 31.08.2003
+ * LAST UPDATE : 10.11.2003
  * NOTE        : Module prefix 'label'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -102,6 +102,17 @@ void label_display( wnd_t *wnd, dword data )
 void label_handle_key( wnd_t *wnd, dword data )
 {
 } /* End of 'label_handle_key' function */
+
+/* Set label text */
+void label_set_text( label_t *l, char *text )
+{
+	if (l == NULL || text == NULL)
+		return;
+	if (l->m_text != NULL)
+		free(l->m_text);
+	l->m_text = strdup(text);
+	wnd_send_msg(l, WND_MSG_DISPLAY, 0);
+} /* End of 'label_set_text' function */
 
 /* End of 'label.c' file */
 

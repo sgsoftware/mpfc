@@ -58,6 +58,16 @@
 #define PLAYER_VAR_MNGR_SAVE	3
 #define PLAYER_VAR_MNGR_RESTORE	4
 
+/* Info editor dialog items IDs */
+#define PLAYER_INFO_NAME     100
+#define PLAYER_INFO_ARTIST   101
+#define PLAYER_INFO_ALBUM    102
+#define PLAYER_INFO_YEAR     103
+#define PLAYER_INFO_TRACK    104
+#define PLAYER_INFO_COMMENTS 105
+#define PLAYER_INFO_GENRE    106
+#define PLAYER_INFO_LABEL    107
+
 /* Equalizer information */
 extern bool_t player_eq_changed;
 
@@ -226,6 +236,12 @@ void player_print_msg( char *msg );
 
 /* Info reload dialog */
 void player_info_reload_dialog( void );
+
+/* Notify function for info editor */
+void player_info_notify( wnd_t *wnd, dword data );
+
+/* Update currently opened info editor dialog */
+void player_update_info_dlg( wnd_t *wnd );
 
 #endif
 
