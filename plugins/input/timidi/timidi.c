@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. TiMidi (playing midi through TiMidity) 
  *               plugin functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 17.01.2004
+ * LAST UPDATE : 16.03.2004
  * NOTE        : Module prefix 'midi'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -48,7 +48,7 @@ bool_t midi_start( char *filename )
 	
 	/* Run TiMidity */
 	snprintf(cmd, sizeof(cmd), 
-			"timidity -id -Or1sl -s 44100 %s -o - 2>/dev/null", filename);
+			"timidity -id -Or1sl -s 44100 \"%s\" -o - 2>/dev/null", filename);
 	midi_pfd = popen(cmd, "r");
 	if (midi_pfd == NULL)
 		return FALSE;
