@@ -498,7 +498,7 @@ void player_display( wnd_t *wnd, dword data )
 		
 		s = player_plist->m_list[player_plist->m_cur_song];
 		col_set_color(wnd, COL_EL_CUR_TITLE);
-		wnd_printf_bound(wnd, wnd->m_width - 1, "%s\n", 
+		wnd_printf_bound(wnd, wnd->m_width - 1, TRUE, "%s\n", 
 				STR_TO_CPTR(s->m_title));
 		col_set_color(wnd, COL_EL_CUR_TIME);
 		t = (show_rem = cfg_get_var_int(cfg_list, "show-time-remaining")) ? 

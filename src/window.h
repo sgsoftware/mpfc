@@ -184,7 +184,7 @@ void wnd_set_attrib( wnd_t *wnd, int attr );
 void wnd_printf( wnd_t *wnd, char *format, ... );
 
 /* Print a formatted string with bounds */
-void wnd_printf_bound( wnd_t *wnd, int len, char *format, ... );
+void wnd_printf_bound( wnd_t *wnd, int len, bool_t ell, char *format, ... );
 
 /* Print one character */
 void wnd_print_char( wnd_t *wnd, int ch );

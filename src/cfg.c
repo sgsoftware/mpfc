@@ -81,6 +81,15 @@ void cfg_init_default( void )
 	cfg_set_var_int(cfg_list, "echo-delay", 500);
 	cfg_set_var_int(cfg_list, "echo-volume", 50);
 	cfg_set_var_int(cfg_list, "echo-feedback", 50);
+	cfg_set_var_int(cfg_list, "fb-fname-len", 0);
+	cfg_set_var_int(cfg_list, "fb-artist-len", 15);
+	cfg_set_var_int(cfg_list, "fb-title-len", 30);
+	cfg_set_var_int(cfg_list, "fb-album-len", 21);
+	cfg_set_var_int(cfg_list, "fb-year-len", 4);
+	cfg_set_var_int(cfg_list, "fb-comments-len", 0);
+	cfg_set_var_int(cfg_list, "fb-genre-len", 0);
+	cfg_set_var_int(cfg_list, "fb-track-len", 0);
+	cfg_set_var_int(cfg_list, "fb-time-len", 5);
 } /* End of 'cfg_init_default' function */
 
 /* Read configuration file */

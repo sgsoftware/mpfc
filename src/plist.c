@@ -851,7 +851,7 @@ void plist_display( plist_t *pl, wnd_t *wnd )
 			char len[10];
 			int x;
 			
-			wnd_printf_bound(wnd, wnd->m_width - 13, "%i. %s", j + 1, 
+			wnd_printf_bound(wnd, wnd->m_width - 13, TRUE, "%i. %s", j + 1, 
 					STR_TO_CPTR(s->m_title));
 			sprintf(len, "%i:%02i", s->m_len / 60, s->m_len % 60);
 			x = wnd->m_width - strlen(len) - 1;

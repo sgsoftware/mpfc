@@ -977,7 +977,7 @@ void wnd_touch( wnd_t *wnd )
 #endif
 
 /* Print a formatted string with bounds */
-void wnd_printf_bound( wnd_t *wnd, int len, char *format, ... )
+void wnd_printf_bound( wnd_t *wnd, int len, bool_t ell, char *format, ... )
 {
 	va_list ap;
 	char *str;
@@ -989,13 +989,18 @@ void wnd_printf_bound( wnd_t *wnd, int len, char *format, ... )
 	str = (char *)malloc(len + 1);
 	va_start(ap, format);
 	n = vsnprintf(str, len + 1, format, ap);
-	if (n > len)
+	if (n > len && ell)
 	{
 		strcpy(&str[len - 3], "...");
 	}
-	addstr(str);
+	waddstr(wnd->m_wnd, str);
 	va_end(ap);
 	free(str);
+	while (n < len)
+	{
+		waddch(wnd->m_wnd, ' ');
+		n ++;
+	}
 } /* End of 'wnd_printf_bound' function */
 
 /* End of 'window.c' file */

@@ -5,7 +5,7 @@
 /* FILE NAME   : browser.h
  * PURPOSE     : SG MPFC. Interface for file browser functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 1.01.2004
+ * LAST UPDATE : 8.02.2004
  * NOTE        : Module prefix 'fb'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -28,6 +28,7 @@
 #define __SG_MPFC_BROWSER_H__
 
 #include "types.h"
+#include "song_info.h"
 #include "window.h"
 
 /* File browser window type */
@@ -44,6 +45,8 @@ typedef struct tag_browser_t
 	{
 		char *m_name;
 		char *m_full_name;
+		song_info_t *m_info;
+		int m_len;
 		int m_y;
 		byte m_type;
 
@@ -63,6 +66,9 @@ typedef struct tag_browser_t
 
 	/* List part height */
 	int m_height;
+
+	/* Is info mode active? */
+	bool_t m_info_mode;
 } browser_t;
 
 /* Change selection of an item */
@@ -121,6 +127,24 @@ void fb_select_pattern( browser_t *fb, bool_t sel );
 
 /* Find a browser item by the mouse coordinates */
 int fb_find_item_by_mouse( browser_t *fb, int x, int y );
+
+/* Change directory */
+void fb_change_dir( browser_t *fb, char *dir );
+
+/* Toggle song info mode */
+void fb_toggle_info( browser_t *fb );
+
+/* Load song info */
+void fb_load_info( browser_t *fb );
+
+/* Print header */
+void fb_print_header( browser_t *fb );
+
+/* Print file */
+void fb_print_file( browser_t *fb, struct browser_list_item *item );
+
+/* Print info column */
+void fb_print_info_col( browser_t *fb, int id, struct browser_list_item *item );
 
 #endif
 

@@ -36,8 +36,27 @@
 #include "error.h"
 #include "player.h"
 #include "plist.h"
+#include "song_info.h"
 #include "window.h"
 #include "util.h"
+
+/* Info mode columns IDs */
+#define FB_COL_FILENAME 0
+#define FB_COL_TITLE 1
+#define FB_COL_ARTIST 2
+#define FB_COL_ALBUM 3
+#define FB_COL_YEAR 4
+#define FB_COL_GENRE 5
+#define FB_COL_COMMENTS 6
+#define FB_COL_TRACK 7
+#define FB_COL_TIME 8
+#define FB_COL_NUM 9
+
+/* Variable names associated with columns length */
+char *fb_vars[FB_COL_NUM] = 
+{ "fb-fname-len", "fb-title-len", "fb-artist-len", "fb-album-len", 
+  "fb-year-len", "fb-genre-len", "fb-comments-len", "fb-track-len", 
+  "fb-time-len" };
 
 /* Create a new file browser window */
 browser_t *fb_new( wnd_t *parent, int x, int y, int w, int h, char *dir )
@@ -85,7 +104,8 @@ bool_t fb_init( browser_t *fb, wnd_t *parent, int x, int y, int w,
 	fb->m_files = NULL;
 	fb->m_cursor = 0;
 	fb->m_scrolled = 0;
-	fb->m_height = h - 2;
+	fb->m_height = h - 3;
+	fb->m_info_mode = FALSE;
 	fb_load_files(fb);
 	WND_OBJ(fb)->m_flags |= (WND_INITIALIZED);
 	return TRUE;
@@ -116,6 +136,9 @@ void fb_display( wnd_t *wnd, dword data )
 	/* Clean information about items position in window */
 	for ( i = 0; i < fb->m_num_files; i ++ )
 		fb->m_files[i].m_y = -1;
+
+	/* Print header */
+	fb_print_header(fb);
 	
 	/* Print files */
 	y = wnd_gety(wnd);
@@ -134,7 +157,7 @@ void fb_display( wnd_t *wnd, dword data )
 			col_set_color(wnd, i == fb->m_cursor ? COL_EL_FB_FILE_HL :
 					COL_EL_FB_FILE);
 		fb->m_files[i].m_y = wnd_gety(wnd);
-		wnd_printf(wnd, "%s", fb->m_files[i].m_name);
+		fb_print_file(fb, &fb->m_files[i]);
 		if (type & FB_ITEM_DIR)
 			wnd_printf(wnd, "/\n");
 		else
@@ -152,6 +175,7 @@ void fb_handle_key( wnd_t *wnd, dword data )
 {
 	int key = (int)data;
 	browser_t *fb = (browser_t *)wnd;
+	char str[MAX_FILE_NAME];
 
 	if (fb == NULL)
 		return;
@@ -192,9 +216,28 @@ void fb_handle_key( wnd_t *wnd, dword data )
 		fb_go_to_dir(fb);
 		break;
 
+	/* Go to home directory */
+	case 'h':
+		fb_change_dir(fb, getenv("HOME"));
+		break;
+
+	/* Go to parent directory */
+	case KEY_BACKSPACE:
+		if (fb->m_num_files && (fb->m_files[0].m_type & FB_ITEM_UPDIR))
+		{
+			fb->m_cursor = fb->m_scrolled = 0;
+			fb_go_to_dir(fb);
+		}
+		break;
+
 	/* Add selected files to playlist */
 	case 'a':
 		fb_add2plist(fb);
+		break;
+
+	/* Toggle song info mode */
+	case 'i':
+		fb_toggle_info(fb);
 		break;
 
 	/* Select/deselect files */
@@ -325,6 +368,8 @@ void fb_load_files( browser_t *fb )
 	fb->m_files[0].m_name = fb->m_files[0].m_full_name = strdup("..");
 	fb->m_files[0].m_type = (FB_ITEM_DIR | FB_ITEM_UPDIR);
 	fb->m_files[0].m_y = -1;
+	fb->m_files[0].m_info = NULL;
+	fb->m_files[0].m_len = 0;
 
 	/* Find files */
 	memset(&gl, 0, sizeof(gl));
@@ -335,6 +380,10 @@ void fb_load_files( browser_t *fb )
 	for ( i = 0; i < gl.gl_pathc; i ++ )
 		fb_add_file(fb, gl.gl_pathv[i]);
 	globfree(&gl);
+
+	/* Load info if we are in info mode */
+	if (fb->m_info_mode)
+		fb_load_info(fb);
 } /* End of 'fb_load_files' function */
 
 /* Free files list */
@@ -346,7 +395,10 @@ void fb_free_files( browser_t *fb )
 		return;
 
 	for ( i = 0; i < fb->m_num_files; i ++ )
+	{
 		free(fb->m_files[i].m_full_name);
+		si_free(fb->m_files[i].m_info);
+	}
 	free(fb->m_files);
 	fb->m_files = NULL;
 	fb->m_num_files = 0;
@@ -392,6 +444,8 @@ void fb_add_file( browser_t *fb, char *name )
 	item->m_full_name = strdup(name);
 	item->m_name = util_short_name(item->m_full_name);
 	item->m_y = -1;
+	item->m_info = NULL;
+	item->m_len = 0;
 	fb->m_num_files ++;
 } /* End of 'fb_add_file' function */
 
@@ -480,6 +534,11 @@ void fb_select_pattern( browser_t *fb, bool_t sel )
 		return;
 	box->m_hist_list = player_hist_lists[PLAYER_HIST_FB_PATTERN];
 	wnd_run(box);
+	if (box->m_last_key == 27)
+	{
+		wnd_destroy(box);
+		return;
+	}
 
 	/* Get pattern */
 	pattern = strdup(EBOX_TEXT(box));
@@ -515,6 +574,176 @@ int fb_find_item_by_mouse( browser_t *fb, int x, int y )
 	}
 	return -1;
 } /* End of 'fb_find_item_by_mouse' function */
+
+/* Change directory */
+void fb_change_dir( browser_t *fb, char *dir )
+{
+	if (fb == NULL)
+		return;
+
+	strcpy(fb->m_cur_dir, dir);
+	if (fb->m_cur_dir[strlen(fb->m_cur_dir) - 1] != '/')
+		strcat(fb->m_cur_dir, "/");
+	fb_load_files(fb);
+	fb->m_cursor = 0;
+	fb->m_scrolled = 0;
+} /* End of 'fb_change_dir' function */
+
+/* Toggle song info mode */
+void fb_toggle_info( browser_t *fb )
+{
+	if (fb == NULL)
+		return;
+
+	/* Change mode */
+	fb->m_info_mode = !fb->m_info_mode;
+	if (fb->m_info_mode)
+		fb_load_info(fb);
+} /* End of 'fb_toggle_info' function */
+
+/* Load song info */
+void fb_load_info( browser_t *fb )
+{
+	int i;
+
+	if (fb == NULL)
+		return;
+
+	for ( i = 0; i < fb->m_num_files; i ++ )
+	{
+		struct browser_list_item *item = &fb->m_files[i];
+		char *ext;
+		in_plugin_t *inp;
+
+		/* Don't load info if it is already loaded */
+		if (item->m_info != NULL && item->m_len)
+			continue;
+		/* Don't load info for directories */
+		if (item->m_type & FB_ITEM_DIR)
+			continue;
+
+		/* Determine file type and its associated plugin */
+		ext = util_extension(item->m_name);
+		inp = pmng_search_format(player_pmng, ext);
+		if (inp == NULL)
+			continue;
+
+		/* Load info */
+		si_free(item->m_info);
+		item->m_info = inp_get_info(inp, item->m_full_name, &item->m_len);
+	}
+} /* End of 'fb_load_info' function */
+
+/* Print header */
+void fb_print_header( browser_t *fb )
+{
+	int i;
+	wnd_t *wnd = WND_OBJ(fb);
+
+	if (!fb->m_info_mode)
+		return;
+
+	for ( i = 0; i < FB_COL_NUM; i ++ )
+		fb_print_info_col(fb, i, NULL);
+	wnd_printf(wnd, "\n");
+} /* End of 'fb_print_header' function */
+
+/* Print file */
+void fb_print_file( browser_t *fb, struct browser_list_item *item )
+{
+	wnd_t *wnd = WND_OBJ(fb);
+	
+	/* If we are not in info mode - print file name */
+	if (!fb->m_info_mode || item->m_info == NULL)
+		wnd_printf(wnd, "%s", item->m_name);
+	/* Print file info */
+	else
+	{
+		int i;
+		
+		for ( i = 0; i < FB_COL_NUM; i ++ )
+			fb_print_info_col(fb, i, item);
+	}
+} /* End of 'fb_print_file' function */
+
+/* Print info column */
+void fb_print_info_col( browser_t *fb, int id, 
+							struct browser_list_item *item )
+{
+	int size, next_size = 0, i;
+	wnd_t *wnd = WND_OBJ(fb);
+	song_info_t *info;
+
+	if (id < 0 || id >= FB_COL_NUM)
+		return;
+
+	size = cfg_get_var_int(cfg_list, fb_vars[id]);
+	if (size == 0)
+		return;
+	for ( i = id + 1; i < FB_COL_NUM; i ++ )
+	{
+		next_size = cfg_get_var_int(cfg_list, fb_vars[i]);
+		if (next_size > 0)
+			break;
+	}
+	if (item != NULL)
+		info = item->m_info;
+	
+	switch (id)
+	{
+	case FB_COL_FILENAME:
+		if (item == NULL)
+			wnd_printf_bound(wnd, size, FALSE, _("File name"));
+		else
+			wnd_printf_bound(wnd, size, FALSE, "%s", item->m_name);
+		break;
+	case FB_COL_TITLE:
+		if (item == NULL)
+			wnd_printf_bound(wnd, size, FALSE, _("Title"));
+		else
+			wnd_printf_bound(wnd, size, FALSE, "%s", info->m_name);
+		break;
+	case FB_COL_ARTIST:
+		if (item == NULL)
+			wnd_printf_bound(wnd, size, FALSE, _("Artist"));
+		else
+			wnd_printf_bound(wnd, size, FALSE, "%s", info->m_artist);
+		break;
+	case FB_COL_ALBUM:
+		if (item == NULL)
+			wnd_printf_bound(wnd, size, FALSE, _("Album"));
+		else
+			wnd_printf_bound(wnd, size, FALSE, "%s", info->m_album);
+		break;
+	case FB_COL_YEAR:
+		if (item == NULL)
+			wnd_printf_bound(wnd, size, FALSE, _("Year"));
+		else
+			wnd_printf_bound(wnd, size, FALSE, "%s", info->m_year);
+		break;
+	case FB_COL_GENRE:
+		if (item == NULL)
+			wnd_printf_bound(wnd, size, FALSE, _("Genre"));
+		else
+			wnd_printf_bound(wnd, size, FALSE, "%s", info->m_genre);
+		break;
+	case FB_COL_TRACK:
+		if (item == NULL)
+			wnd_printf_bound(wnd, size, FALSE, _("Track"));
+		else
+			wnd_printf_bound(wnd, size, FALSE, "%s", info->m_genre);
+		break;
+	case FB_COL_TIME:
+		if (item == NULL)
+			wnd_printf_bound(wnd, size, FALSE, _("Time"));
+		else
+			wnd_printf_bound(wnd, size, FALSE, "%d:%02d", 
+					item->m_len / 60, item->m_len % 60);
+		break;
+	}
+	if (next_size > 0)
+		wnd_print_char(wnd, ACS_VLINE);
+} /* End of 'fb_print_info_col' function */
 
 /* End of 'browser.c' file */
 
