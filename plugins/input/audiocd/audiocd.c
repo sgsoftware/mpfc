@@ -27,6 +27,7 @@
 
 #include <linux/cdrom.h>
 #include <stdio.h>
+#include <errno.h>
 #include <string.h>
 #include <stdarg.h>
 #include <sys/ioctl.h>
@@ -72,6 +73,9 @@ static char acd_next_song[MAX_FILE_NAME] = "";
 /* Message printer */
 pmng_print_msg_t acd_print_msg = NULL;
 
+/* Audio device */
+static int audio_fd = -1;
+
 /* Prepare cdrom for ioctls */
 static int acd_prepare_cd( void )
 {
@@ -104,6 +108,8 @@ bool_t acd_start( char *filename )
 	struct cdrom_msf msf;
 	struct cdrom_subchnl info;
 	bool_t playing = FALSE;
+	int mixer_fd;
+	int format = AFMT_S16_LE, ch = 2, rate = 44100;
 
 	/* Get track number from filename */
 	track = acd_fname2trk(filename);
@@ -134,6 +140,26 @@ bool_t acd_start( char *filename )
 
 	/* Close device */
 	close(fd);
+
+	/* Set recording source as cd */
+	mixer_fd = open("/dev/mixer", O_WRONLY);
+	if (mixer_fd >= 0)
+	{
+		int mask = SOUND_MASK_CD;
+		ioctl(mixer_fd, SOUND_MIXER_WRITE_RECSRC, &mask);
+		close(mixer_fd);
+	}
+
+	/* Open audio device (for reading audio data) */
+	audio_fd = open("/dev/dsp", O_RDONLY);
+	if (audio_fd >= 0)
+	{
+		ioctl(audio_fd, SNDCTL_DSP_SETFMT, &format);
+		ioctl(audio_fd, SNDCTL_DSP_CHANNELS, &ch);
+		ioctl(audio_fd, SNDCTL_DSP_SPEED, &rate);
+	}
+	
+	/* Open audio device */
 	return TRUE;
 } /* End of 'mp3_start' function */
 
@@ -155,6 +181,12 @@ void acd_end( void )
 	/* Close device */
 	close(fd);
 	cddb_free();
+
+	if (audio_fd >= 0)
+	{
+		close(audio_fd);
+		audio_fd = -1;
+	}
 } /* End of 'acd_end' function */
 
 /* Get length */
@@ -185,7 +217,17 @@ int acd_get_stream( void *buf, int size )
 	acd_time = info.cdsc_reladdr.msf.minute * 60 + 
 		info.cdsc_reladdr.msf.second;
 	close(fd);
-	return playing ? size : 0;
+	if (!playing)
+		return 0;
+
+	/* Read audio data */
+	if (audio_fd >= 0)
+	{
+		int ret_size = read(audio_fd, buf, size);
+		if (ret_size > 0)
+			size = ret_size;
+	}
+	return size;
 } /* End of 'acd_get_stream' function */
 
 /* Initialize songs that respect to object */
@@ -424,7 +466,7 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_seek = acd_seek;
 	fl->m_get_audio_params = acd_get_audio_params;
 	fl->m_init_obj_songs = acd_init_obj_songs;
-	fl->m_flags = INP_NO_OUTP;
+	fl->m_flags = INP_OWN_SOUND;
 	fl->m_pause = acd_pause;
 	fl->m_resume = acd_resume;
 	fl->m_get_cur_time = acd_get_cur_time;

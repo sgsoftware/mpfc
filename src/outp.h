@@ -69,6 +69,9 @@ typedef struct
 	/* Plugins manager */
 	struct tag_pmng_t *m_pmng;
 
+	/* Flags */
+	dword m_flags;
+
 	/* Reserved data */
 	byte m_reserved1[120];
 } outp_func_list_t;
@@ -85,6 +88,9 @@ typedef struct tag_out_plugin_t
 	/* Functions list */
 	outp_func_list_t m_fl;
 } out_plugin_t;
+
+/* Output plugin flags */
+#define OUTP_NO_SOUND 0x00000001
 
 /* Initialize output plugin */
 out_plugin_t *outp_init( char *name, struct tag_pmng_t *pmng );
@@ -121,6 +127,9 @@ void outp_get_volume( out_plugin_t *p, int *left, int *right );
 
 /* Get information about plugin */
 char *outp_get_about( out_plugin_t *p );
+
+/* Get plugin flags */
+dword outp_get_flags( out_plugin_t *p );
 
 #endif
 

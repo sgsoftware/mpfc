@@ -78,6 +78,10 @@ struct tag_wnd_t;
 #define WND_MOUSE_X(data) ((data) >> 16)
 #define WND_MOUSE_Y(data) (short)(data)
 
+/* Flags for 'wnd_printf_bound' function */
+#define WND_PRINT_ELLIPSES 0x00000001
+#define WND_PRINT_FILL_REST 0x00000002
+
 /* Window message handler function */
 typedef void (*wnd_msg_handler)( struct tag_wnd_t *wnd, dword data );
 
@@ -184,7 +188,7 @@ void wnd_set_attrib( wnd_t *wnd, int attr );
 void wnd_printf( wnd_t *wnd, char *format, ... );
 
 /* Print a formatted string with bounds */
-void wnd_printf_bound( wnd_t *wnd, int len, bool_t ell, char *format, ... );
+void wnd_printf_bound( wnd_t *wnd, int len, dword flags, char *format, ... );
 
 /* Print one character */
 void wnd_print_char( wnd_t *wnd, int ch );

@@ -67,6 +67,8 @@ bool_t dw_start( void )
 	str = cfg_get_var(pmng_get_cfg(dw_pmng), "disk-writer-path");
 	if (str != NULL)
 		sprintf(full_name, "%s/%s", str, name);
+	else
+		sprintf(full_name, "%s", name);
 
 	/* Try to open file */
 	dw_fd = file_open(full_name, "w+b", NULL);
@@ -163,6 +165,7 @@ void outp_get_func_list( outp_func_list_t *fl )
 	fl->m_set_channels = dw_set_channels;
 	fl->m_set_freq = dw_set_freq;
 	fl->m_set_fmt = dw_set_fmt;
+	fl->m_flags = OUTP_NO_SOUND;
 	dw_pmng = fl->m_pmng;
 } /* End of 'outp_get_func_list' function */
 

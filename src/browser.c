@@ -693,51 +693,58 @@ void fb_print_info_col( browser_t *fb, int id,
 	{
 	case FB_COL_FILENAME:
 		if (item == NULL)
-			wnd_printf_bound(wnd, size, FALSE, _("File name"));
+			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, _("File name"));
 		else
-			wnd_printf_bound(wnd, size, FALSE, "%s", item->m_name);
+			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, "%s", 
+					item->m_name);
 		break;
 	case FB_COL_TITLE:
 		if (item == NULL)
-			wnd_printf_bound(wnd, size, FALSE, _("Title"));
+			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, _("Title"));
 		else
-			wnd_printf_bound(wnd, size, FALSE, "%s", info->m_name);
+			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, "%s", 
+					info->m_name);
 		break;
 	case FB_COL_ARTIST:
 		if (item == NULL)
-			wnd_printf_bound(wnd, size, FALSE, _("Artist"));
+			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, _("Artist"));
 		else
-			wnd_printf_bound(wnd, size, FALSE, "%s", info->m_artist);
+			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, "%s", 
+					info->m_artist);
 		break;
 	case FB_COL_ALBUM:
 		if (item == NULL)
-			wnd_printf_bound(wnd, size, FALSE, _("Album"));
+			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, _("Album"));
 		else
-			wnd_printf_bound(wnd, size, FALSE, "%s", info->m_album);
+			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, "%s", 
+					info->m_album);
 		break;
 	case FB_COL_YEAR:
 		if (item == NULL)
-			wnd_printf_bound(wnd, size, FALSE, _("Year"));
+			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, _("Year"));
 		else
-			wnd_printf_bound(wnd, size, FALSE, "%s", info->m_year);
+			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, "%s", 
+					info->m_year);
 		break;
 	case FB_COL_GENRE:
 		if (item == NULL)
-			wnd_printf_bound(wnd, size, FALSE, _("Genre"));
+			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, _("Genre"));
 		else
-			wnd_printf_bound(wnd, size, FALSE, "%s", info->m_genre);
+			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, "%s", 
+					info->m_genre);
 		break;
 	case FB_COL_TRACK:
 		if (item == NULL)
-			wnd_printf_bound(wnd, size, FALSE, _("Track"));
+			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, _("Track"));
 		else
-			wnd_printf_bound(wnd, size, FALSE, "%s", info->m_genre);
+			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, "%s", 
+					info->m_genre);
 		break;
 	case FB_COL_TIME:
 		if (item == NULL)
-			wnd_printf_bound(wnd, size, FALSE, _("Time"));
+			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, _("Time"));
 		else
-			wnd_printf_bound(wnd, size, FALSE, "%d:%02d", 
+			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, "%d:%02d", 
 					item->m_len / 60, item->m_len % 60);
 		break;
 	}

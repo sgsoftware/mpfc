@@ -498,7 +498,7 @@ void player_display( wnd_t *wnd, dword data )
 		
 		s = player_plist->m_list[player_plist->m_cur_song];
 		col_set_color(wnd, COL_EL_CUR_TITLE);
-		wnd_printf_bound(wnd, wnd->m_width - 1, TRUE, "%s\n", 
+		wnd_printf_bound(wnd, wnd->m_width - 1, WND_PRINT_ELLIPSES, "%s\n", 
 				STR_TO_CPTR(s->m_title));
 		col_set_color(wnd, COL_EL_CUR_TIME);
 		t = (show_rem = cfg_get_var_int(cfg_list, "show-time-remaining")) ? 
@@ -674,6 +674,7 @@ void *player_thread( void *arg )
 		in_plugin_t *inp;
 		int was_pfreq, was_pbr, was_pstereo;
 		int disp_count;
+		dword in_flags, out_flags;
 
 		/* Skip to next iteration if there is nothing to play */
 		if (player_plist->m_cur_song < 0 || 
@@ -700,7 +701,10 @@ void *player_thread( void *arg )
 		}
 		if (player_cur_time > 0)
 			inp_seek(inp, player_cur_time);
-		no_outp = inp_get_flags(inp) & INP_NO_OUTP;
+		in_flags = inp_get_flags(inp);
+		out_flags = outp_get_flags(player_pmng->m_cur_out);
+		no_outp = (in_flags & INP_OWN_OUT) || 
+			((in_flags & INP_OWN_SOUND) && !(out_flags & OUTP_NO_SOUND));
 
 		/* Get song length and information */
 		song_update_info(s);

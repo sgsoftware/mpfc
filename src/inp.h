@@ -35,7 +35,8 @@
 #include "song_info.h"
 
 /* Input plugin flags */
-#define INP_NO_OUTP 0x00000001
+#define INP_OWN_OUT 0x00000001
+#define INP_OWN_SOUND 0x00000002
 
 /* Special function flags */
 #define INP_SPEC_SAVE_INFO 0x00000001

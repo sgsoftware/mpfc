@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: mpfc 1.1\n"
-"POT-Creation-Date: 2004-02-07 18:18+0300\n"
+"POT-Creation-Date: 2004-02-08 13:49+0300\n"
 "PO-Revision-Date: 2003-02-13 09:15+0300\n"
 "Last-Translator: Sergey E. Galanov <sgsoftware@mail.ru>\n"
 "Language-Team: Russian <sgsoftware@mail.ru>\n"
@@ -439,15 +439,15 @@ msgstr "Загрузить из файла Winamp EQF"
 msgid "Current directory is %s\n"
 msgstr "Текущий каталог %s\n"
 
-#: src/browser.c:477
+#: src/browser.c:484
 msgid "Select files matching pattern: "
 msgstr "Выбрать файлы, удовлетворяющие шаблону: "
 
-#: src/browser.c:478
+#: src/browser.c:485
 msgid "Deselect files matching pattern: "
 msgstr "Снять выделение с файлов, удовлетворяющих шаблону: "
 
-#: plugins/input/mp3/mp3.c:421
+#: plugins/input/mp3/mp3.c:438
 #, c-format
 msgid ""
 "MPEG %s, layer %i\n"
@@ -468,48 +468,48 @@ msgstr ""
 "Подлинный: %s\n"
 "Акцент: %s"
 
-#: plugins/input/mp3/mp3.c:434 plugins/input/mp3/mp3.c:529
+#: plugins/input/mp3/mp3.c:451 plugins/input/mp3/mp3.c:575
 msgid "Single channel"
 msgstr "Один канал"
 
-#: plugins/input/mp3/mp3.c:435 plugins/input/mp3/mp3.c:530
+#: plugins/input/mp3/mp3.c:452 plugins/input/mp3/mp3.c:576
 msgid "Dual channel"
 msgstr "Два канала"
 
-#: plugins/input/mp3/mp3.c:436 plugins/input/mp3/mp3.c:531
+#: plugins/input/mp3/mp3.c:453 plugins/input/mp3/mp3.c:577
 msgid "Joint Stereo"
 msgstr "Объединенное стерео"
 
-#: plugins/input/mp3/mp3.c:437 plugins/input/mp3/mp3.c:532
+#: plugins/input/mp3/mp3.c:454 plugins/input/mp3/mp3.c:578
 msgid "Stereo"
 msgstr "Стерео"
 
-#: plugins/input/mp3/mp3.c:438 plugins/input/mp3/mp3.c:439
-#: plugins/input/mp3/mp3.c:440 plugins/input/mp3/mp3.c:533
-#: plugins/input/mp3/mp3.c:534 plugins/input/mp3/mp3.c:535
+#: plugins/input/mp3/mp3.c:455 plugins/input/mp3/mp3.c:456
+#: plugins/input/mp3/mp3.c:457 plugins/input/mp3/mp3.c:579
+#: plugins/input/mp3/mp3.c:580 plugins/input/mp3/mp3.c:581
 msgid "Yes"
 msgstr "Да"
 
-#: plugins/input/mp3/mp3.c:438 plugins/input/mp3/mp3.c:439
-#: plugins/input/mp3/mp3.c:440 plugins/input/mp3/mp3.c:533
-#: plugins/input/mp3/mp3.c:534 plugins/input/mp3/mp3.c:535
+#: plugins/input/mp3/mp3.c:455 plugins/input/mp3/mp3.c:456
+#: plugins/input/mp3/mp3.c:457 plugins/input/mp3/mp3.c:579
+#: plugins/input/mp3/mp3.c:580 plugins/input/mp3/mp3.c:581
 msgid "No"
 msgstr "Нет"
 
-#: plugins/input/mp3/mp3.c:441 plugins/input/mp3/mp3.c:536
+#: plugins/input/mp3/mp3.c:458 plugins/input/mp3/mp3.c:582
 msgid "None"
 msgstr "Нет"
 
-#: plugins/input/mp3/mp3.c:443 plugins/input/mp3/mp3.c:538
+#: plugins/input/mp3/mp3.c:460 plugins/input/mp3/mp3.c:584
 msgid "50/15 microseconds"
 msgstr "50/15 микросекунд"
 
-#: plugins/input/mp3/mp3.c:443 plugins/input/mp3/mp3.c:538
+#: plugins/input/mp3/mp3.c:460 plugins/input/mp3/mp3.c:584
 msgid "CCITT J.17"
 msgstr "CCITT J.17"
 
-#: plugins/input/mp3/mp3.c:513
-#, c-format
+#: plugins/input/mp3/mp3.c:559
+#, fuzzy, c-format
 msgid ""
 "MPEG %s, layer %i\n"
 "Bitrate: %i kb/s\n"
@@ -519,7 +519,7 @@ msgid ""
 "Copyright: %s\n"
 "Original: %s\n"
 "Emphasis: %s\n"
-"approx. %i frames\n"
+"%s%i frames\n"
 "Length: %i seconds\n"
 "File size: %i bytes"
 msgstr ""
@@ -535,16 +535,20 @@ msgstr ""
 "Длина: %i секунд\n"
 "Размер файла: %i байт"
 
-#: plugins/input/mp3/mp3.c:846
+#: plugins/input/mp3/mp3.c:585
+msgid "approx. "
+msgstr ""
+
+#: plugins/input/mp3/mp3.c:898
 #, c-format
 msgid "Removing tag from file %s"
 msgstr "Удаляю тег из файла %s"
 
-#: plugins/input/mp3/mp3.c:869
+#: plugins/input/mp3/mp3.c:921
 msgid "OK"
 msgstr "OK"
 
-#: plugins/input/mp3/mp3.c:891
+#: plugins/input/mp3/mp3.c:943
 msgid "Remove ID3 tags"
 msgstr "Удалить теги ID3"
 

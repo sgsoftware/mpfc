@@ -31,6 +31,7 @@
 #include <sys/soundcard.h>
 #include <unistd.h>
 #include "types.h"
+#include "file.h"
 #include "inp.h"
 #include "timidi.h"
 
@@ -112,6 +113,22 @@ str_t *midi_set_song_title( char *filename )
 {
 	return str_new(filename);
 } /* End of 'midi_set_song_title' function */
+
+/* Get song info */
+song_info_t *midi_get_info( char *filename, int *len )
+{
+	file_t *fd;
+	
+	/* Open file */
+	*len = 0;
+	fd = file_open(filename, "rb", NULL);
+	if (fd == NULL)
+		return NULL;
+	
+	/* Close file */
+	file_close(fd);
+	return NULL;
+} /* End of 'midi_get_info' function */
 
 /* Get functions list */
 void inp_get_func_list( inp_func_list_t *fl )

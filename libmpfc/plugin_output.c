@@ -157,5 +157,14 @@ char *outp_get_about( out_plugin_t *p )
 		return NULL;
 } /* End of 'outp_get_about' function */
 
+/* Get plugin flags */
+dword outp_get_flags( out_plugin_t *p )
+{
+	if (p != NULL)
+		return p->m_fl.m_flags;
+	else
+		return 0;
+} /* End of 'outp_get_flags' function */
+
 /* End of 'outp.c' file */
 

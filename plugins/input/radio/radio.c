@@ -46,6 +46,9 @@
 /* Plugins manager */
 static pmng_t *rad_pmng = NULL;
 
+/* Audio device */
+static int audio_fd = -1;
+
 /* Start play function */
 bool_t rad_start( char *filename )
 {
@@ -53,6 +56,8 @@ bool_t rad_start( char *filename )
 	struct video_audio va;
 	struct video_tuner vt;
 	float freq;
+	int format = AFMT_S16_LE, ch = 2, rate = 44100;
+	int mixer_fd;
 
 	if ((fd = open("/dev/radio0", O_RDONLY)) < 0)
 		return FALSE;
@@ -68,8 +73,26 @@ bool_t rad_start( char *filename )
 	ioctl(fd, VIDIOCSFREQ, &f);
 	va.mode = VIDEO_SOUND_STEREO;
 	ioctl(fd, VIDIOCSAUDIO, &va);
-
 	close(fd);
+
+	/* Set recording source as line-in */
+	mixer_fd = open("/dev/mixer", O_WRONLY);
+	if (mixer_fd >= 0)
+	{
+		int mask = SOUND_MASK_LINE;
+		ioctl(mixer_fd, SOUND_MIXER_WRITE_RECSRC, &mask);
+		close(mixer_fd);
+	}
+
+	/* Open audio device (for reading audio data) */
+	audio_fd = open("/dev/dsp", O_RDONLY);
+	if (audio_fd >= 0)
+	{
+		ioctl(audio_fd, SNDCTL_DSP_SETFMT, &format);
+		ioctl(audio_fd, SNDCTL_DSP_CHANNELS, &ch);
+		ioctl(audio_fd, SNDCTL_DSP_SPEED, &rate);
+	}
+	
 	return TRUE;
 } /* End of 'rad_start' function */
 
@@ -87,11 +110,24 @@ void rad_end( void )
 	va.flags = VIDEO_AUDIO_MUTE;
 	ioctl(fd, VIDIOCSAUDIO, &va);
 	close(fd);
+
+	if (audio_fd >= 0)
+	{
+		close(audio_fd);
+		audio_fd = -1;
+	}
 } /* End of 'rad_end' function */
 
 /* Get stream function */
 int rad_get_stream( void *buf, int size )
 {
+	/* Read audio data */
+	if (audio_fd >= 0)
+	{
+		int ret_size = read(audio_fd, buf, size);
+		if (ret_size > 0)
+			size = ret_size;
+	}
 	return size;
 } /* End of 'rad_get_stream' function */
 
@@ -199,7 +235,7 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_get_stream = rad_get_stream;
 	fl->m_get_audio_params = rad_get_audio_params;
 	fl->m_init_obj_songs = rad_init_obj_songs;
-	fl->m_flags = INP_NO_OUTP;
+	fl->m_flags = INP_OWN_SOUND;
 	fl->m_pause = rad_pause;
 	fl->m_resume = rad_resume;
 	fl->m_set_song_title = rad_set_song_title;
