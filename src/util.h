@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Interface for different utility
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 22.01.2003
+ * LAST UPDATE : 3.05.2003
  * NOTE        : Module prefix 'util'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -41,6 +41,9 @@ char *util_get_ext( char *name );
 
 /* Delay */
 void util_delay( long s, long ns );
+
+/* Get file name without full path */
+char *util_get_file_short_name( char *name );
 
 #endif
 

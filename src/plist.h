@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Interface fort play list manipulation
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 21.02.2003
+ * LAST UPDATE : 3.05.2003
  * NOTE        : Module prefix 'plist'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -59,7 +59,7 @@ typedef struct
 
 /* Sort criterias */
 #define PLIST_SORT_BY_TITLE 0
-#define PLIST_SORT_BY_FNAME 1
+#define PLIST_SORT_BY_NAME  1
 #define PLIST_SORT_BY_PATH  2
 
 /* Create a new play list */

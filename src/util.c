@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Different utility functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 28.01.2003
+ * LAST UPDATE : 3.05.2003
  * NOTE        : Module prefix 'util'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -100,6 +100,15 @@ void util_delay( long s, long ns )
 	tv.tv_nsec = 100000L;
 	nanosleep(&tv, NULL);
 } /* End of 'util_delay' function */
+
+/* Get file name without full path */
+char *util_get_file_short_name( char *name )
+{
+	int i;
+
+	for ( i = strlen(name) - 1; i >= 0 && name[i] != '/'; i -- );
+	return (i >= 0) ? &name[i + 1] : name;
+} /* End of 'util_get_file_short_name' function */
 
 /* End of 'util.c' file */
 

@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Play list manipulation
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 24.02.2003
+ * LAST UPDATE : 3.05.2003
  * NOTE        : Module prefix 'plist'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -31,6 +31,7 @@
 #include "error.h"
 #include "plist.h"
 #include "song.h"
+#include "util.h"
 #include "window.h"
 
 /* Check play list validity macro */
@@ -316,6 +317,9 @@ void plist_sort( plist_t *pl, bool global, int criteria )
 		case PLIST_SORT_BY_PATH:
 			str1 = s->m_file_name;
 			break;
+		case PLIST_SORT_BY_NAME:
+			str1 = util_get_file_short_name(s->m_file_name);
+			break;
 		}
 		
 		for ( j = i; j >= 0; j -- )
@@ -328,6 +332,9 @@ void plist_sort( plist_t *pl, bool global, int criteria )
 				break;
 			case PLIST_SORT_BY_PATH:
 				str2 = pl->m_list[j]->m_file_name;
+				break;
+			case PLIST_SORT_BY_NAME:
+				str2 = util_get_file_short_name(pl->m_list[j]->m_file_name);
 				break;
 			}
 

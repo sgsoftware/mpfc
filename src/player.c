@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG Konsamp. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 28.04.2003
+ * LAST UPDATE : 3.05.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -808,7 +808,7 @@ void player_sort_dialog( void )
 		t = PLIST_SORT_BY_TITLE;
 		break;
 	case 'f':
-		t = PLIST_SORT_BY_FNAME;
+		t = PLIST_SORT_BY_NAME;
 		break;
 	case 'p':
 		t = PLIST_SORT_BY_PATH;
@@ -866,7 +866,9 @@ void player_info_dialog( void )
 		return;
 
 	/* Create info dialog */
-	dlg = dlg_new(wnd_root, 2, 2, wnd_root->m_width - 4, 20, s->m_file_name);
+	dlg = dlg_new(wnd_root, 2, 2, wnd_root->m_width - 4, 20, 
+			cfg_get_var_int("info_editor_show_full_name") ? s->m_file_name :
+				util_get_file_short_name(s->m_file_name));
 	name = ebox_new((wnd_t *)dlg, 2, 1, wnd_root->m_width - 10, 1, 
 			30, "Song name: ", s->m_info->m_name);
 	artist = ebox_new((wnd_t *)dlg, 2, 2, wnd_root->m_width - 10, 1, 
