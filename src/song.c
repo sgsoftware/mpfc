@@ -65,7 +65,7 @@ song_t *song_new( char *filename, char *title, int len )
 	/* Set song fields */
 	strncpy(song->m_file_name, filename, sizeof(song->m_file_name));
 	song->m_file_name[sizeof(song->m_file_name) - 1] = 0;
-	util_rem_slashes(song->m_file_name);
+	//util_rem_slashes(song->m_file_name);
 	song->m_file_ext = ext;
 	song->m_short_name = util_short_name(song->m_file_name);
 	song->m_info = NULL;
