@@ -132,7 +132,7 @@ bool player_init( int argc, char *argv[] )
 		plist_add(player_plist, player_files[i]);
 
 	/* Load saved play list if files list is empty */
-	if (!player_num_files)
+	if (!player_num_files && !player_num_obj)
 		plist_add(player_plist, "~/mpfc.m3u");
 
 	/* Initialize playing thread */

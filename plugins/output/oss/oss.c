@@ -3,10 +3,10 @@
  ******************************************************************/
 
 /* FILE NAME   : oss.c
- * PURPOSE     : SG Konsamp. OSS output plugin functions
+ * PURPOSE     : SG MPFC. OSS output plugin functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 10.05.2003
+ * LAST UPDATE : 1.08.2003
  * NOTE        : Module prefix 'oss'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -119,7 +119,7 @@ void oss_set_volume( int vol )
 	if (fd < 0)
 		return;
 	v = vol | (vol << 8);
-	ioctl(fd, SOUND_MIXER_WRITE_PCM, &v);
+	ioctl(fd, SOUND_MIXER_WRITE_VOLUME, &v);
 	close(fd);
 } /* End of 'oss_set_volume' function */
 

@@ -45,6 +45,14 @@ respectively.
 .TP
 \fBlib_dir\fR
 Directory with plugins. Default is "/usr/local/lib/mpfc".
+.SH NOTE ON OBJECTS
+\fBObjects\fR represent objects which are not regular files (e.g. Audio-CD
+tracks). To add object type \fBA\fR and then object name in the following
+format: <plugin_name>[:obj_name]. For example, to add the whole
+Audio-CD name is \fBaudiocd\fR, to add radio station (using \fBradio\fR)
+plugin name is something like \fBradio:102\fR. If you whish to add an object
+from the command line you use something like \fBmpfc --obj audiocd\fR. Note
+that objects specification must be before regular file names.
 .SH FILES
 .TP
 ~/.mpfcrc
