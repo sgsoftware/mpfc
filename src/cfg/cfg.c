@@ -75,6 +75,9 @@ void cfg_init_default( void )
 	cfg_set_var_int(cfg_list, "mp3_quick_get_len", 1);
 	cfg_set_var_int(cfg_list, "save_playlist_on_exit", 1);
 	cfg_set_var(cfg_list, "lib_dir", LIBDIR"/mpfc");
+	cfg_set_var_int(cfg_list, "echo_delay", 500);
+	cfg_set_var_int(cfg_list, "echo_volume", 50);
+	cfg_set_var_int(cfg_list, "echo_feedback", 50);
 } /* End of 'cfg_init_default' function */
 
 /* Read configuration file */
