@@ -68,6 +68,12 @@ void song_update_info( song_t *song );
 /* Initialize song info and length */
 void song_init_info_and_len( song_t *song );
 
+/* Fill song title from data from song info and other parameters */
+void song_get_title_from_info( song_t *song );
+
+/* Get song genre name */
+char *song_get_genre_name( song_t *song );
+
 #endif
 
 /* End of 'song.h' file */

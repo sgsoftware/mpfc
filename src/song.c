@@ -123,7 +123,7 @@ void song_set_info( song_t *song, song_info_t *info )
 	}
 	else
 	{
-		sprintf(song->m_title, "%s - %s", info->m_artist, info->m_name);
+		song_get_title_from_info(song);
 	}
 } /* End of 'song_set_info' function */
 
@@ -159,6 +159,99 @@ void song_init_info_and_len( song_t *song )
 	song->m_len = inp_get_len(song->m_inp, song->m_file_name);
 	song_update_info(song);	
 } /* End of 'song_init_info_and_len' function */
+
+/* Fill song title from data from song info and other parameters */
+void song_get_title_from_info( song_t *song )
+{
+	char *fmt;
+	bool finish = FALSE;
+	char *str;
+	song_info_t *info;
+	
+	if (song == NULL || ((info = song->m_info) == NULL))
+		return;
+
+	fmt = cfg_get_var(cfg_list, "title_format");
+	str = song->m_title;
+	*str = 0;
+	if (strcmp(fmt, "0"))
+	{
+		for ( ; *fmt && !finish; fmt ++ )
+		{
+			char *g;
+			
+			if (*fmt == '%')
+			{
+				fmt ++;
+				switch (*fmt)
+				{
+				case 'p':
+					strcat(str, info->m_artist);
+					break;
+				case 'a':
+					strcat(str, info->m_album);
+					break;
+				case 'f':
+					strcat(str, util_get_file_short_name(song->m_file_name));
+					break;
+				case 'F':
+					strcat(str, song->m_file_name);
+					break;
+				case 'e':
+					strcat(str, util_get_ext(song->m_file_name));
+					break;
+				case 't':
+					strcat(str, info->m_name);
+					break;
+				case 'n':
+					strcat(str, info->m_track);
+					break;
+				case 'y':
+					strcat(str, info->m_year);
+					break;
+				case 'g':
+					g = song_get_genre_name(song);
+					if (g != NULL)
+						strcat(str, g);
+					break;
+				case 'c':
+					strcat(str, info->m_comments);
+					break;
+				case 0:
+					finish = TRUE;
+					break;
+				}
+			}
+			else
+			{
+				int len = strlen(str);
+				str[len] = *fmt;
+				str[len + 1] = 0;
+			}
+		}
+	}
+	else
+	{
+		sprintf(str, "%s - %s", info->m_artist, info->m_album);
+	}
+} /* End of 'song_get_title_from_info' function */
+
+/* Get song genre name */
+char *song_get_genre_name( song_t *song )
+{
+	genre_list_t *gl;
+	song_info_t *info;
+	
+	if (song == NULL || ((info = song->m_info) == NULL) ||
+			((gl = inp_get_glist(song->m_inp)) == NULL))
+		return NULL;
+	if (info->m_genre == GENRE_ID_OWN_STRING)
+		return info->m_genre_data.m_text;
+	else if (info->m_genre != GENRE_ID_UNKNOWN)
+		return gl->m_list[info->m_genre].m_name;
+	else
+		return NULL;
+} /* End of 'song_get_genre_name' function */
 
 /* End of 'song.c' file */
 
