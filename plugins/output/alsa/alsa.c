@@ -35,6 +35,8 @@ void alsa_end ();
 
 bool_t alsa_start ()
 {
+  int dir = 1;
+
   if (snd_pcm_open (&handle, "plughw:0,0", SND_PCM_STREAM_PLAYBACK, 0) < 0)
     return FALSE;
   hwparams = malloc (snd_pcm_hw_params_sizeof ());
@@ -42,7 +44,7 @@ bool_t alsa_start ()
   snd_pcm_hw_params_any (handle, hwparams);
   snd_pcm_hw_params_set_access (handle, hwparams, SND_PCM_ACCESS_RW_INTERLEAVED);
   snd_pcm_hw_params_set_format (handle, hwparams, alsa_fmt);
-  snd_pcm_hw_params_set_rate (handle, hwparams, alsa_rate, 0);
+  snd_pcm_hw_params_set_rate_near (handle, hwparams, &alsa_rate, &dir);
   snd_pcm_hw_params_set_channels (handle, hwparams, alsa_channels);
   snd_pcm_hw_params_set_periods (handle, hwparams, 2, 0);
   snd_pcm_hw_params_set_period_size (handle, hwparams, 2048, 0);
