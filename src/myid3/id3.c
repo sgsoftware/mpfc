@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. ID3 tags handling library functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 8.11.2003
+ * LAST UPDATE : 18.12.2003
  * NOTE        : Module prefix 'id3'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -450,6 +450,12 @@ void id3_v1_set_frame( id3_tag_data_t *tag, char *name, char *val )
 	else if (!strcmp(name, ID3_FRAME_COMMENT))
 		strncpy(tag->m_stream + ID3_V1_COMMENT_OFFSET, val, 
 				ID3_V1_COMMENT_SIZE);
+	else if (!strcmp(name, ID3_FRAME_TRACK))
+	{
+		byte g;
+		g = atoi(val);
+		*(tag->m_stream + ID3_V1_TRACK_OFFSET) = g;
+	}
 	else if (!strcmp(name, ID3_FRAME_GENRE))
 	{
 		byte g;
