@@ -5,7 +5,7 @@
 /* FILE NAME   : browser.c
  * PURPOSE     : SG MPFC. File browser functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 1.01.2004
+ * LAST UPDATE : 2.01.2004
  * NOTE        : Module prefix 'fb'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -160,7 +160,6 @@ void fb_handle_key( wnd_t *wnd, dword data )
 	{
 	/* Exit */
 	case 'q':
-	case 27:
 		wnd_send_msg(wnd, WND_MSG_CLOSE, 0);
 		break;
 

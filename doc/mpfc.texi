@@ -302,7 +302,7 @@ list. Launch it using @kbd{B} command. To select/deselect file press
 matching a specified pattern. To do this press @kbd{+} (for select) or
 @kbd{-} (for deselect) key and enter the pattern. After you have selected
 the files you can add them to play list by pressing @kbd{a} key. To exit
-press @kbd{q} or @kbd{@key{ESC}}
+press @kbd{q}.
 
 @node Save, Sort, File browser, Playlist management
 @subsection Save
