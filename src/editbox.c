@@ -60,7 +60,7 @@ editbox_t *ebox_new( wnd_t *parent, int x, int y, int width,
 } /* End of 'ebox_new' function */
 
 /* Initialize edit box */
-bool ebox_init( editbox_t *wnd, wnd_t *parent, int x, int y, int width, 
+bool_t ebox_init( editbox_t *wnd, wnd_t *parent, int x, int y, int width, 
 					int height,	int max_len, char *label, char *text )
 {
 	/* Create common window part */
@@ -184,7 +184,7 @@ void ebox_del( editbox_t *box, int index )
 } /* End of 'ebox_del' function */
 
 /* Move cursor */
-void ebox_move( editbox_t *box, bool rel, int offset )
+void ebox_move( editbox_t *box, bool_t rel, int offset )
 {
 	ebox_set_cursor(box, box->m_cursor * rel + offset);
 } /* End of 'ebox_move' function */
@@ -214,7 +214,7 @@ void ebox_set_cursor( editbox_t *box, int new_pos )
 } /* End of 'ebox_set_cursor' function */
 
 /* Handle history moving */
-void ebox_hist_move( editbox_t *box, bool up )
+void ebox_hist_move( editbox_t *box, bool_t up )
 {
 	hist_list_t *l;
 	

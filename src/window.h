@@ -114,7 +114,7 @@ wnd_t *wnd_new_root( void );
 wnd_t *wnd_new_child( wnd_t *parent, int x, int y, int w, int h );
 
 /* Initialize window fields */
-bool wnd_init( wnd_t *wnd, wnd_t *parent, int x, int y, int w, int h );
+bool_t wnd_init( wnd_t *wnd, wnd_t *parent, int x, int y, int w, int h );
 
 /* Destroy window */
 void wnd_destroy_func( wnd_t *wnd );
@@ -132,7 +132,7 @@ int wnd_run( void *wnd );
 void wnd_send_msg( void *wnd, dword id, dword data );
 
 /* Get message from queue */
-bool wnd_get_msg( void *wnd, dword *id, dword *data );
+bool_t wnd_get_msg( void *wnd, dword *id, dword *data );
 
 /* Move cursor to a specified location */
 void wnd_move( wnd_t *wnd, int x, int y );
@@ -168,7 +168,7 @@ void wnd_handle_close( wnd_t *wnd, dword data );
 void wnd_handle_ch_focus( wnd_t *wnd, dword data );
 
 /* Clear the window */
-void wnd_clear( wnd_t *wnd, bool start_from_cursor );
+void wnd_clear( wnd_t *wnd, bool_t start_from_cursor );
 
 /* Totally redisplay window */
 void wnd_redisplay( wnd_t *wnd );
@@ -177,7 +177,7 @@ void wnd_redisplay( wnd_t *wnd );
 int wnd_init_pair( int fg, int bg );
 
 /* Check that window is focused */
-bool wnd_is_focused( void *wnd );
+bool_t wnd_is_focused( void *wnd );
 
 /* Temporarily exit curses */
 void wnd_close_curses( void );

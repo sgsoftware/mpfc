@@ -192,7 +192,7 @@ int kbind_check_buf( void )
 	{
 		for ( j = 0; j < kbind_bindings[i].m_num_seqs; j ++ )
 		{
-			bool found = TRUE;
+			bool_t found = TRUE;
 			
 			for ( k = 0; k < kbind_buf_len; k ++ )
 				if (kbind_buf[k] != kbind_bindings[i].m_seqs[j].m_seq[k])

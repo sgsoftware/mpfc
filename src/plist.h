@@ -49,7 +49,7 @@ typedef struct
 	int m_cur_song;
 
 	/* Visual mode flag */
-	bool m_visual;
+	bool_t m_visual;
 	
 	/* List size */
 	int m_len;
@@ -79,7 +79,7 @@ plist_t *plist_new( int start_pos, int height );
 void plist_free( plist_t *pl );
 
 /* Add a file to play list (it may be directory) */
-bool plist_add( plist_t *pl, char *filename );
+bool_t plist_add( plist_t *pl, char *filename );
 
 /* Add single file to play list */
 int plist_add_one_file( plist_t *pl, char *filename );
@@ -91,27 +91,30 @@ int plist_add_song( plist_t *pl, char *filename, char *title, int len,
 /* Add a play list file to play list */
 int plist_add_list( plist_t *pl, char *filename );
 
+/* Add a directory to play list */
+int plist_add_dir( plist_t *pl, char *filename );
+
 /* Low level song adding */
-bool __plist_add_song( plist_t *pl, char *filename, char *title, int len,
+bool_t __plist_add_song( plist_t *pl, char *filename, char *title, int len,
 	   int where );
 
 /* Save play list */
-bool plist_save( plist_t *pl, char *filename );
+bool_t plist_save( plist_t *pl, char *filename );
 
 /* Sort play list */
-void plist_sort( plist_t *pl, bool global, int criteria );
+void plist_sort( plist_t *pl, bool_t global, int criteria );
 
 /* Remove selected songs from play list */
 void plist_rem( plist_t *pl );
 
 /* Search for string */
-bool plist_search( plist_t *pl, char *str, int dir );
+bool_t plist_search( plist_t *pl, char *str, int dir );
 
 /* Move cursor in play list */
-void plist_move( plist_t *pl, int y, bool relative );
+void plist_move( plist_t *pl, int y, bool_t relative );
 
 /* Move selection in play list */
-void plist_move_sel( plist_t *pl, int y, bool relative );
+void plist_move_sel( plist_t *pl, int y, bool_t relative );
 
 /* Centrize view */
 void plist_centrize( plist_t *pl );

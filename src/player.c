@@ -72,14 +72,14 @@ char player_msg[80] = "";
 pthread_t player_tid = 0;
 
 /* Player termination flag */
-bool player_end_thread = FALSE;
+bool_t player_end_thread = FALSE;
 
 /* Timer thread ID */
 pthread_t player_timer_tid = 0;
 
 /* Timer termination flag */
-bool player_end_timer = FALSE;
-bool player_end_track = FALSE;
+bool_t player_end_timer = FALSE;
+bool_t player_end_track = FALSE;
 
 /* Current song playing time */
 int player_cur_time = 0;
@@ -92,7 +92,7 @@ int player_volume = 0;
 int player_balance = 0;
 
 /* Has equalizer value changed */
-bool player_eq_changed = FALSE;
+bool_t player_eq_changed = FALSE;
 
 /* Objects to load */
 char player_objects[10][256];
@@ -108,7 +108,7 @@ in_plugin_t *player_inp = NULL;
 undo_list_t *player_ul = NULL;
 
 /* Do we story undo information now? */
-bool player_store_undo = TRUE;
+bool_t player_store_undo = TRUE;
 
 /* Var manager cursor position */
 int player_var_mngr_pos = -1;
@@ -117,10 +117,16 @@ int player_var_mngr_pos = -1;
 int player_start = -1, player_end = -1;
 
 /* Initialize player */
-bool player_init( int argc, char *argv[] )
+bool_t player_init( int argc, char *argv[] )
 {
 	int i, l, r;
 
+	/* Set signal handlers */
+	/*signal(SIGINT, player_handle_signal);
+	signal(SIGSTOP, player_handle_signal);
+	signal(SIGTSTP, player_handle_signal);
+	signal(SIGCONT, player_handle_signal);*/
+	
 	/* Initialize configuration */
 	cfg_init();
 
@@ -270,7 +276,7 @@ void player_deinit( void )
 } /* End of 'player_deinit' function */
 
 /* Run player */
-bool player_run( void )
+bool_t player_run( void )
 {
 	/* Run window message loop */
 	wnd_run(wnd_root);
@@ -278,7 +284,7 @@ bool player_run( void )
 } /* End of 'player_run' function */
 
 /* Parse program command line */
-bool player_parse_cmd_line( int argc, char *argv[] )
+bool_t player_parse_cmd_line( int argc, char *argv[] )
 {
 	int i;
 
@@ -350,7 +356,7 @@ void player_display( wnd_t *wnd, dword data )
 {
 	int i;
 	song_t *s = NULL;
-	
+
 	/* Clear the screen */
 	wnd_clear(wnd, FALSE);
 	
@@ -367,7 +373,7 @@ void player_display( wnd_t *wnd, dword data )
 	{
 		char title[80];
 		int t;
-		bool show_rem;
+		bool_t show_rem;
 		
 		s = player_plist->m_list[player_plist->m_cur_song];
 		if (strlen(s->m_title) >= wnd->m_width - 1)
@@ -460,7 +466,7 @@ void player_repval_handle_key( wnd_t *wnd, dword data )
 } /* End of 'player_repval_handle_key' function */
 
 /* Seek song */
-void player_seek( int sec, bool rel )
+void player_seek( int sec, bool_t rel )
 {
 	song_t *s;
 	int new_time;
@@ -516,7 +522,7 @@ void player_end_play( void )
 /* Player thread function */
 void *player_thread( void *arg )
 {
-	bool no_outp = FALSE;
+	bool_t no_outp = FALSE;
 	
 	/* Main loop */
 	while (!player_end_thread)
@@ -781,7 +787,7 @@ void player_save_dialog( void )
 		/* Add file if enter was pressed */
 		if (fin->m_box.m_last_key == '\n')
 		{
-			bool res = plist_save(player_plist, fin->m_box.m_text);
+			bool_t res = plist_save(player_plist, fin->m_box.m_text);
 			strcpy(player_msg, (res) ? _("Play list saved") : 
 					_("Unable to save play list"));
 		}
@@ -806,7 +812,7 @@ void player_sort_dialog( void )
 	choice_ctrl_t *ch;
 	char choice;
 	int t;
-	bool g;
+	bool_t g;
 
 	/* Get sort globalness parameter */
 	ch = choice_new(wnd_root, 0, wnd_root->m_height - 1, wnd_root->m_width,
@@ -992,7 +998,7 @@ void player_exec_key_action( void )
 } /* End of 'player_exec_key_action' function */
 
 /* Set volume */
-void player_set_vol( int vol, bool rel )
+void player_set_vol( int vol, bool_t rel )
 {
 	player_volume = (rel) ? player_volume + vol : vol;
 	if (player_volume < 0)
@@ -1160,7 +1166,7 @@ void player_handle_action( int action )
 {
 	char str[10];
 	editbox_t *ebox;
-	bool dont_change_repval = FALSE;
+	bool_t dont_change_repval = FALSE;
 
 	/* Clear message string */
 	strcpy(player_msg, "");
@@ -1645,7 +1651,7 @@ void player_save_cfg_list( cfg_list_t *list, char *fname )
 } /* End of 'player_save_cfg_list' function */
 
 /* Set balance */
-void player_set_bal( int bal, bool rel )
+void player_set_bal( int bal, bool_t rel )
 {
 	player_balance = (rel) ? player_balance + bal : bal;
 	if (player_balance < 0)

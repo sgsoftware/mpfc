@@ -46,7 +46,7 @@
 cfg_list_t *rad_var_list = NULL;
 
 /* Start play function */
-bool rad_start( char *filename )
+bool_t rad_start( char *filename )
 {
 	int fd, f;
 	struct video_audio va;

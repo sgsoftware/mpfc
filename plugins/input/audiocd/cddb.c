@@ -48,10 +48,10 @@
 /* Data */
 char **cddb_data = NULL;
 int cddb_data_len = 0;
-bool cddb_server_found = TRUE;
+bool_t cddb_server_found = TRUE;
 
 /* Initialize CDDB entry for currently playing disc */
-bool cddb_read( void )
+bool_t cddb_read( void )
 {
 	dword id;
 
@@ -71,7 +71,7 @@ bool cddb_read( void )
 } /* End of 'cddb_read' function */
 
 /* Fill song info for specified track */
-bool cddb_get_trk_info( int track, song_info_t *info )
+bool_t cddb_get_trk_info( int track, song_info_t *info )
 {
 	int i;
 
@@ -153,7 +153,7 @@ int cddb_sum( int n )
 } /* End of 'cddb_sum' function */
 
 /* Search for CDDB entry on local machine */
-bool cddb_read_local( dword id )
+bool_t cddb_read_local( dword id )
 {
 	char fn[256];
 	FILE *fd;
@@ -192,7 +192,7 @@ bool cddb_read_local( dword id )
 } /* End of 'cddb_read_local' function */
 
 /* Search for CDDB entry on server */
-bool cddb_read_server( dword id )
+bool_t cddb_read_server( dword id )
 {
 	int sockfd = -1, i;
 	char buf[CDDB_BUF_SIZE];
@@ -279,7 +279,7 @@ void cddb_free( void )
 } /* End of 'cddb_free' function */
 
 /* Send data to CDDB server */
-bool cddb_server_send( int fd, char *buf, int size )
+bool_t cddb_server_send( int fd, char *buf, int size )
 {
 	int n;
 
@@ -291,7 +291,7 @@ bool cddb_server_send( int fd, char *buf, int size )
 } /* End of 'cddb_server_send' function */
 
 /* Receice data from CDDB server */
-bool cddb_server_recv( int fd, char *buf, int size )
+bool_t cddb_server_recv( int fd, char *buf, int size )
 {
 	int n;
 
@@ -309,7 +309,7 @@ void cddb_server2data( char *buf )
 {
 	char str[256];
 	int i;
-	bool start = FALSE;
+	bool_t start = FALSE;
 
 	/* Free at first */
 	cddb_free();
@@ -430,7 +430,7 @@ void cddb_save_trk_info( int track, song_info_t *info )
 	{
 		char str[256];
 		char title[80];
-		bool dtitle = FALSE, dgenre = FALSE, dyear = FALSE, ttitle = FALSE;
+		bool_t dtitle = FALSE, dgenre = FALSE, dyear = FALSE, ttitle = FALSE;
 			
 		sprintf(title, "TTITLE%i=", track);
 		for ( i = 0; i < cddb_data_len; i ++ )

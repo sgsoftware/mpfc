@@ -55,7 +55,7 @@ help_screen_t *help_new( wnd_t *parent, int x, int y, int w, int h )
 } /* End of 'help_new' function */
 
 /* Initialize help screen */
-bool help_init( help_screen_t *help, wnd_t *parent, int x, int y, 
+bool_t help_init( help_screen_t *help, wnd_t *parent, int x, int y, 
 	   int w, int h )
 {
 	wnd_t *wnd = (wnd_t *)help;

@@ -50,13 +50,16 @@ wnd_t *wnd_focus = NULL;
 pthread_t wnd_kbd_tid;
 
 /* Keyboard thread termination flag */
-bool wnd_end_kbd_thread = FALSE;
+bool_t wnd_end_kbd_thread = FALSE;
 
 /* Number of initialized color pairs */
 int wnd_num_pairs = 0;
 
 /* Whether we have temporarily exited curses */
-bool wnd_curses_closed = FALSE;
+bool_t wnd_curses_closed = FALSE;
+
+/* Mutex for synchronization displaying */
+pthread_mutex_t wnd_display_mutex;
 
 /* Create a new root window */
 wnd_t *wnd_new_root( void )
@@ -112,7 +115,7 @@ wnd_t *wnd_new_child( wnd_t *parent, int x, int y, int w, int h	)
 } /* End of 'wnd_new_child' function */
 
 /* Initialize window fields */
-bool wnd_init( wnd_t *wnd, wnd_t *parent, int x, int y, int w, int h )
+bool_t wnd_init( wnd_t *wnd, wnd_t *parent, int x, int y, int w, int h )
 {
 	int sx, sy;
 	int i;
@@ -141,6 +144,9 @@ bool wnd_init( wnd_t *wnd, wnd_t *parent, int x, int y, int w, int h )
 		start_color();
 		w = COLS;
 		h = LINES;
+
+		/* Create display mutex */
+		pthread_mutex_init(&wnd_display_mutex, NULL);
 	}
 	/* Create NCURSES window */
 	else
@@ -282,9 +288,9 @@ void wnd_register_handler( void *obj, dword msg_id, wnd_msg_handler handler )
 /* Run window message loop */
 int wnd_run( void *obj )
 {
-	bool done = FALSE;
+	bool_t done = FALSE;
 	wnd_t *wnd = (wnd_t *)obj;
-	bool need_redraw = TRUE;
+	bool_t need_redraw = TRUE;
 
 	WND_ASSERT_RET(wnd, 0);
 
@@ -311,7 +317,7 @@ int wnd_run( void *obj )
 		/* Get new messages from queue */
 		if (wnd_get_msg(wnd, &id, &data))
 		{
-			bool end;
+			bool_t end;
 
 			do
 			{
@@ -389,10 +395,10 @@ void wnd_send_msg( void *obj, dword id, dword data )
 } /* End of 'wnd_send_msg' function */
 
 /* Get message from queue */
-bool wnd_get_msg( void *obj, dword *id, dword *data )
+bool_t wnd_get_msg( void *obj, dword *id, dword *data )
 {
 	wnd_t *wnd = (wnd_t *)obj;
-	bool ret;
+	bool_t ret;
 
 	WND_ASSERT_RET(wnd, FALSE);
 
@@ -486,6 +492,10 @@ void wnd_display( wnd_t *wnd )
 	wnd_t *child, *focus_child;
 	wnd_msg_handler display = wnd->m_msg_handlers[WND_MSG_DISPLAY];
 
+	/* Lock mutex for displaying */
+	if (wnd == wnd_root)
+		pthread_mutex_lock(&wnd_display_mutex);
+
 	/* Call window-specific display function */
 	if (display != NULL)
 	{
@@ -510,6 +520,10 @@ void wnd_display( wnd_t *wnd )
 	/* Refresh screen in case of root window */
 	if (wnd->m_parent == NULL && !wnd_curses_closed)
 		doupdate();
+
+	/* Unlock mutex for displaying */
+	if (wnd == wnd_root)
+		pthread_mutex_unlock(&wnd_display_mutex);
 } /* End of 'wnd_display' function */
 
 /* Find window child that contains focus window */
@@ -616,7 +630,7 @@ void wnd_handle_ch_focus( wnd_t *wnd, dword data )
 } /* End of 'wnd_handle_ch_focus' function */
 
 /* Clear the window */
-void wnd_clear( wnd_t *wnd, bool start_from_cursor )
+void wnd_clear( wnd_t *wnd, bool_t start_from_cursor )
 {
 	int i;
 
@@ -661,7 +675,7 @@ int wnd_init_pair( int fg, int bg )
 } /* End of 'wnd_init_pair' function */
 
 /* Check that window is focused */
-bool wnd_is_focused( void *wnd )
+bool_t wnd_is_focused( void *wnd )
 {
 	return ((wnd_t *)wnd == wnd_focus);
 } /* End of 'wnd_is_focused' function */

@@ -86,7 +86,7 @@ void inp_free( in_plugin_t *p )
 } /* End of 'inp_free' function */
 
 /* Start playing function */
-bool inp_start( in_plugin_t *p, char *filename )
+bool_t inp_start( in_plugin_t *p, char *filename )
 {
 	if (p != NULL && (p->m_fl.m_start != NULL))
 		return p->m_fl.m_start(filename);
@@ -109,7 +109,7 @@ int inp_get_len( in_plugin_t *p, char *filename )
 } /* End of 'inp_get_len' function */
 
 /* Get song information function */
-bool inp_get_info( in_plugin_t *p, char *file_name, song_info_t *info )
+bool_t inp_get_info( in_plugin_t *p, char *file_name, song_info_t *info )
 {
 	if (p != NULL && (p->m_fl.m_get_info != NULL))
 		return p->m_fl.m_get_info(file_name, info);

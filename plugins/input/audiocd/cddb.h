@@ -32,22 +32,22 @@
 #include "song_info.h"
 
 /* Initialize CDDB entry for currently playing disc */
-bool cddb_read( void );
+bool_t cddb_read( void );
 
 /* Free stuff */
 void cddb_free( void );
 
 /* Fill song info for specified track */
-bool cddb_get_trk_info( int track, song_info_t *info );
+bool_t cddb_get_trk_info( int track, song_info_t *info );
 
 /* Save track info */
 void cddb_save_trk_info( int track, song_info_t *info );
 
 /* Search for CDDB entry on local machine */
-bool cddb_read_local( dword id );
+bool_t cddb_read_local( dword id );
 
 /* Search for CDDB entry on server */
-bool cddb_read_server( dword id );
+bool_t cddb_read_server( dword id );
 
 /* Calculate disc ID */
 dword cddb_id( void );
@@ -56,10 +56,10 @@ dword cddb_id( void );
 int cddb_sum( int n );
 
 /* Send data to CDDB server */
-bool cddb_server_send( int fd, char *buf, int size );
+bool_t cddb_server_send( int fd, char *buf, int size );
 
 /* Receice data from CDDB server */
-bool cddb_server_recv( int fd, char *buf, int size );
+bool_t cddb_server_recv( int fd, char *buf, int size );
 
 /* Convert data received from server to our format */
 void cddb_server2data( char *buf );

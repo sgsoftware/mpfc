@@ -40,7 +40,7 @@ typedef struct tag_sat_queue_t
 } sat_queue_t;
 
 /* Initialize SAT module */
-bool sat_init( void );
+bool_t sat_init( void );
 
 /* Uninitialize SAT module */
 void sat_free( void );
@@ -49,7 +49,7 @@ void sat_free( void );
 void sat_push( plist_t *pl, int index );
 
 /* Pop song from queue */
-int sat_pop( plist_t **pl );
+int sat_pop( plist_t *pl );
 
 /* Song adder thread function */
 void *sat_thread( void *arg );

@@ -62,7 +62,7 @@ typedef struct
 	wnd_t *m_cur_focus;
 
 	/* Flag of OK button pressing */
-	bool m_ok;
+	bool_t m_ok;
 } dlgbox_t;
 
 /* Create a new dialog box */
@@ -70,7 +70,7 @@ dlgbox_t *dlg_new( wnd_t *parent, int x, int y, int w, int h,
 	   				char *caption );
 
 /* Initialize edit box */
-bool dlg_init( dlgbox_t *dlg, wnd_t *parent, int x, int y, int w, int h,
+bool_t dlg_init( dlgbox_t *dlg, wnd_t *parent, int x, int y, int w, int h,
 	   				char *caption  );
 
 /* Destroy dialog box */

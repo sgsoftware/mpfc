@@ -57,7 +57,7 @@ dlgbox_t *dlg_new( wnd_t *parent, int x, int y, int w, int h,
 } /* End of 'dlg_new' function */
 
 /* Initialize edit box */
-bool dlg_init( dlgbox_t *dlg, wnd_t *parent, int x, int y, int w, int h,
+bool_t dlg_init( dlgbox_t *dlg, wnd_t *parent, int x, int y, int w, int h,
 	   				char *caption  )
 {
 	/* Initialize window part */

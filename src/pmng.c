@@ -51,7 +51,7 @@ effect_plugin_t **pmng_ep = NULL;
 out_plugin_t *pmng_cur_out = NULL;
 
 /* Initialize plugins */
-bool pmng_init( void )
+bool_t pmng_init( void )
 {
 	in_plugin_t *ip;
 	out_plugin_t *op;

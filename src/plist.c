@@ -25,10 +25,14 @@
  * MA 02111-1307, USA.
  */
 
+#include <dirent.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include "types.h"
 #include "colors.h"
 #include "error.h"
@@ -94,12 +98,11 @@ void plist_free( plist_t *pl )
 } /* End of 'plist_free' function */
 
 /* Add a file to play list */
-bool plist_add( plist_t *pl, char *filename )
+bool_t plist_add( plist_t *pl, char *filename )
 {
-	char str[256];
-	FILE *fd;
 	int i, num = 0;
 	char fname[256];
+	struct stat stat_info;
 
 	/* Do nothing if path is empty */
 	if (!filename[0])
@@ -112,7 +115,7 @@ bool plist_add( plist_t *pl, char *filename )
 		char wd[256];
 		char fn[256];
 		
-		getcwd(wd);
+		getcwd(wd, 256);
 		strcpy(fn, fname);
 		sprintf(fname, "%s/%s", wd, fn);
 	}
@@ -120,21 +123,22 @@ bool plist_add( plist_t *pl, char *filename )
 	/* Check some symbols in path to respective using escapes */
 	util_escape_fname(fname, fname);
 
-	/* Find */
-	sprintf(str, "find %s 2>/dev/null", fname);
-	fd = popen(str, "r");
-	while (fd != NULL)
-	{
-		char fn[256];
+	/* Determine file type (directory or regular) and make respective
+	 * actions */
+	stat(fname, &stat_info);
+	if (S_ISDIR(stat_info.st_mode))
+		num = plist_add_dir(pl, fname);
+	else if (S_ISREG(stat_info.st_mode))
+		num = plist_add_one_file(pl, fname);
 
-		fgets(fn, 256, fd);
-		if (feof(fd))
-			break;
-		if (fn[strlen(fn) - 1] == '\n')
-			fn[strlen(fn) - 1] = 0;
-		num += plist_add_one_file(pl, fn);
-	}
-
+	/* Set info */
+	for ( i = 0; i < pl->m_len; i ++ )
+		if (pl->m_list[i]->m_flags & SONG_SCHEDULE)
+		{
+			sat_push(pl, i);
+			pl->m_list[i]->m_flags &= (~SONG_SCHEDULE);
+		}
+	
 	/* Store undo information */
 	if (player_store_undo && num)
 	{
@@ -164,6 +168,49 @@ int plist_add_one_file( plist_t *pl, char *filename )
 	else
 		return plist_add_song(pl, filename, NULL, 0, -1);
 } /* End of 'plist_add_one_file' function */
+
+/* Add a directory to play list */
+int plist_add_dir( plist_t *pl, char *filename )
+{
+	DIR *d;
+	struct dirent *de;
+	int num = 0, len;
+	
+	PLIST_ASSERT_RET(pl, 0);
+
+	/* Open directory */
+	len = strlen(filename);
+	d = opendir(filename);
+	if (d == NULL)
+		return 0;
+
+	/* Read directory */
+	while (de = readdir(d))
+	{
+		struct stat s;
+		char *str;
+
+		/* Skip '.' and '..' */
+		if (!strcmp(de->d_name, ".") || !strcmp(de->d_name, ".."))
+			continue;
+
+		/* Add file or directory */
+		str = (char *)malloc(len + strlen(de->d_name) + 2);
+		strcpy(str, filename);
+		str[len] = '/';
+		strcpy(&str[len + 1], de->d_name);
+		stat(str, &s);
+		if (S_ISDIR(s.st_mode))
+			num += plist_add_dir(pl, str);
+		else if (S_ISREG(s.st_mode))
+			num += plist_add_one_file(pl, str);
+		free(str);
+	}
+	
+	/* Close directory */
+	closedir(d);
+	return num;
+} /* End of 'plist_add_dir' function */
 
 /* Add a song to play list */
 int plist_add_song( plist_t *pl, char *filename, char *title, int len, 
@@ -226,7 +273,7 @@ int plist_add_song( plist_t *pl, char *filename, char *title, int len,
 
 	/* Schedule song for setting its info and length */
 	if (title == NULL)
-		sat_push(pl, where);
+		pl->m_list[where]->m_flags |= SONG_SCHEDULE;
 	return 1;
 } /* End of 'plist_add_song' function */
 
@@ -240,7 +287,7 @@ int plist_add_list( plist_t *pl, char *filename )
 	PLIST_ASSERT_RET(pl, FALSE);
 	
 	/* Try to open file */
-	fd = fopen(filename, "rt");
+	fd = util_fopen(filename, "rt");
 	if (fd == NULL)
 	{
 		error_set_code(ERROR_NO_SUCH_FILE);
@@ -291,7 +338,7 @@ int plist_add_list( plist_t *pl, char *filename )
 } /* End of 'plist_add_list' function */
 
 /* Low level song adding */
-bool __plist_add_song( plist_t *pl, char *filename, char *title, int len, 
+bool_t __plist_add_song( plist_t *pl, char *filename, char *title, int len, 
 	   int where )
 {
 	song_t *song;
@@ -355,7 +402,7 @@ bool __plist_add_song( plist_t *pl, char *filename, char *title, int len,
 } /* End of '__plist_add_song' function */
 
 /* Save play list */
-bool plist_save( plist_t *pl, char *filename )
+bool_t plist_save( plist_t *pl, char *filename )
 {
 	FILE *fd;
 	int i;
@@ -384,7 +431,7 @@ bool plist_save( plist_t *pl, char *filename )
 } /* End of 'plist_save' function */
 
 /* Sort play list */
-void plist_sort( plist_t *pl, bool global, int criteria )
+void plist_sort( plist_t *pl, bool_t global, int criteria )
 {
 	int start, end, i, j, was_song;
 	song_t *cur_song;
@@ -587,10 +634,10 @@ void plist_rem( plist_t *pl )
 } /* End of 'plist_rem' function */
 
 /* Search for string */
-bool plist_search( plist_t *pl, char *str, int dir )
+bool_t plist_search( plist_t *pl, char *str, int dir )
 {
 	int i, count = 0;
-	bool found = FALSE;
+	bool_t found = FALSE;
 
 	PLIST_ASSERT_RET(pl, FALSE);
 	if (!pl->m_len)
@@ -616,7 +663,7 @@ bool plist_search( plist_t *pl, char *str, int dir )
 } /* End of 'plist_search' function */
 
 /* Move cursor in play list */
-void plist_move( plist_t *pl, int y, bool relative )
+void plist_move( plist_t *pl, int y, bool_t relative )
 {
 	int old_end;
 	
@@ -680,7 +727,7 @@ void plist_display( plist_t *pl, wnd_t *wnd )
 {
 	int i, j, start, end, l_time = 0, s_time = 0;
 	char time_text[80];
-	
+
 	PLIST_ASSERT(pl);
 	PLIST_GET_SEL(pl, start, end);
 
@@ -811,12 +858,12 @@ void plist_add_obj( plist_t *pl, char *name )
 				sizeof(song_t *) * pl->m_len);
 	memcpy(&pl->m_list[was_len], s, 
 			sizeof(song_t *) * num_songs);
+	plist_unlock(pl);
 	for ( i = was_len; i < pl->m_len; i ++ )
 	{
 		pl->m_list[i]->m_inp = inp;
 		sat_push(pl, i);
 	}
-	plist_unlock(pl);
 
 	/* If list was empty - put cursor to the first song */
 	if (!was_len)
@@ -842,7 +889,7 @@ void plist_add_obj( plist_t *pl, char *name )
 } /* End of 'plist_add_obj' function */
 
 /* Move selection in play list */
-void plist_move_sel( plist_t *pl, int y, bool relative )
+void plist_move_sel( plist_t *pl, int y, bool_t relative )
 {
 	int start, end, i, j;
 	song_t *cur_song;
@@ -924,8 +971,9 @@ void plist_set_song_info( plist_t *pl, int index )
 
 	plist_lock(pl);
 	song_init_info_and_len(pl->m_list[index]);
-	wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
+	pl->m_list[index]->m_flags &= (~SONG_GET_INFO);
 	plist_unlock(pl);
+	wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
 } /* End of 'plist_set_song_info' function */
 
 /* Reload all songs information */

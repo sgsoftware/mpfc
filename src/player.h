@@ -59,7 +59,7 @@
 #define PLAYER_VAR_MNGR_RESTORE	4
 
 /* Equalizer information */
-extern bool player_eq_changed;
+extern bool_t player_eq_changed;
 
 /* Undo list */
 extern undo_list_t *player_ul;
@@ -68,19 +68,19 @@ extern undo_list_t *player_ul;
 extern plist_t *player_plist;
 
 /* Do we story undo information now? */
-extern bool player_store_undo;
+extern bool_t player_store_undo;
 
 /* Initialize player */
-bool player_init( int argc, char *argv[] );
+bool_t player_init( int argc, char *argv[] );
 
 /* Unitialize player */
 void player_deinit( void );
 
 /* Run player */
-bool player_run( void );
+bool_t player_run( void );
 
 /* Parse program command line */
-bool player_parse_cmd_line( int argc, char *argv[] );
+bool_t player_parse_cmd_line( int argc, char *argv[] );
 
 /* Handle key function */
 void player_handle_key( wnd_t *wnd, dword data );
@@ -98,13 +98,13 @@ void player_handle_user( wnd_t *wnd, dword data );
 void player_repval_handle_key( wnd_t *wnd, dword data );
 
 /* Seek song */
-void player_seek( int sec, bool rel );
+void player_seek( int sec, bool_t rel );
 
 /* Set volume */
-void player_set_vol( int vol, bool rel );
+void player_set_vol( int vol, bool_t rel );
 
 /* Set balance */
-void player_set_bal( int bal, bool rel );
+void player_set_bal( int bal, bool_t rel );
 
 /* Play song */
 void player_play( int start_time );

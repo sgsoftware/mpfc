@@ -57,13 +57,13 @@ typedef struct tag_menu_t
 menu_t *menu_new( wnd_t *parent, int x, int y, int w, int h );
 
 /* Initialize menu */
-bool menu_init( menu_t *menu, wnd_t *parent, int x, int y, int w, int h );
+bool_t menu_init( menu_t *menu, wnd_t *parent, int x, int y, int w, int h );
 
 /* Destroy menu */
 void menu_destroy( wnd_t *wnd );
 
 /* Add an item to menu */
-bool menu_add_item( menu_t *menu, char *name, int id, menu_handler handler );
+bool_t menu_add_item( menu_t *menu, char *name, int id, menu_handler handler );
 
 /* Menu display function */
 void menu_display( wnd_t *wnd, dword data );

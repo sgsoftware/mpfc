@@ -59,7 +59,7 @@ file_input_box_t *fin_new( wnd_t *parent, int x, int y, int width, char *label )
 } /* End of 'fin_new' function */
 
 /* Initialize file input box */
-bool fin_init( file_input_box_t *fin, wnd_t *parent, int x, int y,
+bool_t fin_init( file_input_box_t *fin, wnd_t *parent, int x, int y,
 	   			int w, char *label )
 {
 	/* Create common edit box part */
@@ -196,10 +196,10 @@ void fin_expand( file_input_box_t *box )
 } /* End of 'fin_expand' function */
 
 /* Search for current file name in list */
-bool fin_search( file_input_box_t *box )
+bool_t fin_search( file_input_box_t *box )
 {
 	fin_list_t *l, *lb;
-	bool found = FALSE;
+	bool_t found = FALSE;
 	char *text = box->m_box.m_text;
 	int last_slash, cur;
 
@@ -228,7 +228,7 @@ bool fin_search( file_input_box_t *box )
 	do
 	{
 		int i, j;
-		bool equal = TRUE;
+		bool_t equal = TRUE;
 		char *ptext = l->m_name;
 
 		/* Compare */

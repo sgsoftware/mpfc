@@ -28,6 +28,7 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include "types.h"
+#include "player.h"
 #include "plist.h"
 #include "sat.h"
 
@@ -35,20 +36,11 @@
 pthread_t sat_tid = 0;
 
 /* Exit thread flag */
-bool sat_exit = FALSE;
-
-/* Mutex used for synchronization of push/pop operations */
-pthread_mutex_t sat_mutex;
-
-/* Our queue */
-sat_queue_t *sat_queue = NULL, *sat_queue_tail = NULL;
+bool_t sat_exit = FALSE;
 
 /* Initialize SAT module */
-bool sat_init( void )
+bool_t sat_init( void )
 {
-	/* Initialize mutex */
-	pthread_mutex_init(&sat_mutex, NULL);
-
 	/* Initialize thread */
 	pthread_create(&sat_tid, NULL, sat_thread, NULL);
 } /* End of 'sat_init' function */
@@ -64,78 +56,28 @@ void sat_free( void )
 		sat_tid = 0;
 		sat_exit = FALSE;
 	}
-
-	/* Destroy mutex */
-	pthread_mutex_destroy(&sat_mutex);
-
-	/* Destroy queue */
-	if (sat_queue != NULL)
-	{
-		sat_queue_t *t, *t1;
-
-		t = sat_queue;
-		while (t != NULL)
-		{
-			t1 = t->m_next;
-			free(t);
-			t = t1;
-		}
-		sat_queue = NULL;
-		sat_queue_tail = NULL;
-	}
 } /* End of 'sat_free' function */
 
 /* Push file name to queue */
 void sat_push( plist_t *pl, int index )
 {
-	sat_queue_t *t;
-
-	/* Get access to queue */
-	pthread_mutex_lock(&sat_mutex);
-
-	/* Push file name */
-	if (sat_queue_tail == NULL)
-		t = sat_queue = sat_queue_tail = (sat_queue_t *)malloc(
-				sizeof(sat_queue_t));
-	else
-		t = sat_queue_tail->m_next = (sat_queue_t *)malloc(sizeof(sat_queue_t));
-	t->m_pl = pl;
-	t->m_index = index;
-	t->m_next = NULL;
-	sat_queue_tail = t;
-
-	/* Release queue */
-	pthread_mutex_unlock(&sat_mutex);
+	plist_lock(pl);
+	if (index >= 0 && index < pl->m_len && pl->m_list[index] != NULL)
+		pl->m_list[index]->m_flags |= SONG_GET_INFO;
+	plist_unlock(pl);
 } /* End of 'sat_push' function */
 
 /* Pop song from queue */
-int sat_pop( plist_t **pl )
+int sat_pop( plist_t *pl )
 {
-	sat_queue_t *t;
 	int i;
 	
-	/* Get access to queue */
-	pthread_mutex_lock(&sat_mutex);
-
-	/* Pop file name */
-	if (sat_queue == NULL)
-	{
-		pthread_mutex_unlock(&sat_mutex);
-		return -1;
-	}
-
-	t = sat_queue;
-	*pl = t->m_pl;
-	i = t->m_index;
-	t = sat_queue->m_next;
-	free(sat_queue);
-	sat_queue = t;
-	if (t == NULL)
-		sat_queue_tail = NULL;
-
-	/* Release queue */
-	pthread_mutex_unlock(&sat_mutex);
-	return i;
+	if (pl == NULL)
+		return;
+	for ( i = 0; i < pl->m_len; i ++ )
+		if (pl->m_list[i] != NULL && (pl->m_list[i]->m_flags & SONG_GET_INFO))
+			return i;
+	return -1;
 } /* End of 'sat_pop' function */
 
 /* Song adder thread function */
@@ -143,12 +85,13 @@ void *sat_thread( void *arg )
 {
 	while (!sat_exit)
 	{
-		plist_t *pl;
 		int i;
 		
 		/* Pop file name */
-		if ((i = sat_pop(&pl)) >= 0)
-			plist_set_song_info(pl, i);
+		if ((i = sat_pop(player_plist)) >= 0)
+		{
+			plist_set_song_info(player_plist, i);
+		}
 
 		/* Wait a little */
 		util_delay(0, 100000L);

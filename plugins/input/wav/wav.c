@@ -58,7 +58,7 @@ int wav_data_offset = 0;
 int wav_time = 0;
 
 /* Start play function */
-bool wav_start( char *filename )
+bool_t wav_start( char *filename )
 {
 	char riff[4], riff_type[4];
 	long file_size;
@@ -217,7 +217,7 @@ int wav_get_cur_time( void )
 } /* End of 'wav_get_cur_time' function */
 
 /* Get song information */
-bool wav_get_info( char *filename, song_info_t *info )
+bool_t wav_get_info( char *filename, song_info_t *info )
 {
 	int size, samplerate, bps, channels, block_align, bits, len;
 	
@@ -295,7 +295,7 @@ void inp_get_func_list( inp_func_list_t *fl )
 } /* End of 'inp_get_func_list' function */
 
 /* Read the next chunk. Returns TRUE when 'data' chunk is read */
-bool wav_read_next_chunk( FILE *fd, void **fmt_buf, dword *data_size )
+bool_t wav_read_next_chunk( FILE *fd, void **fmt_buf, dword *data_size )
 {
 	char chunk_id[4];
 	long chunk_size;

@@ -57,7 +57,7 @@ combobox_t *cbox_new( wnd_t *parent, int x, int y, int width,
 } /* End of 'cbox_new' function */
 
 /* Initialize combo box */
-bool cbox_init( combobox_t *wnd, wnd_t *parent, int x, int y, int width, 
+bool_t cbox_init( combobox_t *wnd, wnd_t *parent, int x, int y, int width, 
 					int height,	char *label )
 {
 	/* Create common window part */
@@ -228,7 +228,7 @@ void cbox_set_text( combobox_t *cb, char *text )
 } /* End of 'cbox_set_text' function */
 
 /* Move edit box cursor */
-void cbox_move_edit_cursor( combobox_t *cb, bool rel, int pos )
+void cbox_move_edit_cursor( combobox_t *cb, bool_t rel, int pos )
 {
 	if (cb == NULL || !cb->m_text_len)
 		return;
@@ -262,7 +262,7 @@ void cbox_add_ch( combobox_t *cb, char ch )
 } /* End of 'cbox_add_ch' function */
 
 /* Delete character form edit box */
-void cbox_del_ch( combobox_t *cb, bool before_cursor )
+void cbox_del_ch( combobox_t *cb, bool_t before_cursor )
 {
 	int i;
 	
@@ -299,8 +299,8 @@ void cbox_list_add( combobox_t *cb, char *str )
 } /* End of 'cbox_list_add' function */
 
 /* Move list box cursor */
-void cbox_move_list_cursor( combobox_t *cb, bool rel, int pos, bool expand,
-	   							bool change_edit )
+void cbox_move_list_cursor( combobox_t *cb, bool_t rel, int pos, bool_t expand,
+	   							bool_t change_edit )
 {
 	if (cb == NULL || !cb->m_list_size)
 		return;

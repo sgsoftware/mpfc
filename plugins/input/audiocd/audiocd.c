@@ -56,7 +56,7 @@ cfg_list_t *acd_var_list = NULL;
 struct acd_trk_info_t acd_tracks_info[ACD_MAX_TRACKS];
 int acd_num_tracks = 0;
 int acd_cur_track = -1;
-bool acd_info_read = FALSE;
+bool_t acd_info_read = FALSE;
 
 /* Current time */
 int acd_time = 0;
@@ -81,7 +81,7 @@ int acd_prepare_cd( void )
 } /* End of 'acd_prepare_cd' function */
 
 /* Start play function */
-bool acd_start( char *filename )
+bool_t acd_start( char *filename )
 {
 	int fd, track;
 	struct cdrom_msf msf;
@@ -153,7 +153,7 @@ int acd_get_stream( void *buf, int size )
 {
 	int fd;
 	struct cdrom_subchnl info;
-	bool playing;
+	bool_t playing;
 
 	/* Check if we are playing now */
 	if ((fd = acd_prepare_cd()) < 0)
@@ -321,7 +321,7 @@ int acd_get_cur_time( void )
 } /* End of 'acd_get_cur_time' function */
 
 /* Get song info */
-bool acd_get_info( char *filename, song_info_t *info )
+bool_t acd_get_info( char *filename, song_info_t *info )
 {
 	int track;
 

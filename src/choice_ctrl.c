@@ -56,7 +56,7 @@ choice_ctrl_t *choice_new( wnd_t *parent, int x, int y, int w, int h,
 } /* End of 'choice_new' function */
 
 /* Initialize choice control */
-bool choice_init( choice_ctrl_t *ch, wnd_t *parent, int x, int y, int w,
+bool_t choice_init( choice_ctrl_t *ch, wnd_t *parent, int x, int y, int w,
 	   				int h, char *prompt, char *choices )
 {
 	/* Create window object */

@@ -66,6 +66,7 @@ song_t *song_new( char *filename, char *title, int len )
 	strcpy(song->m_file_name, filename);
 	song->m_info = NULL;
 	song->m_inp = inp;
+	song->m_flags = 0;
 	if (title == NULL)
 		song_set_info(song, NULL);
 	else
@@ -166,7 +167,7 @@ void song_init_info_and_len( song_t *song )
 void song_get_title_from_info( song_t *song )
 {
 	char *fmt;
-	bool finish = FALSE;
+	bool_t finish = FALSE;
 	char *str;
 	song_info_t *info;
 	

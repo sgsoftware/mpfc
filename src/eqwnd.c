@@ -57,7 +57,7 @@ eq_wnd_t *eqwnd_new( wnd_t *parent, int x, int y, int w, int h )
 } /* End of 'eqwnd_new' function */
 
 /* Initialize equalizer window */
-bool eqwnd_init( eq_wnd_t *eq, wnd_t *parent, int x, int y, int w, int h )
+bool_t eqwnd_init( eq_wnd_t *eq, wnd_t *parent, int x, int y, int w, int h )
 {
 	wnd_t *wnd = (wnd_t *)eq;
 
@@ -170,7 +170,7 @@ void eqwnd_handle_key( wnd_t *wnd, dword data )
 
 /* Display slider */
 int eqwnd_display_slider( wnd_t *wnd, int x, int start_y, int end_y,
-							bool hl, float val, char *str )
+							bool_t hl, float val, char *str )
 {
 	int pos, i;
 	int h;

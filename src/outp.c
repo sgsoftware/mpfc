@@ -87,7 +87,7 @@ void outp_free( out_plugin_t *p )
 } /* End of 'outp_free' function */
 
 /* Plugin start function */
-bool outp_start( out_plugin_t *p )
+bool_t outp_start( out_plugin_t *p )
 {
 	if (p != NULL && (p->m_fl.m_start != NULL))
 		return p->m_fl.m_start();

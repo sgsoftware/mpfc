@@ -59,11 +59,11 @@ void util_log( char *format, ... )
 } /* End of 'util_log' function */
 
 /* Search for a substring */
-bool util_search_str( char *ptext, char *text )
+bool_t util_search_str( char *ptext, char *text )
 {
 	int t_len = strlen(text), p_len = strlen(ptext), 
 		i = p_len - 1;
-	bool found = FALSE;
+	bool_t found = FALSE;
 
 	/* Search for a substring using a Boyer-Moore algorithm */
 	while (i < t_len && !found)
@@ -136,12 +136,14 @@ char *util_escape_fname( char *out, char *in )
 FILE *util_fopen( char *filename, char *flags )
 {
 	char fname[256];
+	FILE *fd;
 	
 	if (filename[0] == '~' && filename[1] == '/')
 		sprintf(fname, "%s/%s", getenv("HOME"), &filename[2]);
 	else
 		strcpy(fname, filename);
-	return fopen(fname, flags);
+	fd = fopen(fname, flags);
+	return fd;
 } /* End of 'util_fopen' function */
 
 /* Get short plugin name */

@@ -91,7 +91,7 @@ mad_fixed_t mp3_eq_mul[32];
 cfg_list_t *mp3_var_list = NULL;
 
 /* Is ID3 tag present */
-bool mp3_tag_present = FALSE;
+bool_t mp3_tag_present = FALSE;
 
 /* Current time */
 int mp3_time = 0;
@@ -100,7 +100,7 @@ int mp3_time = 0;
 FILE *mp3_fd = NULL;
 
 /* Start play function */
-bool mp3_start( char *filename )
+bool_t mp3_start( char *filename )
 {
 	/* Remember tag */
 	mp3_tag_present = mp3_get_info(filename, &mp3_cur_info);
@@ -524,7 +524,7 @@ void mp3_extract_str_from_frame( char *str, struct id3_frame *f )
 } /* End of 'mp3_extract_str_from_frame' function */
 
 /* Get song information */
-bool mp3_get_info( char *filename, song_info_t *info )
+bool_t mp3_get_info( char *filename, song_info_t *info )
 {
 	struct id3_file *file;
 	struct id3_tag *tag;
@@ -548,19 +548,22 @@ bool mp3_get_info( char *filename, song_info_t *info )
 	if (file == NULL)
 	{
 		memset(info, 0, sizeof(*info));
-		return FALSE;
+		info->m_not_own_present = FALSE;
 	}
 
 	/* Read tag */
-	tag = id3_file_tag(file);
-	if (tag == NULL || !tag->nframes)
+	if (file != NULL)
 	{
-		id3_file_close(file);
-		memset(info, 0, sizeof(*info));
-		info->m_not_own_present = FALSE;
+		tag = id3_file_tag(file);
+		if (tag == NULL || !tag->nframes)
+		{	
+			id3_file_close(file);
+			memset(info, 0, sizeof(*info));
+			info->m_not_own_present = FALSE;
+		}
+		else
+			info->m_not_own_present = TRUE;
 	}
-	else
-		info->m_not_own_present = TRUE;
 
 	if (info->m_not_own_present)
 	{
@@ -605,14 +608,19 @@ bool mp3_get_info( char *filename, song_info_t *info )
 		/* Close file */
 		id3_file_close(file);
 	}
+	else
+		info->m_genre = GENRE_ID_UNKNOWN;
 
 	/* Obtain additional song parameters */
 	mad_header_init(&head);
 	mp3_read_header(filename, &head);
 	if (head.bitrate)
 	{
+		int count;
+		
 		filesize = util_get_file_size(filename);
 		len = filesize / (head.bitrate >> 3);
+		count = mad_timer_count(head.duration, MAD_UNITS_MILLISECONDS);
 		sprintf(info->m_own_data, 
 			"MPEG %s, layer %i\n"
 			"Bitrate: %i kb/s\n"
@@ -640,8 +648,7 @@ bool mp3_get_info( char *filename, song_info_t *info )
 			head.emphasis == MAD_EMPHASIS_NONE ? "None" :
 		  		(head.emphasis == MAD_EMPHASIS_50_15_US ? 
 				 "50/15 microseconds" : "CCITT J.17"),
-			len * 1000 / mad_timer_count(head.duration, MAD_UNITS_MILLISECONDS),
-			len, filesize);
+			count == 0 ? 0 : len * 1000 / count, len, filesize);
 	}
 	mad_header_finish(&head);
 	return TRUE;

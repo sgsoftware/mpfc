@@ -47,7 +47,7 @@ long dw_file_size = 0;
 cfg_list_t *dw_var_list = NULL;
 
 /* Start plugin */
-bool dw_start( void )
+bool_t dw_start( void )
 {
 	char name[256], full_name[256];
 	char *cur_song;

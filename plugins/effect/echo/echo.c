@@ -52,7 +52,7 @@ int echo_apply( byte *d, int len, int fmt, int srate, int nch )
 	int i, in, out, buf, r_ofs, fb_div;
 	short *data = (short *)d;
 	static int old_srate, old_nch;
-	bool surround_enable;
+	bool_t surround_enable;
 	int del, volume, feedback;
 
 	if (!(fmt == AFMT_S16_NE || fmt == AFMT_S16_LE || fmt == AFMT_S16_BE))

@@ -44,10 +44,10 @@ typedef struct
 		byte m_data;
 		char m_text[80];
 	} m_genre_data;
-	bool m_loaded;
-	bool m_only_own;
+	bool_t m_loaded;
+	bool_t m_only_own;
 	char m_own_data[1024];
-	bool m_not_own_present;
+	bool_t m_not_own_present;
 } song_info_t;
 
 #endif

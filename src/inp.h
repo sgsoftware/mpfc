@@ -40,7 +40,7 @@
 typedef struct
 {
 	/* Start playing function */
-	bool (*m_start)( char *filename );
+	bool_t (*m_start)( char *filename );
 
 	/* End playing function */
 	void (*m_end)( void );
@@ -49,7 +49,7 @@ typedef struct
 	int (*m_get_len)( char *filename );
 
 	/* Get song information function */
-	bool (*m_get_info)( char *file_name, song_info_t *info );
+	bool_t (*m_get_info)( char *file_name, song_info_t *info );
 	
 	/* Save song information function */
 	void (*m_save_info)( char *file_name, song_info_t *info );
@@ -108,7 +108,7 @@ in_plugin_t *inp_init( char *name );
 void inp_free( in_plugin_t *plugin );
 
 /* Start playing function */
-bool inp_start( in_plugin_t *p, char *filename );
+bool_t inp_start( in_plugin_t *p, char *filename );
 
 /* End playing function */
 void inp_end( in_plugin_t *p );
@@ -117,7 +117,7 @@ void inp_end( in_plugin_t *p );
 int inp_get_len( in_plugin_t *p, char *filename );
 
 /* Get song information function */
-bool inp_get_info( in_plugin_t *p, char *file_name, song_info_t *info );
+bool_t inp_get_info( in_plugin_t *p, char *file_name, song_info_t *info );
 	
 /* Save song information function */
 void inp_save_info( in_plugin_t *p, char *file_name, song_info_t *info );

@@ -41,11 +41,11 @@ extern struct acd_trk_info_t
 	int m_end_min, m_end_sec, m_end_frm;
 	int m_len;
 	int m_number;
-	bool m_data;
+	bool_t m_data;
 } acd_tracks_info[ACD_MAX_TRACKS];
 extern int acd_num_tracks;
 extern int acd_cur_track;
-extern bool acd_info_read;
+extern bool_t acd_info_read;
 
 /* Get track start frame offset */
 #define acd_get_trk_offset(t) \
@@ -60,7 +60,7 @@ extern bool acd_info_read;
 				acd_tracks_info[acd_num_tracks - 1].m_end_frm) / 75)
 
 /* Get song info */
-bool acd_get_info( char *filename, song_info_t *info );
+bool_t acd_get_info( char *filename, song_info_t *info );
 
 #endif
 

@@ -36,9 +36,7 @@ typedef unsigned short word;
 typedef unsigned long dword;
 
 /* Define boolean type and values for it */
-#ifndef bool
-  #define bool unsigned
-#endif
+typedef byte bool_t;
 #ifndef TRUE
   #define TRUE 1
 #endif

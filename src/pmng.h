@@ -49,7 +49,7 @@ extern effect_plugin_t **pmng_ep;
 extern out_plugin_t *pmng_cur_out;
 
 /* Initialize plugins */
-bool pmng_init( void );
+bool_t pmng_init( void );
 
 /* Unitialize plugins */
 void pmng_free( void );

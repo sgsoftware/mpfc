@@ -34,6 +34,10 @@
 /* Declare this type */
 struct tag_in_plugin_t;
 
+/* Song flags */
+#define SONG_SCHEDULE 0x00000001
+#define SONG_GET_INFO 0x00000002
+
 /* Song type */
 typedef struct
 {
@@ -48,6 +52,9 @@ typedef struct
 
 	/* Song information */
 	song_info_t *m_info;
+
+	/* Flags */
+	dword m_flags;
 
 	/* Input plugin being used to play this song */
 	struct tag_in_plugin_t *m_inp;

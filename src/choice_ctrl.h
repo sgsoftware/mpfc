@@ -54,7 +54,7 @@ choice_ctrl_t *choice_new( wnd_t *parent, int x, int y, int w, int h,
 	   						char *prompt, char *choices );
 
 /* Initialize choice control */
-bool choice_init( choice_ctrl_t *ch, wnd_t *parent, int x, int y, int w,
+bool_t choice_init( choice_ctrl_t *ch, wnd_t *parent, int x, int y, int w,
 	   				int h, char *prompt, char *choices );
 
 /* Destroy choice control */

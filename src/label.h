@@ -44,7 +44,7 @@ typedef struct
 label_t *label_new( wnd_t *parent, int x, int y, int w, int h, char *text );
 
 /* Initialize label */
-bool label_init( label_t *l, wnd_t *parent, int x, int y, int w, int h, 
+bool_t label_init( label_t *l, wnd_t *parent, int x, int y, int w, int h, 
 		char *text );
 
 /* Destroy label */

@@ -28,7 +28,7 @@
 #include "types.h"
 
 /* Start play function */
-bool mp3_start( char *filename );
+bool_t mp3_start( char *filename );
 
 /* End playing function */
 void mp3_end( void );
@@ -40,7 +40,7 @@ void mp3_get_formats( char *buf );
 int mp3_get_len( char *filename );
 
 /* Get song information */
-bool mp3_get_info( char *filename, song_info_t *info );
+bool_t mp3_get_info( char *filename, song_info_t *info );
 
 /* Get stream function */
 int mp3_get_stream( void *buf, int size );

@@ -56,13 +56,13 @@ char ogg_filename[256];
 
 /* Song info to save after play end */
 song_info_t ogg_info;
-bool ogg_need_save_info = FALSE;
+bool_t ogg_need_save_info = FALSE;
 
 /* Some declarations */
 void ogg_save_info( char *filename, song_info_t *info );
 
 /* Start playing */
-bool ogg_start( char *filename )
+bool_t ogg_start( char *filename )
 {
 	FILE *fd;
 	vorbis_info *vi;
@@ -287,14 +287,14 @@ void ogg_save_info( char *filename, song_info_t *info )
 } /* End of 'ogg_save_info' function */
 
 /* Get song information */
-bool ogg_get_info( char *filename, song_info_t *info )
+bool_t ogg_get_info( char *filename, song_info_t *info )
 {
 	OggVorbis_File vf;
 	FILE *fd;
 	char *str;
 	vorbis_comment *comment;
 	vorbis_info *vi;
-	bool ret = FALSE;
+	bool_t ret = FALSE;
 
 	/* Return current info if we have it */
 	if (ogg_need_save_info && !strcmp(filename, ogg_filename))

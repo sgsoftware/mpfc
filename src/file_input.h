@@ -63,7 +63,7 @@ file_input_box_t *fin_new( wnd_t *parent, int x, int y, int width,
 							char *label );
 
 /* Initialize file input box */
-bool fin_init( file_input_box_t *fin, wnd_t *parent, int x, int y,
+bool_t fin_init( file_input_box_t *fin, wnd_t *parent, int x, int y,
 	   			int w, char *label );
 
 /* Destroy file input box */
@@ -76,7 +76,7 @@ void fin_handle_key( wnd_t *wnd, dword data );
 void fin_expand( file_input_box_t *box );
 
 /* Search for current file name in list */
-bool fin_search( file_input_box_t *box );
+bool_t fin_search( file_input_box_t *box );
 
 /* Paste current match */
 void fin_paste( file_input_box_t *box );

@@ -51,7 +51,7 @@ typedef struct
 	char m_text_before_hist[256];
 
 	/* Whether text was changed after using history */
-	bool m_changed;
+	bool_t m_changed;
 	
 	/* Last pressed key */
 	int m_last_key;
@@ -71,7 +71,7 @@ editbox_t *ebox_new( wnd_t *parent, int x, int y, int width,
 						int height,	int max_len, char *label, char *text );
 
 /* Initialize edit box */
-bool ebox_init( editbox_t *ebox, wnd_t *parent, int x, int y, int width, 
+bool_t ebox_init( editbox_t *ebox, wnd_t *parent, int x, int y, int width, 
 					int height,	int max_len, char *label, char *text );
 
 /* Destroy edit box */
@@ -90,7 +90,7 @@ void ebox_add( editbox_t *box, char c );
 void ebox_del( editbox_t *box, int index );
 
 /* Move cursor */
-void ebox_move( editbox_t *box, bool rel, int offset );
+void ebox_move( editbox_t *box, bool_t rel, int offset );
 
 /* Set new cursor position */
 void ebox_set_cursor( editbox_t *box, int new_pos );
@@ -99,7 +99,7 @@ void ebox_set_cursor( editbox_t *box, int new_pos );
 void ebox_set_text( editbox_t *box, char *text );
 
 /* Handle history moving */
-void ebox_hist_move( editbox_t *box, bool up );
+void ebox_hist_move( editbox_t *box, bool_t up );
 
 /* Save history information */
 void ebox_hist_save( editbox_t *box, int key );

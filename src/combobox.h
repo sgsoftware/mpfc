@@ -53,7 +53,7 @@ typedef struct
 	int m_scrolled;
 
 	/* Is list expanded? */
-	bool m_expanded;
+	bool_t m_expanded;
 } combobox_t;
 
 /* Create a new combo box */
@@ -61,7 +61,7 @@ combobox_t *cbox_new( wnd_t *parent, int x, int y, int width,
 						int height, char *label );
 
 /* Initialize combo box */
-bool cbox_init( combobox_t *cbox, wnd_t *parent, int x, int y, int width, 
+bool_t cbox_init( combobox_t *cbox, wnd_t *parent, int x, int y, int width, 
 					int height, char *label );
 
 /* Destroy combo box */
@@ -77,20 +77,20 @@ void cbox_handle_key( wnd_t *wnd, dword data );
 void cbox_set_text( combobox_t *cb, char *text );
 
 /* Move edit box cursor */
-void cbox_move_edit_cursor( combobox_t *cb, bool rel, int pos );
+void cbox_move_edit_cursor( combobox_t *cb, bool_t rel, int pos );
 
 /* Add charater to edit box */
 void cbox_add_ch( combobox_t *cb, char ch );
 
 /* Delete character form edit box */
-void cbox_del_ch( combobox_t *cb, bool before_cursor );
+void cbox_del_ch( combobox_t *cb, bool_t before_cursor );
 
 /* Add string to list */
 void cbox_list_add( combobox_t *cb, char *str );
 
 /* Move list box cursor */
-void cbox_move_list_cursor( combobox_t *cb, bool rel, int pos, bool expand,
-								bool change_edit );
+void cbox_move_list_cursor( combobox_t *cb, bool_t rel, int pos, bool_t expand,
+								bool_t change_edit );
 
 /* Update list box using text from edit box */
 void cbox_edit2list( combobox_t *cb );

@@ -35,7 +35,7 @@
 int oss_fd = -1;
 
 /* Start plugin */
-bool oss_start( void )
+bool_t oss_start( void )
 {
 	int fmt;
 

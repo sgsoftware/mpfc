@@ -34,7 +34,7 @@
 typedef struct 
 {
 	/* Plugin start function */
-	bool (*m_start)( void );
+	bool_t (*m_start)( void );
 
 	/* Plugin end function */
 	void (*m_end)( void );
@@ -79,7 +79,7 @@ out_plugin_t *outp_init( char *name );
 void outp_free( out_plugin_t *p );
 
 /* Plugin start function */
-bool outp_start( out_plugin_t *p );
+bool_t outp_start( out_plugin_t *p );
 
 /* Plugin end function */
 void outp_end( out_plugin_t *p );
