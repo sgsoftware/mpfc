@@ -1,11 +1,11 @@
 /******************************************************************
- * Copyright (C) 2003 - 2004 by SG Software.
+ * Copyright (C) 2003 - 2005 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : player.c
  * PURPOSE     : SG MPFC. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 14.02.2005
+ * LAST UPDATE : 20.02.2005
  * NOTE        : Module prefix 'player'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -252,7 +252,7 @@ bool_t player_init( int argc, char *argv[] )
 	
 	/* Initialize plugin manager */
 	logger_debug(player_log, "Initializing plugin manager");
-	player_pmng = pmng_init(cfg_list, player_log);
+	player_pmng = pmng_init(cfg_list, player_log, wnd_root);
 	if (player_pmng == NULL)
 	{
 		logger_fatal(player_log, 0, _("Unable to initialize plugin manager"));
@@ -439,10 +439,9 @@ void player_root_destructor( wnd_t *wnd )
 		player_tid = 0;
 	}
 	
-	/* Uninitialize plugin manager */
-	logger_debug(player_log, "Doing pmng_free");
-	pmng_free(player_pmng);
-	player_pmng = NULL;
+	/* Stop general plugins */
+	pmng_stop_general_plugins(player_pmng);
+
 	player_wnd = NULL;
 	wnd_root = NULL;
 	logger_debug(player_log, "player_root_destructor done");
@@ -454,6 +453,11 @@ void player_deinit( void )
 	int i;
 
 	logger_debug(player_log, "In player_deinit");
+
+	/* Uninitialize plugin manager */
+	logger_debug(player_log, "Doing pmng_free");
+	pmng_free(player_pmng);
+	player_pmng = NULL;
 
 	/* Uninitialize history lists */
 	logger_debug(player_log, "Freeing history list");
@@ -2226,6 +2230,7 @@ enum
 	PLAYER_PMNG_INPUT = 0,
 	PLAYER_PMNG_OUTPUT,
 	PLAYER_PMNG_EFFECT,
+	PLAYER_PMNG_GENERAL,
 	PLAYER_PMNG_CHARSET,
 	PLAYER_PMNG_COUNT
 };
@@ -2240,6 +2245,7 @@ typedef struct
 	editbox_t *m_author, *m_desc;
 	button_t *m_configure;
 	checkbox_t *m_enabled_cb;
+	button_t *m_start_stop_btn;
 } player_pmng_view_t; 
 
 /* Launch plugin manager dialog */
@@ -2249,7 +2255,7 @@ void player_pmng_dialog( void )
 	pmng_iterator_t iter;
 	player_pmng_view_t *views;
 	checkbox_t *cb;
-	button_t *reload_btn;
+	button_t *reload_btn, *start_stop_btn;
 	int i;
 
 	/* Initialize basic views data */
@@ -2267,6 +2273,10 @@ void player_pmng_dialog( void )
 	views[PLAYER_PMNG_EFFECT].m_btn_title = _("&Effect");
 	views[PLAYER_PMNG_EFFECT].m_name = "effect";
 	views[PLAYER_PMNG_EFFECT].m_letter = 'e';
+	views[PLAYER_PMNG_GENERAL].m_title = _("General");
+	views[PLAYER_PMNG_GENERAL].m_btn_title = _("&General");
+	views[PLAYER_PMNG_GENERAL].m_name = "general";
+	views[PLAYER_PMNG_GENERAL].m_letter = 'g';
 	views[PLAYER_PMNG_CHARSET].m_title = _("Charset");
 	views[PLAYER_PMNG_CHARSET].m_btn_title = _("C&harset");
 	views[PLAYER_PMNG_CHARSET].m_name = "charset";
@@ -2320,6 +2330,8 @@ void player_pmng_dialog( void )
 			index = PLAYER_PMNG_OUTPUT;
 		else if (p->m_type == PLUGIN_TYPE_EFFECT)
 			index = PLAYER_PMNG_EFFECT;
+		else if (p->m_type == PLUGIN_TYPE_GENERAL)
+			index = PLAYER_PMNG_GENERAL;
 		else if (p->m_type == PLUGIN_TYPE_CHARSET)
 			index = PLAYER_PMNG_CHARSET;
 		pos = listbox_add(views[index].m_list, p->m_name, p);
@@ -2353,6 +2365,11 @@ void player_pmng_dialog( void )
 		wnd_msg_add_handler(WND_OBJ(v->m_configure), "clicked",
 				player_pmng_dialog_on_configure);
 	}
+	views[PLAYER_PMNG_GENERAL].m_start_stop_btn = start_stop_btn =
+		button_new(WND_OBJ(views[PLAYER_PMNG_GENERAL].m_vbox), 
+				_("S&tart"), "start", 't');
+	wnd_msg_add_handler(WND_OBJ(start_stop_btn), "clicked",
+			player_pmng_dialog_on_start_stop_general);
 	player_pmng_dialog_sync(DIALOG_OBJ(mvd));
 
 	/* Set proper focus branches */
@@ -2375,9 +2392,12 @@ void player_pmng_dialog_sync( dialog_t *dlg )
 	{
 		player_pmng_view_t *v = &views[i];
 		int index = v->m_list->m_cursor;
-		plugin_t *p = (plugin_t *)v->m_list->m_list[index].m_data;
+		plugin_t *p;
 
 		/* Get info */
+		if (!v->m_list->m_list_size)
+			continue;
+		p = (plugin_t *)v->m_list->m_list[index].m_data;
 		char *author = plugin_get_author(p);
 		char *desc = plugin_get_desc(p);
 
@@ -2388,6 +2408,12 @@ void player_pmng_dialog_sync( dialog_t *dlg )
 		/* Synchronize effect checkbox */
 		if (i == PLAYER_PMNG_EFFECT)
 			v->m_enabled_cb->m_checked = pmng_is_effect_enabled(player_pmng, p);
+		else if (i == PLAYER_PMNG_GENERAL)
+		{
+			bool_t started = genp_is_started(p);
+			wnd_set_title(WND_OBJ(v->m_start_stop_btn), started ? _("S&top") :
+					_("S&tart"));
+		}
 	}
 	wnd_invalidate(WND_OBJ(dlg));
 } /* End of 'player_pmng_dialog_sync' function */
@@ -2843,6 +2869,8 @@ wnd_msg_retcode_t player_pmng_dialog_on_effect_clicked( wnd_t *wnd )
 	views = (player_pmng_view_t *)cfg_get_var_ptr(dlg->m_cfg_list, "views");
 	assert(views);
 	lb = views[PLAYER_PMNG_EFFECT].m_list;
+	if (!lb->m_list_size)
+		return WND_MSG_RETCODE_OK;
 	ep = (plugin_t *)lb->m_list[lb->m_cursor].m_data;
 	pmng_enable_effect(player_pmng, ep, cb->m_checked);
 	return WND_MSG_RETCODE_OK;
@@ -2873,12 +2901,46 @@ wnd_msg_retcode_t player_pmng_dialog_on_configure( wnd_t *wnd )
 
 	/* Get corresponding plugin */
 	index = v->m_list->m_cursor;
+	if (!v->m_list->m_list_size)
+		return WND_MSG_RETCODE_OK;
 	p = (plugin_t *)v->m_list->m_list[index].m_data;
 
 	/* Call configure */
 	plugin_configure(p, wnd_root);
 	return WND_MSG_RETCODE_OK;
 } /* End of 'player_pmng_dialog_on_configure' function */
+
+/* Handle 'clicked' message for plugins manager start/stop general 
+ * plugin button */
+wnd_msg_retcode_t player_pmng_dialog_on_start_stop_general( wnd_t *wnd )
+{
+	player_pmng_view_t *v = NULL;
+	player_pmng_view_t *views; 
+	wnd_t *dlg;
+	plugin_t *p;
+	int index;
+
+	/* Determine our view */
+	dlg = DLGITEM_OBJ(wnd)->m_dialog;
+	views = (player_pmng_view_t *)cfg_get_var_ptr(dlg->m_cfg_list, "views");
+	assert(views);
+	v = &views[PLAYER_PMNG_GENERAL];
+	assert(v);
+
+	/* Get corresponding plugin */
+	index = v->m_list->m_cursor;
+	if (!v->m_list->m_list_size)
+		return WND_MSG_RETCODE_OK;
+	p = (plugin_t *)v->m_list->m_list[index].m_data;
+
+	/* Change state */
+	if (!genp_is_started(p))
+		genp_start(p);
+	else
+		genp_end(p);
+	player_pmng_dialog_sync(DIALOG_OBJ(dlg));
+	return WND_MSG_RETCODE_OK;
+} /* End of 'player_pmng_dialog_on_start_stop_general' function */
 
 /* Handle 'clicked' message for plugins manager reload button */
 wnd_msg_retcode_t player_pmng_dialog_on_reload( wnd_t *wnd )

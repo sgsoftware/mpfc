@@ -1,5 +1,5 @@
 /******************************************************************
- * Copyright (C) 2003 - 2004 by SG Software.
+ * Copyright (C) 2005 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : player.h
@@ -351,6 +351,10 @@ wnd_msg_retcode_t player_pmng_dialog_on_effect_clicked( wnd_t *wnd );
 
 /* Handle 'clicked' message for plugins manager configure buttons */
 wnd_msg_retcode_t player_pmng_dialog_on_configure( wnd_t *wnd );
+
+/* Handle 'clicked' message for plugins manager start/stop general 
+ * plugin button */
+wnd_msg_retcode_t player_pmng_dialog_on_start_stop_general( wnd_t *wnd );
 
 /* Handle 'clicked' message for plugins manager reload button */
 wnd_msg_retcode_t player_pmng_dialog_on_reload( wnd_t *wnd );

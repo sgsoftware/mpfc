@@ -93,17 +93,20 @@ void listbox_destructor( wnd_t *wnd )
 } /* End of 'listbox_destructor' function */
 
 /* Add an item */
-void listbox_add( listbox_t *lb, char *item, void *data )
+int listbox_add( listbox_t *lb, char *item, void *data )
 {
+	int pos;
 	assert(lb);
 	lb->m_list = (struct listbox_item_t *)realloc(lb->m_list, 
 			sizeof(struct listbox_item_t) * (lb->m_list_size + 1));
 	if (lb->m_list == NULL)
 		return;
-	lb->m_list[lb->m_list_size].m_name = strdup(item);
-	lb->m_list[lb->m_list_size].m_data = data;
+	pos = lb->m_list_size;
+	lb->m_list[pos].m_name = strdup(item);
+	lb->m_list[pos].m_data = data;
 	lb->m_list_size ++;
 	wnd_invalidate(WND_OBJ(lb));
+	return pos;
 } /* End of 'listbox_add' function */
 
 /* Move cursor */

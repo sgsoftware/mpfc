@@ -25,8 +25,8 @@
  * MA 02111-1307, USA.
  */
 
-#include <linux/cdrom.h>
 #include <stdio.h>
+#include <linux/cdrom.h>
 #include <errno.h>
 #include <string.h>
 #include <stdarg.h>

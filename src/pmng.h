@@ -1,12 +1,12 @@
 /******************************************************************
- * Copyright (C) 2003 - 2004 by SG Software.
+ * Copyright (C) 2003 - 2005 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : pmng.h
  * PURPOSE     : SG MPFC. Interface for plugins manager 
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 22.09.2004
+ * LAST UPDATE : 18.02.2005
  * NOTE        : Module prefix 'pmng'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -37,6 +37,7 @@
 #include "outp.h"
 #include "plugin.h"
 #include "vfs.h"
+#include "wnd.h"
 
 /* Plugin manager type */
 typedef struct tag_pmng_t
@@ -51,12 +52,15 @@ typedef struct tag_pmng_t
 	/* Configuration variables list */
 	cfg_node_t *m_cfg_list;
 
+	/* Root window */
+	wnd_t *m_root_wnd;
+
 	/* Logger object */
 	logger_t *m_log;
 } pmng_t;
 
 /* Initialize plugins */
-pmng_t *pmng_init( cfg_node_t *list, logger_t *log );
+pmng_t *pmng_init( cfg_node_t *list, logger_t *log, wnd_t *wnd_root );
 
 /* Unitialize plugins */
 void pmng_free( pmng_t *pmng );
@@ -66,6 +70,9 @@ bool_t pmng_load_plugins( pmng_t *pmng );
 
 /* Add a plugin */
 void pmng_add_plugin( pmng_t *pmng, plugin_t *p );
+
+/* Autostart general plugins */
+void pmng_autostart_general( pmng_t *pmng );
 
 /* Search for input plugin supporting given format */
 in_plugin_t *pmng_search_format( pmng_t *pmng, char *format );
@@ -98,6 +105,9 @@ logger_t *pmng_get_logger( pmng_t *pmng );
 
 /* Create a plugin name */
 char *pmng_create_plugin_name( char *filename );
+
+/* Stop all general plugins */
+void pmng_stop_general_plugins( pmng_t *pmng );
 
 /*
  * Plugins iteration functions

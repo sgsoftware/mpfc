@@ -1,12 +1,12 @@
 /******************************************************************
- * Copyright (C) 2003 - 2004 by SG Software.
+ * Copyright (C) 2003 - 2005 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : plugin_mng.c
  * PURPOSE     : SG MPFC. Plugins manager functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 9.10.2004
+ * LAST UPDATE : 20.02.2005
  * NOTE        : Module prefix 'pmng'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -33,6 +33,7 @@
 #include "csp.h"
 #include "ep.h"
 #include "inp.h"
+#include "genp.h"
 #include "outp.h"
 #include "plugin.h"
 #include "pmng.h"
@@ -40,7 +41,7 @@
 #include "vfs.h"
 
 /* Initialize plugins */
-pmng_t *pmng_init( cfg_node_t *list, logger_t *log )
+pmng_t *pmng_init( cfg_node_t *list, logger_t *log, wnd_t *wnd_root )
 {
 	pmng_t *pmng;
 
@@ -51,6 +52,7 @@ pmng_t *pmng_init( cfg_node_t *list, logger_t *log )
 	memset(pmng, 0, sizeof(pmng_t));
 	pmng->m_cfg_list = list;
 	pmng->m_log = log;
+	pmng->m_root_wnd = wnd_root;
 	
 	/* Load plugins */
 	if (!pmng_load_plugins(pmng))
@@ -58,6 +60,9 @@ pmng_t *pmng_init( cfg_node_t *list, logger_t *log )
 		pmng_free(pmng);
 		return NULL;
 	}
+
+	/* Autostart general plugins */
+	pmng_autostart_general(pmng);
 	return pmng;
 } /* End of 'pmng_init' function */
 
@@ -68,7 +73,7 @@ void pmng_free( pmng_t *pmng )
 
 	if (pmng == NULL)
 		return;
-	
+
 	for ( i = 0; i < pmng->m_num_plugins; i ++ )
 		plugin_free(pmng->m_plugins[i]);
 	free(pmng->m_plugins);
@@ -85,6 +90,24 @@ void pmng_add_plugin( pmng_t *pmng, plugin_t *p )
 	assert(pmng->m_plugins);
 	pmng->m_plugins[pmng->m_num_plugins ++] = p;
 } /* End of 'pmng_add_plugin' function */
+
+/* Autostart general plugins */
+void pmng_autostart_general( pmng_t *pmng )
+{
+	pmng_iterator_t iter;
+	if (pmng == NULL)
+		return;
+	for ( iter = pmng_start_iteration(pmng, PLUGIN_TYPE_GENERAL);; )
+	{
+		general_plugin_t *p = GENERAL_PLUGIN(pmng_iterate(&iter));
+		if (p == NULL)
+			break;
+
+		/* Check 'autostart' option for this plugin */
+		if (cfg_get_var_bool(PLUGIN(p)->m_cfg, "autostart"))
+			genp_start(p);
+	}
+} /* End of 'pmng_autostart_general' function */
 
 /* Search for input plugin supporting given format */
 in_plugin_t *pmng_search_format( pmng_t *pmng, char *format )
@@ -184,7 +207,8 @@ bool_t pmng_load_plugins( pmng_t *pmng )
 	} types[] = { { PLUGIN_TYPE_INPUT, "input" }, 
 				{ PLUGIN_TYPE_OUTPUT, "output" },
 				{ PLUGIN_TYPE_EFFECT, "effect" },
-				{ PLUGIN_TYPE_CHARSET, "charset" } };
+				{ PLUGIN_TYPE_CHARSET, "charset" },
+				{ PLUGIN_TYPE_GENERAL, "general" } };
 	int num_types, i;
 	if (pmng == NULL)
 		return FALSE;
@@ -238,6 +262,8 @@ void pmng_glob_handler( vfs_file_t *file, void *data )
 		p = ep_init(name, pmng);
 	else if (type == PLUGIN_TYPE_CHARSET)
 		p = csp_init(name, pmng);
+	else if (type == PLUGIN_TYPE_GENERAL)
+		p = genp_init(name, pmng);
 	if (p == NULL)
 		return;
 
@@ -388,6 +414,21 @@ char *pmng_create_plugin_name( char *filename )
 	}
 	return name;
 } /* End of 'pmng_create_plugin_name' function */
+
+/* Stop all general plugins */
+void pmng_stop_general_plugins( pmng_t *pmng )
+{
+	pmng_iterator_t iter;
+	iter = pmng_start_iteration(pmng, PLUGIN_TYPE_GENERAL);
+	for ( ;; )
+	{
+		general_plugin_t *p = GENERAL_PLUGIN(pmng_iterate(&iter));
+		if (p == NULL)
+			break;
+		if (genp_is_started(p))
+			genp_end(p);
+	}
+} /* End of 'pmng_stop_general_plugins' function */
 
 /* Start iteration */
 pmng_iterator_t pmng_start_iteration( pmng_t *pmng, plugin_type_t type_mask )

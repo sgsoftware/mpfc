@@ -1,11 +1,11 @@
 /******************************************************************
- * Copyright (C) 2004 by SG Software.
+ * Copyright (C) 2004 - 2005 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : plugin.h
  * PURPOSE     : MPFC Library. Interface for common plugins data.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 29.10.2004
+ * LAST UPDATE : 15.02.2005
  * NOTE        : Module prefix 'plugin'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -42,6 +42,7 @@ typedef enum
 	PLUGIN_TYPE_OUTPUT = 1 << 1,
 	PLUGIN_TYPE_EFFECT = 1 << 2,
 	PLUGIN_TYPE_CHARSET = 1 << 3,
+	PLUGIN_TYPE_GENERAL = 1 << 4,
 	PLUGIN_TYPE_ALL = 0xFFFFFF
 } plugin_type_t;
 

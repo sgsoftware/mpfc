@@ -86,7 +86,7 @@ bool_t listbox_construct( listbox_t *lb, wnd_t *parent, char *title, char *id,
 void listbox_destructor( wnd_t *wnd );
 
 /* Add an item */
-void listbox_add( listbox_t *lb, char *item, void *data );
+int listbox_add( listbox_t *lb, char *item, void *data );
 
 /* Move cursor */
 void listbox_move( listbox_t *lb, int pos, bool_t rel );

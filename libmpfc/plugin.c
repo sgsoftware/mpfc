@@ -1,12 +1,12 @@
 /******************************************************************
- * Copyright (C) 2004 by SG Software.
+ * Copyright (C) 2004 - 2005 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : plugin.c
  * PURPOSE     : MPFC Library. Common plugins functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 29.10.2004
+ * LAST UPDATE : 15.02.2005
  * NOTE        : Module prefix 'plugin'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -71,6 +71,8 @@ plugin_t *plugin_init( pmng_t *pmng, char *name, plugin_type_t type, int size,
 		prefix = "plugins.effect";
 	else if (type == PLUGIN_TYPE_CHARSET)
 		prefix = "plugins.charset";
+	else if (type == PLUGIN_TYPE_GENERAL)
+		prefix = "plugins.general";
 	else
 	{
 		plugin_free(p);
@@ -80,6 +82,7 @@ plugin_t *plugin_init( pmng_t *pmng, char *name, plugin_type_t type, int size,
 	cfg_list_name = util_strcat(prefix, ".", p->m_name, NULL);
 	pd->m_cfg = cfg_new_list(pmng->m_cfg_list, cfg_list_name, 
 			plugin_set_cfg_default, CFG_NODE_SMALL_LIST, 0);
+	p->m_cfg = pd->m_cfg;
 	free(cfg_list_name);
 
 	/* Exchange data */
@@ -93,6 +96,7 @@ plugin_t *plugin_init( pmng_t *pmng, char *name, plugin_type_t type, int size,
 	}
 	pd->m_pmng = pmng;
 	pd->m_root_cfg = pmng->m_cfg_list;
+	pd->m_root_wnd = pmng->m_root_wnd;
 	pd->m_logger = pmng->m_log;
 	plugin_exchange_data(pd);
 	return p;

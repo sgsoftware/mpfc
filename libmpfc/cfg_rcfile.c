@@ -371,8 +371,27 @@ void cfg_rcfile_save_node( FILE *fd, cfg_node_t *node, char *prefix )
 	{
 		char *value = CFG_VAR_VALUE(node);
 		if (value != NULL)
-			fprintf(fd, "%s%s = %s\n", prefix == NULL ? "" : prefix, 
-					node->m_name, value);
+		{
+			fprintf(fd, "%s%s = ", prefix == NULL ? "" : prefix, 
+					node->m_name);
+			/* Output a quoted value */
+			fprintf(fd, "\"");
+			for ( ; *value; value ++ )
+			{
+				char ch = *value;
+				if (ch == '\n')
+					fprintf(fd, "\\n");
+				else if (ch == '\"')
+					fprintf(fd, "\\\"");
+				else if (ch == '\\')
+					fprintf(fd, "\\\\");
+				else if (ch == 27)
+					fprintf(fd, "\\e");
+				else
+					fprintf(fd, "%c", ch);
+			}
+			fprintf(fd, "\"\n");
+		}
 	}
 	/* Save a list */
 	else
