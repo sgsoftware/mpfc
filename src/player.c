@@ -206,7 +206,11 @@ bool player_init( int argc, char *argv[] )
 			!player_num_files && !player_num_obj)
 	{
 		player_plist->m_cur_song = cfg_get_var_int(cfg_list, "cur_song");
-		player_play(cfg_get_var_int(cfg_list, "cur_time"));
+		player_status = cfg_get_var_int(cfg_list, "player_status");
+		player_start = cfg_get_var_int(cfg_list, "player_start") - 1;
+		player_end = cfg_get_var_int(cfg_list, "player_end") - 1;
+		if (player_status != PLAYER_STATUS_STOPPED)
+			player_play(cfg_get_var_int(cfg_list, "cur_time"));
 	}
 
 	/* Exit */
@@ -222,7 +226,11 @@ void player_deinit( void )
 	cfg_set_var_int(cfg_list, "cur_song", 
 			player_plist->m_cur_song, CFG_RUNTIME);
 	cfg_set_var_int(cfg_list, "cur_time", player_cur_time, CFG_RUNTIME);
-	player_save_cfg_vars(cfg_list, "cur_song;cur_time");
+	cfg_set_var_int(cfg_list, "player_status", player_status, CFG_RUNTIME);
+	cfg_set_var_int(cfg_list, "player_start", player_start + 1, CFG_RUNTIME);
+	cfg_set_var_int(cfg_list, "player_end", player_end + 1, CFG_RUNTIME);
+	player_save_cfg_vars(cfg_list, "cur_song;cur_time;player_status;"
+			"player_start;player_end");
 	
 	/* End playing thread */
 	sat_free();
@@ -494,14 +502,14 @@ void player_play( int start_time )
 	cfg_set_var(cfg_list, "cur_song_name", 
 			util_get_file_short_name(s->m_file_name), CFG_RUNTIME);
 	player_cur_time = start_time;
-	player_status = PLAYER_STATUS_PLAYING;
+//	player_status = PLAYER_STATUS_PLAYING;
 } /* End of 'player_play' function */
 
 /* End playing song */
 void player_end_play( void )
 {
 	player_end_track = TRUE;
-	player_status = PLAYER_STATUS_STOPPED;
+//	player_status = PLAYER_STATUS_STOPPED;
 	cfg_set_var(cfg_list, "cur_song_name", "", CFG_RUNTIME);
 } /* End of 'player_end_play' function */
 
@@ -528,7 +536,7 @@ void *player_thread( void *arg )
 
 		/* Play track */
 		s = player_plist->m_list[player_plist->m_cur_song];
-		player_status = PLAYER_STATUS_PLAYING;
+		//player_status = PLAYER_STATUS_PLAYING;
 		player_end_track = FALSE;
 	
 		/* Get song length and information at first */
@@ -1233,12 +1241,10 @@ void player_handle_action( int action )
 	/* Resume playing */
 	case KBIND_PLAY:
 		if (player_status == PLAYER_STATUS_PAUSED)
-		{
-			player_status = PLAYER_STATUS_PLAYING;
 			inp_resume(player_inp);
-		}
 		else
 			player_play(0);
+		player_status = PLAYER_STATUS_PLAYING;
 		break;
 
 	/* Pause */
@@ -1257,6 +1263,7 @@ void player_handle_action( int action )
 
 	/* Stop */
 	case KBIND_STOP:
+		player_status = PLAYER_STATUS_STOPPED;
 		player_end_play();
 		break;
 
@@ -1265,6 +1272,7 @@ void player_handle_action( int action )
 		if (!player_plist->m_len)
 			break;
 		player_plist->m_cur_song = player_plist->m_sel_end;
+		player_status = PLAYER_STATUS_PLAYING;
 		player_play(0);
 		break;
 
@@ -1276,7 +1284,6 @@ void player_handle_action( int action )
 	/* Go to previous song */
 	case KBIND_PREV:
 		player_skip_songs(-((player_repval) ? player_repval : 1));
-		break;
 		break;
 
 	/* Add a file */
