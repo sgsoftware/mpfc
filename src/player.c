@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG Konsamp. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 23.04.2003
+ * LAST UPDATE : 28.04.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -34,6 +34,7 @@
 #include "editbox.h"
 #include "error.h"
 #include "file_input.h"
+#include "help_screen.h"
 #include "listbox.h"
 #include "menu.h"
 #include "options.h"
@@ -201,21 +202,30 @@ void player_handle_key( wnd_t *wnd, dword data )
 		wnd_send_msg(wnd, WND_MSG_CLOSE, 0);
 		break;
 
+	/* Show help screen */
+	case '?':
+		player_help();
+		break;
+
 	/* Move cursor */
 	case 'j':
+	case KEY_DOWN:
 		plist_move(player_plist, (player_repval == 0) ? 1 : player_repval, 
 				TRUE);
 		break;
 	case 'k':
+	case KEY_UP:
 		plist_move(player_plist, (player_repval == 0) ? -1 : -player_repval, 
 				TRUE);
 		break;
 	case 'd':
+	case KEY_NPAGE:
 		plist_move(player_plist, (player_repval == 0) ? 
 				player_plist->m_height : 
 				player_plist->m_height * player_repval, TRUE);
 		break;
 	case 'u':
+	case KEY_PPAGE:
 		plist_move(player_plist, (player_repval == 0) ? 
 				-player_plist->m_height : 
 				-player_plist->m_height * player_repval, TRUE);
@@ -385,10 +395,14 @@ void player_display( wnd_t *wnd, dword data )
 	int i, song_time_len = wnd_root->m_width - 15, slider_pos;
 	song_t *s = NULL;
 	
+	/* Clear the screen */
+	wnd_clear(wnd, FALSE);
+	
 	/* Display head */
 	wnd_move(wnd, 0, 0);
 	if (player_plist->m_cur_song == -1)
-		wnd_printf(wnd, "SG Software Konsamp 0.1\nversion 0.1\n");
+		wnd_printf(wnd, "SG Software Media Player For Console\n"
+				"version 0.1\n");
 	else
 	{
 		s = player_plist->m_list[player_plist->m_cur_song];
@@ -412,11 +426,6 @@ void player_display( wnd_t *wnd, dword data )
 	
 	/* Display play list */
 	plist_display(player_plist, wnd);
-
-	/* Clear the rest of screen */
-	while (wnd_gety(wnd) < wnd->m_height - 1)
-		wnd_printf(wnd, "\n");
-	wnd_printf(wnd, "\n");
 
 	/* Print message */
 	wnd_move(wnd, 0, wnd->m_height - 2);
@@ -883,6 +892,16 @@ void player_handle_user( wnd_t *wnd, dword data )
 		break;
 	}
 } /* End of 'player_handle_user' function */
+
+/* Show help screen */
+void player_help( void )
+{
+	help_screen_t *h;
+
+	h = help_new(wnd_root, 0, 0, wnd_root->m_width, wnd_root->m_height);
+	wnd_run(h);
+	wnd_destroy(h);
+} /* End of 'player_help' function */
 
 /* End of 'player.c' file */
 

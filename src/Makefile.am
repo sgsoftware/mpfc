@@ -6,7 +6,7 @@ mpfc_SOURCES = main.c types.h error.h player.c player.h \
 					window.c window.h editbox.c editbox.h \
 					choice_ctrl.c choice_ctrl.h file_input.c file_input.h \
 					dlgbox.c dlgbox.h menu.c menu.h codepages.c codepages.h \
-					listbox.c listbox.h
+					listbox.c listbox.h help_screen.c help_screen.h
 
 localedir = $(datadir)/locale
 DEFS = -DLOCALEDIR=\"$(localedir)\" @DEFS@

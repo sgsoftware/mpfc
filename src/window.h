@@ -5,7 +5,7 @@
 /* FILE NAME   : window.h
  * PURPOSE     : SG Konsamp. Interface for window functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 23.04.2003
+ * LAST UPDATE : 28.04.2003
  * NOTE        : Module prefix 'wnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -151,6 +151,9 @@ void wnd_handle_close( wnd_t *wnd, dword data );
 
 /* Generic WND_MSG_CHANGE_FOCUS message handler */
 void wnd_handle_ch_focus( wnd_t *wnd, dword data );
+
+/* Clear the window */
+void wnd_clear( wnd_t *wnd, bool start_from_cursor );
 
 #endif
 

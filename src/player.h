@@ -5,7 +5,7 @@
 /* FILE NAME   : player.h
  * PURPOSE     : SG Konsamp. Interface for main player functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 23.04.2003
+ * LAST UPDATE : 28.04.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -100,6 +100,15 @@ void player_info_dialog( void );
 
 /* Process search play list dialog */
 void player_search_dialog( void );
+
+/* Show help screen */
+void player_help( void );
+
+/* Display message handler for help screen */
+void player_help_display( wnd_t *wnd, dword data );
+
+/* Handle key message handler for help screen */
+void player_help_handle_key( wnd_t *wnd, dword data );
 
 #endif
 
