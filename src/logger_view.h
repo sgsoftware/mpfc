@@ -70,6 +70,12 @@ wnd_msg_retcode_t logview_on_scrolled( wnd_t *wnd, int offset );
 /* Scroll specified number of pages */
 void logview_move_pages( scrollable_t *scr, int pages );
 
+/* Get scroll range */
+int logview_get_scroll_range( scrollable_t *scr );
+
+/* Get number of lines a message occupies */
+int logview_get_msg_lines( scrollable_t *scr, struct logger_message_t *msg );
+
 /*
  * Class functions
  */

@@ -30,6 +30,7 @@ static int alsa_fmt = SND_PCM_FORMAT_S16_LE;
 static int alsa_size = 2;
 static int alsa_rate = 44100;
 static int alsa_channels = 2;
+static bool_t alsa_paused = FALSE;
 
 static char *alsa_default_dev = "plughw:0,0";
 
@@ -57,11 +58,13 @@ bool_t alsa_start ()
       return FALSE;
     }
   snd_pcm_prepare (handle);
+  alsa_paused = FALSE;
   return TRUE;
 }
 
 void alsa_end ()
 {
+	alsa_paused = FALSE;
   if (handle != NULL)
     {
       snd_pcm_close(handle);
@@ -235,14 +238,16 @@ bool_t alsa_open_dev( void )
 
 void alsa_pause( void )
 {
-	if (handle != NULL)
+	if (handle != NULL && !alsa_paused)
 		snd_pcm_pause(handle, TRUE);
+	alsa_paused = TRUE;
 }
 
 void alsa_resume( void )
 {
-	if (handle != NULL)
+	if (handle != NULL && alsa_paused)
 		snd_pcm_pause(handle, FALSE);
+	alsa_paused = FALSE;
 }
 
 void outp_get_func_list (outp_func_list_t *fl)

@@ -39,7 +39,7 @@ typedef enum
 } scrollable_type_t;
 
 /* Scrollable window type */
-typedef struct
+typedef struct tag_scrollable_t
 {
 	/* Common window part */
 	wnd_t m_wnd;
@@ -58,6 +58,9 @@ typedef struct
 
 	/* Scroll value */
 	int m_scroll;
+
+	/* Get scroll range */
+	int (*m_get_range)( struct tag_scrollable_t *scr );
 } scrollable_t;
 
 /* Convert window object to scrollable type */
@@ -68,7 +71,9 @@ typedef struct
 		 WND_HEIGHT(scr) : WND_WIDTH(scr)) - (scr)->m_diff)
 
 /* Get the scroll range */
-#define SCROLLABLE_RANGE(scr) ((scr)->m_list_size - SCROLLABLE_WND_SIZE(scr))
+#define SCROLLABLE_RANGE(scr) ((((scr)->m_get_range) != NULL) ? \
+		((scr)->m_get_range(scr)) : \
+		((scr)->m_list_size - SCROLLABLE_WND_SIZE(scr)))
 
 /* Create a new scrollable window */
 scrollable_t *scrollable_new( wnd_t *parent, char *title, int x, int y, int w,

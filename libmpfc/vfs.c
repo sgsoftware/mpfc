@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Virtual file system functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 18.09.2004
+ * LAST UPDATE : 25.09.2004
  * NOTE        : Module prefix 'vfs'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -141,7 +141,12 @@ void vfs_glob( vfs_t *vfs, char *pattern, vfs_callback_t callback, void *data,
 				vfs_file_desc_init(vfs, &fd, STR_TO_CPTR(dir->m_name), inp);
 				dh = vfs_opendir(vfs, &fd);
 				if (dh == NULL)
+				{
+					logger_message(VFS_LOGGER(vfs), LOGGER_MSG_ERROR,
+							LOGGER_LEVEL_DEFAULT, 
+							_("Unable to read directory %s"), fd.m_full_name);
 					continue;
+				}
 				for ( ;; )
 				{
 					bool_t matches = FALSE;
@@ -209,7 +214,12 @@ void vfs_visit_match( vfs_t *vfs, vfs_file_t *file, vfs_callback_t callback,
 
 	/* Get file parameters */
 	if (file->m_stat_return != 0)
+	{
+		logger_message(VFS_LOGGER(vfs), LOGGER_MSG_ERROR,
+				LOGGER_LEVEL_DEFAULT, 
+				_("Unable to stat file %s"), file->m_full_name);
 		return;
+	}
 	st = file->m_stat;
 	
 	/* Call callback function */
@@ -235,32 +245,37 @@ void vfs_visit_match( vfs_t *vfs, vfs_file_t *file, vfs_callback_t callback,
 		vfs_dir_t *dh;
 		vfs_glob_list_t *list;
 		dh = vfs_opendir(vfs, file);
-		if (dh != NULL)
+		if (dh == NULL)
 		{
-			/* Build list of files */
-			list = vfs_glob_list_new();
-			for ( ;; )
-			{
-				str_t *dir_name, *full_name;
-				char *name = vfs_readdir(dh);
-				if (name == NULL)
-					break;
-				if (!(flags & VFS_GLOB_RETURN_SPEC_LINKS) &&
-						(!strcmp(name, ".") || !strcmp(name, "..")))
-					continue;
-
-				dir_name = str_new(file->m_full_name);
-				vfs_glob_list_add(list, vfs_cat_dir_and_name(dir_name, name));
-				str_free(dir_name);
-			}
-			vfs_closedir(dh);
-
-			/* Visit children */
-			vfs_glob_list_sort(list);
-			vfs_visit_matches(vfs, file->m_inp, list, callback, data, 
-					level + 1, max_level, flags);
-			vfs_glob_list_free(list);
+			logger_message(VFS_LOGGER(vfs), LOGGER_MSG_ERROR,
+					LOGGER_LEVEL_DEFAULT, 
+					_("Unable to read directory %s"), file->m_full_name);
+			return;
 		}
+
+		/* Build list of files */
+		list = vfs_glob_list_new();
+		for ( ;; )
+		{
+			str_t *dir_name, *full_name;
+			char *name = vfs_readdir(dh);
+			if (name == NULL)
+				break;
+			if (!(flags & VFS_GLOB_RETURN_SPEC_LINKS) &&
+					(!strcmp(name, ".") || !strcmp(name, "..")))
+				continue;
+
+			dir_name = str_new(file->m_full_name);
+			vfs_glob_list_add(list, vfs_cat_dir_and_name(dir_name, name));
+			str_free(dir_name);
+		}
+		vfs_closedir(dh);
+
+		/* Visit children */
+		vfs_glob_list_sort(list);
+		vfs_visit_matches(vfs, file->m_inp, list, callback, data, 
+				level + 1, max_level, flags);
+		vfs_glob_list_free(list);
 	}
 } /* End of 'vfs_visit_match' function */
 

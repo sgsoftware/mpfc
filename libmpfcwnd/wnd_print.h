@@ -61,7 +61,9 @@ typedef enum
 	/* Also print in non-client area */
 	WND_PRINT_NONCLIENT		= 1 << 0,	
 	/* Print ellipses if string doesn't fit in the area */
-	WND_PRINT_ELLIPSES		= 1 << 1	
+	WND_PRINT_ELLIPSES		= 1 << 1,
+	/* Don't clip string and continue printing on the next line */
+	WND_PRINT_NOCLIP		= 1 << 2,
 } wnd_print_flags_t;
 
 /* Color values */

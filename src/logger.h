@@ -49,6 +49,7 @@ enum
 	LOGGER_LEVEL_LOW,
 	LOGGER_LEVEL_DEFAULT,
 	LOGGER_LEVEL_HIGH,
+	LOGGER_LEVEL_DEBUG,
 };
 
 /* Logger data type */

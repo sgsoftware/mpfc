@@ -71,6 +71,7 @@ bool_t logview_construct( logger_view_t *lv, wnd_t *parent, logger_t *logger )
 	wnd_msg_add_handler(WND_OBJ(lv), "scrolled", logview_on_scrolled);
 
 	/* Set fields */
+	scr->m_get_range = logview_get_scroll_range;
 	lv->m_logger = logger;
 	lv->m_top_message = logger->m_head;
 	return TRUE;
@@ -97,7 +98,7 @@ wnd_msg_retcode_t logview_on_display( wnd_t *wnd )
 			wnd_apply_style(wnd, "logger-error-style");
 		else if (type == LOGGER_MSG_FATAL)
 			wnd_apply_style(wnd, "logger-fatal-style");
-		wnd_printf(wnd, 0, 0, "%s\n", msg->m_message);
+		wnd_printf(wnd, WND_PRINT_NOCLIP, 0, "%s\n", msg->m_message);
 	}
 	return WND_MSG_RETCODE_OK;
 } /* End of 'logview_on_display' function */
@@ -170,27 +171,52 @@ void logview_move_pages( scrollable_t *scr, int pages )
 	/* Scroll number of items so that distance between previous and new
 	 * top items is not more than (page size) * pages */
 	for ( delta = 0, real_lines = 0, msg = lv->m_top_message; 
-			real_lines <= max_dist && msg != NULL; delta ++, real_lines ++,
+			real_lines <= max_dist && msg != NULL; delta ++, 
 			((dir > 0) ? (msg = msg->m_next) : (msg = msg->m_prev)) )
-	{
-		int x;
-		char *text = msg->m_message;
-		for ( x = 0; *text; text ++ )
-		{
-			if ((x >= WND_WIDTH(scr)) || ((*text) == '\n'))
-			{
-				x = 0;
-				real_lines ++;
-			}
-			else
-				x ++;
-		}
-	}
+		real_lines += logview_get_msg_lines(scr, msg);
 	delta --;
 
 	/* Do scroll */
 	scrollable_scroll(scr, delta * dir, FALSE);
 } /* End of 'logview_move_pages' function */
+
+/* Get scroll range */
+int logview_get_scroll_range( scrollable_t *scr )
+{
+	logger_view_t *lv = LOGGER_VIEW(scr);
+	int range = lv->m_logger->m_num_messages;
+	int lines;
+	struct logger_message_t *msg;
+
+	for ( lines = 0, msg = lv->m_logger->m_tail; 
+			lines < SCROLLABLE_WND_SIZE(scr) && msg != NULL; 
+			range --, msg = msg->m_prev )
+	{
+		lines += logview_get_msg_lines(scr, msg);
+	}
+	range ++;
+	return range;
+} /* End of 'logview_get_scroll_range' function */
+
+/* Get number of lines a message occupies */
+int logview_get_msg_lines( scrollable_t *scr, struct logger_message_t *msg )
+{
+	int x;
+	int lines;
+	char *text = msg->m_message;
+
+	for ( x = 0, lines = 1; *text; text ++ )
+	{
+		if ((x >= WND_WIDTH(scr)) || ((*text) == '\n'))
+		{
+			x = 0;
+			lines ++;
+		}
+		else
+			x ++;
+	}
+	return lines;
+} /* End of 'logview_get_msg_lines' function */
 
 /* Initialize logger view class */
 wnd_class_t *logview_class_init( wnd_global_data_t *global )

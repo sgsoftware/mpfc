@@ -169,6 +169,12 @@ void wnd_putstring( wnd_t *wnd, wnd_print_flags_t flags, int right_border,
 		if (wnd->m_cursor_x <= right_border)
 		{
 			wnd_putchar(wnd, flags, (byte)*str);
+
+			/* Move to the next line */
+			if (wnd->m_cursor_x > right_border && (flags & WND_PRINT_NOCLIP))
+			{
+				wnd_move(wnd, 0, 0, wnd->m_cursor_y + 1);
+			}
 			continue;
 		}
 
@@ -179,7 +185,8 @@ void wnd_putstring( wnd_t *wnd, wnd_print_flags_t flags, int right_border,
 		/* Put ellipses */
 		if (flags & WND_PRINT_ELLIPSES)
 		{
-			wnd_move(wnd, WND_MOVE_NORMAL, right_border - 2, wnd->m_cursor_y);
+			wnd_move(wnd, WND_MOVE_NORMAL, right_border - 2, 
+					wnd->m_cursor_y);
 			wnd_putchar(wnd, flags, '.');
 			wnd_putchar(wnd, flags, '.');
 			wnd_putchar(wnd, flags, '.');

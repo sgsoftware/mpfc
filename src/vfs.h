@@ -31,6 +31,7 @@
 #include <sys/stat.h>
 #include "types.h"
 #include "inp.h"
+#include "logger.h"
 
 /* Virtual file system data type */
 typedef struct 
@@ -41,6 +42,10 @@ typedef struct
 
 /* Check that input plugin uses VFS */
 #define VFS_INP_HAS(inp)	(inp_get_flags(inp) & INP_VFS)
+
+/* Get logger object */
+#define VFS_LOGGER(vfs)		(((vfs) == NULL || ((vfs)->m_pmng == NULL)) ? \
+								NULL : ((vfs)->m_pmng->m_log))
 
 /* A file representation */
 typedef struct tag_vfs_file_t
