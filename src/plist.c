@@ -292,6 +292,7 @@ bool plist_save( plist_t *pl, char *filename )
 void plist_sort( plist_t *pl, bool global, int criteria )
 {
 	int start, end, i;
+	song_t *cur_song;
 	
 	PLIST_ASSERT(pl);
 
@@ -300,6 +301,9 @@ void plist_sort( plist_t *pl, bool global, int criteria )
 		start = 0, end = pl->m_len - 1;
 	else
 		PLIST_GET_SEL(pl, start, end);
+
+	/* Save current song */
+	cur_song = (pl->m_cur_song < 0) ? NULL : pl->m_list[pl->m_cur_song];
 
 	/* Sort */
 	for ( i = start; i < end; i ++ )
@@ -352,6 +356,19 @@ void plist_sort( plist_t *pl, bool global, int criteria )
 					(i - k + 1) * sizeof(*pl->m_list));
 			pl->m_list[k] = s;
 		}
+	}
+
+	/* Find current song */
+	if (cur_song != NULL)
+	{
+		int i;
+
+		for ( i = start; i <= end; i ++ )
+			if (pl->m_list[i] == cur_song)
+			{
+				pl->m_cur_song = i;
+				break;
+			}
 	}
 } /* End of 'plist_sort' function */
 
