@@ -155,7 +155,7 @@ void ogg_get_formats( char *extensions, char *content_type )
 	if (extensions != NULL)
 		strcpy(extensions, "ogg");
 	if (content_type != NULL)
-		strcpy(content_type, "");
+		strcpy(content_type, "application/ogg");
 } /* End of 'ogg_get_formats' function */
 
 /* Get stream */
@@ -273,7 +273,9 @@ void ogg_save_info( char *filename, song_info_t *info )
 	/* Schedule info for saving if we are playing this file now */
 	if (!strcmp(filename, ogg_filename))
 	{
-		ogg_info = info;
+		if (ogg_info != NULL)
+			si_free(ogg_info);
+		ogg_info = si_dup(info);
 		return;
 	}
 
