@@ -77,7 +77,7 @@ bool_t dlg_init( dlgbox_t *dlg, wnd_t *parent, int x, int y, int w, int h,
 	/* Save dialog box parameters */
 	dlg->m_caption = strdup(caption);
 	if (strlen(dlg->m_caption) > WND_WIDTH(dlg) - 7)
-		dlg->m_caption[dlg->m_wnd.m_width - 7] = 0;
+		dlg->m_caption[WND_WIDTH(dlg) - 7] = 0;
 	dlg->m_cur_focus = NULL;
 	dlg->m_ok = FALSE;
 	WND_FLAGS(dlg) |= (WND_DIALOG | WND_INITIALIZED);
@@ -110,29 +110,29 @@ void dlg_display( wnd_t *wnd, dword data )
 	/* Print first line */
 	wnd_set_attrib(wnd, A_BOLD);
 	wnd_print_char(wnd, ACS_ULCORNER);
-	for ( i = 1; i < (wnd->m_width - 2 - len) / 2 - 1; i ++ )
+	for ( i = 1; i < (WND_WIDTH(wnd) - 2 - len) / 2 - 1; i ++ )
 		wnd_print_char(wnd, ACS_HLINE);
 	col_set_color(wnd, COL_EL_DLG_TITLE);
 	wnd_printf(wnd, " %s ", dlg->m_caption);
 	col_set_color(wnd, COL_EL_DEFAULT);
 	wnd_set_attrib(wnd, A_BOLD);
-	for ( i = wnd_getx(wnd); i < wnd->m_width - 1; i ++ )
+	for ( i = wnd_getx(wnd); i < WND_WIDTH(wnd) - 1; i ++ )
 		wnd_print_char(wnd, ACS_HLINE);
 	wnd_print_char(wnd, ACS_URCORNER);
 
 	/* Print other lines */
-	for ( i = 1; i < wnd->m_height - 1; i ++ )
+	for ( i = 1; i < WND_HEIGHT(wnd) - 1; i ++ )
 	{
 		wnd_move(wnd, 0, i);
 		wnd_print_char(wnd, ACS_VLINE);
-		wnd_move(wnd, wnd->m_width - 1, i);
+		wnd_move(wnd, WND_WIDTH(wnd) - 1, i);
 		wnd_print_char(wnd, ACS_VLINE);
 	}
 
 	/* Print last line */
-	wnd_move(wnd, 0, wnd->m_height - 1);
+	wnd_move(wnd, 0, WND_HEIGHT(wnd) - 1);
 	wnd_print_char(wnd, ACS_LLCORNER);
-	for ( i = 1; i < wnd->m_width - 1; i ++ )
+	for ( i = 1; i < WND_WIDTH(wnd) - 1; i ++ )
 		wnd_print_char(wnd, ACS_HLINE);
 	wnd_print_char(wnd, ACS_LRCORNER);
 } /* End of 'dlg_display' function */

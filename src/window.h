@@ -62,11 +62,10 @@ struct tag_wnd_t;
 
 /* Get macros */
 #define WND_OBJ(wnd)		((wnd_t *)(wnd))
-#define WND_FLAGS(wnd)		(((wnd_t *)(wnd))->m_flags)
-#define WND_X(wnd)			(((wnd_t *)(wnd))->m_x)
-#define WND_Y(wnd)			(((wnd_t *)(wnd))->m_y)
-#define WND_WIDTH(wnd)		(((wnd_t *)(wnd))->m_width)
-#define WND_HEIGHT(wnd)		(((wnd_t *)(wnd))->m_height)
+#define WND_FLAGS(wnd)		(WND_OBJ(wnd)->m_flags)
+#define WND_IS_ROOT(wnd)	(WND_OBJ(wnd)->m_parent == NULL)
+#define WND_X(wnd)			(WND_OBJ(wnd)->m_x)
+#define WND_Y(wnd)			(WND_OBJ(wnd)->m_y)
 
 /* Create data for notify message */
 #define WND_NOTIFY_DATA(id, act) (((id) << 16) | (act))
@@ -91,8 +90,8 @@ typedef struct tag_wnd_t
 	/* NCURSES window handle */
 	WINDOW *m_wnd;
 
-	/* Window position and size */
-	int m_x, m_y, m_width, m_height;
+	/* Window position */
+	int m_x, m_y;
 
 	/* Window screen position */
 	int m_sx, m_sy;
@@ -184,6 +183,12 @@ int wnd_getx( wnd_t *wnd );
 /* Get cursor Y coordinate */
 int wnd_gety( wnd_t *wnd );
 
+/* Get window width */
+int WND_WIDTH( void *wnd );
+
+/* Get window height */
+int WND_HEIGHT( void *wnd );
+
 /* Set print attributes */
 void wnd_set_attrib( wnd_t *wnd, int attr );
 
@@ -253,6 +258,9 @@ void wnd_reinit_mouse( void );
 /* Untouch lines touched by ncurses and touch lines that have been
  * really changed */
 void wnd_touch( wnd_t *wnd );
+
+/* Get mouse driver type */
+void wnd_get_mouse_type( void );
 
 #endif
 

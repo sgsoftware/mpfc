@@ -50,7 +50,7 @@
 #define PLIST_ASSERT_RET(pl, ret) if ((pl) == NULL) return (ret)
 
 /* Create a new play list */
-plist_t *plist_new( int start_pos, int height )
+plist_t *plist_new( int start_pos )
 {
 	plist_t *pl;
 
@@ -64,7 +64,6 @@ plist_t *plist_new( int start_pos, int height )
 
 	/* Set play list fields */
 	pl->m_start_pos = start_pos;
-	pl->m_height = height;
 	pl->m_scrolled = 0;
 	pl->m_sel_start = pl->m_sel_end = 0;
 	pl->m_cur_song = -1;
@@ -787,14 +786,14 @@ void plist_move( plist_t *pl, int y, bool_t relative )
 
 	/* Scroll if need */
 	if (pl->m_sel_end < pl->m_scrolled || 
-			pl->m_sel_end >= pl->m_scrolled + pl->m_height)
+			pl->m_sel_end >= pl->m_scrolled + PLIST_HEIGHT)
 	{
 		pl->m_scrolled += (pl->m_sel_end - old_end);
 		if (pl->m_scrolled < 0)
 			pl->m_scrolled = 0;
 	}
-	if (pl->m_scrolled >= pl->m_len - pl->m_height)
-		pl->m_scrolled = pl->m_len - pl->m_height;
+	if (pl->m_scrolled >= pl->m_len - PLIST_HEIGHT)
+		pl->m_scrolled = pl->m_len - PLIST_HEIGHT;
 	if (pl->m_scrolled < 0)
 		pl->m_scrolled = 0;
 
@@ -819,9 +818,9 @@ void plist_centrize( plist_t *pl, int index )
 		if (!pl->m_visual)
 			pl->m_sel_start = pl->m_sel_end;
 
-		pl->m_scrolled = pl->m_sel_end - (pl->m_height + 1) / 2;
-		if (pl->m_scrolled >= pl->m_len - pl->m_height)
-			pl->m_scrolled = pl->m_len - pl->m_height;
+		pl->m_scrolled = pl->m_sel_end - (PLIST_HEIGHT + 1) / 2;
+		if (pl->m_scrolled >= pl->m_len - PLIST_HEIGHT)
+			pl->m_scrolled = pl->m_len - PLIST_HEIGHT;
 		if (pl->m_scrolled < 0)
 			pl->m_scrolled = 0;
 	}
@@ -837,7 +836,7 @@ void plist_display( plist_t *pl, wnd_t *wnd )
 	PLIST_GET_SEL(pl, start, end);
 
 	/* Display each song */
-	for ( i = 0, j = pl->m_scrolled; i < pl->m_height; i ++, j ++ )
+	for ( i = 0, j = pl->m_scrolled; i < PLIST_HEIGHT; i ++, j ++ )
 	{
 		int attrib;
 		
@@ -865,10 +864,10 @@ void plist_display( plist_t *pl, wnd_t *wnd )
 			int x;
 			
 			wnd_advance(wnd, 0, pl->m_start_pos + i);
-			wnd_printf_bound(wnd, wnd->m_width - 13, WND_PRINT_ELLIPSES, 
+			wnd_printf_bound(wnd, WND_WIDTH(wnd) - 13, WND_PRINT_ELLIPSES, 
 					"%i. %s", j + 1, STR_TO_CPTR(s->m_title));
 			sprintf(len, "%i:%02i", s->m_len / 60, s->m_len % 60);
-			wnd_advance(wnd, wnd->m_width - strlen(len) - 1, 
+			wnd_advance(wnd, WND_WIDTH(wnd) - strlen(len) - 1, 
 					pl->m_start_pos + i);
 			wnd_printf(wnd, "%s", len);
 		}
@@ -889,8 +888,8 @@ void plist_display( plist_t *pl, wnd_t *wnd )
 			(end >= 0 && pl->m_len > 0) ? end - start + 1 : 0, pl->m_len,
 			s_time / 3600, (s_time % 3600) / 60, s_time % 60,
 			l_time / 3600, (l_time % 3600) / 60, l_time % 60);
-	wnd_advance(wnd, wnd->m_width - strlen(time_text) - 1, 
-			pl->m_start_pos + pl->m_height);
+	wnd_advance(wnd, WND_WIDTH(wnd) - strlen(time_text) - 1, 
+			pl->m_start_pos + PLIST_HEIGHT);
 	wnd_printf(wnd, "%s", time_text);
 	col_set_color(wnd, COL_EL_DEFAULT);
 } /* End of 'plist_display' function */
@@ -1071,7 +1070,7 @@ void plist_move_sel( plist_t *pl, int y, bool_t relative )
 
 	/* Scroll if need */
 	if (pl->m_sel_end < pl->m_scrolled || 
-			pl->m_sel_end >= pl->m_scrolled + pl->m_height)
+			pl->m_sel_end >= pl->m_scrolled + PLIST_HEIGHT)
 	{
 		pl->m_scrolled += (y - start);
 		if (pl->m_scrolled < 0)

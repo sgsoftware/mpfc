@@ -95,7 +95,7 @@ void eqwnd_display( wnd_t *wnd, dword data )
 	
 	/* Print title */
 	wnd_clear(wnd, FALSE);
-	wnd_move(wnd, (wnd->m_width - strlen(title)) / 2, 0);
+	wnd_move(wnd, (WND_WIDTH(wnd) - strlen(title)) / 2, 0);
 	wnd_set_attrib(wnd, A_BOLD);
 	wnd_printf(wnd, "%s\n\n", title);
 	wnd_set_attrib(wnd, A_NORMAL);
@@ -123,7 +123,7 @@ void eqwnd_display( wnd_t *wnd, dword data )
 	}
 
 	/* Remove cursor */
-	wnd_move(wnd, wnd->m_width - 1, wnd->m_height - 1);
+	wnd_move(wnd, WND_WIDTH(wnd) - 1, WND_HEIGHT(wnd) - 1);
 } /* End of 'eqwnd_display' function */
 
 /* Handle key message */
@@ -251,8 +251,8 @@ void eqwnd_load_eqf_dlg( void )
 	file_input_box_t *fin;
 
 	/* Create edit box for path input */
-	fin = fin_new(wnd_root, 0, wnd_root->m_height - 1, 
-			wnd_root->m_width, _("Load preset from a Winamp EQF file: "));
+	fin = fin_new(wnd_root, 0, WND_HEIGHT(wnd_root) - 1, 
+			WND_WIDTH(wnd_root), _("Load preset from a Winamp EQF file: "));
 	if (fin != NULL)
 	{
 		/* Run message loop */

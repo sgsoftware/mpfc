@@ -30,6 +30,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include "types.h"
+#include "cfg.h"
 #include "dlgbox.h"
 #include "editbox.h"
 #include "error.h"
@@ -48,7 +49,7 @@ wnd_t *wnd_root = NULL;
 wnd_t *wnd_focus = NULL;
 
 /* Thread IDs */
-pthread_t wnd_kbd_tid, wnd_mouse_tid;
+pthread_t wnd_kbd_tid = -1, wnd_mouse_tid = -1;
 
 /* Threads termination flag */
 bool_t wnd_end_kbd_thread = FALSE;
@@ -63,8 +64,11 @@ bool_t wnd_curses_closed = FALSE;
 /* Mutex for synchronization displaying */
 pthread_mutex_t wnd_display_mutex;
 
-/* Whether MPFC is running in xterm? */
-bool_t wnd_xterm_mouse = FALSE;
+/* Mouse driver type */
+#define WND_MOUSE_NONE  0
+#define WND_MOUSE_GPM   1
+#define WND_MOUSE_XTERM 2
+int wnd_mouse_type = WND_MOUSE_NONE;
 
 /* Create a new root window */
 wnd_t *wnd_new_root( void )
@@ -89,24 +93,33 @@ wnd_t *wnd_new_root( void )
 	/* Set no-delay 'getch' mode */
 	nodelay(wnd_root->m_wnd, TRUE);
 
-	/* Initialize mouse */
-	memset(&conn, 0, sizeof(conn));
-	conn.eventMask = GPM_DOWN | GPM_DOUBLE | GPM_DRAG | GPM_UP;
-	conn.defaultMask = ~GPM_HARD;
-	conn.minMod = 0;
-	conn.maxMod = 0;
-	wnd_xterm_mouse = FALSE;
-	if (Gpm_Open(&conn, 0) == -2)
-	{
-		/* Initialize mouse in xterm */
-		wnd_xterm_mouse = TRUE;
-		printf("\033[?9h");
-	}
-	gpm_zerobased = TRUE;
+	/* Get mouse driver type */
+	wnd_get_mouse_type();
 
-	/* Initialize keyboard and mouse threads */
+	/* Initialize mouse */
+	switch (wnd_mouse_type)
+	{
+	case WND_MOUSE_GPM:
+		memset(&conn, 0, sizeof(conn));
+		conn.eventMask = GPM_DOWN | GPM_DOUBLE | GPM_DRAG | GPM_UP;
+		conn.defaultMask = ~GPM_HARD;
+		conn.minMod = 0;
+		conn.maxMod = 0;
+		if (Gpm_Open(&conn, 0) == -1)
+		{
+			wnd_mouse_type = WND_MOUSE_NONE;
+			break;
+		}
+		gpm_zerobased = TRUE;
+		pthread_create(&wnd_mouse_tid, NULL, wnd_mouse_thread, NULL);
+		break;
+	case WND_MOUSE_XTERM:
+		printf("\033[?9h");
+		break;
+	}
+
+	/* Initialize keyboard thread */
 	pthread_create(&wnd_kbd_tid, NULL, wnd_kbd_thread, NULL);
-	pthread_create(&wnd_mouse_tid, NULL, wnd_mouse_thread, NULL);
 	wnd_root->m_flags |= WND_INITIALIZED;
 
 	/* Return */
@@ -163,8 +176,6 @@ bool_t wnd_init( wnd_t *wnd, wnd_t *parent, int x, int y, int w, int h )
 		noecho();
 		keypad(wnd->m_wnd, TRUE);
 		start_color();
-		w = COLS;
-		h = LINES;
 
 		/* Create display mutex */
 		pthread_mutex_init(&wnd_display_mutex, NULL);
@@ -184,8 +195,6 @@ bool_t wnd_init( wnd_t *wnd, wnd_t *parent, int x, int y, int w, int h )
 	/* Fill window fields */
 	wnd->m_x = x;
 	wnd->m_y = y;
-	wnd->m_width = w;
-	wnd->m_height = h;
 	wnd->m_parent = parent;
 	wnd->m_child = NULL;
 	wnd->m_next = NULL;
@@ -265,11 +274,20 @@ void wnd_destroy_func( wnd_t *wnd )
 		/* Kill threads */
 		wnd_end_kbd_thread = TRUE;
 		wnd_end_mouse_thread = TRUE;
-		pthread_join(wnd_kbd_tid, NULL);
-		pthread_join(wnd_mouse_tid, NULL);
+		if (wnd_kbd_tid >= 0)
+		{
+			pthread_join(wnd_kbd_tid, NULL);
+			wnd_kbd_tid = -1;
+		}
+		if (wnd_mouse_tid >= 0)
+		{
+			pthread_join(wnd_mouse_tid, NULL);
+			wnd_mouse_tid = -1;
+		}
 
 		/* Uninitialize mouse */
-		Gpm_Close();
+		if (wnd_mouse_type == WND_MOUSE_GPM)
+			Gpm_Close();
 		
 		endwin();
 	}
@@ -576,7 +594,7 @@ void wnd_display( wnd_t *wnd )
 		child = child->m_next;
 	}
 	if (is_dialog)
-		wnd_advance(wnd, wnd->m_width - 2, wnd->m_height - 2);
+		wnd_advance(wnd, WND_WIDTH(wnd) - 2, WND_HEIGHT(wnd) - 2);
 	if (focus_child != NULL)
 		wnd_display(focus_child);
 
@@ -611,27 +629,42 @@ void *wnd_kbd_thread( void *arg )
 {
 	struct timeval was_tv, now_tv;
 	int was_btn;
+	int was_width = COLS, was_height = LINES;
 
 	gettimeofday(&was_tv, NULL);
 	for ( ; !wnd_end_kbd_thread; )
 	{
 		int key;
 		struct timespec tv;
+		struct winsize winsz;
+
+		/* Check whether terminal size was changed */
+		winsz.ws_col = winsz.ws_row = 0;
+		ioctl(0, TIOCGWINSZ, &winsz);
+		if (winsz.ws_col != was_width || winsz.ws_row != was_height)
+		{
+			was_width = winsz.ws_col;
+			was_height = winsz.ws_row;
+			wnd_redisplay(wnd_root);
+		}
 
 		/* Read next character */
 		if ((key = getch()) != ERR)
 		{
+			util_log("got key %d\n", key);
 			if (key == '\f')
 				wnd_redisplay(wnd_root);
-			else if (key == KEY_MOUSE && wnd_xterm_mouse)
+			else if (key == KEY_MOUSE && wnd_mouse_type == WND_MOUSE_XTERM)
 			{
 				Gpm_Event event;
 				int btn, x, y;
 
+				util_log("handling KEY_MOUSE\n");
 				/* Get event parameters */
 				btn = getch() - 040;
 				x = getch() - 040 - 1;
 				y = getch() - 040 - 1;
+				util_log("btn=%d, x=%d,y=%d\n", btn, x, y);
 				
 				memset(&event, 0, sizeof(event));
 				event.type = GPM_DOWN;
@@ -663,6 +696,7 @@ void *wnd_kbd_thread( void *arg )
 				was_btn = btn;
 				
 				wnd_mouse_handler(&event, NULL);
+				util_log("handled\n");
 			}
 /*			else if (key == 14)
 				wnd_reinit_mouse();*/
@@ -735,14 +769,14 @@ void wnd_clear( wnd_t *wnd, bool_t start_from_cursor )
 
 	if (!start_from_cursor)
 		wnd_move(wnd, 0, 0);
-	for ( i = (start_from_cursor ? wnd_gety(wnd) : 0); i < wnd->m_height; i ++ )
+	for ( i = (start_from_cursor ? wnd_gety(wnd) : 0); i < WND_HEIGHT(wnd); i ++ )
 		wnd_printf(wnd, "\n");
 } /* End of 'wnd_clear' function */
 
 /* Totally redisplay window */
 void wnd_redisplay( wnd_t *wnd )
 {
-//	wnd_clear(wnd, FALSE);
+	wnd_clear(wnd, FALSE);
 	wrefresh(wnd->m_wnd);
 	wnd_display(wnd);
 /*	touchwin(wnd->m_wnd);
@@ -836,7 +870,8 @@ int wnd_mouse_handler( Gpm_Event *event, void *data )
 		wnd_send_msg(wnd_focus, WND_MSG_MOUSE_OUTSIDE_FOCUS, 0);
 
 	/* Display cursor */
-	GPM_DRAWPOINTER(event);
+	if (wnd_mouse_type == WND_MOUSE_GPM)
+		GPM_DRAWPOINTER(event);
 } /* End of 'wnd_mouse_handler' function */
 
 /* Get window under which mouse cursor is */
@@ -908,8 +943,8 @@ void *wnd_mouse_thread( void *arg )
 /* Check if a point belongs to the window */
 bool_t wnd_pt_belongs( wnd_t *wnd, int x, int y )
 {
-	return (wnd != NULL && x >= wnd->m_sx && x < wnd->m_sx + wnd->m_width &&
-				y >= wnd->m_sy && y < wnd->m_sy + wnd->m_height);
+	return (wnd != NULL && x >= wnd->m_sx && x < wnd->m_sx + WND_WIDTH(wnd) &&
+				y >= wnd->m_sy && y < wnd->m_sy + WND_HEIGHT(wnd));
 } /* End of 'wnd_pt_belongs' function */
 
 /* Generic WND_MSG_POSTPONED_NOTIFY message handler */
@@ -919,6 +954,7 @@ void wnd_handle_pp_notify( wnd_t *wnd, dword data )
 	free((void *)data);
 } /* End of 'wnd_handle_pp_notify' function */
 
+#if 0
 /* Reinitialize mouse */
 void wnd_reinit_mouse( void )
 {
@@ -939,6 +975,7 @@ void wnd_reinit_mouse( void )
 	}
 	gpm_zerobased = TRUE;
 } /* End of 'wnd_reinit_mouse' function */
+#endif
 
 #if 0
 /* Untouch lines touched by ncurses and touch lines that have been
@@ -993,6 +1030,9 @@ void wnd_printf_bound( wnd_t *wnd, int len, dword flags, char *format, ... )
 	
 	WND_ASSERT(wnd);
 
+	if (len < 0)
+		return;
+
 	/* Print string */
 	str = (char *)malloc(len + 1);
 	va_start(ap, format);
@@ -1016,22 +1056,22 @@ void wnd_advance( wnd_t *wnd, int x, int y )
 {
 	int cur_x, cur_y;
 	bool_t till_end = FALSE;
-	
+
 	if (wnd == NULL)
 		return;
 
 	/* Fix position */
 	if (x < 0)
 		x = 0;
-	else if (x >= wnd->m_width)
+	else if (x >= WND_WIDTH(wnd))
 	{
-		x = wnd->m_width - 1;
+		x = WND_WIDTH(wnd) - 1;
 		till_end = TRUE;
 	}
 	if (y < 0)
 		y = 0;
-	else if (y >= wnd->m_height)
-		y = wnd->m_height - 1;
+	else if (y >= WND_HEIGHT(wnd))
+		y = WND_HEIGHT(wnd) - 1;
 
 	/* If position is before current - simply move without clearing anything */
 	cur_x = wnd_getx(wnd);
@@ -1047,6 +1087,51 @@ void wnd_advance( wnd_t *wnd, int x, int y )
 	if (till_end)
 		waddch(wnd->m_wnd, ' ');
 } /* End of 'wnd_advance' function */
+
+/* Get mouse driver type */
+void wnd_get_mouse_type( void )
+{
+	char *driver, *term;
+	
+	/* Check variable that may force mouse type */
+	driver = cfg_get_var(cfg_list, "mouse");
+	if (driver != NULL)
+	{
+		if (!strcmp(driver, "xterm"))
+			wnd_mouse_type = WND_MOUSE_XTERM;
+		else if (!strcmp(driver, "gpm"))
+			wnd_mouse_type = WND_MOUSE_GPM;
+		else
+			wnd_mouse_type = WND_MOUSE_NONE;
+		return;
+	}
+
+	/* Check TERM variable */
+	term = getenv("TERM");
+	if (term == NULL || !strcmp(term, ""))
+		wnd_mouse_type = WND_MOUSE_NONE;
+	else if (!strcmp(term, "xterm") || !strcmp(term, "rxvt") || 
+				!strcmp(term, "Eterm"))
+		wnd_mouse_type = WND_MOUSE_XTERM;
+	else
+		wnd_mouse_type = WND_MOUSE_GPM;
+} /* End of 'wnd_get_mouse_type' function */
+
+/* Get window width */
+int WND_WIDTH( void *wnd )
+{
+	int w, h;
+	getmaxyx(WND_OBJ(wnd)->m_wnd, h, w);
+	return w;
+} /* End of 'WND_WIDTH' function */
+
+/* Get window height */
+int WND_HEIGHT( void *wnd )
+{
+	int w, h;
+	getmaxyx(WND_OBJ(wnd)->m_wnd, h, w);
+	return h;
+} /* End of 'WND_HEIGHT' function */
 
 /* End of 'window.c' file */
 

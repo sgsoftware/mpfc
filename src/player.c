@@ -206,7 +206,7 @@ bool_t player_init( int argc, char *argv[] )
 	player_ul = undo_new();
 
 	/* Create a play list and add files to it */
-	player_plist = plist_new(3, wnd_root->m_height - 5);
+	player_plist = plist_new(3);
 	if (player_plist == NULL)
 	{
 		return FALSE;
@@ -439,7 +439,7 @@ void player_handle_mouse_click( wnd_t *wnd, dword data )
 
 	/* Move cursor in play list */
 	if (y >= player_plist->m_start_pos && 
-			y < player_plist->m_start_pos + player_plist->m_height)
+			y < player_plist->m_start_pos + PLIST_HEIGHT)
 	{
 		plist_move(player_plist, y - player_plist->m_start_pos + 
 				player_plist->m_scrolled, FALSE);
@@ -485,7 +485,7 @@ void player_handle_mouse_double( wnd_t *wnd, dword data )
 
 	/* Play song */
 	if (y >= player_plist->m_start_pos && 
-			y < player_plist->m_start_pos + player_plist->m_height)
+			y < player_plist->m_start_pos + PLIST_HEIGHT)
 	{
 		int s = y - player_plist->m_start_pos + player_plist->m_scrolled;
 
@@ -521,7 +521,7 @@ void player_display( wnd_t *wnd, dword data )
 		/* Print shuffle mode */
 		if (cfg_get_var_int(cfg_list, "shuffle-play"))
 		{
-			wnd_advance(wnd, wnd->m_width - 13, 0);
+			wnd_advance(wnd, WND_WIDTH(wnd) - 13, 0);
 			col_set_color(wnd, COL_EL_PLAY_MODES);
 			wnd_printf(wnd, "Shuffle");
 			col_set_color(wnd, COL_EL_DEFAULT);
@@ -530,7 +530,7 @@ void player_display( wnd_t *wnd, dword data )
 		/* Print loop mode */
 		if (cfg_get_var_int(cfg_list, "loop-play"))
 		{
-			wnd_advance(wnd, wnd->m_width - 5, 0);
+			wnd_advance(wnd, WND_WIDTH(wnd) - 5, 0);
 			col_set_color(wnd, COL_EL_PLAY_MODES);
 			wnd_printf(wnd, "Loop");
 			col_set_color(wnd, COL_EL_DEFAULT);
@@ -551,14 +551,14 @@ void player_display( wnd_t *wnd, dword data )
 		s = player_plist->m_list[player_plist->m_cur_song];
 		wnd_advance(wnd, 0, 0);
 		col_set_color(wnd, COL_EL_CUR_TITLE);
-		wnd_printf_bound(wnd, wnd->m_width - 1, WND_PRINT_ELLIPSES, "%s", 
+		wnd_printf_bound(wnd, WND_WIDTH(wnd) - 1, WND_PRINT_ELLIPSES, "%s", 
 				STR_TO_CPTR(s->m_title));
 		col_set_color(wnd, COL_EL_DEFAULT);
 
 		/* Print shuffle mode */
 		if (cfg_get_var_int(cfg_list, "shuffle-play"))
 		{
-			wnd_advance(wnd, wnd->m_width - 13, 0);
+			wnd_advance(wnd, WND_WIDTH(wnd) - 13, 0);
 			col_set_color(wnd, COL_EL_PLAY_MODES);
 			wnd_printf(wnd, "Shuffle");
 			col_set_color(wnd, COL_EL_DEFAULT);
@@ -567,7 +567,7 @@ void player_display( wnd_t *wnd, dword data )
 		/* Print loop mode */
 		if (cfg_get_var_int(cfg_list, "loop-play"))
 		{
-			wnd_advance(wnd, wnd->m_width - 5, 0);
+			wnd_advance(wnd, WND_WIDTH(wnd) - 5, 0);
 			col_set_color(wnd, COL_EL_PLAY_MODES);
 			wnd_printf(wnd, "Loop");
 			col_set_color(wnd, COL_EL_DEFAULT);
@@ -613,7 +613,7 @@ void player_display( wnd_t *wnd, dword data )
 	/* Print message */
 	if (player_msg != NULL)
 	{
-		wnd_advance(wnd, 0, wnd->m_height - 1);
+		wnd_advance(wnd, 0, WND_HEIGHT(wnd) - 1);
 		col_set_color(wnd, COL_EL_STATUS);
 		wnd_printf(wnd, "%s", player_msg);
 		col_set_color(wnd, COL_EL_DEFAULT);
@@ -621,7 +621,7 @@ void player_display( wnd_t *wnd, dword data )
 
 	/* Hide cursor */
 	col_set_color(wnd, COL_EL_DEFAULT);
-	wnd_advance(wnd, wnd->m_width, wnd->m_height);
+	wnd_advance(wnd, WND_WIDTH(wnd), WND_HEIGHT(wnd));
 } /* End of 'player_display' function */
 
 /* Key handler function for command repeat value edit box */
@@ -980,8 +980,8 @@ void player_add_dialog( void )
 	file_input_box_t *fin;
 
 	/* Create edit box for path input */
-	fin = fin_new(wnd_root, 0, wnd_root->m_height - 1, 
-			wnd_root->m_width, _("Enter file (or directory) name: "));
+	fin = fin_new(wnd_root, 0, WND_HEIGHT(wnd_root) - 1, 
+			WND_WIDTH(wnd_root), _("Enter file (or directory) name: "));
 	if (fin != NULL)
 	{
 		((editbox_t *)fin)->m_hist_list = 
@@ -1005,7 +1005,7 @@ void player_save_dialog( void )
 	file_input_box_t *fin;
 
 	/* Create edit box for path input */
-	fin = fin_new(wnd_root, 0, wnd_root->m_height - 1, wnd_root->m_width, 
+	fin = fin_new(wnd_root, 0, WND_HEIGHT(wnd_root) - 1, WND_WIDTH(wnd_root), 
 			_("Enter file name: "));
 	if (fin != NULL)
 	{
@@ -1046,7 +1046,7 @@ void player_sort_dialog( void )
 	bool_t g;
 
 	/* Get sort globalness parameter */
-	ch = choice_new(wnd_root, 0, wnd_root->m_height - 1, wnd_root->m_width,
+	ch = choice_new(wnd_root, 0, WND_HEIGHT(wnd_root) - 1, WND_WIDTH(wnd_root),
 			1, _("Sort globally? (Yes/No)"), "yn");
 	if (ch == NULL)
 		return;
@@ -1058,7 +1058,7 @@ void player_sort_dialog( void )
 	g = (choice == 'y');
 	
 	/* Get sort criteria */
-	ch = choice_new(wnd_root, 0, wnd_root->m_height - 1, wnd_root->m_width,
+	ch = choice_new(wnd_root, 0, WND_HEIGHT(wnd_root) - 1, WND_WIDTH(wnd_root),
 		1, _("Sort by: (T)itle, (F)ile name, (P)ath and file name, "
 			"T(r)ack"), "tfpr");
 	if (ch == NULL)
@@ -1094,7 +1094,7 @@ void player_search_dialog( int criteria )
 	editbox_t *ebox;
 
 	/* Display edit box for entering search text */
-	ebox = ebox_new(wnd_root, 0, wnd_root->m_height - 1, wnd_root->m_width,
+	ebox = ebox_new(wnd_root, 0, WND_HEIGHT(wnd_root) - 1, WND_WIDTH(wnd_root),
 			1, 256, _("Enter search string: "), "");
 	ebox->m_hist_list = 
 		player_hist_lists[PLAYER_HIST_LIST_SEARCH];
@@ -1148,7 +1148,7 @@ void player_info_dialog( void )
 		choice_ctrl_t *ch;
 		int choice;
 		
-		ch = choice_new(wnd_root, 0, wnd_root->m_height - 1, wnd_root->m_width,
+		ch = choice_new(wnd_root, 0, WND_HEIGHT(wnd_root) - 1, WND_WIDTH(wnd_root),
 			1, _("Info edit locally? (Yes/No)"), "yn");
 		if (ch == NULL)
 			return;
@@ -1214,7 +1214,7 @@ void player_info_dialog( void )
 		return;
 
 	/* Create info dialog */
-	dlg = dlg_new(wnd_root, 2, 2, wnd_root->m_width - 4, 21, 
+	dlg = dlg_new(wnd_root, 2, 2, WND_WIDTH(wnd_root) - 4, 21, 
 			cfg_get_var_int(cfg_list, "info-editor-show-full-name") ? 
 			s->m_file_name : util_short_name(s->m_file_name));
 	wnd_register_handler(dlg, WND_MSG_NOTIFY, player_info_notify);
@@ -1351,8 +1351,8 @@ void player_help( void )
 {
 	help_screen_t *h;
 
-	h = help_new(wnd_root, HELP_PLAYER, 0, 0, wnd_root->m_width, 
-			wnd_root->m_height);
+	h = help_new(wnd_root, HELP_PLAYER, 0, 0, WND_WIDTH(wnd_root), 
+			WND_HEIGHT(wnd_root));
 	wnd_run(h);
 	wnd_destroy(h);
 } /* End of 'player_help' function */
@@ -1412,7 +1412,7 @@ void player_eq_dialog( void )
 {
 	eq_wnd_t *wnd;
 
-	wnd = eqwnd_new(wnd_root, 0, 0, wnd_root->m_width, wnd_root->m_height);
+	wnd = eqwnd_new(wnd_root, 0, 0, WND_WIDTH(wnd_root), WND_HEIGHT(wnd_root));
 	wnd_run(wnd);
 	wnd_destroy(wnd);
 } /* End of 'player_eq_dialog' function */
@@ -1479,7 +1479,7 @@ void player_var_manager( void )
 	int i;
 
 	/* Initialize dialog */
-	dlg = dlg_new(wnd_root, 2, 2, wnd_root->m_width - 4, 20, 
+	dlg = dlg_new(wnd_root, 2, 2, WND_WIDTH(wnd_root) - 4, 20, 
 			_("Variables manager"));
 	wnd_register_handler(dlg, WND_MSG_NOTIFY, player_var_mngr_notify);
 	var_lb = lbox_new(WND_OBJ(dlg), 2, 2, WND_WIDTH(dlg) - 4, 
@@ -1529,8 +1529,8 @@ void player_add_obj_dialog( void )
 	editbox_t *ebox;
 
 	/* Create edit box for path input */
-	ebox = ebox_new(wnd_root, 0, wnd_root->m_height - 1, 
-			wnd_root->m_width, 1, MAX_FILE_NAME, _("Enter object name: "), "");
+	ebox = ebox_new(wnd_root, 0, WND_HEIGHT(wnd_root) - 1, 
+			WND_WIDTH(wnd_root), 1, MAX_FILE_NAME, _("Enter object name: "), "");
 	if (ebox != NULL)
 	{
 		ebox->m_hist_list = player_hist_lists[PLAYER_HIST_LIST_ADD_OBJ];
@@ -1585,13 +1585,13 @@ void player_handle_action( int action )
 		break;
 	case KBIND_SCREEN_DOWN:
 		plist_move(player_plist, (player_repval == 0) ? 
-				player_plist->m_height : 
-				player_plist->m_height * player_repval, TRUE);
+				PLIST_HEIGHT : 
+				PLIST_HEIGHT * player_repval, TRUE);
 		break;
 	case KBIND_SCREEN_UP:
 		plist_move(player_plist, (player_repval == 0) ? 
-				-player_plist->m_height : 
-				-player_plist->m_height * player_repval, TRUE);
+				-PLIST_HEIGHT : 
+				-PLIST_HEIGHT * player_repval, TRUE);
 		break;
 	case KBIND_MOVE:
 		plist_move(player_plist, (player_repval == 0) ? 
@@ -1904,8 +1904,8 @@ void player_handle_action( int action )
 		/* Create edit box */
 		str[0] = (action - KBIND_DIG_0) + '0';
 		str[1] = 0;
-		ebox = ebox_new(wnd_root, 0, wnd_root->m_height - 1, 
-				wnd_root->m_width, 1, 5, 
+		ebox = ebox_new(wnd_root, 0, WND_HEIGHT(wnd_root) - 1, 
+				WND_WIDTH(wnd_root), 1, 5, 
 					_("Enter repeat value for the next command: "), str);
 		if (ebox != NULL)
 		{
@@ -1951,8 +1951,8 @@ void player_var_mini_mngr( void )
 	char *name, *val;
 
 	/* Create edit box for variable name input */
-	ebox = ebox_new(wnd_root, 0, wnd_root->m_height - 1, 
-			wnd_root->m_width, 1, -1, _("Enter variable name: "), "");
+	ebox = ebox_new(wnd_root, 0, WND_HEIGHT(wnd_root) - 1, 
+			WND_WIDTH(wnd_root), 1, -1, _("Enter variable name: "), "");
 	if (ebox == NULL)
 		return;
 	ebox->m_hist_list = player_hist_lists[PLAYER_HIST_LIST_VAR_NAME];
@@ -1970,8 +1970,8 @@ void player_var_mini_mngr( void )
 	wnd_destroy(ebox);
 
 	/* Get value */
-	ebox = ebox_new(wnd_root, 0, wnd_root->m_height - 1, 
-			wnd_root->m_width, 1, -1, _("Enter variable value: "), "");
+	ebox = ebox_new(wnd_root, 0, WND_HEIGHT(wnd_root) - 1, 
+			WND_WIDTH(wnd_root), 1, -1, _("Enter variable value: "), "");
 	if (ebox == NULL)
 	{
 		free(name);
@@ -2179,8 +2179,8 @@ void player_exec( void )
 	editbox_t *ebox;
 
 	/* Create edit box for command */
-	ebox = ebox_new(wnd_root, 0, wnd_root->m_height - 1, 
-			wnd_root->m_width, 1, -1, _("Enter command: "), "");
+	ebox = ebox_new(wnd_root, 0, WND_HEIGHT(wnd_root) - 1, 
+			WND_WIDTH(wnd_root), 1, -1, _("Enter command: "), "");
 	if (ebox != NULL)
 	{
 		ebox->m_hist_list = player_hist_lists[PLAYER_HIST_LIST_EXEC];
@@ -2234,7 +2234,7 @@ void player_advanced_search_dialog( void )
 	int t;
 
 	/* Get search criteria */
-	ch = choice_new(wnd_root, 0, wnd_root->m_height - 1, wnd_root->m_width,
+	ch = choice_new(wnd_root, 0, WND_HEIGHT(wnd_root) - 1, WND_WIDTH(wnd_root),
 		1, _("Search for: (T)itle, (N)ame, (A)rtist, A(l)bum, (Y)ear, "
 			"(G)enre"), 
 		"tnalyg");
@@ -2360,7 +2360,7 @@ void player_info_reload_dialog( void )
 	bool_t g;
 
 	/* Get reload globalness parameter */
-	ch = choice_new(wnd_root, 0, wnd_root->m_height - 1, wnd_root->m_width,
+	ch = choice_new(wnd_root, 0, WND_HEIGHT(wnd_root) - 1, WND_WIDTH(wnd_root),
 			1, _("Reload info in the whole list? (Yes/No)"), "yn");
 	if (ch == NULL)
 		return;
@@ -2448,7 +2448,7 @@ void player_handle_mouse_middle( wnd_t *wnd, dword data )
 
 	/* Centrize this song */
 	if (y >= player_plist->m_start_pos && 
-			y < player_plist->m_start_pos + player_plist->m_height)
+			y < player_plist->m_start_pos + PLIST_HEIGHT)
 	{
 		plist_centrize(player_plist, y - player_plist->m_start_pos + 
 				player_plist->m_scrolled);
@@ -2527,7 +2527,7 @@ void player_file_browser( void )
 	browser_t *fb;
 
 	/* Create browser and run it */
-	fb = fb_new(wnd_root, 0, 0, wnd_root->m_width, wnd_root->m_height - 1,
+	fb = fb_new(wnd_root, 0, 0, WND_WIDTH(wnd_root), WND_HEIGHT(wnd_root) - 1,
 			player_fb_dir);
 	wnd_run(fb);
 	util_strncpy(player_fb_dir, fb->m_cur_dir, sizeof(player_fb_dir));

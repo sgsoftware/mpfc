@@ -123,7 +123,7 @@ void lbox_display( wnd_t *wnd, dword data )
 	{
 		int i, y;
 
-		for ( i = l->m_scrolled, y = 0; y < wnd->m_height && i < l->m_size;
+		for ( i = l->m_scrolled, y = 0; y < WND_HEIGHT(wnd) && i < l->m_size;
 		   		i ++, y ++ )
 		{
 			if (i == l->m_cursor)
@@ -156,9 +156,9 @@ void lbox_handle_key( wnd_t *wnd, dword data )
 	else if (key == 'k' || key == KEY_UP)
 		lbox_move_cursor(l, TRUE, -1, TRUE);
 	else if (key == 'u' || key == KEY_PPAGE)
-		lbox_move_cursor(l, TRUE, -wnd->m_height - 1, TRUE);
+		lbox_move_cursor(l, TRUE, -WND_HEIGHT(wnd) - 1, TRUE);
 	else if (key == 'd' || key == KEY_NPAGE)
-		lbox_move_cursor(l, TRUE, wnd->m_height - 1, TRUE);
+		lbox_move_cursor(l, TRUE, WND_HEIGHT(wnd) - 1, TRUE);
 	else if (key == '0' || key == KEY_HOME)
 		lbox_move_cursor(l, FALSE, 0, TRUE);
 	else if (key == 'G' || key == KEY_END)
@@ -208,8 +208,8 @@ void lbox_move_cursor( listbox_t *lbox, bool_t rel, int pos, bool_t expand  )
 	lbox->m_cursor = new_pos;
 	if (lbox->m_cursor < lbox->m_scrolled)
 		lbox->m_scrolled = lbox->m_cursor;
-	else if (lbox->m_cursor >= lbox->m_scrolled + ((wnd_t *)lbox)->m_height)
-		lbox->m_scrolled = lbox->m_cursor - ((wnd_t *)lbox)->m_height + 1;
+	else if (lbox->m_cursor >= lbox->m_scrolled + WND_HEIGHT(lbox))
+		lbox->m_scrolled = lbox->m_cursor - WND_HEIGHT(lbox) + 1;
 
 	/* Send notify message to parent */
 	wnd_send_msg(((wnd_t *)lbox)->m_parent, WND_MSG_NOTIFY, 

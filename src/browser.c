@@ -173,7 +173,7 @@ void fb_display( wnd_t *wnd, dword data )
 	/* Print search stuff */
 	if (fb->m_search_mode)
 	{
-		wnd_move(wnd, 0, wnd->m_height - 1);
+		wnd_move(wnd, 0, WND_HEIGHT(wnd) - 1);
 		wnd_set_attrib(wnd, A_BOLD);
 		wnd_printf(wnd, "Enter name you want to search: ");
 		wnd_set_attrib(wnd, A_NORMAL);
@@ -181,7 +181,7 @@ void fb_display( wnd_t *wnd, dword data )
 	}
 
 	/* Remove cursor */
-	wnd_move(wnd, wnd->m_width - 1, wnd->m_height - 1);
+	wnd_move(wnd, WND_WIDTH(wnd) - 1, WND_HEIGHT(wnd) - 1);
 } /* End of 'fb_display' function */
 
 /* Handle key pressing */

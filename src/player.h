@@ -74,12 +74,12 @@
 /* Sliders parameters */
 #define PLAYER_SLIDER_TIME_Y 2
 #define PLAYER_SLIDER_TIME_X 0
-#define PLAYER_SLIDER_TIME_W (wnd_root->m_width - 24)
+#define PLAYER_SLIDER_TIME_W (WND_WIDTH(wnd_root) - 24)
 #define PLAYER_SLIDER_VOL_Y  2
-#define PLAYER_SLIDER_VOL_X  (wnd_root->m_width - 22)
+#define PLAYER_SLIDER_VOL_X  (WND_WIDTH(wnd_root) - 22)
 #define PLAYER_SLIDER_VOL_W  20
 #define PLAYER_SLIDER_BAL_Y  1
-#define PLAYER_SLIDER_BAL_X  (wnd_root->m_width - 22)
+#define PLAYER_SLIDER_BAL_X  (WND_WIDTH(wnd_root) - 22)
 #define PLAYER_SLIDER_BAL_W  20
 
 /* Equalizer information */

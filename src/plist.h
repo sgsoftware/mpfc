@@ -36,8 +36,8 @@
 /* Play list type */
 typedef struct
 {
-	/* List start position and height in the window */
-	int m_start_pos, m_height;
+	/* List start position in the window */
+	int m_start_pos;
 
 	/* Size of scrolled part */
 	int m_scrolled;
@@ -71,6 +71,9 @@ typedef struct
 	} *m_head, *m_tail;
 } plist_set_t;
 
+/* Get list height */
+#define PLIST_HEIGHT (WND_HEIGHT(wnd_root) - 5)
+
 /* Sort criterias */
 #define PLIST_SORT_BY_TITLE 0
 #define PLIST_SORT_BY_NAME  1
@@ -100,7 +103,7 @@ typedef struct
 			 !(*((s)->m_info->m_own_data)))))
 
 /* Create a new play list */
-plist_t *plist_new( int start_pos, int height );
+plist_t *plist_new( int start_pos );
 
 /* Destroy play list */
 void plist_free( plist_t *pl );

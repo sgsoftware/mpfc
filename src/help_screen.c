@@ -71,7 +71,7 @@ bool_t help_init( help_screen_t *help, int type, wnd_t *parent, int x, int y,
 	/* Set fields */
 	help->m_screen = 0;
 	help->m_num_items = 0;
-	help->m_screen_size = wnd->m_height - 4;
+	help->m_screen_size = WND_HEIGHT(wnd) - 4;
 	help->m_num_screens = 0;
 	help->m_items = NULL;
 	wnd->m_wnd_destroy = help_free;
@@ -125,7 +125,7 @@ void help_display( wnd_t *wnd, dword data )
 	/* Print title */
 	//wnd_clear(wnd, FALSE);
 	wnd_move(wnd, 0, 0);
-	wnd_advance(wnd, (wnd->m_width - strlen(h->m_title)) / 2, 0);
+	wnd_advance(wnd, (WND_WIDTH(wnd) - strlen(h->m_title)) / 2, 0);
 	col_set_color(wnd, COL_EL_HELP_TITLE);
 	wnd_printf(wnd, "%s\n\n", h->m_title);
 	col_set_color(wnd, COL_EL_DEFAULT);
@@ -142,10 +142,10 @@ void help_display( wnd_t *wnd, dword data )
 	col_set_color(wnd, COL_EL_DEFAULT);
 
 	col_set_color(wnd, COL_EL_STATUS);
-	wnd_advance(wnd, 0, wnd->m_height - 1);
+	wnd_advance(wnd, 0, WND_HEIGHT(wnd) - 1);
 	wnd_printf(wnd, _("Press <Space> to see next screen and <q> to exit\n"));
 	col_set_color(wnd, COL_EL_DEFAULT);
-	wnd_advance(wnd, wnd->m_width, wnd->m_height);
+	wnd_advance(wnd, WND_WIDTH(wnd), WND_HEIGHT(wnd));
 } /* End of 'help_display' function */
 
 /* Handle key message */

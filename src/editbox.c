@@ -220,7 +220,7 @@ void ebox_set_cursor( editbox_t *box, int new_pos )
 		box->m_cursor = len;
 
 	/* Handle scrolling */
-	page_size = box->m_wnd.m_width - strlen(box->m_label);
+	page_size = WND_WIDTH(box) - strlen(box->m_label);
 	while (box->m_cursor < box->m_scrolled + 1)
 		box->m_scrolled -= 5;
 	while (box->m_cursor >= box->m_scrolled + page_size)
