@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Input plugin management functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 9.08.2003
+ * LAST UPDATE : 10.10.2003
  * NOTE        : Module prefix 'inp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -31,6 +31,7 @@
 #include "cfg.h"
 #include "error.h"
 #include "inp.h"
+#include "player.h"
 #include "song.h"
 
 /* Initialize input plugin */
@@ -67,6 +68,7 @@ in_plugin_t *inp_init( char *name )
 	}
 	util_get_plugin_short_name(p->m_name, name);
 	memset(&p->m_fl, 0, sizeof(p->m_fl));
+	p->m_fl.m_print_msg = player_print_msg;
 	fl(&p->m_fl);
 
 	if ((set_vars = dlsym(p->m_lib_handler, "inp_set_vars")) != NULL)
@@ -215,6 +217,14 @@ int inp_get_cur_time( in_plugin_t *p )
 		return p->m_fl.m_get_cur_time();
 	return -1;
 } /* End of 'inp_get_cur_time' function */
+
+/* Get content type */
+void inp_get_content_type( in_plugin_t *p, char *buf )
+{
+	if (p != NULL && (p->m_fl.m_get_content_type != NULL))
+		return p->m_fl.m_get_content_type(buf);
+	strcpy(buf, "");
+} /* End of 'inp_get_content_type' function */
 
 /* End of 'inp.c' file */
 

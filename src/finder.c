@@ -29,6 +29,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "types.h"
+#include "file.h"
 #include "finder.h"
 
 /* Main finder function */
@@ -37,6 +38,10 @@ int find_do( char *path, char *pattern, int (*find_handler)( char *, void * ),
 {
 	glob_t gl;
 	int i, num = 0;
+
+	/* If file is http - simply add it */
+	if (file_get_type(path) == FILE_TYPE_HTTP)
+		return find_handler(path, data);
 	
 	/* Find first-level files in path */
 	memset(&gl, 0, sizeof(gl));

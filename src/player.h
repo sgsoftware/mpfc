@@ -5,7 +5,7 @@
 /* FILE NAME   : player.h
  * PURPOSE     : SG MPFC. Interface for main player functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 27.09.2003
+ * LAST UPDATE : 14.10.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -206,14 +206,23 @@ void player_go_back( void );
 /* Advanced search dialog */
 void player_advanced_search_dialog( void );
 
-/* Handle 'title_format' variable setting */
+/* Handle 'title-format' variable setting */
 void player_handle_var_title_format( char *name );
 
-/* Handle 'output_plugin' variable setting */
+/* Handle 'output-plugin' variable setting */
 void player_handle_var_outp( char *name );
+
+/* Handle 'color-scheme' variable setting */
+void player_handle_color_scheme( char *name );
+
+/* Handle 'kbind-scheme' variable setting */
+void player_handle_kbind_scheme( char *name );
 
 /* Return to the last time */
 void player_time_back( void );
+
+/* Message printer */
+void player_print_msg( char *msg );
 
 #endif
 

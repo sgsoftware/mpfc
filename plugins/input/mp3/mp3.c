@@ -3,10 +3,10 @@
  ******************************************************************/
 
 /* FILE NAME   : mp3.c
- * PURPOSE     : SG Konsamp. MP3 input plugin functions 
+ * PURPOSE     : SG MPFC. MP3 input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 10.09.2003
+ * LAST UPDATE : 16.10.2003
  * NOTE        : Module prefix 'mp3'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -35,6 +35,7 @@
 #include <sys/soundcard.h>
 #include "types.h"
 #include "cfg.h"
+#include "file.h"
 #include "genre_list.h"
 #include "inp.h"
 #include "mp3.h"
@@ -96,18 +97,24 @@ bool_t mp3_tag_present = FALSE;
 /* Current time */
 int mp3_time = 0;
 
-/* File descriptor */
-FILE *mp3_fd = NULL;
+/* File object */
+file_t *mp3_fd = NULL;
+
+/* Current song header */
+struct mad_header mp3_head;
+
+/* Message printer */
+void (*mp3_print_msg)( char *msg );
 
 /* Start play function */
 bool_t mp3_start( char *filename )
 {
 	/* Remember tag */
 	mp3_tag_present = mp3_get_info(filename, &mp3_cur_info);
-	//mp3_len = mp3_get_len(filename);
+	mp3_len = mp3_get_len(filename);
 
 	/* Open file */
-	mp3_fd = fopen(filename, "rb");
+	mp3_fd = file_open(filename, "rb", mp3_print_msg);
 	if (mp3_fd == NULL)
 		return FALSE;
 	
@@ -130,7 +137,9 @@ bool_t mp3_start( char *filename )
 	strcpy(mp3_file_name, filename);
 
 	/* Read song parameters */
+	memset(&mp3_head, 0, sizeof(mp3_head));
 	mp3_read_song_params();
+	file_set_min_buf_size(mp3_fd, mp3_bitrate);
 	return TRUE;
 } /* End of 'mp3_start' function */
 
@@ -142,7 +151,7 @@ void mp3_end( void )
 		mad_synth_finish(&mp3_synth);
 		mad_frame_finish(&mp3_frame);
 		mad_stream_finish(&mp3_stream);
-		fclose(mp3_fd);
+		file_close(mp3_fd);
 		mp3_fd = NULL;
 
 		/* Save tag */
@@ -166,6 +175,12 @@ void mp3_get_formats( char *buf )
 	strcpy(buf, "mp3");
 } /* End of 'mp3_get_formats' function */
 
+/* Get supported content types function */
+void mp3_get_content_type( char *buf )
+{
+	strcpy(buf, "audio/mpeg");
+} /* End of 'mp3_get_content_type' function */
+
 /* Correct though long version of get_len function */
 int mp3_get_len_correct( char *filename )
 {
@@ -174,7 +189,7 @@ int mp3_get_len_correct( char *filename )
 	mad_timer_t timer;
 	unsigned char buffer[8192];
 	unsigned int buflen = 0;
-	FILE *fd;
+	file_t *fd;
 	int i = 0;
 
 	/* Check if we want to get current song length */
@@ -182,7 +197,7 @@ int mp3_get_len_correct( char *filename )
 		return mp3_len;
 	
 	/* Open file */
-	fd = fopen(filename, "rb");
+	fd = file_open(filename, "rb", mp3_print_msg);
 	if (fd == NULL)
 		return 0;
 
@@ -199,7 +214,7 @@ int mp3_get_len_correct( char *filename )
 		{
 			dword bytes;
 			
-			bytes = fread(buffer + buflen, 1, sizeof(buffer) - buflen, fd);
+			bytes = file_read(buffer + buflen, 1, sizeof(buffer) - buflen, fd);
 			if (bytes <= 0)
 				break;
 			buflen += bytes;
@@ -224,7 +239,7 @@ int mp3_get_len_correct( char *filename )
 	mad_stream_finish(&stream);
 
 	/* Close file */
-	fclose(fd);
+	file_close(fd);
 
 	/* Return */
 	return mad_timer_count(timer, MAD_UNITS_SECONDS);
@@ -237,7 +252,7 @@ int mp3_get_len_quick( char *filename )
 	struct mad_header header;
 	unsigned char buffer[8192];
 	unsigned int buflen = 0, file_size = 0, bitrate = 0;
-	FILE *fd;
+	file_t *fd;
 	int i = 0;
 
 	/* Check if we want to get current song length */
@@ -245,7 +260,7 @@ int mp3_get_len_quick( char *filename )
 		return mp3_len;
 	
 	/* Open file */
-	fd = fopen(filename, "rb");
+	fd = file_open(filename, "rb", mp3_print_msg);
 	if (fd == NULL)
 		return 0;
 
@@ -261,7 +276,7 @@ int mp3_get_len_quick( char *filename )
 		{
 			dword bytes;
 			
-			bytes = fread(buffer + buflen, 1, sizeof(buffer) - buflen, fd);
+			bytes = file_read(buffer + buflen, 1, sizeof(buffer) - buflen, fd);
 			if (bytes <= 0)
 				break;
 			buflen += bytes;
@@ -282,7 +297,7 @@ int mp3_get_len_quick( char *filename )
 
 		/* Move rest data (not decoded) to buffer start */
 		memmove(buffer, stream.next_frame, &buffer[buflen] - stream.next_frame);
-		buflen -= stream.next_frame - &buffer[0];
+		buflen -= (stream.next_frame - &buffer[0]);
 	} 
 
 	/* Finish process */
@@ -290,11 +305,11 @@ int mp3_get_len_quick( char *filename )
 	mad_stream_finish(&stream);
 
 	/* Get total file size */
-	fseek(fd, 0, SEEK_END);
-	file_size = ftell(fd);
+	file_seek(fd, 0, SEEK_END);
+	file_size = file_tell(fd);
 
 	/* Close file */
-	fclose(fd);
+	file_close(fd);
 
 	/* Calculate song length */
 	return (bitrate ? ((float)file_size / bitrate) * 8 : 0);
@@ -303,6 +318,10 @@ int mp3_get_len_quick( char *filename )
 /* Get length */
 int mp3_get_len( char *filename )
 {
+	/* Supported only for regular files */
+	if (file_get_type(filename) != FILE_TYPE_REGULAR)
+		return 0;
+	
 	/* See what user wants */
 	if (cfg_get_var_int(mp3_var_list, "mp3-quick-get-len"))
 		return mp3_get_len_quick(filename);
@@ -353,27 +372,27 @@ void mp3_set_tag_frame( struct id3_tag *tag, char *id, char *val )
 /* Save tag to file */
 void mp3_save_tag( char *filename, byte *tag, int size )
 {
-	FILE *fd;
+	file_t *fd;
 	int file_size;
 	byte *data;
 	byte magic[4];
 	int prev_size;
 
 	/* Open file */
-	fd = fopen(filename, "rb");
+	fd = file_open(filename, "rb", mp3_print_msg);
 	if (fd == NULL)
 		return;
 
 	/* Get information about current tag */
-	fread(magic, 1, 3, fd);
+	file_read(magic, 1, 3, fd);
 	prev_size = 0;
 	if (magic[0] == 'I' && magic[1] == 'D' && magic[2] == '3')
 	{
 		byte s[4];
 		byte f;
-		fseek(fd, 5, SEEK_SET);
-		fread(&f, 1, 1, fd);
-		fread(&s, 1, 4, fd);
+		file_seek(fd, 5, SEEK_SET);
+		file_read(&f, 1, 1, fd);
+		file_read(&s, 1, 4, fd);
 		prev_size = s[3] | (s[2] << 7) | (s[1] << 14) | (s[0] << 21);
 		prev_size += 10;
 		if (f & 16)
@@ -381,30 +400,30 @@ void mp3_save_tag( char *filename, byte *tag, int size )
 	}
 
 	/* Get file size */
-	fseek(fd, 0, SEEK_END);
-	file_size = ftell(fd) - prev_size;
+	file_seek(fd, 0, SEEK_END);
+	file_size = file_tell(fd) - prev_size;
 	data = (byte *)malloc(file_size + size + 10);
 	if (data == NULL)
 	{
-		fclose(fd);
+		file_close(fd);
 		return;
 	}
 
 	/* Fill data */
-	fseek(fd, prev_size, SEEK_SET);
-	fread(&data[size], 1, file_size, fd);
+	file_seek(fd, prev_size, SEEK_SET);
+	file_read(&data[size], 1, file_size, fd);
 	memcpy(data, tag, size);
-	fclose(fd);
+	file_close(fd);
 
 	/* Write file */
-	fd = fopen(filename, "wb");
+	fd = file_open(filename, "wb", mp3_print_msg);
 	if (fd == NULL)
 	{
 		free(data);
 		return;
 	}
-	fwrite(data, 1, file_size + size, fd);
-	fclose(fd);
+	file_write(data, 1, file_size + size, fd);
+	file_close(fd);
 	free(data);
 } /* End of 'mp3_save_tag' function */
 
@@ -417,6 +436,10 @@ void mp3_save_info( char *filename, song_info_t *info )
 	int size;
 	char str[80];
 
+	/* Supported only for regular files */
+	if (file_get_type(filename) != FILE_TYPE_REGULAR)
+		return;
+	
 	/* Open file and read current tag */
 	file = id3_file_open(filename, ID3_FILE_MODE_READONLY);
 	if (file == NULL)
@@ -531,6 +554,45 @@ bool_t mp3_get_info( char *filename, song_info_t *info )
 	struct mad_header head;
 	int i, filesize, len;
 
+	/* Supported only for regular files; for others - 
+	 * output audio parameters */
+	if (file_get_type(filename) != FILE_TYPE_REGULAR)
+	{
+		int br;
+		
+		/* May return anything only for current song */
+		if (strcmp(filename, mp3_file_name))
+			return FALSE;
+
+		info->m_genre = GENRE_ID_UNKNOWN;
+		info->m_only_own = TRUE;
+		sprintf(info->m_own_data, 
+			"MPEG %s, layer %i\n"
+			"Bitrate: %i kb/s\n"
+			"Samplerate: %i Hz\n"
+			"%s\n"
+			"Error protection: %s\n"
+			"Copyright: %s\n"
+			"Original: %s\n"
+			"Emphasis: %s",
+			(mp3_head.flags & MAD_FLAG_MPEG_2_5_EXT) ? "2.5" : "1",
+			(mp3_head.layer == MAD_LAYER_I) ? 1 : 
+				(mp3_head.layer == MAD_LAYER_II ? 2 : 3),
+			mp3_head.bitrate / 1000,
+			mp3_head.samplerate,
+			(mp3_head.mode == MAD_MODE_SINGLE_CHANNEL) ? "Single channel" :
+				(mp3_head.mode == MAD_MODE_DUAL_CHANNEL ? "Dual channel" :
+				 (mp3_head.mode == MAD_MODE_JOINT_STEREO ? "Joint Stereo" : 
+				  "Stereo")),
+			(mp3_head.flags & MAD_FLAG_PROTECTION) ? "Yes" : "No",
+			(mp3_head.flags & MAD_FLAG_COPYRIGHT) ? "Yes" : "No",
+			(mp3_head.flags & MAD_FLAG_ORIGINAL) ? "Yes" : "No",
+			mp3_head.emphasis == MAD_EMPHASIS_NONE ? "None" :
+		  		(mp3_head.emphasis == MAD_EMPHASIS_50_15_US ? 
+				 "50/15 microseconds" : "CCITT J.17"));
+		return TRUE;
+	}
+	
 	/* Return temporary tag if we request for current playing song tag */
 	if (!strcmp(filename, mp3_file_name))
 	{
@@ -659,7 +721,7 @@ int mp3_get_stream( void *buf, int size )
 {
 	int len = 0;
 	byte *out_ptr = (byte *)buf;
-	
+
 	if (mp3_fd == NULL)
 		return 0;
 
@@ -671,7 +733,7 @@ int mp3_get_stream( void *buf, int size )
 		/* Seek */
 		if (mp3_seek_val != -1 && mp3_bitrate)
 		{
-			fseek(mp3_fd, mp3_seek_val * mp3_bitrate / 8, SEEK_SET);
+			file_seek(mp3_fd, mp3_seek_val * mp3_bitrate / 8, SEEK_SET);
 			mp3_time = mp3_seek_val;
 			mp3_timer.seconds = mp3_time;
 			mp3_timer.fraction = 0;//mp3_time * MAD_TIMER_RESOLUTION;
@@ -700,7 +762,7 @@ int mp3_get_stream( void *buf, int size )
 			}
 
 			/* Fill buffer */
-			read_size = fread(read_start, 1, read_size, mp3_fd);
+			read_size = file_read(read_start, 1, read_size, mp3_fd);
 			if (read_size <= 0)
 			{
 				return 0;
@@ -763,6 +825,10 @@ int mp3_get_stream( void *buf, int size )
 /* Seek song */
 void mp3_seek( int shift )
 {
+	/* Supported only for regular files */
+	if (file_get_type(mp3_file_name) != FILE_TYPE_REGULAR)
+		return;
+	
 	if (mp3_fd != NULL)
 	{
 		mp3_seek_val = shift;
@@ -957,6 +1023,8 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_set_eq = mp3_set_eq;
 	fl->m_glist = mp3_glist;
 	fl->m_get_cur_time = mp3_get_cur_time;
+	fl->m_get_content_type = mp3_get_content_type;
+	mp3_print_msg = fl->m_print_msg;
 } /* End of 'inp_get_func_list' function */
 
 /* This function is called when initializing module */
@@ -1039,7 +1107,8 @@ void mp3_read_song_params( void )
 		{
 			dword bytes;
 			
-			bytes = fread(buffer + buflen, 1, sizeof(buffer) - buflen, mp3_fd);
+			bytes = file_read(buffer + buflen, 1, 
+					sizeof(buffer) - buflen, mp3_fd);
 			if (bytes <= 0)
 				break;
 			buflen += bytes;
@@ -1062,6 +1131,7 @@ void mp3_read_song_params( void )
 			mp3_fmt = AFMT_S16_LE;
 			mp3_channels = (head.mode == MAD_MODE_SINGLE_CHANNEL) ? 1 : 2;
 			mp3_bitrate = head.bitrate;
+			memcpy(&mp3_head, &head, sizeof(head));
 			break;
 		}
 	} 
@@ -1069,7 +1139,7 @@ void mp3_read_song_params( void )
 	/* Unitialize all */
 	mad_header_finish(&head);
 	mad_stream_finish(&stream);
-	fseek(mp3_fd, 0, SEEK_SET);
+	file_seek(mp3_fd, 0, SEEK_SET);
 } /* End of 'mp3_read_song_params' function */
 
 /* Read mp3 file header */
@@ -1078,13 +1148,13 @@ void mp3_read_header( char *filename, struct mad_header *head )
 	struct mad_stream stream;
 	byte buffer[8192];
 	int buflen = 0;
-	FILE *fd;
+	file_t *fd;
 
 	if (!strcmp(filename, mp3_file_name))
 		return;
 
 	/* Open file */
-	fd = fopen(filename, "rb");
+	fd = file_open(filename, "rb", mp3_print_msg);
 	if (fd == NULL)
 		return;
 
@@ -1099,7 +1169,7 @@ void mp3_read_header( char *filename, struct mad_header *head )
 		{
 			dword bytes;
 			
-			bytes = fread(buffer + buflen, 1, sizeof(buffer) - buflen, fd);
+			bytes = file_read(buffer + buflen, 1, sizeof(buffer) - buflen, fd);
 			if (bytes <= 0)
 				break;
 			buflen += bytes;
@@ -1122,7 +1192,7 @@ void mp3_read_header( char *filename, struct mad_header *head )
 	
 	/* Unitialize all */
 	mad_stream_finish(&stream);
-	fclose(fd);
+	file_close(fd);
 } /* End of 'mp3_read_header' function */
 
 /* End of 'mp3.c' file */

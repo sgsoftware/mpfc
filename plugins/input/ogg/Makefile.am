@@ -6,5 +6,6 @@ libogg_vorbis_la_SOURCES = ogg.c vcedit.c vcedit.h
 INCLUDES = -I$(top_builddir)/src
 libogg_vorbis_la_LIBADD = $(top_builddir)/src/util/libutil.a \
 					$(top_builddir)/src/cfg/libcfg.a \
-					$(top_builddir)/src/glist/libglist.a
+					$(top_builddir)/src/glist/libglist.a \
+					$(top_builddir)/src/file/libfile.a
 libogg_vorbis_la_LDFLAGS = -Xcompiler -nostartfiles

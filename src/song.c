@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Songs manipulation functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 3.09.2003
+ * LAST UPDATE : 17.10.2003
  * NOTE        : Module prefix 'song'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -31,7 +31,9 @@
 #include "cfg.h"
 #include "codepages.h"
 #include "error.h"
+#include "file.h"
 #include "inp.h"
+#include "player.h"
 #include "pmng.h"
 #include "song.h"
 #include "song_info.h"
@@ -51,7 +53,7 @@ song_t *song_new( char *filename, char *title, int len )
 
 	/* Choose appropriate input plugin */
 	inp = pmng_search_format(ext);
-	if (inp == NULL)
+	if (inp == NULL && file_get_type(filename) == FILE_TYPE_REGULAR)
 		return NULL;
 	
 	/* Try to allocate memory for new song */
@@ -252,6 +254,31 @@ char *song_get_genre_name( song_t *song )
 	else
 		return NULL;
 } /* End of 'song_get_genre_name' function */
+
+/* Get input plugin */
+in_plugin_t *song_get_inp( song_t *song )
+{
+	char *ext;
+
+	/* Do nothing if we already no plugin */
+	if (song->m_inp != NULL)
+		return song->m_inp;
+
+	/* Get song extension */
+	ext = util_get_ext(song->m_file_name);
+
+	/* Choose appropriate input plugin */
+	song->m_inp = pmng_search_format(ext);
+	if (song->m_inp == NULL)
+	{
+		file_t *fd = file_open(song->m_file_name, "rb", player_print_msg);
+		if (fd == NULL)
+			return NULL;
+		song->m_inp = pmng_search_content_type(file_get_content_type(fd));
+		file_close(fd);
+	}
+	return song->m_inp;
+} /* End of 'song_get_inp' function */
 
 /* End of 'song.c' file */
 

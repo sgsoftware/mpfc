@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for input plugin management
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 8.08.2003
+ * LAST UPDATE : 10.10.2003
  * NOTE        : Module prefix 'inp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -86,6 +86,12 @@ typedef struct
 
 	/* Get current time */
 	int (*m_get_cur_time)( void );
+
+	/* Get content type that respects to this format */
+	void (*m_get_content_type)( char *buf );
+
+	/* Message printer */
+	void (*m_print_msg)( char *msg );
 } inp_func_list_t;
 
 /* Input plugin type */
@@ -155,6 +161,9 @@ void inp_resume( in_plugin_t *p );
 
 /* Get current time */
 int inp_get_cur_time( in_plugin_t *p );
+
+/* Get content type */
+void inp_get_content_type( in_plugin_t *p, char *buf );
 
 #endif
 

@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Play list manipulation
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 2.10.2003
+ * LAST UPDATE : 17.10.2003
  * NOTE        : Module prefix 'plist'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -33,6 +33,7 @@
 #include "types.h"
 #include "colors.h"
 #include "error.h"
+#include "file.h"
 #include "finder.h"
 #include "inp.h"
 #include "player.h"
@@ -107,7 +108,8 @@ bool_t plist_add( plist_t *pl, char *filename )
 
 	/* Get full path of filename */
 	strcpy(fname, filename);
-	if (filename[0] != '/' && filename[0] != '~')
+	if (file_get_type(filename) == FILE_TYPE_REGULAR && 
+			filename[0] != '/' && filename[0] != '~')
 	{
 		char wd[256];
 		char fn[256];
@@ -147,15 +149,15 @@ bool_t plist_add( plist_t *pl, char *filename )
 int plist_add_one_file( plist_t *pl, char *filename )
 {
 	int i;
-	char *ext;
 
 	PLIST_ASSERT_RET(pl, FALSE);
 
 	/* Add song */
-	if (!strcmp((char *)util_get_ext(filename), "m3u"))
-		return plist_add_list(pl, filename);
-	else
+	i = plist_add_list(pl, filename);
+	if (i < 0)
 		return plist_add_song(pl, filename, NULL, 0, -1);
+	else
+		return i;
 } /* End of 'plist_add_one_file' function */
 
 /* Add a song to play list */
@@ -226,37 +228,52 @@ int plist_add_song( plist_t *pl, char *filename, char *title, int len,
 /* Add a play list file to play list */
 int plist_add_list( plist_t *pl, char *filename )
 {
-	FILE *fd;
+	PLIST_ASSERT_RET(pl, FALSE);
+	char *ext = util_get_ext(filename);
+
+	/* Choose play list format */
+	if (!strcasecmp(ext, "m3u"))
+		return plist_add_m3u(pl, filename);
+	else if (!strcasecmp(ext, "pls"))
+		return plist_add_pls(pl, filename);
+	else if (!strcasecmp(ext, "mpl"))
+		return plist_add_mpl(pl, filename);
+	else
+		return -1;
+} /* End of 'plist_add_list' function */
+
+/* Add M3U play list */
+int plist_add_m3u( plist_t *pl, char *filename )
+{
+	file_t *fd;
 	char str[256];
 	int num = 0;
 
-	PLIST_ASSERT_RET(pl, FALSE);
-	
 	/* Try to open file */
-	fd = util_fopen(filename, "rt");
+	fd = file_open(filename, "rt", NULL);
 	if (fd == NULL)
 	{
 		error_set_code(ERROR_NO_SUCH_FILE);
-		return FALSE;
+		return 0;
 	}
 
 	/* Read file head */
-	fgets(str, sizeof(str), fd);
-	if (strcmp(str, "#EXTM3U\n"))
+	file_gets(str, sizeof(str), fd);
+	if (strncmp(str, "#EXTM3U", 7))
 	{
 		error_set_code(ERROR_UNKNOWN_FILE_TYPE);
-		return FALSE;
+		return 0;
 	}
 		
 	/* Read file contents */
-	while (!feof(fd))
+	while (!file_eof(fd))
 	{
 		char len[10], title[256];
 		int i, j, song_len;
 		
 		/* Read song length and title string */
-		fgets(str, sizeof(str), fd);
-		if (feof(fd))
+		file_gets(str, sizeof(str), fd);
+		if (file_eof(fd))
 			break;
 
 		/* Extract song length from string read */
@@ -268,20 +285,76 @@ int plist_add_list( plist_t *pl, char *filename )
 
 		/* Extract song title from string read */
 		strcpy(title, &str[i + 1]);
-		title[strlen(title) - 1] = 0;
+		util_del_nl(title, title);
 
 		/* Read song file name */
-		fgets(str, sizeof(str), fd);
-		str[strlen(str) - 1] = 0;
+		file_gets(str, sizeof(str), fd);
+		util_del_nl(str, str);
 
 		/* Add this song to list */
 		num += plist_add_song(pl, str, title, song_len, -1);
 	}
 
 	/* Close file */
-	fclose(fd);
+	file_close(fd);
 	return num;
-} /* End of 'plist_add_list' function */
+} /* End of 'plist_add_m3u' function */
+
+/* Add PLS play list */
+int plist_add_pls( plist_t *pl, char *filename )
+{
+	file_t *fd;
+	int num = 0;
+	char str[256];
+
+	/* Try to open file */
+	fd = file_open(filename, "rt", NULL);
+	if (fd == NULL)
+	{
+		error_set_code(ERROR_NO_SUCH_FILE);
+		return 0;
+	}
+
+	/* Read header */
+	file_gets(str, sizeof(str), fd);
+	util_del_nl(str, str);
+	if (strcasecmp(str, "[playlist]"))
+	{
+		file_close(fd);
+		return 0;
+	}
+	file_gets(str, sizeof(str), fd);
+	util_del_nl(str, str);
+	if (strncasecmp(str, "numberofentries=", 16))
+	{
+		file_close(fd);
+		return 0;
+	}
+
+	/* Read data */
+	while (!file_eof(fd))
+	{
+		char *s;
+		
+		file_gets(str, sizeof(str), fd);
+		util_del_nl(str, str);
+		s = strchr(str, '=');
+		if (s == NULL)
+			s = str;
+		else
+			s ++;
+		num += plist_add_song(pl, s, NULL, 0, -1);
+	}
+
+	/* Close file */
+	file_close(fd);
+	return num;
+} /* End of 'plist_add_pls' function */
+
+/* Add MPL play list */
+int plist_add_mpl( plist_t *pl, char *filename )
+{
+} /* End of 'plist_add_mpl' function */
 
 /* Low level song adding */
 bool_t __plist_add_song( plist_t *pl, char *filename, char *title, int len, 

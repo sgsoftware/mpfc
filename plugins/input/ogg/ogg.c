@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Ogg Vorbis input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 7.09.2003
+ * LAST UPDATE : 17.10.2003
  * NOTE        : Module prefix 'ogg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -32,6 +32,7 @@
 #include <vorbis/vorbisfile.h>
 #include "types.h"
 #include "cfg.h"
+#include "file.h"
 #include "genre_list.h"
 #include "inp.h"
 #include "song_info.h"
@@ -58,32 +59,42 @@ char ogg_filename[256];
 song_info_t ogg_info;
 bool_t ogg_need_save_info = FALSE;
 
+/* Audio information of the current song */
+vorbis_info *ogg_vi = NULL;
+
 /* Some declarations */
 void ogg_save_info( char *filename, song_info_t *info );
+
+/* Message printer */
+void (*ogg_print_msg)( char *msg );
+
+/* Callback functions for libvorbis */
+int ogg_file_seek( void *datasource, ogg_int64_t offset, int whence );
+ov_callbacks ogg_callbacks = { file_read, ogg_file_seek, file_close, 
+	file_tell };
 
 /* Start playing */
 bool_t ogg_start( char *filename )
 {
-	FILE *fd;
-	vorbis_info *vi;
+	file_t *fd;
 	vorbis_comment *comment;
 	int i;
 
 	/* Open file */
-	fd = fopen(filename, "rb");
+	fd = file_open(filename, "rb", ogg_print_msg);
 	if (fd == NULL)
 		return FALSE;
-	if (ov_open(fd, &ogg_vf, NULL, 0) < 0)
+	if (ov_open_callbacks(fd, &ogg_vf, NULL, 0, ogg_callbacks) < 0)
 	{
-		fclose(fd);
+		file_close(fd);
 		return FALSE;
 	}
 
 	/* Get audio parameters */
 	ogg_fmt = AFMT_S16_LE;
-	vi = ov_info(&ogg_vf, -1);
-	ogg_channels = vi->channels;
-	ogg_freq = vi->rate;
+	ogg_vi = ov_info(&ogg_vf, -1);
+	ogg_channels = ogg_vi->channels;
+	ogg_freq = ogg_vi->rate;
 	ogg_need_save_info = FALSE;
 	strcpy(ogg_filename, filename);
 	return TRUE;
@@ -99,6 +110,7 @@ void ogg_end( void )
 	/* Save info if need */
 	strcpy(fname, ogg_filename);
 	strcpy(ogg_filename, "");
+	ogg_vi = NULL;
 	if (ogg_need_save_info)
 	{
 		ogg_save_info(fname, &ogg_info);
@@ -116,18 +128,22 @@ void ogg_get_formats( char *buf )
 int ogg_get_len( char *filename )
 {
 	OggVorbis_File vf;
-	FILE *fd;
+	file_t *fd;
 	int len;
 
+	/* Supported only for regular files */
+	if (file_get_type(filename) != FILE_TYPE_REGULAR)
+		return 0;
+	
 	/* Create file object */
-	fd = fopen(filename, "rb");
+	fd = file_open(filename, "rb", ogg_print_msg);
 	if (fd == NULL)
 	{
 		return 0;
 	}
-	if (ov_open(fd, &vf, NULL, 0) < 0)
+	if (ov_open_callbacks(fd, &vf, NULL, 0, ogg_callbacks) < 0)
 	{
-		fclose(fd);
+		file_close(fd);
 		return 0;
 	}
 
@@ -147,6 +163,10 @@ int ogg_get_stream( void *buf, int size )
 /* Seek song */
 void ogg_seek( int val )
 {
+	/* Supported only for regular files */
+	if (file_get_type(ogg_filename) != FILE_TYPE_REGULAR)
+		return;
+	
 	ov_time_seek(&ogg_vf, val);
 } /* End of 'ogg_seek' function */
 
@@ -221,6 +241,10 @@ void ogg_save_info( char *filename, song_info_t *info )
 	int i, outfd;
 	char tmpfn[256];
 	
+	/* Supported only for regular files */
+	if (file_get_type(filename) != FILE_TYPE_REGULAR)
+		return;
+	
 	/* Schedule info for saving if we are playing this file now */
 	if (!strcmp(filename, ogg_filename))
 	{
@@ -290,11 +314,28 @@ void ogg_save_info( char *filename, song_info_t *info )
 bool_t ogg_get_info( char *filename, song_info_t *info )
 {
 	OggVorbis_File vf;
-	FILE *fd;
+	file_t *fd;
 	char *str;
 	vorbis_comment *comment;
 	vorbis_info *vi;
 	bool_t ret = FALSE;
+
+	/* For non-regular files return only audio parameters */
+	if (file_get_type(filename) != FILE_TYPE_REGULAR)
+	{
+		if (strcmp(filename, ogg_filename))
+			return FALSE;
+
+		info->m_genre = GENRE_ID_UNKNOWN;
+		info->m_only_own = TRUE;
+		sprintf(info->m_own_data, 
+				"Nominal bitrate: %i kb/s\n"
+				"Samplerate: %i Hz\n"
+				"Channels: %i",
+				ogg_vi->bitrate_nominal / 1000, ogg_vi->rate, 
+				ogg_vi->channels);
+		return TRUE;
+	}
 
 	/* Return current info if we have it */
 	if (ogg_need_save_info && !strcmp(filename, ogg_filename))
@@ -304,12 +345,12 @@ bool_t ogg_get_info( char *filename, song_info_t *info )
 	}
 
 	/* Open file */
-	fd = fopen(filename, "rb");
+	fd = file_open(filename, "rb", ogg_print_msg);
 	if (fd == NULL)
 		return FALSE;
-	if (ov_open(fd, &vf, NULL, 0) < 0)
+	if (ov_open_callbacks(fd, &vf, NULL, 0, ogg_callbacks) < 0)
 	{
-		fclose(fd);
+		file_close(fd);
 		return FALSE;
 	}
 
@@ -368,6 +409,7 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_save_info = ogg_save_info;
 	fl->m_get_info = ogg_get_info;
 	fl->m_glist = ogg_glist;
+	ogg_print_msg = fl->m_print_msg;
 } /* End of 'ogg_get_func_list' function */
 
 /* Save variables list */
@@ -547,5 +589,16 @@ void _fini( void )
 	glist_free(ogg_glist);
 } /* End of '_fini' function */
 
+/* Helper seeking function */
+int ogg_file_seek( void *datasource, ogg_int64_t offset, int whence )
+{
+	file_t *fd = (file_t *)datasource;
+	
+	if (fd->m_type == FILE_TYPE_HTTP)
+		return -1;
+	else
+		return file_seek(fd, offset, whence);
+} /* End of 'ogg_file_seek' function */
+	
 /* End of 'ogg.c' file */
 

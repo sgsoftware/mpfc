@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Various utility functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 27.09.2003
+ * LAST UPDATE : 17.10.2003
  * NOTE        : Module prefix 'util'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -209,6 +209,17 @@ bool_t util_search_regexp( char *ptext, char *text )
 	regfree(&preg);
 	return !res;
 } /* End of 'util_search_regexp' function */
+
+/* Delete new line characters from end of string */
+void util_del_nl( char *dest, char *src )
+{
+	int len;
+
+	for ( len = strlen(src) - 1; 
+			len >= 0 && (src[len] == '\n' || src[len] == '\r'); len -- );
+	memcpy(dest, src, len + 1);
+	dest[len + 1] = 0;
+} /* End of 'util_del_nl' function */
 
 /* End of 'util.c' file */
 

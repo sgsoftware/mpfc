@@ -86,6 +86,9 @@ int pmng_find_handler( char *name, void *data );
 /* Check if specified plugin is already loaded */
 bool_t pmng_is_loaded( char *name, int type );
 
+/* Search plugin for content-type */
+in_plugin_t *pmng_search_content_type( char *content );
+
 #endif
 
 /* End of 'pmng.h' file */

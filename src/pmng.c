@@ -267,5 +267,37 @@ bool_t pmng_is_loaded( char *name, int type )
 	return FALSE;
 } /* End of 'pmng_is_loaded' function */
 
+/* Search plugin for content-type */
+in_plugin_t *pmng_search_content_type( char *content )
+{
+	int i;
+
+	if (content == NULL)
+		return NULL;
+
+	for ( i = 0; i < pmng_num_inp; i ++ )
+	{
+		char types[256], type[80];
+		int j, k = 0;
+	   
+		inp_get_content_type(pmng_inp[i], types);
+		if (types == NULL)
+			continue;
+		for ( j = 0;; type[k ++] = types[j ++] )
+		{
+			if (types[j] == 0 || types[j] == ';')
+			{
+				type[k] = 0;
+				if (!strcasecmp(type, content))
+					return pmng_inp[i];
+				k = 0;
+			}
+			if (!types[j])
+				break;
+		}
+	}
+	return NULL;
+} /* End of 'pmng_search_content_type' function */
+
 /* End of 'pmng.c' file */
 

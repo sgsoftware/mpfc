@@ -81,6 +81,9 @@ void song_get_title_from_info( song_t *song );
 /* Get song genre name */
 char *song_get_genre_name( song_t *song );
 
+/* Get input plugin */
+struct tag_in_plugin_t *song_get_inp( song_t *song );
+
 #endif
 
 /* End of 'song.h' file */

@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. High-level configuration handling 
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 2.10.2003
+ * LAST UPDATE : 14.10.2003
  * NOTE        : Module prefix 'cfg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -77,7 +77,6 @@ void cfg_init_default( void )
 	/* Set variables */
 	cfg_set_var_int(cfg_list, "silent-mode", 0);
 	cfg_set_var(cfg_list, "output-plugin", "oss");
-	cfg_set_var_int(cfg_list, "update-song-len-on-play", 0);
 	cfg_set_var_int(cfg_list, "mp3-quick-get-len", 1);
 	cfg_set_var_int(cfg_list, "save-playlist-on-exit", 1);
 	cfg_set_var(cfg_list, "lib-dir", LIBDIR"/mpfc");
@@ -95,7 +94,7 @@ void cfg_read_rcfile( cfg_list_t *list, char *name )
 		return;
 
 	/* Try to open file */
-	fd = fopen(name, "rt");
+	fd = util_fopen(name, "rt");
 	if (fd == NULL)
 		return;
 
@@ -179,6 +178,8 @@ void cfg_init_db( void )
 	cfg_set_to_db(cfg_list, "title-format", 
 			player_handle_var_title_format, 0);
 	cfg_set_to_db(cfg_list, "output-plugin", player_handle_var_outp, 0);
+	cfg_set_to_db(cfg_list, "color-scheme", player_handle_color_scheme, 0);
+	cfg_set_to_db(cfg_list, "kbind-scheme", player_handle_kbind_scheme, 0);
 } /* End of 'cfg_init_db' function */
 
 /* End of 'cfg.c' file */

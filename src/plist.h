@@ -102,6 +102,15 @@ int plist_add_song( plist_t *pl, char *filename, char *title, int len,
 /* Add a play list file to play list */
 int plist_add_list( plist_t *pl, char *filename );
 
+/* Add M3U play list */
+int plist_add_m3u( plist_t *pl, char *filename );
+
+/* Add PLS play list */
+int plist_add_pls( plist_t *pl, char *filename );
+
+/* Add MPL play list */
+int plist_add_mpl( plist_t *pl, char *filename );
+
 /* Low level song adding */
 bool_t __plist_add_song( plist_t *pl, char *filename, char *title, int len,
 	   int where );

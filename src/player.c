@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG MPFC. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.10.2003
+ * LAST UPDATE : 9.10.2003
  * NOTE        : Module prefix 'player'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -494,7 +494,7 @@ void player_seek( int sec, bool_t rel )
 	else if (new_time > s->m_len)
 		new_time = s->m_len;
 
-	inp_seek(s->m_inp, new_time);
+	inp_seek(song_get_inp(s), new_time);
 	player_cur_time = new_time;
 	wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
 } /* End of 'player_seek' function */
@@ -546,6 +546,7 @@ void *player_thread( void *arg )
 		int ch, freq;
 		dword fmt;
 		song_info_t si;
+		in_plugin_t *inp;
 
 		/* Skip to next iteration if there is nothing to play */
 		if (player_plist->m_cur_song < 0 || 
@@ -560,13 +561,9 @@ void *player_thread( void *arg )
 		//player_status = PLAYER_STATUS_PLAYING;
 		player_end_track = FALSE;
 	
-		/* Get song length and information at first */
-		if (cfg_get_var_int(cfg_list, "update-song-len-on-play"))
-			s->m_len = inp_get_len(s->m_inp, s->m_file_name);
-		song_update_info(s);
-
 		/* Start playing */
-		if (!inp_start(s->m_inp, s->m_file_name))
+		inp = song_get_inp(s);
+		if (!inp_start(inp, s->m_file_name))
 		{
 			player_next_track();
 			error_set_code(ERROR_UNKNOWN_FILE_TYPE);
@@ -575,8 +572,12 @@ void *player_thread( void *arg )
 			continue;
 		}
 		if (player_cur_time > 0)
-			inp_seek(s->m_inp, player_cur_time);
-		no_outp = inp_get_flags(s->m_inp) & INP_NO_OUTP;
+			inp_seek(inp, player_cur_time);
+		no_outp = inp_get_flags(inp) & INP_NO_OUTP;
+
+		/* Get song length and information */
+		s->m_len = inp_get_len(inp, s->m_file_name);
+		song_update_info(s);
 
 		/* Start output plugin */
 		if (!no_outp && (pmng_cur_out == NULL || 
@@ -585,7 +586,7 @@ void *player_thread( void *arg )
 		{
 			strcpy(player_msg, _("Unable to initialize output plugin"));
 //			wnd_send_msg(wnd_root, WND_MSG_USER, PLAYER_MSG_END_TRACK);
-			inp_end(s->m_inp);
+			inp_end(inp);
 			player_status = PLAYER_STATUS_STOPPED;
 			wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
 			continue;
@@ -594,17 +595,17 @@ void *player_thread( void *arg )
 		/* Set audio parameters */
 		if (!no_outp)
 		{
-			inp_get_audio_params(s->m_inp, &ch, &freq, &fmt);
+			inp_get_audio_params(inp, &ch, &freq, &fmt);
 			outp_set_channels(pmng_cur_out, 2);
 			outp_set_freq(pmng_cur_out, freq);
 			outp_set_fmt(pmng_cur_out, fmt);
 		}
 
 		/* Save current input plugin */
-		player_inp = s->m_inp;
+		player_inp = inp;
 
 		/* Set equalizer */
-		inp_set_eq(s->m_inp);
+		inp_set_eq(inp);
 
 		/* Start timer thread */
 		pthread_create(&player_timer_tid, NULL, player_timer_func, 0);
@@ -623,11 +624,11 @@ void *player_thread( void *arg )
 				if (player_eq_changed)
 				{
 					player_eq_changed = FALSE;
-					inp_set_eq(s->m_inp);
+					inp_set_eq(inp);
 				}
 				
 				/* Get stream from input plugin */
-				if (size = inp_get_stream(s->m_inp, buf, size))
+				if (size = inp_get_stream(inp, buf, size))
 				{
 					int new_ch, new_freq;
 					dword new_fmt;
@@ -635,7 +636,7 @@ void *player_thread( void *arg )
 					/* Update audio parameters if they have changed */
 					if (!no_outp)
 					{
-						inp_get_audio_params(s->m_inp, &new_ch, &new_freq, 
+						inp_get_audio_params(inp, &new_ch, &new_freq, 
 								&new_fmt);
 						if (ch != new_ch || freq != new_freq || fmt != new_fmt)
 						{
@@ -677,7 +678,7 @@ void *player_thread( void *arg )
 		player_stop_timer();
 
 		/* End playing */
-		inp_end(s->m_inp);
+		inp_end(inp);
 		player_inp = NULL;
 
 		/* End output plugin */
@@ -941,7 +942,7 @@ void player_info_dialog( void )
 				256, _("Comments: "), s->m_info->m_comments);
 		genre = cbox_new((wnd_t *)dlg, 2, y ++, WND_WIDTH(dlg) - 6, 12,
 				_("Genre: "));
-		glist = inp_get_glist(s->m_inp);
+		glist = inp_get_glist(song_get_inp(s));
 		for ( i = 0; glist != NULL && i < glist->m_size; i ++ )
 			cbox_list_add(genre, glist->m_list[i].m_name);
 		cbox_move_list_cursor(genre, FALSE, 
@@ -979,7 +980,7 @@ void player_info_dialog( void )
 		s->m_info->m_not_own_present = TRUE;
 	
 		/* Get song length and information at first */
-		inp_save_info(s->m_inp, s->m_file_name, s->m_info);
+		inp_save_info(song_get_inp(s), s->m_file_name, s->m_info);
 
 		/* Update */
 		song_update_info(s);
@@ -1925,6 +1926,33 @@ void player_time_back( void )
 {
 	player_play(player_last_song, player_last_song_time);
 } /* End of 'player_time_back' function */
+
+/* Message printer */
+void player_print_msg( char *msg )
+{
+	strcpy(player_msg, msg);
+	wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
+} /* End of 'player_print_msg' function */
+
+/* Handle 'color-scheme' variable setting */
+void player_handle_color_scheme( char *name )
+{
+	char fname[256];
+	
+	/* Read configuration from respective file */
+	sprintf(fname, "~/.mpfc/colors/%s", cfg_get_var(cfg_list, name));
+	cfg_read_rcfile(cfg_list, fname);
+} /* End of 'player_handle_color_scheme' function */
+
+/* Handle 'kbind-scheme' variable setting */
+void player_handle_kbind_scheme( char *name )
+{
+	char fname[256];
+	
+	/* Read configuration from respective file */
+	sprintf(fname, "~/.mpfc/kbinds/%s", cfg_get_var(cfg_list, name));
+	cfg_read_rcfile(cfg_list, fname);
+} /* End of 'player_handle_kbind_scheme' function */
 
 /* End of 'player.c' file */
 
