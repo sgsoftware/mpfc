@@ -304,16 +304,28 @@ void player_handle_key( wnd_t *wnd, dword data )
 	case 'b':
 		player_plist->m_cur_song += ((player_repval) ? player_repval : 1);
 		if (player_plist->m_cur_song >= player_plist->m_len)
-			player_plist->m_cur_song = player_plist->m_len - 1;
-		player_play();
+		{
+			player_plist->m_cur_song = -1;
+			player_end_play();
+		}
+		else
+		{
+			player_play();
+		}
 		break;
 
 	/* Go to previous song */
 	case 'z':
 		player_plist->m_cur_song -= ((player_repval) ? player_repval : 1);
 		if (player_plist->m_cur_song < 0)
-			player_plist->m_cur_song = 0;
-		player_play();
+		{
+			player_plist->m_cur_song = -1;
+			player_end_play();
+		}
+		else
+		{
+			player_play();
+		}
 		break;
 
 	/* Add a file */
@@ -564,6 +576,7 @@ void *player_thread( void *arg )
 		s = player_plist->m_list[player_plist->m_cur_song];
 		player_status = PLAYER_STATUS_PLAYING;
 		player_end_track = FALSE;
+		wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
 	
 		/* Get song length and information at first */
 		ifl = s->m_inp->m_fl;
