@@ -1,2 +1,2 @@
-ALL_PLUGINS = oss disk_writer
+ALL_PLUGINS = oss disk_writer alsa
 SUBDIRS = @OUTPUT_PLUGINS@

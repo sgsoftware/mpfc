@@ -315,6 +315,12 @@ them you can use special variables: ``fb-fname-len'' (for file name),
 appear in the latter order and you can't change it. To switch between normal
 and song info modes press @kbd{i}.
 
+You can navigation in a directory more easy using search mode. To set it
+press @kbd{s} key and the enter name of file (or its title if you are in
+info mode) you want to jump to. As you will type the name cursor will move
+to the respective file. If you want to stop this process press 
+@kbd{@key{ESCAPE}}.
+
 To exit browser press @kbd{q}.
 
 @node Save, Sort, File browser, Playlist management

@@ -651,7 +651,6 @@ void *wnd_kbd_thread( void *arg )
 		/* Read next character */
 		if ((key = getch()) != ERR)
 		{
-			util_log("got key %d\n", key);
 			if (key == '\f')
 				wnd_redisplay(wnd_root);
 			else if (key == KEY_MOUSE && wnd_mouse_type == WND_MOUSE_XTERM)
@@ -659,12 +658,10 @@ void *wnd_kbd_thread( void *arg )
 				Gpm_Event event;
 				int btn, x, y;
 
-				util_log("handling KEY_MOUSE\n");
 				/* Get event parameters */
 				btn = getch() - 040;
 				x = getch() - 040 - 1;
 				y = getch() - 040 - 1;
-				util_log("btn=%d, x=%d,y=%d\n", btn, x, y);
 				
 				memset(&event, 0, sizeof(event));
 				event.type = GPM_DOWN;
@@ -696,7 +693,6 @@ void *wnd_kbd_thread( void *arg )
 				was_btn = btn;
 				
 				wnd_mouse_handler(&event, NULL);
-				util_log("handled\n");
 			}
 /*			else if (key == 14)
 				wnd_reinit_mouse();*/

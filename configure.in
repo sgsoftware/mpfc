@@ -1,5 +1,5 @@
 AC_INIT(src/main.c)
-AM_INIT_AUTOMAKE(mpfc, 1.2-7)
+AM_INIT_AUTOMAKE(mpfc, 1.2-9)
 AC_PROG_CC
 AC_PROG_LIBTOOL
 
@@ -81,6 +81,21 @@ fi
 
 AM_GNU_GETTEXT
 
+# Stuff for alsa plugin
+AC_ARG_ENABLE(alsa, 
+[	--disable-alsa		Disable alsa input plugin [default=enabled]],,
+		enable_alsa="yes")
+if test "x$enable_alsa" = xyes; then
+	# Check for asound lib
+	LIBS_save=$LIBS
+	AC_CHECK_LIB(asound, snd_pcm_open,,[AC_MSG_ERROR(*** Can't find libasound ***)])
+	ASOUND_LIBS="-lasound"
+	AC_SUBST(ASOUND_LIBS)
+	LIBS=$LIBS_save
+else
+	AC_MSG_RESULT([*** alsa plugin disabled per user request ***])
+fi
+
 # Handle specific plugins choosing
 for class in CHARSET EFFECT INPUT OUTPUT; do
     value=`eval echo "\\$${class}_PLUGINS"`
@@ -105,4 +120,5 @@ AC_OUTPUT(Makefile src/Makefile libmpfc/Makefile \
 			plugins/input/radio/Makefile plugins/output/disk_writer/Makefile \
 			plugins/input/ogg/Makefile plugins/input/timidi/Makefile \
 			plugins/charset/Makefile plugins/charset/ru/Makefile \
-			plugins/input/recorder/Makefile doc/Makefile)
+			plugins/input/recorder/Makefile plugins/output/alsa/Makefile \
+			doc/Makefile)
