@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for file library regular
  *               files managament functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 17.10.2003
+ * LAST UPDATE : 25.10.2003
  * NOTE        : Module prefix 'freg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -42,7 +42,7 @@ typedef struct tag_file_reg_data_t
 file_t *freg_open( file_t *f, char *mode );
 
 /* Close file */
-void freg_close( file_t *f );
+int freg_close( file_t *f );
 
 /* Read from file */
 size_t freg_read( void *buf, size_t size, size_t nmemb, file_t *f );

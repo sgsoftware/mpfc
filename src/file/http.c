@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. File library http files managament 
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 17.10.2003
+ * LAST UPDATE : 25.10.2003
  * NOTE        : Module prefix 'fhttp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -181,7 +181,7 @@ close:
 		free(name);
 		free(file_name);
 		free(host_name);
-		file_print_msg(f, "Failure!");
+		file_print_msg(f, _("Failure!"));
 		file_close(f);
 		return NULL;
 	}
@@ -198,7 +198,7 @@ close:
 } /* End of 'fhttp_open' function */
 
 /* Close file */
-void fhttp_close( file_t *f )
+int fhttp_close( file_t *f )
 {
 	FHTTP_GET_DATA(data, f);
 
@@ -222,6 +222,7 @@ void fhttp_close( file_t *f )
 			close(data->m_sock);
 		free(data);
 	}
+	return 0;
 } /* End of 'fhttp_close' function */
 
 /* Read from file */
@@ -248,12 +249,12 @@ size_t fhttp_read( void *buf, size_t size, size_t nmemb, file_t *f )
 		
 		/* Wait */
 		pp = data->m_read_size * 100 / data->m_min_buf_size;
-		file_print_msg(f, "Filling buffer: %d%% done", pp);
+		file_print_msg(f, _("Filling buffer: %d%% done"), pp);
 		while (data->m_read_size <= data->m_min_buf_size && !data->m_finished)
 		{
 			int p = data->m_read_size * 100 / data->m_min_buf_size;
 			if ((p / 10) != (pp / 10))
-				file_print_msg(f, "Filling buffer: %d%% done", p);
+				file_print_msg(f, _("Filling buffer: %d%% done"), p);
 			pp = p;
 			util_delay(1000000);
 		}

@@ -68,7 +68,8 @@ bool_t label_init( label_t *l, wnd_t *parent, int x, int y, int w, int h,
 	/* Set label-specific fields */
 	l->m_text = strdup(text);
 	WND_OBJ(l)->m_wnd_destroy = label_destroy;
-	WND_OBJ(l)->m_flags = WND_ITEM | WND_NO_FOCUS;
+	WND_OBJ(l)->m_flags |= (WND_ITEM | WND_NO_FOCUS | WND_INITIALIZED);
+	return TRUE;
 } /* End of 'label_init' function */
 
 /* Destroy label */
@@ -89,18 +90,12 @@ void label_display( wnd_t *wnd, dword data )
 	label_t *l = (label_t *)wnd;
 	char *t;
 	int y;
-	
+
 	if (l == NULL || l->m_text == NULL)
 		return;
 
 	wnd_move(wnd, 0, 0);
-	for ( y = 0, t = l->m_text; *t; t ++ )
-	{
-		if (*t == '\n')
-			wnd_move(wnd, 0, ++y);
-		else
-			wnd_print_char(wnd, *t);
-	}
+	wnd_printf(wnd, "%s", l->m_text);
 } /* End of 'label_display' function */
 
 /* Label key handler function */

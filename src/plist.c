@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Play list manipulation
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 17.10.2003
+ * LAST UPDATE : 22.10.2003
  * NOTE        : Module prefix 'plist'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -236,8 +236,8 @@ int plist_add_list( plist_t *pl, char *filename )
 		return plist_add_m3u(pl, filename);
 	else if (!strcasecmp(ext, "pls"))
 		return plist_add_pls(pl, filename);
-	else if (!strcasecmp(ext, "mpl"))
-		return plist_add_mpl(pl, filename);
+	/*else if (!strcasecmp(ext, "mpl"))
+		return plist_add_mpl(pl, filename);*/
 	else
 		return -1;
 } /* End of 'plist_add_list' function */
@@ -423,11 +423,24 @@ bool_t __plist_add_song( plist_t *pl, char *filename, char *title, int len,
 /* Save play list */
 bool_t plist_save( plist_t *pl, char *filename )
 {
+	PLIST_ASSERT_RET(pl, FALSE);
+	char *ext = util_get_ext(filename);
+
+	if (!strcasecmp(ext, "m3u"))
+		return plist_save_m3u(pl, filename);
+	else if (!strcasecmp(ext, "pls"))
+		return plist_save_pls(pl, filename);
+/*	else if (!strcasecmp(ext, "mpl"))
+		return plist_save_mpl(pl, filename);*/
+	return FALSE;
+} /* End of 'plist_save' function */
+
+/* Save play list to M3U format */
+bool_t plist_save_m3u( plist_t *pl, char *filename )
+{
 	FILE *fd;
 	int i;
 
-	PLIST_ASSERT_RET(pl, FALSE);
-	
 	/* Try to create file */
 	fd = util_fopen(filename, "wt");
 	if (fd == NULL)
@@ -447,7 +460,36 @@ bool_t plist_save( plist_t *pl, char *filename )
 	/* Close file */
 	fclose(fd);
 	return TRUE;
-} /* End of 'plist_save' function */
+} /* End of 'plist_save_m3u' function */
+
+/* Save play list to PLS format */
+bool_t plist_save_pls( plist_t *pl, char *filename )
+{
+	FILE *fd;
+	int i;
+
+	/* Try to create file */
+	fd = util_fopen(filename, "wt");
+	if (fd == NULL)
+	{
+		error_set_code(ERROR_NO_SUCH_FILE);
+		return FALSE;
+	}
+	
+	/* Write list head */
+	fprintf(fd, "[playlist]\nnumberofentries=%d\n", pl->m_len);
+	for ( i = 0; i < pl->m_len; i ++ )
+		fprintf(fd, "File%d=%s\n", i + 1, pl->m_list[i]->m_file_name);
+
+	/* Close file */
+	fclose(fd);
+	return TRUE;
+} /* End of 'plist_save_pls' function */
+
+/* Save play list to MPL format */
+bool_t plist_save_mpl( plist_t *pl, char *filename )
+{
+} /* End of 'plist_save_mpl' function */
 
 /* Sort play list */
 void plist_sort( plist_t *pl, bool_t global, int criteria )
@@ -608,8 +650,7 @@ void plist_rem( plist_t *pl )
 	/* Stop currently playing song if it is inside area being removed */
 	if (pl->m_cur_song >= start && pl->m_cur_song <= end)
 	{
-		player_end_play();
-		pl->m_cur_song = -1;
+		player_end_play(TRUE);
 	}
 
 	/* Unlock play list */
@@ -699,7 +740,8 @@ bool_t plist_search( plist_t *pl, char *pstr, int dir, int criteria )
 			str = s->m_info->m_track;
 			break;
 		}
-		found = util_search_regexp(pstr, str);
+		found = util_search_regexp(pstr, str, 
+				cfg_get_var_int(cfg_list, "search-nocase"));
 		if (found)
 			plist_move(pl, i, FALSE);
 	} 

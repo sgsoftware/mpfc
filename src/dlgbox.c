@@ -74,7 +74,7 @@ bool_t dlg_init( dlgbox_t *dlg, wnd_t *parent, int x, int y, int w, int h,
 	dlg->m_caption[dlg->m_wnd.m_width - 5] = 0;
 	dlg->m_cur_focus = NULL;
 	dlg->m_ok = FALSE;
-	WND_FLAGS(dlg) |= WND_DIALOG;
+	WND_FLAGS(dlg) |= (WND_DIALOG | WND_INITIALIZED);
 	return TRUE;
 } /* End of 'dlg_init' function */
 

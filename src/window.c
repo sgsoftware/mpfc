@@ -83,10 +83,11 @@ wnd_t *wnd_new_root( void )
 	nodelay(wnd_root->m_wnd, TRUE);
 
 	/* Initialize mouse */
-	mousemask(ALL_MOUSE_EVENTS, NULL);
+//	mousemask(ALL_MOUSE_EVENTS, NULL);
 
 	/* Initialize keyboard thread */
 	pthread_create(&wnd_kbd_tid, NULL, wnd_kbd_thread, NULL);
+	wnd_root->m_flags |= WND_INITIALIZED;
 
 	/* Return */
 	return wnd_root;
@@ -121,6 +122,7 @@ bool_t wnd_init( wnd_t *wnd, wnd_t *parent, int x, int y, int w, int h )
 	int i;
 
 	/* Get real window position (on screen) */
+	memset(wnd, 0, sizeof(wnd_t));
 	if (parent != NULL)
 	{
 		sx = x + parent->m_x;
@@ -295,7 +297,7 @@ int wnd_run( void *obj )
 	WND_ASSERT_RET(wnd, 0);
 
 	/* If it is dialog box - set focus to child */
-	if (wnd->m_flags & WND_DIALOG && wnd->m_child != NULL)
+	if ((wnd->m_flags & WND_DIALOG) && (wnd->m_child != NULL))
 		wnd_send_msg(wnd, WND_MSG_CHANGE_FOCUS, 0);
 
 	/* Message loop */
@@ -492,6 +494,10 @@ void wnd_display( wnd_t *wnd )
 	wnd_t *child, *focus_child;
 	wnd_msg_handler display = wnd->m_msg_handlers[WND_MSG_DISPLAY];
 
+	/* Don't display window if it is not initialized yet */
+	if (!(wnd->m_flags & WND_INITIALIZED))
+		return;
+
 	/* Lock mutex for displaying */
 	if (wnd == wnd_root)
 		pthread_mutex_lock(&wnd_display_mutex);
@@ -555,6 +561,7 @@ void *wnd_kbd_thread( void *arg )
 		if ((key = getch()) != ERR)
 		{
 			/* Check that it was mouse event */
+#if 0
 			if (key == KEY_MOUSE)
 			{
 				MEVENT me;
@@ -568,6 +575,7 @@ void *wnd_kbd_thread( void *arg )
 			}
 			/* Send message about this key to current focus window */
 			else
+#endif
 			{
 				if (key == 12)
 				{

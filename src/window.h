@@ -48,6 +48,7 @@ struct tag_wnd_t;
 #define WND_DIALOG						0x00000001
 #define WND_ITEM						0x00000002
 #define WND_NO_FOCUS					0x00000004
+#define WND_INITIALIZED					0x00000008
 
 /* Get macros */
 #define WND_OBJ(wnd)		((wnd_t *)(wnd))

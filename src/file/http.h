@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for file library http
  *               files managament functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 17.10.2003
+ * LAST UPDATE : 25.10.2003
  * NOTE        : Module prefix 'fhttp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -65,7 +65,7 @@ typedef struct tag_file_http_data_t
 file_t *fhttp_open( file_t *f, char *mode );
 
 /* Close file */
-void fhttp_close( file_t *f );
+int fhttp_close( file_t *f );
 
 /* Read from file */
 size_t fhttp_read( void *buf, size_t size, size_t nmemb, file_t *f );

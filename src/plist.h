@@ -118,6 +118,15 @@ bool_t __plist_add_song( plist_t *pl, char *filename, char *title, int len,
 /* Save play list */
 bool_t plist_save( plist_t *pl, char *filename );
 
+/* Save play list to M3U format */
+bool_t plist_save_m3u( plist_t *pl, char *filename );
+
+/* Save play list to PLS format */
+bool_t plist_save_pls( plist_t *pl, char *filename );
+
+/* Save play list to MPL format */
+bool_t plist_save_mpl( plist_t *pl, char *filename );
+
 /* Sort play list */
 void plist_sort( plist_t *pl, bool_t global, int criteria );
 

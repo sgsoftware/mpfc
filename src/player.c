@@ -378,7 +378,7 @@ void player_display( wnd_t *wnd, dword data )
 	{
 		col_set_color(wnd, COL_EL_ABOUT);
 		wnd_printf(wnd, _("SG Software Media Player For Console\n"
-				"version 1.0alpha\n"));
+				"version 1.0\n"));
 		col_set_color(wnd, COL_EL_DEFAULT);
 	}
 	else
@@ -503,7 +503,7 @@ void player_seek( int sec, bool_t rel )
 void player_play( int song, int start_time )
 {
 	song_t *s;
-	
+
 	/* Check that we have anything to play */
 	if (song < 0 || song >= player_plist->m_len ||
 			(s = player_plist->m_list[song]) == NULL)
@@ -513,7 +513,7 @@ void player_play( int song, int start_time )
 	}
 
 	/* End current playing */
-	player_end_play();
+	player_end_play(FALSE);
 
 	/* Start new playing thread */
 	cfg_set_var(cfg_list, "cur-song-name", 
@@ -524,9 +524,10 @@ void player_play( int song, int start_time )
 } /* End of 'player_play' function */
 
 /* End playing song */
-void player_end_play( void )
+void player_end_play( bool rem_cur_song )
 {
-	player_plist->m_cur_song = -1;
+	if (rem_cur_song)
+		player_plist->m_cur_song = -1;
 	player_end_track = TRUE;
 //	player_status = PLAYER_STATUS_STOPPED;
 	while (player_timer_tid)
@@ -1098,7 +1099,7 @@ void player_skip_songs( int num )
 
 	/* Start or end play */
 	if (song == -1)
-		player_end_play();
+		player_end_play(TRUE);
 	else
 		player_play(song, 0);
 } /* End of 'player_skip_songs' function */
@@ -1295,7 +1296,8 @@ void player_handle_action( int action )
 	/* Stop */
 	case KBIND_STOP:
 		player_status = PLAYER_STATUS_STOPPED;
-		player_end_play();
+		player_end_play(FALSE);
+		player_plist->m_cur_song = was_song;
 		break;
 
 	/* Play song */
@@ -1859,8 +1861,8 @@ void player_advanced_search_dialog( void )
 	/* Get search criteria */
 	ch = choice_new(wnd_root, 0, wnd_root->m_height - 1, wnd_root->m_width,
 		1, _("Search for: (T)itle, (N)ame, (A)rtist, A(l)bum, (Y)ear, "
-			"(G)enre, (O)wn data"), 
-		"tnalygo");
+			"(G)enre"), 
+		"tnalyg");
 	if (ch == NULL)
 		return;
 	wnd_run(ch);
@@ -1889,9 +1891,6 @@ void player_advanced_search_dialog( void )
 		break;
 	case 'g':
 		t = PLIST_SEARCH_GENRE;
-		break;
-	case 'o':
-		t = PLIST_SEARCH_OWN;
 		break;
 	}
 	player_search_dialog(t);

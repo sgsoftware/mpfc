@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. File library regular files managament 
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 17.10.2003
+ * LAST UPDATE : 25.10.2003
  * NOTE        : Module prefix 'freg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -56,16 +56,18 @@ file_t *freg_open( file_t *f, char *mode )
 } /* End of 'freg_open' function */
 
 /* Close file */
-void freg_close( file_t *f )
+int freg_close( file_t *f )
 {
+	int ret = 0;
 	FREG_GET_DATA(data, f);
 
 	if (data != NULL)
 	{
 		if (data->m_fd != NULL)
-			fclose(data->m_fd);
+			ret = fclose(data->m_fd);
 		free(data);
 	}
+	return ret;
 } /* End of 'freg_close' function */
 
 /* Read from file */

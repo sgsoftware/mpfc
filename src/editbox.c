@@ -84,7 +84,7 @@ bool_t ebox_init( editbox_t *wnd, wnd_t *parent, int x, int y, int width,
 	wnd->m_changed = FALSE;
 	strcpy(wnd->m_text_before_hist, wnd->m_text);
 	((wnd_t *)wnd)->m_wnd_destroy = ebox_destroy;
-	WND_OBJ(wnd)->m_flags = WND_ITEM;
+	WND_OBJ(wnd)->m_flags |= (WND_ITEM | WND_INITIALIZED);
 	return TRUE;
 } /* End of 'ebox_init' function */
 
@@ -255,7 +255,8 @@ void ebox_hist_save( editbox_t *box, int key )
 	if (key == '\n' && box->m_hist_list != NULL && box->m_changed &&
 			strlen(box->m_text))
 		hist_add_item(box->m_hist_list, box->m_text);
-	box->m_hist_list->m_cur = NULL;
+	if (box->m_hist_list != NULL)
+		box->m_hist_list->m_cur = NULL;
 } /* End of 'ebox_hist_save' function */
 
 /* Set edit box text */

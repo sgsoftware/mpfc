@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. High-level configuration handling 
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 14.10.2003
+ * LAST UPDATE : 25.10.2003
  * NOTE        : Module prefix 'cfg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -79,6 +79,8 @@ void cfg_init_default( void )
 	cfg_set_var(cfg_list, "output-plugin", "oss");
 	cfg_set_var_int(cfg_list, "mp3-quick-get-len", 1);
 	cfg_set_var_int(cfg_list, "save-playlist-on-exit", 1);
+	cfg_set_var_int(cfg_list, "search-nocase", 0);
+	cfg_set_var_int(cfg_list, "play-from-stop", 1);
 	cfg_set_var(cfg_list, "lib-dir", LIBDIR"/mpfc");
 	cfg_set_var_int(cfg_list, "echo-delay", 500);
 	cfg_set_var_int(cfg_list, "echo-volume", 50);

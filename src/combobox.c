@@ -84,7 +84,7 @@ bool_t cbox_init( combobox_t *wnd, wnd_t *parent, int x, int y, int width,
 	wnd->m_list_height = height - 1;
 	wnd->m_scrolled = 0;
 	wnd->m_expanded = FALSE;
-	WND_OBJ(wnd)->m_flags = WND_ITEM;
+	WND_OBJ(wnd)->m_flags |= (WND_ITEM | WND_INITIALIZED);
 	return TRUE;
 } /* End of 'cbox_init' function */
 

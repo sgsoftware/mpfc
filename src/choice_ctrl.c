@@ -73,6 +73,7 @@ bool_t choice_init( choice_ctrl_t *ch, wnd_t *parent, int x, int y, int w,
 	strcpy(ch->m_prompt, prompt);
 	strcpy(ch->m_choices, choices);
 	ch->m_choice = 0;
+	WND_OBJ(ch)->m_flags |= (WND_INITIALIZED);
 	return TRUE;
 } /* End of 'choice_init' function */
 

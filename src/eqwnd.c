@@ -71,6 +71,7 @@ bool_t eqwnd_init( eq_wnd_t *eq, wnd_t *parent, int x, int y, int w, int h )
 
 	/* Set fields */
 	eq->m_pos = 0;
+	WND_OBJ(eq)->m_flags |= (WND_INITIALIZED);
 	return TRUE;
 } /* End of 'eqwnd_init' function */
 

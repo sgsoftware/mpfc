@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Various utility functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 17.10.2003
+ * LAST UPDATE : 22.10.2003
  * NOTE        : Module prefix 'util'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -194,7 +194,7 @@ void util_under2spaces( char *str )
 } /* End of 'util_under2spaces' function */
 
 /* Search for regexp */
-bool_t util_search_regexp( char *ptext, char *text )
+bool_t util_search_regexp( char *ptext, char *text, bool_t nocase )
 {
 	regex_t preg;
 	regmatch_t pmatch;
@@ -203,7 +203,7 @@ bool_t util_search_regexp( char *ptext, char *text )
 	if (ptext == NULL || text == NULL)
 		return FALSE;
 
-	if (regcomp(&preg, ptext, 0))
+	if (regcomp(&preg, ptext, nocase ? REG_ICASE : 0))
 		return FALSE;
 	res = regexec(&preg, text, 1, &pmatch, 0);
 	regfree(&preg);

@@ -75,6 +75,7 @@ bool_t menu_init( menu_t *menu, wnd_t *parent, int x, int y, int w, int h )
 	menu->m_num_items = 0;
 	menu->m_items = NULL;
 	menu->m_cursor = -1;
+	WND_OBJ(menu)->m_flags |= (WND_INITIALIZED);
 	return TRUE;
 } /* End of 'menu_init' function */
 

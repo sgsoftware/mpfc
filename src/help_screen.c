@@ -95,7 +95,7 @@ bool_t help_init( help_screen_t *help, wnd_t *parent, int x, int y,
 	help_add(help, _("z:\t\t Previous song"));
 	help_add(help, _("<:\t\t Scroll song 10 seconds up"));
 	help_add(help, _(">:\t\t Scroll song 10 seconds down"));
-	help_add(help, _("<Number>t:\t Go to <Number>th second in song"));
+	help_add(help, _("<Number>gt:\t Go to <Number>th second in song"));
 	help_add(help, _("+:\t\t Increase volume"));
 	help_add(help, _("-:\t\t Decrease volume"));
 	help_add(help, _("]:\t\t Increase balance"));
@@ -118,7 +118,7 @@ bool_t help_init( help_screen_t *help, wnd_t *parent, int x, int y,
 	help_add(help, _("o:\t\t Variables mini-manager"));
 	help_add(help, _("O:\t\t Advanced variables manager"));
 	help_add(help, _("U:\t\t Undo"));
-	help_add(help, _("R:\t\t Redo"));
+	help_add(help, _("D:\t\t Redo"));
 	help_add(help, _("I:\t\t Reload songs information"));
 	help_add(help, _("P:\t\t Reload plugins"));
 	help_add(help, _("ps:\t\t Set play bounds"));
@@ -131,6 +131,7 @@ bool_t help_init( help_screen_t *help, wnd_t *parent, int x, int y,
 	help_add(help, _("<Backspace>:\t Go to previous time"));
 	help_add(help, _("^l:\t\t Redisplay screen"));
 	help_add(help, _("?:\t\t This help screen"));
+	WND_OBJ(help)->m_flags |= (WND_INITIALIZED);
 	return TRUE;
 } /* End of 'help_init' function */
 

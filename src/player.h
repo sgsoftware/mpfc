@@ -110,7 +110,7 @@ void player_set_bal( int bal, bool_t rel );
 void player_play( int song, int start_time );
 
 /* End play song thread */
-void player_end_play( void );
+void player_end_play( bool_t rem_cur_song );
 
 /* Player thread function */
 void *player_thread( void *arg );

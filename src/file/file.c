@@ -5,7 +5,7 @@
 /* FILE NAME   : file.c
  * PURPOSE     : SG MPFC. File library functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 17.10.2003
+ * LAST UPDATE : 25.10.2003
  * NOTE        : Module prefix 'file'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -60,23 +60,28 @@ file_t *file_open( char *filename, char *mode, file_print_msg_t printer )
 } /* End of 'file_open' function */
 
 /* Close file */
-void file_close( file_t *f )
+int file_close( file_t *f )
 {
+	int ret;
+	
 	if (f != NULL)
 	{
 		switch (f->m_type)
 		{
 		case FILE_TYPE_REGULAR:
-			freg_close(f);
+			ret = freg_close(f);
 			break;
 		case FILE_TYPE_HTTP:
-			fhttp_close(f);
+			ret = fhttp_close(f);
 			break;
+		default:
+			ret = 0;
 		}
 			
 		if (f->m_name != NULL)
 			free(f->m_name);
 	}
+	return ret;
 } /* End of 'file_close' function */
 
 /* Read from file */
