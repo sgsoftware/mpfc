@@ -47,6 +47,7 @@ typedef struct
 	bool m_loaded;
 	bool m_only_own;
 	char m_own_data[1024];
+	bool m_not_own_present;
 } song_info_t;
 
 #endif

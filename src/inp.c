@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Input plugin management functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 8.08.2003
+ * LAST UPDATE : 9.08.2003
  * NOTE        : Module prefix 'inp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -113,6 +113,8 @@ bool inp_get_info( in_plugin_t *p, char *file_name, song_info_t *info )
 {
 	if (p != NULL && (p->m_fl.m_get_info != NULL))
 		return p->m_fl.m_get_info(file_name, info);
+	info->m_only_own = TRUE;
+	*(info->m_own_data) = 0;
 	return FALSE;
 } /* End of 'inp_get_info' function */
 	

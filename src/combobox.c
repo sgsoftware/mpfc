@@ -223,7 +223,8 @@ void cbox_set_text( combobox_t *cb, char *text )
 	cb->m_edit_cursor = cb->m_text_len;
 
 	/* Update list box */
-	cbox_edit2list(cb);
+	if (*text)
+		cbox_edit2list(cb);
 } /* End of 'cbox_set_text' function */
 
 /* Move edit box cursor */

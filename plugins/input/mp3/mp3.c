@@ -554,48 +554,54 @@ bool mp3_get_info( char *filename, song_info_t *info )
 	{
 		id3_file_close(file);
 		memset(info, 0, sizeof(*info));
-		return FALSE;
+		info->m_not_own_present = FALSE;
 	}
+	else
+		info->m_not_own_present = TRUE;
 
-	/* Initialize info fields with empty values first */
-	memset(info, 0, sizeof(*info));
-	info->m_genre = GENRE_ID_UNKNOWN;
-
-	/* Scan tag frames */
-	for ( i = 0; i < tag->nframes; i ++ )
+	if (info->m_not_own_present)
 	{
-		struct id3_frame *f = tag->frames[i];
-		if (!strcmp(f->id, ID3_FRAME_TITLE))
-			mp3_extract_str_from_frame(info->m_name, f);
-		else if (!strcmp(f->id, ID3_FRAME_ARTIST))
-			mp3_extract_str_from_frame(info->m_artist, f);
-		else if (!strcmp(f->id, ID3_FRAME_ALBUM))
-			mp3_extract_str_from_frame(info->m_album, f);
-		else if (!strcmp(f->id, ID3_FRAME_YEAR))
-			mp3_extract_str_from_frame(info->m_year, f);
-		else if (!strcmp(f->id, ID3_FRAME_TRACK))
-			mp3_extract_str_from_frame(info->m_track, f);
-		else if (!strcmp(f->id, ID3_FRAME_COMMENT))
-			mp3_extract_str_from_frame(info->m_comments, f);
-		else if (!strcmp(f->id, ID3_FRAME_GENRE))
-		{
-			char str[80];
-			char *s;
-			mp3_extract_str_from_frame(str, f);
-			info->m_genre_data.m_data = strtol(str, &s, 10);
-			if (!(*str) || *s)
-			{
-				info->m_genre = GENRE_ID_OWN_STRING;
-				strcpy(info->m_genre_data.m_text, str);
-			}
-			else
-				info->m_genre = 
-					glist_get_id(mp3_glist, info->m_genre_data.m_data);
-		}
-	}
+		/* Initialize info fields with empty values first */
+		memset(info, 0, sizeof(*info));
+		info->m_genre = GENRE_ID_UNKNOWN;
+		info->m_not_own_present = TRUE;
 
-	/* Close file */
-	id3_file_close(file);
+		/* Scan tag frames */
+		for ( i = 0; i < tag->nframes; i ++ )
+		{	
+			struct id3_frame *f = tag->frames[i];
+			if (!strcmp(f->id, ID3_FRAME_TITLE))
+				mp3_extract_str_from_frame(info->m_name, f);
+			else if (!strcmp(f->id, ID3_FRAME_ARTIST))
+				mp3_extract_str_from_frame(info->m_artist, f);
+			else if (!strcmp(f->id, ID3_FRAME_ALBUM))
+				mp3_extract_str_from_frame(info->m_album, f);
+			else if (!strcmp(f->id, ID3_FRAME_YEAR))
+				mp3_extract_str_from_frame(info->m_year, f);
+			else if (!strcmp(f->id, ID3_FRAME_TRACK))
+				mp3_extract_str_from_frame(info->m_track, f);
+			else if (!strcmp(f->id, ID3_FRAME_COMMENT))
+				mp3_extract_str_from_frame(info->m_comments, f);
+			else if (!strcmp(f->id, ID3_FRAME_GENRE))
+			{
+				char str[80];
+				char *s;
+				mp3_extract_str_from_frame(str, f);
+				info->m_genre_data.m_data = strtol(str, &s, 10);
+				if (!(*str) || *s)
+				{
+					info->m_genre = GENRE_ID_OWN_STRING;
+					strcpy(info->m_genre_data.m_text, str);
+				}
+				else
+					info->m_genre = 
+						glist_get_id(mp3_glist, info->m_genre_data.m_data);
+			}
+		}
+
+		/* Close file */
+		id3_file_close(file);
+	}
 
 	/* Obtain additional song parameters */
 	mad_header_init(&head);

@@ -2,7 +2,7 @@ lib_LTLIBRARIES = libogg.la
 
 libdir = $(prefix)/lib/mpfc/input
 
-libogg_la_SOURCES = ogg.c 
+libogg_la_SOURCES = ogg.c vcedit.c vcedit.h
 INCLUDES = -I$(top_builddir)/src
 libogg_la_LIBADD = $(top_builddir)/src/util/libutil.a \
 					$(top_builddir)/src/cfg/libcfg.a \

@@ -479,9 +479,13 @@ void player_play( int start_time )
 	song_t *s;
 	
 	/* Check that we have anything to play */
-	if (player_plist->m_cur_song == -1 || 
+	if (player_plist->m_cur_song < 0 || 
+			player_plist->m_cur_song >= player_plist->m_len ||
 			(s = player_plist->m_list[player_plist->m_cur_song]) == NULL)
+	{
+		player_plist->m_cur_song = -1;
 		return;
+	}
 
 	/* End current playing */
 	player_end_play();
@@ -882,7 +886,8 @@ void player_info_dialog( void )
 	song_update_info(s);
 
 	/* Check if there exists song information */
-	if (s->m_info == NULL || !s->m_info->m_loaded)
+	if (s->m_info == NULL || 
+			(!s->m_info->m_not_own_present && !(*(s->m_info->m_own_data))))
 		return;
 
 	/* Create info dialog */
@@ -940,6 +945,7 @@ void player_info_dialog( void )
 		}
 		else
 			s->m_info->m_genre = genre->m_list_cursor;
+		s->m_info->m_not_own_present = TRUE;
 	
 		/* Get song length and information at first */
 		inp_save_info(s->m_inp, s->m_file_name, s->m_info);

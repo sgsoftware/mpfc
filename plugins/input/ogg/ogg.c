@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Ogg Vorbis input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 13.08.2003
+ * LAST UPDATE : 7.09.2003
  * NOTE        : Module prefix 'ogg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -26,6 +26,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include <sys/soundcard.h>
 #include <vorbis/codec.h>
 #include <vorbis/vorbisfile.h>
@@ -35,6 +36,7 @@
 #include "inp.h"
 #include "song_info.h"
 #include "util.h"
+#include "vcedit.h"
 
 /* Ogg Vorbis file object */
 OggVorbis_File ogg_vf;
@@ -48,6 +50,16 @@ genre_list_t *ogg_glist = NULL;
 
 /* Variables list */
 cfg_list_t *ogg_var_list = NULL;
+
+/* Currently playing song file name */
+char ogg_filename[256];
+
+/* Song info to save after play end */
+song_info_t ogg_info;
+bool ogg_need_save_info = FALSE;
+
+/* Some declarations */
+void ogg_save_info( char *filename, song_info_t *info );
 
 /* Start playing */
 bool ogg_start( char *filename )
@@ -72,13 +84,26 @@ bool ogg_start( char *filename )
 	vi = ov_info(&ogg_vf, -1);
 	ogg_channels = vi->channels;
 	ogg_freq = vi->rate;
+	ogg_need_save_info = FALSE;
+	strcpy(ogg_filename, filename);
 	return TRUE;
 } /* End of 'ogg_start' function */
 
 /* End playing */
 void ogg_end( void )
 {
+	char fname[256];
+	
 	ov_clear(&ogg_vf);
+
+	/* Save info if need */
+	strcpy(fname, ogg_filename);
+	strcpy(ogg_filename, "");
+	if (ogg_need_save_info)
+	{
+		ogg_save_info(fname, &ogg_info);
+		ogg_need_save_info = FALSE;
+	}
 } /* End of 'ogg_end' function */
 
 /* Get supported formats */
@@ -139,9 +164,126 @@ int ogg_get_cur_time( void )
 	return ov_time_tell(&ogg_vf);
 } /* End of 'ogg_get_cur_time' function */
 
+/* Get comments list from vorbis comment */
+char **ogg_get_comment_list( vorbis_comment *vc )
+{
+	int i;
+	char **strv;
+
+	strv = (char **)malloc(sizeof(char *) * (vc->comments + 1));
+	for ( i = 0; i < vc->comments; i ++ )
+		strv[i] = strdup(vc->user_comments[i]);
+	strv[i] = NULL;
+	return strv;
+} /* End of 'ogg_get_comment_list' function */
+
+/* Add tag to comments list */
+char **ogg_add_tag( char **list, char *label, char *tag )
+{
+	char str[256];
+	int len;
+	int i;
+
+	/* Search list for our tag */
+	sprintf(str, "%s=%s", label, tag);
+	len = strlen(label) + 1;
+	for ( i = 0; list[i] != NULL; i ++ )
+	{
+		/* Found - modify it */
+		if (!strncasecmp(str, list[i], len))
+		{
+			free(list[i]);
+			list[i] = strdup(str);
+			return list; 
+		}
+	}
+	/* Not found - add tag */
+	list = (char **)realloc(list, sizeof(char *) * (i + 2));
+	list[i] = strdup(str);
+	list[i + 1] = NULL;
+	return list;
+} /* End of 'ogg_add_tag' function */
+
+/* Add comments list to vorbis comment */
+void ogg_add_list( vorbis_comment *vc, char **comments )
+{
+	while (*comments)
+		vorbis_comment_add(vc, *comments++);
+} /* End of 'ogg_add_list' function */
+
 /* Save song information */
 void ogg_save_info( char *filename, song_info_t *info )
 {
+	char **comment_list;
+	vcedit_state *state;
+	vorbis_comment *comment;
+	FILE *in, *out;
+	int i, outfd;
+	char tmpfn[256];
+	
+	/* Schedule info for saving if we are playing this file now */
+	if (!strcmp(filename, ogg_filename))
+	{
+		memcpy(&ogg_info, info, sizeof(*info));
+		ogg_need_save_info = TRUE;
+		return;
+	}
+
+	/* Read current info at first */
+	state = vcedit_new_state();
+	in = fopen(filename, "rb");
+	if (in == NULL)
+	{
+		vcedit_clear(state);
+		return;
+	}
+	if (vcedit_open(state, in) < 0)
+	{
+		fclose(in);
+		vcedit_clear(state);
+		return;
+	}
+	comment = vcedit_comments(state);
+	comment_list = ogg_get_comment_list(comment);
+	vorbis_comment_clear(comment);
+
+	/* Set our fields */
+	comment_list = ogg_add_tag(comment_list, "title", info->m_name);
+	comment_list = ogg_add_tag(comment_list, "artist", info->m_artist);
+	comment_list = ogg_add_tag(comment_list, "album", info->m_album);
+	comment_list = ogg_add_tag(comment_list, "tracknumber", info->m_track);
+	comment_list = ogg_add_tag(comment_list, "date", info->m_year);
+	comment_list = ogg_add_tag(comment_list, "genre", 
+			(info->m_genre == GENRE_ID_OWN_STRING) ? 
+			info->m_genre_data.m_text :
+			((info->m_genre == GENRE_ID_UNKNOWN) ? "" :
+			 ogg_glist->m_list[info->m_genre].m_name));
+	//comment_list = ogg_add_tag(comment_list, "", info->m_comments);
+	ogg_add_list(comment, comment_list);
+	for ( i = 0; comment_list[i] != NULL; i ++ )
+		free(comment_list[i]);
+	free(comment_list);
+
+	/* Save */
+	sprintf(tmpfn, "%s.XXXXXX", filename);
+	if ((outfd = mkstemp(tmpfn)) < 0)
+	{
+		fclose(in);
+		vcedit_clear(state);
+		return;
+	}
+	if ((out = fdopen(outfd, "wb")) == NULL)
+	{
+		close(outfd);
+		fclose(in);
+		vcedit_clear(state);
+		return;
+	}
+	vcedit_write(state, out);
+	vcedit_clear(state);
+	fclose(in);
+	fclose(out);
+	rename(tmpfn, filename);
 } /* End of 'ogg_save_info' function */
 
 /* Get song information */
@@ -152,6 +294,14 @@ bool ogg_get_info( char *filename, song_info_t *info )
 	char *str;
 	vorbis_comment *comment;
 	vorbis_info *vi;
+	bool ret = FALSE;
+
+	/* Return current info if we have it */
+	if (ogg_need_save_info && !strcmp(filename, ogg_filename))
+	{
+		memcpy(info, &ogg_info, sizeof(ogg_info));
+		return TRUE;
+	}
 
 	/* Open file */
 	fd = fopen(filename, "rb");
@@ -166,21 +316,22 @@ bool ogg_get_info( char *filename, song_info_t *info )
 	memset(info, 0, sizeof(*info));
 	comment = ov_comment(&vf, -1);
 	str = vorbis_comment_query(comment, "title", 0);
-	strcpy(info->m_name, str);
+	strcpy(info->m_name, str == NULL ? "" : (ret = TRUE, str));
 	str = vorbis_comment_query(comment, "artist", 0);
-	strcpy(info->m_artist, str);
+	strcpy(info->m_artist, str == NULL ? "" : (ret = TRUE, str));
 	str = vorbis_comment_query(comment, "album", 0);
-	strcpy(info->m_album, str);
+	strcpy(info->m_album, str == NULL ? "" : (ret = TRUE, str));
 	str = vorbis_comment_query(comment, "tracknumber", 0);
-	strcpy(info->m_track, str);
+	strcpy(info->m_track, str == NULL ? "" : (ret = TRUE, str));
 	str = vorbis_comment_query(comment, "date", 0);
-	strcpy(info->m_year, str);
+	strcpy(info->m_year, str == NULL ? "" : (ret = TRUE, str));
 	str = vorbis_comment_query(comment, "genre", 0);
-	info->m_genre = glist_get_id_by_text(ogg_glist, str);
+	info->m_genre = glist_get_id_by_text(ogg_glist, 
+			str == NULL ? "" : (ret = TRUE, str));
 	if (info->m_genre == GENRE_ID_UNKNOWN)
 	{
 		info->m_genre = GENRE_ID_OWN_STRING;
-		strcpy(info->m_genre_data.m_text, str);
+		strcpy(info->m_genre_data.m_text, str == NULL ? "" : str);
 	}
 
 	/* Set additional information */
@@ -189,13 +340,14 @@ bool ogg_get_info( char *filename, song_info_t *info )
 	{
 		sprintf(info->m_own_data, 
 				"Nominal bitrate: %i kb/s\n"
-				"Samplerate: %i\n"
+				"Samplerate: %i Hz\n"
 				"Channels: %i\n"
 				"Length: %i seconds\n"
 				"File size: %i bytes",
 				vi->bitrate_nominal / 1000, vi->rate, vi->channels, 
 				(int)ov_time_total(&vf, -1), util_get_file_size(filename));
 	}
+	info->m_not_own_present = ret;
 
 	/* Close file */
 	ov_clear(&vf);

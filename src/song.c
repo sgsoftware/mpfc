@@ -101,7 +101,6 @@ void song_set_info( song_t *song, song_info_t *info )
 		memset(song->m_info, 0, sizeof(song_info_t));
 		song->m_info->m_genre = GENRE_ID_UNKNOWN;
 		song->m_info->m_loaded = FALSE;
-
 	}
 	else
 	{
@@ -112,7 +111,7 @@ void song_set_info( song_t *song, song_info_t *info )
 	}
 
 	/* Set title */
-	if (info == NULL || info->m_only_own)
+	if (info == NULL || !info->m_not_own_present || info->m_only_own)
 	{
 		int i;
 		for ( i = strlen(song->m_file_name) - 1; 
