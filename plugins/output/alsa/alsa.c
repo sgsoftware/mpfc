@@ -19,6 +19,7 @@
 
 #include <alsa/asoundlib.h>
 #include <sys/soundcard.h>
+#include <stdarg.h>
 #include "types.h"
 #include "cfg.h"
 #include "outp.h"
@@ -43,14 +44,25 @@ static char *alsa_author =
 		"Thadeu Lima de Souza Cascardo <cascardo@minaslivre.org>; "
 		"Sergey E. Galanov <sgsoftware@mail.ru>";
 static cfg_node_t *alsa_cfg = NULL;
+static logger_t *alsa_log = NULL;
 
 void alsa_end ();
 bool_t alsa_open_dev( void );
+
+void alsa_error_handler( const char *file, int line, const char *function,
+		int err, const char *fmt, ... )
+{
+	va_list ap;
+	va_start(ap, fmt);
+	logger_add_message_vararg(alsa_log, LOGGER_MSG_ERROR, 1, (char *)fmt, ap);
+	va_end(ap);
+}
 
 bool_t alsa_start ()
 {
   int dir = 1;
 
+  snd_lib_error_set_handler(alsa_error_handler);
   if (!alsa_open_dev())
 	  return FALSE;
   hwparams = malloc (snd_pcm_hw_params_sizeof ());
@@ -298,4 +310,5 @@ void plugin_exchange_data (plugin_data_t *pd)
   OUTP_DATA(pd)->m_get_volume = alsa_get_volume;
   alsa_pmng = pd->m_pmng;
   alsa_cfg = pd->m_cfg;
+  alsa_log = pd->m_logger;
 }
