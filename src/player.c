@@ -109,6 +109,9 @@ undo_list_t *player_ul = NULL;
 /* Do we story undo information now? */
 bool player_store_undo = TRUE;
 
+/* Var manager cursor position */
+int player_var_mngr_pos = -1;
+
 /* Initialize player */
 bool player_init( int argc, char *argv[] )
 {
@@ -172,19 +175,34 @@ bool player_init( int argc, char *argv[] )
 
 	/* Get volume */
 	outp_get_volume(pmng_cur_out, &l, &r);
-	if (l > r)
+	if (l == 0 && r == 0)
 	{
-		player_volume = l;
-		player_balance = r * 50 / l;
+		player_volume = 0;
+		player_balance = 0;
 	}
 	else
 	{
-		player_volume = r;
-		player_balance = 100 - l * 50 / r;
+		if (l > r)
+		{
+			player_volume = l;
+			player_balance = r * 50 / l;
+		}
+		else
+		{
+			player_volume = r;
+			player_balance = 100 - l * 50 / r;
+		}
 	}
 
 	/* Initialize equalizer */
 	player_eq_changed = FALSE;
+
+	/* Start playing from last stop */
+	if (cfg_get_var_int(cfg_list, "play_from_stop") && !player_num_files && !player_num_obj)
+	{
+		player_plist->m_cur_song = cfg_get_var_int(cfg_list, "cur_song");
+		player_play(cfg_get_var_int(cfg_list, "cur_time"));
+	}
 
 	/* Exit */
 	return TRUE;
@@ -194,6 +212,11 @@ bool player_init( int argc, char *argv[] )
 void player_deinit( void )
 {
 	int i;
+	
+	/* Save information about place in song where we stop */
+	cfg_set_var_int(cfg_list, "cur_song", player_plist->m_cur_song, CFG_RUNTIME);
+	cfg_set_var_int(cfg_list, "cur_time", player_cur_time, CFG_RUNTIME);
+	player_save_cfg_vars(cfg_list, "cur_song;cur_time");
 	
 	/* End playing thread */
 	sat_free();
@@ -351,12 +374,12 @@ void player_display( wnd_t *wnd, dword data )
 	col_set_color(wnd, COL_EL_PLAY_MODES);
 	if (cfg_get_var_int(cfg_list, "shuffle_play"))
 	{
-		wnd_move(wnd, wnd->m_width - 13, 1);
+		wnd_move(wnd, wnd->m_width - 13, 0);
 		wnd_printf(wnd, "Shuffle");
 	}
 	if (cfg_get_var_int(cfg_list, "loop_play"))
 	{
-		wnd_move(wnd, wnd->m_width - 5, 1);
+		wnd_move(wnd, wnd->m_width - 5, 0);
 		wnd_printf(wnd, "Loop");
 	}
 	col_set_color(wnd, COL_EL_DEFAULT);
@@ -441,7 +464,7 @@ void player_seek( int sec, bool rel )
 } /* End of 'player_seek' function */
 
 /* Play song */
-void player_play( void )
+void player_play( int start_time )
 {
 	song_t *s;
 	
@@ -456,6 +479,7 @@ void player_play( void )
 	/* Start new playing thread */
 	cfg_set_var(cfg_list, "cur_song_name", 
 			util_get_file_short_name(s->m_file_name), CFG_RUNTIME);
+	player_cur_time = start_time;
 	player_status = PLAYER_STATUS_PLAYING;
 } /* End of 'player_play' function */
 
@@ -507,6 +531,8 @@ void *player_thread( void *arg )
 			wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
 			continue;
 		}
+		if (player_cur_time > 0)
+			inp_seek(s->m_inp, player_cur_time);
 		no_outp = inp_get_flags(s->m_inp) & INP_NO_OUTP;
 
 		/* Start output plugin */
@@ -860,9 +886,9 @@ void player_info_dialog( void )
 	album = ebox_new((wnd_t *)dlg, 2, 3, wnd_root->m_width - 10, 1, 
 			256, _("Album name: "), s->m_info->m_album);
 	year = ebox_new((wnd_t *)dlg, 2, 4, wnd_root->m_width - 10, 1, 
-			4, _("Year: "), s->m_info->m_year);
+			256, _("Year: "), s->m_info->m_year);
 	track = ebox_new((wnd_t *)dlg, 2, 5, wnd_root->m_width - 10, 1, 
-			4, _("Track No: "), s->m_info->m_track);
+			256, _("Track No: "), s->m_info->m_track);
 	comments = ebox_new((wnd_t *)dlg, 2, 6, wnd_root->m_width - 10, 1, 
 			256, _("Comments: "), s->m_info->m_comments);
 	genre = cbox_new((wnd_t *)dlg, 2, 7, wnd_root->m_width - 10, 12,
@@ -1004,7 +1030,7 @@ void player_skip_songs( int num )
 	if (player_plist->m_cur_song == -1)
 		player_end_play();
 	else
-		player_play();
+		player_play(0);
 } /* End of 'player_skip_songs' function */
 
 /* Launch variables manager */
@@ -1038,6 +1064,7 @@ void player_var_manager( void )
 	WND_OBJ(btn)->m_id = PLAYER_VAR_MNGR_RESTORE;
 
 	/* Fill variables list box */
+	player_var_mngr_pos = -1;
 	for ( i = 0; i < cfg_list->m_num_vars; i ++ )
 	{
 		if (!(cfg_list->m_vars[i].m_flags & CFG_RUNTIME))
@@ -1050,8 +1077,10 @@ void player_var_manager( void )
 
 	/* Save variables */
 	if (var_lb->m_cursor >= 0)
+	{
 		cfg_set_var(cfg_list, var_lb->m_list[var_lb->m_cursor].m_name, 
 				val_eb->m_text, 0);
+	}
 
 	/* Free memory */
 	wnd_destroy(dlg);
@@ -1172,7 +1201,7 @@ void player_handle_action( int action )
 			inp_resume(player_inp);
 		}
 		else
-			player_play();
+			player_play(0);
 		break;
 
 	/* Pause */
@@ -1199,7 +1228,7 @@ void player_handle_action( int action )
 		if (!player_plist->m_len)
 			break;
 		player_plist->m_cur_song = player_plist->m_sel_end;
-		player_play();
+		player_play(0);
 		break;
 
 	/* Go to next song */
@@ -1397,7 +1426,6 @@ void player_var_mngr_notify( wnd_t *wnd, dword data )
 {
 	dlgbox_t *dlg;
 	short id, act;
-	static int pos = -1;
 	editbox_t *eb;
 	listbox_t *lb;
 
@@ -1417,12 +1445,13 @@ void player_var_mngr_notify( wnd_t *wnd, dword data )
 	if (id == PLAYER_VAR_MNGR_VARS && act == LBOX_MOVE)
 	{
 		/* Save current edit box value to the respective variable */
-		if (pos >= 0)
-			cfg_set_var(cfg_list, lb->m_list[pos].m_name, eb->m_text, 0);
+		if (player_var_mngr_pos >= 0)
+			cfg_set_var(cfg_list, 
+					lb->m_list[player_var_mngr_pos].m_name, eb->m_text, 0);
 			
 		/* Read new variable */
-		pos = lb->m_cursor;
-		ebox_set_text(eb, cfg_list->m_vars[pos].m_val);
+		player_var_mngr_pos = lb->m_cursor;
+		ebox_set_text(eb, cfg_list->m_vars[player_var_mngr_pos].m_val);
 	}
 	/* Save list */
 	else if (id == PLAYER_VAR_MNGR_SAVE && act == BTN_CLICKED)

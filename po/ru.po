@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: konsamp 0.1\n"
-"POT-Creation-Date: 2003-08-15 21:48+0400\n"
+"POT-Creation-Date: 2003-08-26 15:48+0400\n"
 "PO-Revision-Date: 2003-02-13 09:15+0300\n"
 "Last-Translator: Sergey E. Galanov <sgsoftware@mail.ru>\n"
 "Language-Team: Russian <sgsoftware@mail.ru>\n"
@@ -19,98 +19,98 @@ msgstr ""
 msgid "Initialization error : %s\n"
 msgstr "Ошибка инициализии : %s\n"
 
-#: src/player.c:504
+#: src/player.c:528
 msgid "Unable to initialize output plugin"
 msgstr "Не могу инициализировать выходной плагин"
 
-#: src/player.c:686
+#: src/player.c:710
 msgid "Enter file (or directory) name: "
 msgstr "Введите имя файла (или каталога): "
 
-#: src/player.c:711
+#: src/player.c:735
 msgid "Enter file name: "
 msgstr "Введите имя файла: "
 
-#: src/player.c:724
+#: src/player.c:748
 msgid "Play list saved"
 msgstr "Плей-лист сохранен"
 
-#: src/player.c:725
+#: src/player.c:749
 msgid "Unable to save play list"
 msgstr "Не могу сохранить плей-лист"
 
-#: src/player.c:739
+#: src/player.c:763
 #, c-format
 msgid "Removed %i songs"
 msgstr "Удалено %i песен"
 
-#: src/player.c:752
+#: src/player.c:776
 msgid "Sort globally? (Yes/No)"
 msgstr "Сортировать глобально? (Yes/No)"
 
-#: src/player.c:764
+#: src/player.c:788
 msgid "Sort by: (T)itle, (F)ile name, (P)ath and file name"
 msgstr "Сортировать по: Заголовку(T), Имени файла(F), Пути и имени(P)"
 
-#: src/player.c:796
+#: src/player.c:820
 msgid "Enter search string: "
 msgstr "Введите строку для поиска: "
 
-#: src/player.c:808 src/player.c:1235
+#: src/player.c:832 src/player.c:1270
 msgid "String not found"
 msgstr "Строка не найдена"
 
-#: src/player.c:810 src/player.c:1237
+#: src/player.c:834 src/player.c:1272
 msgid "String found"
 msgstr "Строка найдена"
 
-#: src/player.c:844
+#: src/player.c:868
 msgid "Song name: "
 msgstr "Название песни: "
 
-#: src/player.c:846
+#: src/player.c:870
 msgid "Artist name: "
 msgstr "Исполнитель: "
 
-#: src/player.c:848
+#: src/player.c:872
 msgid "Album name: "
 msgstr "Альбом: "
 
-#: src/player.c:850
+#: src/player.c:874
 msgid "Year: "
 msgstr "Год: "
 
-#: src/player.c:852
+#: src/player.c:876
 msgid "Track No: "
 msgstr ""
 
-#: src/player.c:854
+#: src/player.c:878
 msgid "Comments: "
 msgstr "Комментарии: "
 
-#: src/player.c:856
+#: src/player.c:880
 msgid "Genre: "
 msgstr "Жанр: "
 
-#: src/player.c:1008
+#: src/player.c:1032
 msgid "Variables manager"
 msgstr ""
 
-#: src/player.c:1054
+#: src/player.c:1081
 #, fuzzy
 msgid "Enter object name: "
 msgstr "Введите имя файла: "
 
-#: src/player.c:1303
+#: src/player.c:1338
 msgid "Enter repeat value for the next command: "
 msgstr "Введите число повторений для следующей команды: "
 
-#: src/player.c:1338
+#: src/player.c:1373
 #, fuzzy
 msgid "Enter variable name: "
 msgstr "Введите имя файла: "
 
-#: src/player.c:1357
+#: src/player.c:1392
 #, fuzzy
 msgid "Enter variable value: "
 msgstr "Введите имя файла: "
@@ -183,15 +183,18 @@ msgid "z:\t\t Previous song"
 msgstr "z:\t\t Предыдущая песня"
 
 #: src/help_screen.c:96
-msgid "h:\t\t Scroll song 10 seconds up"
+#, fuzzy
+msgid "<:\t\t Scroll song 10 seconds up"
 msgstr "h:\t\t Сместиться на 10 секунд назад"
 
 #: src/help_screen.c:97
-msgid "l:\t\t Scroll song 10 seconds down"
+#, fuzzy
+msgid ">:\t\t Scroll song 10 seconds down"
 msgstr "l:\t\t Сместиться на 10 секунд вперед"
 
 #: src/help_screen.c:98
-msgid "<Number>g:\t Go to <Number>th second in song"
+#, fuzzy
+msgid "<Number>gt:\t Go to <Number>th second in song"
 msgstr "<Число>g:\t Сместиться к секунде <Число>"
 
 #: src/help_screen.c:99
@@ -203,83 +206,93 @@ msgid "-:\t\t Decrease volume"
 msgstr "-:\t\t Уменьшить громкость"
 
 #: src/help_screen.c:101
+#, fuzzy
+msgid "]:\t\t Increase balance"
+msgstr "+:\t\t Увеличить громкость"
+
+#: src/help_screen.c:102
+#, fuzzy
+msgid "[:\t\t Decrease balance"
+msgstr "-:\t\t Уменьшить громкость"
+
+#: src/help_screen.c:103
 msgid "i:\t\t Song info editor"
 msgstr "i:\t\t Редактор информации о песне"
 
-#: src/help_screen.c:102
+#: src/help_screen.c:104
 msgid "a:\t\t Add songs"
 msgstr "a:\t\t Добавить песни"
 
-#: src/help_screen.c:103
+#: src/help_screen.c:105
 msgid "r:\t\t Remove songs"
 msgstr "r:\t\t Удалить песни"
 
-#: src/help_screen.c:104
+#: src/help_screen.c:106
 msgid "s:\t\t Save play list"
 msgstr "s:\t\t Сохранить плей-лист"
 
-#: src/help_screen.c:105
+#: src/help_screen.c:107
 msgid "S:\t\t Sort play list"
 msgstr "S:\t\t Сортировать плей-лист"
 
-#: src/help_screen.c:106
+#: src/help_screen.c:108
 msgid "V:\t\t Start visual mode"
 msgstr "V:\t\t Перейти в визуальный режим"
 
-#: src/help_screen.c:107
+#: src/help_screen.c:109
 msgid "C:\t\t Centrize view"
 msgstr "C:\t\t Центрировать экран"
 
-#: src/help_screen.c:108
+#: src/help_screen.c:110
 msgid "/:\t\t Search"
 msgstr "/:\t\t Поиск"
 
-#: src/help_screen.c:109
+#: src/help_screen.c:111
 msgid "n:\t\t Go to next search match"
 msgstr "n:\t\t Перейти к следующему результату поиска"
 
-#: src/help_screen.c:110
+#: src/help_screen.c:112
 msgid "N:\t\t Go to previous search match"
 msgstr "N:\t\t Перейти в предыдущему результату поиска"
 
-#: src/help_screen.c:111
+#: src/help_screen.c:113
 msgid "e:\t\t Launch equalizer window"
 msgstr ""
 
-#: src/help_screen.c:112
+#: src/help_screen.c:114
 msgid "R:\t\t Set/unset shuffle play mode"
 msgstr ""
 
-#: src/help_screen.c:113
+#: src/help_screen.c:115
 msgid "L:\t\t Set/unset loop play mode"
 msgstr ""
 
-#: src/help_screen.c:114
+#: src/help_screen.c:116
 msgid "o:\t\t Variables mini-manager"
 msgstr ""
 
-#: src/help_screen.c:115
+#: src/help_screen.c:117
 msgid "O:\t\t Variables manager"
 msgstr ""
 
-#: src/help_screen.c:116
+#: src/help_screen.c:118
 msgid "U:\t\t Undo"
 msgstr ""
 
-#: src/help_screen.c:117
+#: src/help_screen.c:119
 msgid "R:\t\t Redo"
 msgstr ""
 
-#: src/help_screen.c:118
+#: src/help_screen.c:120
 #, fuzzy
 msgid "^l:\t\t Redisplay screen"
 msgstr "?:\t\t Этот экран помощи"
 
-#: src/help_screen.c:119
+#: src/help_screen.c:121
 msgid "?:\t\t This help screen"
 msgstr "?:\t\t Этот экран помощи"
 
-#: src/help_screen.c:139
+#: src/help_screen.c:141
 msgid "MPFC Help Screen"
 msgstr "Экран помощи MPFC"
 

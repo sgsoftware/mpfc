@@ -31,7 +31,7 @@
 #include "types.h"
 
 /* Variable flags */
-#define CFG_RUNTIME 0x00
+#define CFG_RUNTIME 0x01
 
 /* Variable type */
 typedef struct tag_cfg_var_t

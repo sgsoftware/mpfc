@@ -125,6 +125,9 @@ bool mp3_start( char *filename )
 	mp3_seek_val = -1;
 	mp3_bitrate = 0;
 	strcpy(mp3_file_name, filename);
+
+	/* Read song parameters */
+	mp3_read_song_params();
 	return TRUE;
 } /* End of 'mp3_start' function */
 
@@ -605,13 +608,15 @@ int mp3_get_stream( void *buf, int size )
 		return 0;
 
 	/* Decode frame if samples counter is zero */
+	util_log("get_stream, bitrate=%i\n", mp3_bitrate);
 	if (!mp3_samples)
 	{
 		struct mad_header head;
 
 		/* Seek */
-		if (mp3_seek_val != -1)
+		if (mp3_seek_val != -1 && mp3_bitrate)
 		{
+			util_log("In seek\n");
 			fseek(mp3_fd, mp3_seek_val * mp3_bitrate / 8, SEEK_SET);
 			mp3_time = mp3_seek_val;
 			mp3_timer.seconds = mp3_time;
@@ -959,6 +964,59 @@ void mp3_apply_eq( void )
 				mp3_frame.sbsample[ch][s][sb] = 
 					mad_f_mul(mp3_frame.sbsample[ch][s][sb], mp3_eq_mul[sb]);
 } /* End of 'mp3_apply_eq' function */
+
+/* Read song parameters */
+void mp3_read_song_params( void )
+{
+	struct mad_stream stream;
+	struct mad_header head;
+	byte buffer[8192];
+	int buflen = 0;
+
+	/* Initialize MAD structures */
+	mad_stream_init(&stream);
+	mad_header_init(&head);
+
+	/* Scan file */
+	for ( ;; )
+	{
+		/* Read data */
+		if (buflen < sizeof(buffer))
+		{
+			dword bytes;
+			
+			bytes = fread(buffer + buflen, 1, sizeof(buffer) - buflen, mp3_fd);
+			if (bytes <= 0)
+				break;
+			buflen += bytes;
+		}
+
+		/* Pipe data to MAD stream */
+		mad_stream_buffer(&stream, buffer, buflen);
+
+		/* Decode frame header */
+		mad_header_decode(&head, &stream);
+
+		/* Move rest data (not decoded) to buffer start */
+		memmove(buffer, stream.next_frame, &buffer[buflen] - stream.next_frame);
+		buflen -= stream.next_frame - &buffer[0];
+
+		/* Save parameters */
+		if (head.bitrate)
+		{
+			mp3_freq = head.samplerate;
+			mp3_fmt = AFMT_S16_LE;
+			mp3_channels = (head.mode == MAD_MODE_SINGLE_CHANNEL) ? 1 : 2;
+			mp3_bitrate = head.bitrate;
+			break;
+		}
+	} 
+	
+	/* Unitialize all */
+	mad_header_finish(&head);
+	mad_stream_finish(&stream);
+	fseek(mp3_fd, 0, SEEK_SET);
+} /* End of 'mp3_read_song_params' function */
 
 /* End of 'mp3.c' file */
 

@@ -106,7 +106,7 @@ void player_set_vol( int vol, bool rel );
 void player_set_bal( int bal, bool rel );
 
 /* Play song */
-void player_play( void );
+void player_play( int start_time );
 
 /* End play song thread */
 void player_end_play( void );

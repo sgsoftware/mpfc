@@ -238,6 +238,7 @@ bool wav_read_next_chunk( FILE *fd, void **fmt_buf, dword *data_size )
 	/* Read chunk header */
 	fread(chunk_id, 1, sizeof(chunk_id), fd);
 	fread(&chunk_size, 1, sizeof(chunk_size), fd);
+	util_log("ID is %s\n", chunk_id);
 
 	/* Parse chunk */
 	if (!strncmp(chunk_id, "data", 4))

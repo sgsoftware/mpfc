@@ -67,10 +67,6 @@ bool ogg_start( char *filename )
 		return FALSE;
 	}
 
-	comment = ov_comment(&ogg_vf, -1);
-	for ( i = 0; i < comment->comments; i ++ )
-		util_log("Comment #%i: %s\n", comment->user_comments[i]);
-
 	/* Get audio parameters */
 	ogg_fmt = AFMT_S16_LE;
 	vi = ov_info(&ogg_vf, -1);

@@ -35,9 +35,9 @@ typedef struct
 	char m_artist[256];
 	char m_name[256];
 	char m_album[256];
-	char m_year[5];
+	char m_year[256];
 	char m_comments[256];
-	char m_track[5];
+	char m_track[256];
 	byte m_genre;
 	union
 	{

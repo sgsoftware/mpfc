@@ -69,5 +69,8 @@ void mp3_apply_eq( void );
 /* Buffering read from file */
 int mp3_read( void *ptr, int size, FILE *fd );
 
+/* Read song parameters */
+void mp3_read_song_params( void );
+
 /* End of 'mp3.h' file */
 
