@@ -992,11 +992,11 @@ msgstr "Удалить теги ID3"
 
 #: libmpfcwnd/wnd.c:666
 msgid "No children\n"
-msgstr ""
+msgstr "Нет детей\n"
 
 #: libmpfcwnd/wnd_dialog.c:97
 msgid "Cancel"
-msgstr ""
+msgstr "Отмена"
 
 #~ msgid "Enter file (or directory) name: "
 #~ msgstr "Введите имя файла (или каталога): "
