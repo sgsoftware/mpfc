@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Play list manipulation
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 22.10.2003
+ * LAST UPDATE : 9.11.2003
  * NOTE        : Module prefix 'plist'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -1072,7 +1072,7 @@ void plist_set_song_info( plist_t *pl, int index )
 } /* End of 'plist_set_song_info' function */
 
 /* Reload all songs information */
-void plist_reload_info( plist_t *pl )
+void plist_reload_info( plist_t *pl, bool_t global )
 {
 	int i;
 	
@@ -1080,8 +1080,19 @@ void plist_reload_info( plist_t *pl )
 		return;
 
 	/* Update info */
-	for ( i = 0; i < pl->m_len; i ++ )
-		sat_push(pl, i);
+	if (global)
+	{
+		for ( i = 0; i < pl->m_len; i ++ )
+			sat_push(pl, i);
+	}
+	else
+	{
+		int start, end;
+		PLIST_GET_SEL(pl, start, end);
+
+		for ( i = start; i <= end; i ++ )
+			sat_push(pl, i);
+	}
 } /* End of 'plist_reload_info' function */
 
 /* Handler for file finder */

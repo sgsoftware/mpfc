@@ -1533,7 +1533,7 @@ void player_handle_action( int action )
 
 	/* Reload info */
 	case KBIND_RELOAD_INFO:
-		plist_reload_info(player_plist);
+		player_info_reload_dialog();
 		break;
 
 	/* Set play boundaries */
@@ -2067,6 +2067,30 @@ void player_handle_kbind_scheme( char *name )
 	sprintf(fname, "~/.mpfc/kbinds/%s", cfg_get_var(cfg_list, name));
 	cfg_read_rcfile(cfg_list, fname);
 } /* End of 'player_handle_kbind_scheme' function */
+
+/* Info reload dialog */
+void player_info_reload_dialog( void )
+{
+	choice_ctrl_t *ch;
+	char choice;
+	int t;
+	bool_t g;
+
+	/* Get reload globalness parameter */
+	ch = choice_new(wnd_root, 0, wnd_root->m_height - 1, wnd_root->m_width,
+			1, _("Reload info in the whole list? (Yes/No)"), "yn");
+	if (ch == NULL)
+		return;
+	wnd_run(ch);
+	choice = ch->m_choice;
+	wnd_destroy(ch);
+	if (!CHOICE_VALID(choice))
+		return;
+	g = (choice == 'y');
+	
+	/* Reload */
+	plist_reload_info(player_plist, g);
+} /* End of 'player_info_reload_dialog' function */
 
 /* End of 'player.c' file */
 

@@ -5,7 +5,7 @@
 /* FILE NAME   : player.h
  * PURPOSE     : SG MPFC. Interface for main player functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 14.10.2003
+ * LAST UPDATE : 9.11.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -223,6 +223,9 @@ void player_time_back( void );
 
 /* Message printer */
 void player_print_msg( char *msg );
+
+/* Info reload dialog */
+void player_info_reload_dialog( void );
 
 #endif
 
