@@ -36,6 +36,7 @@
 #include "cfg.h"
 #include "file.h"
 #include "genre_list.h"
+#include "getlen.h"
 #include "inp.h"
 #include "mp3.h"
 #include "myid3.h"
@@ -319,6 +320,7 @@ int mp3_get_len_quick( char *filename )
 	return (bitrate ? ((float)file_size / bitrate) * 8 : 0);
 } /* End of 'mp3_get_len_quick' function */
 
+#if 0
 /* Get length */
 int mp3_get_len( char *filename )
 {
@@ -332,6 +334,7 @@ int mp3_get_len( char *filename )
 	else
 		return mp3_get_len_correct(filename);
 } /* End of 'mp3_get_len' function */
+#endif
 
 /* Convert MAD fixed point sample to 16-bit */
 short mp3_mad_fixed_to_short( mad_fixed_t sample )
@@ -577,7 +580,8 @@ bool_t mp3_get_info( char *filename, song_info_t *info )
 			head.emphasis == MAD_EMPHASIS_NONE ? _("None") :
 		  		(head.emphasis == MAD_EMPHASIS_50_15_US ? 
 				 _("50/15 microseconds") : _("CCITT J.17")),
-			count == 0 ? 0 : len * 1000 / count, len, filesize);
+			count == 0 ? 0 : len * 1000 / count, mp3_get_len(filename), 
+			filesize);
 	}
 	mad_header_finish(&head);
 	return TRUE;
