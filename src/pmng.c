@@ -148,7 +148,7 @@ int pmng_apply_effects( byte *data, int len, int fmt, int freq, int channels )
 		char name[256];
 		
 		/* Apply effect plugin if it is enabled */
-		sprintf(name, "enable-effect_%s", pmng_ep[i]->m_name);
+		sprintf(name, "enable-effect-%s", pmng_ep[i]->m_name);
 		if (cfg_get_var_int(cfg_list, name))
 			l = ep_apply(pmng_ep[i], data, l, fmt, freq, channels);
 	}
