@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: mpfc 1.1\n"
-"POT-Creation-Date: 2004-01-31 18:51+0300\n"
+"POT-Creation-Date: 2004-02-07 18:18+0300\n"
 "PO-Revision-Date: 2003-02-13 09:15+0300\n"
 "Last-Translator: Sergey E. Galanov <sgsoftware@mail.ru>\n"
 "Language-Team: Russian <sgsoftware@mail.ru>\n"
@@ -19,7 +19,7 @@ msgstr ""
 msgid "Initialization error : %s\n"
 msgstr "Ошибка инициализии : %s\n"
 
-#: src/player.c:466
+#: src/player.c:490
 #, c-format
 msgid ""
 "SG Software Media Player For Console\n"
@@ -28,365 +28,365 @@ msgstr ""
 "Плейер для консоли от SG Software\n"
 "версия %s\n"
 
-#: src/player.c:693
+#: src/player.c:713
 msgid "Unable to initialize output plugin"
 msgstr "Не могу инициализировать выходной плагин"
 
-#: src/player.c:896
+#: src/player.c:918
 msgid "Enter file (or directory) name: "
 msgstr "Введите имя файла (или каталога): "
 
-#: src/player.c:921
+#: src/player.c:943
 msgid "Enter file name: "
 msgstr "Введите имя файла: "
 
-#: src/player.c:934
+#: src/player.c:956
 msgid "Play list saved"
 msgstr "Плей-лист сохранен"
 
-#: src/player.c:935
+#: src/player.c:957
 msgid "Unable to save play list"
 msgstr "Не могу сохранить плей-лист"
 
-#: src/player.c:949
+#: src/player.c:971
 #, c-format
 msgid "Removed %i songs"
 msgstr "Удалено %i песен"
 
-#: src/player.c:962
+#: src/player.c:984
 msgid "Sort globally? (Yes/No)"
 msgstr "Сортировать глобально? (Yes/No)"
 
-#: src/player.c:974
+#: src/player.c:996
 msgid "Sort by: (T)itle, (F)ile name, (P)ath and file name"
 msgstr "Сортировать по: Заголовку(T), Имени файла(F), Пути и имени(P)"
 
-#: src/player.c:1006
+#: src/player.c:1028
 msgid "Enter search string: "
 msgstr "Введите строку для поиска: "
 
-#: src/player.c:1020 src/player.c:1668
+#: src/player.c:1042 src/player.c:1661
 msgid "String not found"
 msgstr "Строка не найдена"
 
-#: src/player.c:1022 src/player.c:1670
+#: src/player.c:1044 src/player.c:1663
 msgid "String found"
 msgstr "Строка найдена"
 
-#: src/player.c:1060
+#: src/player.c:1082
 msgid "Info edit locally? (Yes/No)"
 msgstr "Редактировать информацию локально? (Yes/No)"
 
-#: src/player.c:1138
+#: src/player.c:1154
 msgid "Song name: "
 msgstr "Название песни: "
 
-#: src/player.c:1140
+#: src/player.c:1156
 msgid "Artist name: "
 msgstr "Исполнитель: "
 
-#: src/player.c:1142
+#: src/player.c:1158
 msgid "Album name: "
 msgstr "Альбом: "
 
-#: src/player.c:1144
+#: src/player.c:1160
 msgid "Year: "
 msgstr "Год: "
 
-#: src/player.c:1146
+#: src/player.c:1162
 msgid "Track No: "
 msgstr "Номер трека: "
 
-#: src/player.c:1148
+#: src/player.c:1164
 msgid "Comments: "
 msgstr "Комментарии: "
 
-#: src/player.c:1150
+#: src/player.c:1166
 msgid "Genre: "
 msgstr "Жанр: "
 
-#: src/player.c:1419
+#: src/player.c:1412
 msgid "Variables manager"
 msgstr "Менеджер переменных"
 
-#: src/player.c:1426 src/player.c:1984
+#: src/player.c:1419 src/player.c:1983
 msgid "Value: "
 msgstr "Значение: "
 
-#: src/player.c:1429 src/player.c:1980
+#: src/player.c:1422 src/player.c:1979
 msgid "New variable"
 msgstr "Новая переменная"
 
-#: src/player.c:1432
+#: src/player.c:1425
 msgid "Save"
 msgstr "Сохранить"
 
-#: src/player.c:1435
+#: src/player.c:1428
 msgid "Restore value"
 msgstr "Восстановить переменную"
 
-#: src/player.c:1469
+#: src/player.c:1462
 msgid "Enter object name: "
 msgstr "Введите имя объекта: "
 
-#: src/player.c:1845
+#: src/player.c:1838
 msgid "Enter repeat value for the next command: "
 msgstr "Введите число повторений для следующей команды: "
 
-#: src/player.c:1891
+#: src/player.c:1884
 msgid "Enter variable name: "
 msgstr "Введите имя переменной: "
 
-#: src/player.c:1910
+#: src/player.c:1903
 msgid "Enter variable value: "
 msgstr "Введите значение переменной: "
 
-#: src/player.c:1982
+#: src/player.c:1981
 msgid "Name: "
 msgstr "Имя: "
 
-#: src/player.c:2114
+#: src/player.c:2112
 msgid "Enter command: "
 msgstr "Введите команду: "
 
-#: src/player.c:2169
+#: src/player.c:2167
 msgid "Search for: (T)itle, (N)ame, (A)rtist, A(l)bum, (Y)ear, (G)enre"
 msgstr "Поиск по: заголовку(T), исполнителю(A), альбому(L), году(Y), жанру(G)"
 
-#: src/player.c:2275
+#: src/player.c:2291
 msgid "Reload info in the whole list? (Yes/No)"
 msgstr "Загрузить информацию во всем списке? (Yes/No)"
 
-#: src/plist.c:896
+#: src/plist.c:877
 #, c-format
 msgid "%i/%i songs; %i:%02i:%02i/%i:%02i:%02i"
 msgstr "%i/%i песен; %i:%02i:%02i/%i:%02i:%02i"
 
-#: src/help_screen.c:79
+#: src/help_screen.c:80
 msgid "q:\t\t Quit program"
 msgstr "q:\t\t Выйти из программы"
 
-#: src/help_screen.c:80
+#: src/help_screen.c:81
 msgid "j or <Down>:\t Move one line down"
 msgstr "j или <Вниз>:\t Спуститься на одну строку"
 
-#: src/help_screen.c:81
+#: src/help_screen.c:82
 msgid "k or <Up>:\t Move one line up"
 msgstr "k или <Вверх>:\t Подняться на одну строку"
 
-#: src/help_screen.c:82
+#: src/help_screen.c:83
 msgid "u or <PgUp>:\t Move one screen up"
 msgstr "u или <PgUp>:\t Подняться на один экран"
 
-#: src/help_screen.c:83
+#: src/help_screen.c:84
 msgid "d or <PgDn>:\t Move one screen down"
 msgstr "d или <PgDn>:\t Спуститься на один экран"
 
-#: src/help_screen.c:84
+#: src/help_screen.c:85
 msgid "G:\t\t Move to play list end"
 msgstr "G:\t\t Переместиться в конец плей-листа"
 
-#: src/help_screen.c:85
+#: src/help_screen.c:86
 msgid "<Number>G:\t Move to line <Number>"
 msgstr "<Число>G:\t Переместиться на строку <Число>"
 
-#: src/help_screen.c:86
+#: src/help_screen.c:87
 msgid "J:\t\t Move play list one line down"
 msgstr "J:\t\t Опустить плей-лист на строку"
 
-#: src/help_screen.c:87
+#: src/help_screen.c:88
 msgid "K:\t\t Move play list one line up"
 msgstr "K:\t\t Поднять плей-лист на строку"
 
-#: src/help_screen.c:88
+#: src/help_screen.c:89
 msgid "<Number>M:\t Move play list to line <Number>"
 msgstr "<Число>M:\t Переместить плей-лист в строку <Число>"
 
-#: src/help_screen.c:89
+#: src/help_screen.c:90
 msgid "<Ret>:\t\t Start playing"
 msgstr "<Ret>:\t\t Начать воспроизведение"
 
-#: src/help_screen.c:90
+#: src/help_screen.c:91
 msgid "x:\t\t Play stopped song or start playing from begin"
 msgstr "x:\t\t Воспроизводит остановленную песню или начать сначала"
 
-#: src/help_screen.c:92
+#: src/help_screen.c:93
 msgid "c:\t\t Pause/unpause"
 msgstr "c:\t\t Пауза/продолжение"
 
-#: src/help_screen.c:93
+#: src/help_screen.c:94
 msgid "v:\t\t Stop playing"
 msgstr "v:\t\t Остановить воспроизведение"
 
-#: src/help_screen.c:94
+#: src/help_screen.c:95
 msgid "b:\t\t Next song"
 msgstr "b:\t\t Следующая песня"
 
-#: src/help_screen.c:95
+#: src/help_screen.c:96
 msgid "z:\t\t Previous song"
 msgstr "z:\t\t Предыдущая песня"
 
-#: src/help_screen.c:96
+#: src/help_screen.c:97
 msgid "<:\t\t Scroll song 10 seconds up"
 msgstr "<:\t\t Сместиться на 10 секунд назад"
 
-#: src/help_screen.c:97
+#: src/help_screen.c:98
 msgid ">:\t\t Scroll song 10 seconds down"
 msgstr ">:\t\t Сместиться на 10 секунд вперед"
 
-#: src/help_screen.c:98
+#: src/help_screen.c:99
 msgid "<Number>gt:\t Go to <Number>th second in song"
 msgstr "<Число>gt:\t Сместиться к секунде <Число>"
 
-#: src/help_screen.c:99
+#: src/help_screen.c:100
 msgid "+:\t\t Increase volume"
 msgstr "+:\t\t Увеличить громкость"
 
-#: src/help_screen.c:100
+#: src/help_screen.c:101
 msgid "-:\t\t Decrease volume"
 msgstr "-:\t\t Уменьшить громкость"
 
-#: src/help_screen.c:101
+#: src/help_screen.c:102
 msgid "]:\t\t Increase balance"
 msgstr "]:\t\t Увеличить баланс"
 
-#: src/help_screen.c:102
+#: src/help_screen.c:103
 msgid "[:\t\t Decrease balance"
 msgstr "]:\t\t Уменьшить баланс"
 
-#: src/help_screen.c:103
+#: src/help_screen.c:104
 msgid "i:\t\t Song info editor"
 msgstr "i:\t\t Редактор информации о песне"
 
-#: src/help_screen.c:104
+#: src/help_screen.c:105
 msgid "a:\t\t Add songs"
 msgstr "a:\t\t Добавить песни"
 
-#: src/help_screen.c:105
+#: src/help_screen.c:106
 msgid "A:\t\t Add object"
 msgstr "A:\t\t Добавить объект"
 
-#: src/help_screen.c:106
+#: src/help_screen.c:107
 msgid "B:\t\t Launch file browser"
 msgstr "B:\t\t Вызвать броузер файлов"
 
-#: src/help_screen.c:107
+#: src/help_screen.c:108
 msgid "r:\t\t Remove songs"
 msgstr "r:\t\t Удалить песни"
 
-#: src/help_screen.c:108
+#: src/help_screen.c:109
 msgid "s:\t\t Save play list"
 msgstr "s:\t\t Сохранить плей-лист"
 
-#: src/help_screen.c:109
+#: src/help_screen.c:110
 msgid "S:\t\t Sort play list"
 msgstr "S:\t\t Сортировать плей-лист"
 
-#: src/help_screen.c:110
+#: src/help_screen.c:111
 msgid "V:\t\t Start visual mode"
 msgstr "V:\t\t Перейти в визуальный режим"
 
-#: src/help_screen.c:111
+#: src/help_screen.c:112
 msgid "C:\t\t Centrize view"
 msgstr "C:\t\t Центрировать экран"
 
-#: src/help_screen.c:112
+#: src/help_screen.c:113
 msgid "/:\t\t Search"
 msgstr "/:\t\t Поиск"
 
-#: src/help_screen.c:113
+#: src/help_screen.c:114
 msgid "\\:\t\t Advanced search"
 msgstr "\\:\t\t Продвинутый поиск"
 
-#: src/help_screen.c:114
+#: src/help_screen.c:115
 msgid "n:\t\t Go to next search match"
 msgstr "n:\t\t Перейти к следующему результату поиска"
 
-#: src/help_screen.c:115
+#: src/help_screen.c:116
 msgid "N:\t\t Go to previous search match"
 msgstr "N:\t\t Перейти в предыдущему результату поиска"
 
-#: src/help_screen.c:116
+#: src/help_screen.c:117
 msgid "e:\t\t Launch equalizer window"
 msgstr "e:\t\t Вызвать окно эквалайзера"
 
-#: src/help_screen.c:117
+#: src/help_screen.c:118
 msgid "R:\t\t Set/unset shuffle play mode"
 msgstr "R:\t\t Устаносить/сбросить случайный режим воспроизведения"
 
-#: src/help_screen.c:118
+#: src/help_screen.c:119
 msgid "L:\t\t Set/unset loop play mode"
 msgstr "L:\t\t Установить/сбросить кольцевой режим воспроизведения"
 
-#: src/help_screen.c:119
+#: src/help_screen.c:120
 msgid "o:\t\t Variables mini-manager"
 msgstr "o:\t\t Мини-менеджер переменных"
 
-#: src/help_screen.c:120
+#: src/help_screen.c:121
 msgid "O:\t\t Advanced variables manager"
 msgstr "O:\t\t Продвинутый менеджер переменных"
 
-#: src/help_screen.c:121
+#: src/help_screen.c:122
 msgid "U:\t\t Undo"
 msgstr "U:\t\t Отменить"
 
-#: src/help_screen.c:122
+#: src/help_screen.c:123
 msgid "D:\t\t Redo"
 msgstr "D:\t\t Восстановить"
 
-#: src/help_screen.c:123
+#: src/help_screen.c:124
 msgid "I:\t\t Reload songs information"
 msgstr "I:\t\t Перезагрузить информацию о песнях"
 
-#: src/help_screen.c:124
+#: src/help_screen.c:125
 msgid "P:\t\t Reload plugins"
 msgstr "P:\t\t Перезагрузить плагины"
 
-#: src/help_screen.c:125
+#: src/help_screen.c:126
 msgid "ps:\t\t Set play bounds"
 msgstr "ps:\t\t Установить границы воспроизведения"
 
-#: src/help_screen.c:126
+#: src/help_screen.c:127
 msgid "p<Ret>:\t\t Set play bounds and play"
 msgstr "p<Ввод>:\t Установить границы и начать воспроизведение"
 
-#: src/help_screen.c:127
+#: src/help_screen.c:128
 msgid "pc:\t\t Clear play bounds"
 msgstr "pc:\t\t Сбросить границы воспроизведения"
 
-#: src/help_screen.c:128
+#: src/help_screen.c:129
 msgid "!:\t\t Execute command"
 msgstr "!:\t\t Выполнить команду"
 
-#: src/help_screen.c:129
+#: src/help_screen.c:130
 msgid "m<Letter>:\t Set mark <Letter>"
 msgstr "m<Буква>:\t Установить метку <Буква>"
 
-#: src/help_screen.c:130
+#: src/help_screen.c:131
 msgid "`<Letter>:\t Go to mark <Letter>"
 msgstr "`<Буква>:\t Перейти к метке <Буква>"
 
-#: src/help_screen.c:131
+#: src/help_screen.c:132
 msgid "``:\t\t Go to previous position"
 msgstr "``:\t\t Перейти к предыдущей позиции"
 
-#: src/help_screen.c:132
+#: src/help_screen.c:133
 msgid "<Backspace>:\t Go to previous time"
 msgstr "<Backspace>:\t Перейти к предыдущему времени"
 
-#: src/help_screen.c:133
+#: src/help_screen.c:134
 msgid "^l:\t\t Redisplay screen"
 msgstr "^l:\t\t Обновить экран"
 
-#: src/help_screen.c:134
+#: src/help_screen.c:135
 msgid "?:\t\t This help screen"
 msgstr "?:\t\t Этот экран помощи"
 
-#: src/help_screen.c:155
+#: src/help_screen.c:162
 msgid "MPFC Default Key Bindings"
 msgstr "Стандартные клавиши MPFC"
 
-#: src/help_screen.c:170
+#: src/help_screen.c:182
 msgid "Press <Space> to see next screen and <q> to exit\n"
 msgstr "Нажмите <Пробел>, чтобы увидеть следующий экран, и <q>, чтобы выйти\n"
 
@@ -426,11 +426,11 @@ msgstr "Ошибка выходного плагина"
 msgid "Effect plugin error"
 msgstr "Ошибка плагина эффектов"
 
-#: src/eqwnd.c:97
+#: src/eqwnd.c:88
 msgid "MPFC Equalizer"
 msgstr "Эквалайзер MPFC"
 
-#: src/eqwnd.c:252
+#: src/eqwnd.c:251
 msgid "Load preset from a Winamp EQF file: "
 msgstr "Загрузить из файла Winamp EQF"
 
@@ -439,57 +439,15 @@ msgstr "Загрузить из файла Winamp EQF"
 msgid "Current directory is %s\n"
 msgstr "Текущий каталог %s\n"
 
-#: src/browser.c:480
+#: src/browser.c:477
 msgid "Select files matching pattern: "
 msgstr "Выбрать файлы, удовлетворяющие шаблону: "
 
-#: src/browser.c:481
+#: src/browser.c:478
 msgid "Deselect files matching pattern: "
 msgstr "Снять выделение с файлов, удовлетворяющих шаблону: "
 
-# c-format
-#: src/file/http.c:84
-#, c-format
-msgid "Getting address of host %s"
-msgstr "Получаю адрес %s"
-
-#: src/file/http.c:90 src/file/http.c:104 src/file/http.c:159
-#: plugins/input/mp3/mp3.c:912
-msgid "OK"
-msgstr "OK"
-
-#: src/file/http.c:100 plugins/input/audiocd/cddb.c:217
-#: plugins/input/audiocd/cddb.c:581
-#, c-format
-msgid "Connecting to %s"
-msgstr "Подключаюсь к %s"
-
-# c-format
-#: src/file/http.c:107
-#, c-format
-msgid "Sending request for file %s"
-msgstr "Отправляю запрос на файл %s"
-
-#: src/file/http.c:114
-msgid "Getting HTTP header"
-msgstr "Получаю заголовок HTTP"
-
-# c-format
-#: src/file/http.c:175
-#, c-format
-msgid "Redirect to %s"
-msgstr "Перенаправление к %s"
-
-#: src/file/http.c:184 plugins/input/audiocd/cddb.c:613
-msgid "Failure!"
-msgstr "Облом!"
-
-#: src/file/http.c:252 src/file/http.c:257
-#, c-format
-msgid "Filling buffer: %d%% done"
-msgstr "Заполняю буфер: %d%%"
-
-#: plugins/input/mp3/mp3.c:422
+#: plugins/input/mp3/mp3.c:421
 #, c-format
 msgid ""
 "MPEG %s, layer %i\n"
@@ -510,47 +468,47 @@ msgstr ""
 "Подлинный: %s\n"
 "Акцент: %s"
 
-#: plugins/input/mp3/mp3.c:435 plugins/input/mp3/mp3.c:573
+#: plugins/input/mp3/mp3.c:434 plugins/input/mp3/mp3.c:529
 msgid "Single channel"
 msgstr "Один канал"
 
-#: plugins/input/mp3/mp3.c:436 plugins/input/mp3/mp3.c:574
+#: plugins/input/mp3/mp3.c:435 plugins/input/mp3/mp3.c:530
 msgid "Dual channel"
 msgstr "Два канала"
 
-#: plugins/input/mp3/mp3.c:437 plugins/input/mp3/mp3.c:575
+#: plugins/input/mp3/mp3.c:436 plugins/input/mp3/mp3.c:531
 msgid "Joint Stereo"
 msgstr "Объединенное стерео"
 
-#: plugins/input/mp3/mp3.c:438 plugins/input/mp3/mp3.c:576
+#: plugins/input/mp3/mp3.c:437 plugins/input/mp3/mp3.c:532
 msgid "Stereo"
 msgstr "Стерео"
 
-#: plugins/input/mp3/mp3.c:439 plugins/input/mp3/mp3.c:440
-#: plugins/input/mp3/mp3.c:441 plugins/input/mp3/mp3.c:577
-#: plugins/input/mp3/mp3.c:578 plugins/input/mp3/mp3.c:579
+#: plugins/input/mp3/mp3.c:438 plugins/input/mp3/mp3.c:439
+#: plugins/input/mp3/mp3.c:440 plugins/input/mp3/mp3.c:533
+#: plugins/input/mp3/mp3.c:534 plugins/input/mp3/mp3.c:535
 msgid "Yes"
 msgstr "Да"
 
-#: plugins/input/mp3/mp3.c:439 plugins/input/mp3/mp3.c:440
-#: plugins/input/mp3/mp3.c:441 plugins/input/mp3/mp3.c:577
-#: plugins/input/mp3/mp3.c:578 plugins/input/mp3/mp3.c:579
+#: plugins/input/mp3/mp3.c:438 plugins/input/mp3/mp3.c:439
+#: plugins/input/mp3/mp3.c:440 plugins/input/mp3/mp3.c:533
+#: plugins/input/mp3/mp3.c:534 plugins/input/mp3/mp3.c:535
 msgid "No"
 msgstr "Нет"
 
-#: plugins/input/mp3/mp3.c:442 plugins/input/mp3/mp3.c:580
+#: plugins/input/mp3/mp3.c:441 plugins/input/mp3/mp3.c:536
 msgid "None"
 msgstr "Нет"
 
-#: plugins/input/mp3/mp3.c:444 plugins/input/mp3/mp3.c:582
+#: plugins/input/mp3/mp3.c:443 plugins/input/mp3/mp3.c:538
 msgid "50/15 microseconds"
 msgstr "50/15 микросекунд"
 
-#: plugins/input/mp3/mp3.c:444 plugins/input/mp3/mp3.c:582
+#: plugins/input/mp3/mp3.c:443 plugins/input/mp3/mp3.c:538
 msgid "CCITT J.17"
 msgstr "CCITT J.17"
 
-#: plugins/input/mp3/mp3.c:557
+#: plugins/input/mp3/mp3.c:513
 #, c-format
 msgid ""
 "MPEG %s, layer %i\n"
@@ -577,16 +535,20 @@ msgstr ""
 "Длина: %i секунд\n"
 "Размер файла: %i байт"
 
-#: plugins/input/mp3/mp3.c:888
+#: plugins/input/mp3/mp3.c:846
 #, c-format
 msgid "Removing tag from file %s"
 msgstr "Удаляю тег из файла %s"
 
-#: plugins/input/mp3/mp3.c:943
+#: plugins/input/mp3/mp3.c:869
+msgid "OK"
+msgstr "OK"
+
+#: plugins/input/mp3/mp3.c:891
 msgid "Remove ID3 tags"
 msgstr "Удалить теги ID3"
 
-#: plugins/input/ogg/ogg.c:380
+#: plugins/input/ogg/ogg.c:346
 #, c-format
 msgid ""
 "Nominal bitrate: %i kb/s\n"
@@ -597,7 +559,7 @@ msgstr ""
 "Частота сэмплов: %i Гц\n"
 "Число каналов: %i"
 
-#: plugins/input/ogg/ogg.c:431
+#: plugins/input/ogg/ogg.c:387
 #, c-format
 msgid ""
 "Nominal bitrate: %i kb/s\n"
@@ -649,56 +611,65 @@ msgid ""
 "Error writing stream to output. Output stream may be corrupted or truncated."
 msgstr "Ошибка при записи потока. Выходной поток поврежден или обрезан."
 
-#: plugins/input/audiocd/audiocd.c:440
+#: plugins/input/audiocd/audiocd.c:441
 msgid "Reload info from CDDB"
 msgstr "Загрузить информацию из CDDB"
 
-#: plugins/input/audiocd/audiocd.c:443
+#: plugins/input/audiocd/audiocd.c:444
 msgid "Submit info to CDDB"
 msgstr "Отправить информацию в CDDB"
 
-#: plugins/input/audiocd/cddb.c:211 plugins/input/audiocd/cddb.c:575
+#: plugins/input/audiocd/cddb.c:213 plugins/input/audiocd/cddb.c:570
 #, c-format
 msgid "Getting address of %s"
 msgstr "Получаю адрес %s"
 
-#: plugins/input/audiocd/cddb.c:230
+#: plugins/input/audiocd/cddb.c:219 plugins/input/audiocd/cddb.c:576
+#, c-format
+msgid "Connecting to %s"
+msgstr "Подключаюсь к %s"
+
+#: plugins/input/audiocd/cddb.c:232
 msgid "Sending query to server"
 msgstr "Отправляю запрос серверу"
 
-#: plugins/input/audiocd/cddb.c:262
+#: plugins/input/audiocd/cddb.c:264
 msgid "Saving data"
 msgstr "Сохраняю данные"
 
-#: plugins/input/audiocd/cddb.c:264
+#: plugins/input/audiocd/cddb.c:266
 msgid "Success"
 msgstr "Успех"
 
-#: plugins/input/audiocd/cddb.c:267
+#: plugins/input/audiocd/cddb.c:269
 msgid "Failed!"
 msgstr "Облом!"
 
-#: plugins/input/audiocd/cddb.c:552
+#: plugins/input/audiocd/cddb.c:547
 msgid "CDDB submit error: no existing info found"
 msgstr "Ошибка отправки CDDB: не найдено существующей информации"
 
-#: plugins/input/audiocd/cddb.c:560
+#: plugins/input/audiocd/cddb.c:555
 msgid "CDDB submit error: you must specify your email address"
 msgstr "Ошибка отправки CDDB: вы должны указать свой адрес email"
 
-#: plugins/input/audiocd/cddb.c:567
+#: plugins/input/audiocd/cddb.c:562
 msgid "CDDB submit error: you must specify your category"
 msgstr "Ошибка отправки CDDB: вы должны указать категорию"
 
-#: plugins/input/audiocd/cddb.c:594
+#: plugins/input/audiocd/cddb.c:589
 msgid "Posting data to server"
 msgstr "Отправляю данные к серверу"
 
-#: plugins/input/audiocd/cddb.c:605
+#: plugins/input/audiocd/cddb.c:600
 msgid "Getting response"
 msgstr "Получаю ответ"
 
-#: plugins/input/wav/wav.c:270
+#: plugins/input/audiocd/cddb.c:608
+msgid "Failure!"
+msgstr "Облом!"
+
+#: plugins/input/wav/wav.c:243
 #, c-format
 msgid ""
 "File size: %i bytes\n"
@@ -718,6 +689,24 @@ msgstr ""
 "Частота сэмплов: %i\n"
 "Байт/сек: %i\n"
 "Выравнивание блока: %i"
+
+# c-format
+#~ msgid "Getting address of host %s"
+#~ msgstr "Получаю адрес %s"
+
+# c-format
+#~ msgid "Sending request for file %s"
+#~ msgstr "Отправляю запрос на файл %s"
+
+#~ msgid "Getting HTTP header"
+#~ msgstr "Получаю заголовок HTTP"
+
+# c-format
+#~ msgid "Redirect to %s"
+#~ msgstr "Перенаправление к %s"
+
+#~ msgid "Filling buffer: %d%% done"
+#~ msgstr "Заполняю буфер: %d%%"
 
 #~ msgid "Saving info to file %s"
 #~ msgstr "Сохраняю информацию в файл в %s"

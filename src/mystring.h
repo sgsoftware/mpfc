@@ -5,7 +5,7 @@
 /* FILE NAME   : mystring.h
  * PURPOSE     : SG MPFC. Interface for string management functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.02.2004
+ * LAST UPDATE : 8.02.2004
  * NOTE        : Module prefix 'str'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -37,6 +37,9 @@ typedef struct
 
 	/* String length */
 	int m_len;
+
+	/* Amount of memory allocated for string and size of allocation portion */
+	int m_allocated, m_portion_size;
 } str_t;
 
 /* Get string length */

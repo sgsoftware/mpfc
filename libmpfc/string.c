@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. String management functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.02.2004
+ * LAST UPDATE : 8.02.2004
  * NOTE        : Module prefix 'str'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -32,6 +32,9 @@
 #include "types.h"
 #include "mystring.h"
 
+/* String portion size */
+#define STR_PORTION_SIZE 64
+
 /* Some private functions */
 static void str_allocate( str_t *str, int new_len );
 
@@ -52,6 +55,8 @@ str_t *str_new( char *s )
 	/* Initialize fields */
 	str->m_len = strlen(s);
 	str->m_data = NULL;
+	str->m_allocated = 0;
+	str->m_portion_size = STR_PORTION_SIZE;
 	str_allocate(str, str->m_len);
 	strcpy(str->m_data, s);
 	return str;
@@ -133,12 +138,12 @@ char str_delete_char( str_t *str, int index )
 	char ch;
 	
 	if (str == NULL || index < 0 || index >= str->m_len)
-		return;
+		return 0;
 
 	ch = str->m_data[index];
-	str_allocate(str, str->m_len - 1);
 	memmove(&str->m_data[index], &str->m_data[index + 1],
 			str->m_len - index);
+	str_allocate(str, str->m_len - 1);
 	str->m_len --;
 	return ch;
 } /* End of 'str_delete_char' function */
@@ -209,7 +214,9 @@ int str_printf( str_t *str, char *fmt, ... )
 /* Allocate space for string data */
 static void str_allocate( str_t *str, int new_len )
 {
-	str->m_data = (char *)realloc(str->m_data, new_len + 1);
+	for ( str->m_allocated = new_len + 1; 
+			str->m_allocated % str->m_portion_size; str->m_allocated ++ );
+	str->m_data = (char *)realloc(str->m_data, str->m_allocated);
 } /* End of 'str_allocate' function */
 
 /* End of 'string.c' file */
