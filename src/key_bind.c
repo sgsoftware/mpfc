@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Key bindings management functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 6.09.2003
+ * LAST UPDATE : 27.09.2003
  * NOTE        : Module prefix 'kbind'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -122,6 +122,59 @@ void kbind_init( void )
 	kbind_add(KBIND_CLEAR_PLAY_BOUNDS, 2, 'P', 'c');
 	kbind_add(KBIND_PLAY_BOUNDS, 2, 'P', '\n');
 	kbind_add(KBIND_EXEC, 1, '!');
+	kbind_add(KBIND_MARKA, 2, 'm', 'a');
+	kbind_add(KBIND_MARKB, 2, 'm', 'b');
+	kbind_add(KBIND_MARKC, 2, 'm', 'c');
+	kbind_add(KBIND_MARKD, 2, 'm', 'd');
+	kbind_add(KBIND_MARKE, 2, 'm', 'e');
+	kbind_add(KBIND_MARKF, 2, 'm', 'f');
+	kbind_add(KBIND_MARKG, 2, 'm', 'g');
+	kbind_add(KBIND_MARKH, 2, 'm', 'h');
+	kbind_add(KBIND_MARKI, 2, 'm', 'i');
+	kbind_add(KBIND_MARKJ, 2, 'm', 'j');
+	kbind_add(KBIND_MARKK, 2, 'm', 'k');
+	kbind_add(KBIND_MARKL, 2, 'm', 'l');
+	kbind_add(KBIND_MARKM, 2, 'm', 'm');
+	kbind_add(KBIND_MARKN, 2, 'm', 'n');
+	kbind_add(KBIND_MARKO, 2, 'm', 'o');
+	kbind_add(KBIND_MARKP, 2, 'm', 'p');
+	kbind_add(KBIND_MARKQ, 2, 'm', 'q');
+	kbind_add(KBIND_MARKR, 2, 'm', 'r');
+	kbind_add(KBIND_MARKS, 2, 'm', 's');
+	kbind_add(KBIND_MARKT, 2, 'm', 't');
+	kbind_add(KBIND_MARKU, 2, 'm', 'u');
+	kbind_add(KBIND_MARKV, 2, 'm', 'v');
+	kbind_add(KBIND_MARKW, 2, 'm', 'w');
+	kbind_add(KBIND_MARKX, 2, 'm', 'x');
+	kbind_add(KBIND_MARKY, 2, 'm', 'y');
+	kbind_add(KBIND_MARKZ, 2, 'm', 'z');
+	kbind_add(KBIND_GOA, 2, '`', 'a');
+	kbind_add(KBIND_GOB, 2, '`', 'b');
+	kbind_add(KBIND_GOC, 2, '`', 'c');
+	kbind_add(KBIND_GOD, 2, '`', 'd');
+	kbind_add(KBIND_GOE, 2, '`', 'e');
+	kbind_add(KBIND_GOF, 2, '`', 'f');
+	kbind_add(KBIND_GOG, 2, '`', 'g');
+	kbind_add(KBIND_GOH, 2, '`', 'h');
+	kbind_add(KBIND_GOI, 2, '`', 'i');
+	kbind_add(KBIND_GOJ, 2, '`', 'j');
+	kbind_add(KBIND_GOK, 2, '`', 'k');
+	kbind_add(KBIND_GOL, 2, '`', 'l');
+	kbind_add(KBIND_GOM, 2, '`', 'm');
+	kbind_add(KBIND_GON, 2, '`', 'n');
+	kbind_add(KBIND_GOO, 2, '`', 'o');
+	kbind_add(KBIND_GOP, 2, '`', 'p');
+	kbind_add(KBIND_GOQ, 2, '`', 'q');
+	kbind_add(KBIND_GOR, 2, '`', 'r');
+	kbind_add(KBIND_GOS, 2, '`', 's');
+	kbind_add(KBIND_GOT, 2, '`', 't');
+	kbind_add(KBIND_GOU, 2, '`', 'u');
+	kbind_add(KBIND_GOV, 2, '`', 'v');
+	kbind_add(KBIND_GOW, 2, '`', 'w');
+	kbind_add(KBIND_GOX, 2, '`', 'x');
+	kbind_add(KBIND_GOY, 2, '`', 'y');
+	kbind_add(KBIND_GOZ, 2, '`', 'z');
+	kbind_add(KBIND_GOBACK, 2, '`', '`');
 
 	/* Read bindings from configuration */
 	kbind_read_from_cfg();
@@ -321,6 +374,112 @@ int kbind_var2act( char *name )
 		return KBIND_PLAY_BOUNDS;
 	else if (!strcmp(name, "kbind_exec"))
 		return KBIND_EXEC;
+	else if (!strcmp(name, "kbind_marka"))
+		return KBIND_MARKA;
+	else if (!strcmp(name, "kbind_markb"))
+		return KBIND_MARKB;
+	else if (!strcmp(name, "kbind_markc"))
+		return KBIND_MARKC;
+	else if (!strcmp(name, "kbind_markd"))
+		return KBIND_MARKD;
+	else if (!strcmp(name, "kbind_marke"))
+		return KBIND_MARKE;
+	else if (!strcmp(name, "kbind_markf"))
+		return KBIND_MARKF;
+	else if (!strcmp(name, "kbind_markg"))
+		return KBIND_MARKG;
+	else if (!strcmp(name, "kbind_markh"))
+		return KBIND_MARKH;
+	else if (!strcmp(name, "kbind_marki"))
+		return KBIND_MARKI;
+	else if (!strcmp(name, "kbind_markj"))
+		return KBIND_MARKJ;
+	else if (!strcmp(name, "kbind_markk"))
+		return KBIND_MARKK;
+	else if (!strcmp(name, "kbind_markl"))
+		return KBIND_MARKL;
+	else if (!strcmp(name, "kbind_markm"))
+		return KBIND_MARKM;
+	else if (!strcmp(name, "kbind_markn"))
+		return KBIND_MARKN;
+	else if (!strcmp(name, "kbind_marko"))
+		return KBIND_MARKO;
+	else if (!strcmp(name, "kbind_markp"))
+		return KBIND_MARKP;
+	else if (!strcmp(name, "kbind_markq"))
+		return KBIND_MARKQ;
+	else if (!strcmp(name, "kbind_markr"))
+		return KBIND_MARKR;
+	else if (!strcmp(name, "kbind_marks"))
+		return KBIND_MARKS;
+	else if (!strcmp(name, "kbind_markt"))
+		return KBIND_MARKT;
+	else if (!strcmp(name, "kbind_marku"))
+		return KBIND_MARKU;
+	else if (!strcmp(name, "kbind_markv"))
+		return KBIND_MARKV;
+	else if (!strcmp(name, "kbind_markw"))
+		return KBIND_MARKW;
+	else if (!strcmp(name, "kbind_markx"))
+		return KBIND_MARKX;
+	else if (!strcmp(name, "kbind_marky"))
+		return KBIND_MARKY;
+	else if (!strcmp(name, "kbind_markz"))
+		return KBIND_MARKZ;
+	else if (!strcmp(name, "kbind_goa"))
+		return KBIND_GOA;
+	else if (!strcmp(name, "kbind_gob"))
+		return KBIND_GOB;
+	else if (!strcmp(name, "kbind_goc"))
+		return KBIND_GOC;
+	else if (!strcmp(name, "kbind_god"))
+		return KBIND_GOD;
+	else if (!strcmp(name, "kbind_goe"))
+		return KBIND_GOE;
+	else if (!strcmp(name, "kbind_gof"))
+		return KBIND_GOF;
+	else if (!strcmp(name, "kbind_gog"))
+		return KBIND_GOG;
+	else if (!strcmp(name, "kbind_goh"))
+		return KBIND_GOH;
+	else if (!strcmp(name, "kbind_goi"))
+		return KBIND_GOI;
+	else if (!strcmp(name, "kbind_goj"))
+		return KBIND_GOJ;
+	else if (!strcmp(name, "kbind_gok"))
+		return KBIND_GOK;
+	else if (!strcmp(name, "kbind_gol"))
+		return KBIND_GOL;
+	else if (!strcmp(name, "kbind_gom"))
+		return KBIND_GOM;
+	else if (!strcmp(name, "kbind_gon"))
+		return KBIND_GON;
+	else if (!strcmp(name, "kbind_goo"))
+		return KBIND_GOO;
+	else if (!strcmp(name, "kbind_gop"))
+		return KBIND_GOP;
+	else if (!strcmp(name, "kbind_goq"))
+		return KBIND_GOQ;
+	else if (!strcmp(name, "kbind_gor"))
+		return KBIND_GOR;
+	else if (!strcmp(name, "kbind_gos"))
+		return KBIND_GOS;
+	else if (!strcmp(name, "kbind_got"))
+		return KBIND_GOT;
+	else if (!strcmp(name, "kbind_gou"))
+		return KBIND_GOU;
+	else if (!strcmp(name, "kbind_gov"))
+		return KBIND_GOV;
+	else if (!strcmp(name, "kbind_gow"))
+		return KBIND_GOW;
+	else if (!strcmp(name, "kbind_gox"))
+		return KBIND_GOX;
+	else if (!strcmp(name, "kbind_goy"))
+		return KBIND_GOY;
+	else if (!strcmp(name, "kbind_goz"))
+		return KBIND_GOZ;
+	else if (!strcmp(name, "kbind_goback"))
+		return KBIND_GOBACK;
 	return -1;
 } /* End of 'kbind_var2act' function */
 

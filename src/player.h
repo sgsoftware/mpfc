@@ -5,7 +5,7 @@
 /* FILE NAME   : player.h
  * PURPOSE     : SG MPFC. Interface for main player functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 6.09.2003
+ * LAST UPDATE : 27.09.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -193,6 +193,15 @@ void player_update_vol( void );
 
 /* Execute a command */
 void player_exec( void );
+
+/* Set mark */
+void player_set_mark( char m );
+
+/* Go to mark */
+void player_goto_mark( char m );
+
+/* Go back in play list */
+void player_go_back( void );
 
 #endif
 

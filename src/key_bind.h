@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for key bindings management
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 6.09.2003
+ * LAST UPDATE : 27.09.2003
  * NOTE        : Module prefix 'kbind'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -89,7 +89,60 @@
 #define KBIND_CLEAR_PLAY_BOUNDS	55
 #define KBIND_PLAY_BOUNDS		56
 #define KBIND_EXEC				57
-#define KBIND_NUM_ACTIONS		58
+#define KBIND_MARKA				59
+#define KBIND_MARKB				60
+#define KBIND_MARKC				61
+#define KBIND_MARKD				62
+#define KBIND_MARKE				63
+#define KBIND_MARKF				64
+#define KBIND_MARKG				65
+#define KBIND_MARKH				66
+#define KBIND_MARKI				67
+#define KBIND_MARKJ				68
+#define KBIND_MARKK				69
+#define KBIND_MARKL				70
+#define KBIND_MARKM				71
+#define KBIND_MARKN				72
+#define KBIND_MARKO				73
+#define KBIND_MARKP				74
+#define KBIND_MARKQ				75
+#define KBIND_MARKR				76
+#define KBIND_MARKS				77
+#define KBIND_MARKT				78
+#define KBIND_MARKU				79
+#define KBIND_MARKV				80
+#define KBIND_MARKW				81
+#define KBIND_MARKX				82
+#define KBIND_MARKY				83
+#define KBIND_MARKZ				84
+#define KBIND_GOA				85
+#define KBIND_GOB				86
+#define KBIND_GOC				87
+#define KBIND_GOD				88
+#define KBIND_GOE				89
+#define KBIND_GOF				90
+#define KBIND_GOG				91
+#define KBIND_GOH				92
+#define KBIND_GOI				93
+#define KBIND_GOJ				94
+#define KBIND_GOK				95
+#define KBIND_GOL				96
+#define KBIND_GOM				97
+#define KBIND_GON				98
+#define KBIND_GOO				99
+#define KBIND_GOP				100
+#define KBIND_GOQ				101
+#define KBIND_GOR				102
+#define KBIND_GOS				103
+#define KBIND_GOT				104
+#define KBIND_GOU				105
+#define KBIND_GOV				106
+#define KBIND_GOW				107
+#define KBIND_GOX				108
+#define KBIND_GOY				109
+#define KBIND_GOZ				110
+#define KBIND_GOBACK			111
+#define KBIND_NUM_ACTIONS		112
 
 /* The maximal key sequence length */
 #define KBIND_MAX_SEQ_LEN 10

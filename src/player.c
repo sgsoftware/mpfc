@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG MPFC. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 6.09.2003
+ * LAST UPDATE : 27.09.2003
  * NOTE        : Module prefix 'player'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -116,6 +116,11 @@ int player_var_mngr_pos = -1;
 /* Play boundaries */
 int player_start = -1, player_end = -1;
 
+/* Marks */
+#define PLAYER_NUM_MARKS ('z' - 'a' + 1)
+int player_marks[PLAYER_NUM_MARKS];
+int player_last_pos = -1;
+
 /* Initialize player */
 bool_t player_init( int argc, char *argv[] )
 {
@@ -203,6 +208,10 @@ bool_t player_init( int argc, char *argv[] )
 			player_balance = 100 - l * 50 / r;
 		}
 	}
+
+	/* Initialize marks */
+	for ( i = 0; i < PLAYER_NUM_MARKS; i ++ )
+		player_marks[i] = -1;
 
 	/* Initialize equalizer */
 	player_eq_changed = FALSE;
@@ -1167,10 +1176,12 @@ void player_handle_action( int action )
 	char str[10];
 	editbox_t *ebox;
 	bool_t dont_change_repval = FALSE;
+	int was_pos;
 
 	/* Clear message string */
 	strcpy(player_msg, "");
 
+	was_pos = player_plist->m_sel_end;
 	switch (action)
 	{
 	/* Exit MPFC */
@@ -1413,6 +1424,71 @@ void player_handle_action( int action )
 		player_exec();
 		break;
 
+	/* Set mark */
+	case KBIND_MARKA:
+	case KBIND_MARKB:
+	case KBIND_MARKC:
+	case KBIND_MARKD:
+	case KBIND_MARKE:
+	case KBIND_MARKF:
+	case KBIND_MARKG:
+	case KBIND_MARKH:
+	case KBIND_MARKI:
+	case KBIND_MARKJ:
+	case KBIND_MARKK:
+	case KBIND_MARKL:
+	case KBIND_MARKM:
+	case KBIND_MARKN:
+	case KBIND_MARKO:
+	case KBIND_MARKP:
+	case KBIND_MARKQ:
+	case KBIND_MARKR:
+	case KBIND_MARKS:
+	case KBIND_MARKT:
+	case KBIND_MARKU:
+	case KBIND_MARKV:
+	case KBIND_MARKW:
+	case KBIND_MARKX:
+	case KBIND_MARKY:
+	case KBIND_MARKZ:
+		player_set_mark(action - KBIND_MARKA + 'a');
+		break;
+
+	/* Go to mark */
+	case KBIND_GOA:
+	case KBIND_GOB:
+	case KBIND_GOC:
+	case KBIND_GOD:
+	case KBIND_GOE:
+	case KBIND_GOF:
+	case KBIND_GOG:
+	case KBIND_GOH:
+	case KBIND_GOI:
+	case KBIND_GOJ:
+	case KBIND_GOK:
+	case KBIND_GOL:
+	case KBIND_GOM:
+	case KBIND_GON:
+	case KBIND_GOO:
+	case KBIND_GOP:
+	case KBIND_GOQ:
+	case KBIND_GOR:
+	case KBIND_GOS:
+	case KBIND_GOT:
+	case KBIND_GOU:
+	case KBIND_GOV:
+	case KBIND_GOW:
+	case KBIND_GOX:
+	case KBIND_GOY:
+	case KBIND_GOZ:
+		player_goto_mark(action - KBIND_GOA + 'a');
+		break;
+
+	/* Go back */
+	case KBIND_GOBACK:
+		player_go_back();
+		break;
+
 	/* Digit means command repeation value edit */
 	case KBIND_DIG_1:
 	case KBIND_DIG_2:
@@ -1454,6 +1530,10 @@ void player_handle_action( int action )
 	/* Flush repeat value */
 	if (!dont_change_repval)
 		player_repval = 0;
+
+	/* Save last position */
+	if (player_plist->m_sel_end != was_pos)
+		player_last_pos = was_pos;
 } /* End of 'player_handle_action' function */
 
 /* Launch variables mini-manager */
@@ -1707,6 +1787,30 @@ void player_exec( void )
 		wnd_destroy(ebox);
 	}
 } /* End of 'player_exec' function */
+
+/* Set mark */
+void player_set_mark( char m )
+{
+	player_marks[m - 'a'] = player_plist->m_sel_end;
+} /* End of 'player_set_mark' function */
+
+/* Go to mark */
+void player_goto_mark( char m )
+{
+	int pos = player_marks[m - 'a'];
+	
+	if (pos >= 0)
+		plist_move(player_plist, pos, FALSE);
+} /* End of 'player_goto_mark' function */
+
+/* Go back in play list */
+void player_go_back( void )
+{
+	if (player_last_pos >= 0)
+	{
+		plist_move(player_plist, player_last_pos, FALSE);
+	}
+} /* End of 'player_go_back' function */
 
 /* End of 'player.c' file */
 

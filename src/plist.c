@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Play list manipulation
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 13.08.2003
+ * LAST UPDATE : 27.09.2003
  * NOTE        : Module prefix 'plist'.
  *
  * This program is free software; you can redistribute it and/or 
