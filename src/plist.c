@@ -586,32 +586,24 @@ void plist_rem( plist_t *pl )
 		undo_add(player_ul, undo);
 	}
 
+	/* Stop currently playing song if it is inside area being removed */
+	if (pl->m_cur_song >= start && pl->m_cur_song <= end)
+	{
+		player_end_play();
+		pl->m_cur_song = -1;
+	}
+
 	/* Unlock play list */
 	plist_lock(pl);
 
 	/* Free memory */
 	for ( i = start; i <= end; i ++ )
-		if (i != pl->m_cur_song)
-			song_free(pl->m_list[i]);
+		song_free(pl->m_list[i]);
 
 	/* Shift songs list and reallocate memory */
-	cur = (pl->m_cur_song >= start && pl->m_cur_song <= end);
-	if (!cur)
-	{
-		memmove(&pl->m_list[start], &pl->m_list[end + 1],
-				(pl->m_len - end - 1) * sizeof(*pl->m_list));
-	}
-	else
-	{
-		int j;
-
-		for ( i = start, j = start; i < pl->m_len; i ++ )
-		{
-			if (i == pl->m_cur_song || i > end)
-				pl->m_list[j ++] = pl->m_list[i];
-		}
-	}
-	pl->m_len -= (end - start + 1 - cur);
+	memmove(&pl->m_list[start], &pl->m_list[end + 1],
+			(pl->m_len - end - 1) * sizeof(*pl->m_list));
+	pl->m_len -= (end - start + 1);
 	if (pl->m_len)
 		pl->m_list = (song_t **)realloc(pl->m_list, 
 				pl->m_len * sizeof(*pl->m_list));
@@ -624,9 +616,7 @@ void plist_rem( plist_t *pl )
 	/* Fix cursor */
 	plist_move(pl, start, FALSE);
 	pl->m_sel_start = pl->m_sel_end;
-	if (cur)
-		pl->m_cur_song = pl->m_sel_start;
-	else if (pl->m_cur_song > end)
+	if (pl->m_cur_song > end)
 		pl->m_cur_song -= (end - start + 1);
 
 	/* Unlock play list */
