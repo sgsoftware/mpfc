@@ -80,6 +80,9 @@ static pthread_mutex_t ogg_mutex;
 /* Logger */
 static logger_t *ogg_log;
 
+/* Configuration list */
+static cfg_node_t *ogg_cfg;
+
 /* Start playing with an opened file descriptor */
 bool_t ogg_start_with_fd( char *filename, file_t *fd )
 {
@@ -272,7 +275,7 @@ void ogg_save_info( char *filename, song_info_t *info )
 		return;
 
 	/* Convert to UTF-8 if need */
-	if (cfg_get_var_int(pmng_get_cfg(ogg_pmng), "ogg-always-use-utf8") &&
+	if (cfg_get_var_int(ogg_cfg, "always-use-utf8") &&
 			(info->m_charset == NULL || strcasecmp(info->m_charset, "utf-8")))
 	{
 		si_convert_cs(info, "utf-8", ogg_pmng);
@@ -430,6 +433,7 @@ void plugin_exchange_data( plugin_data_t *pd )
 	INP_DATA(pd)->m_get_info = ogg_get_info;
 	ogg_pmng = pd->m_pmng;
 	ogg_log = pd->m_logger;
+	ogg_cfg = pd->m_cfg;
 } /* End of 'ogg_get_func_list' function */
 
 /* Initialize genres list */

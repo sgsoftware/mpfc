@@ -38,6 +38,9 @@
 /* Initialize basic window class */
 wnd_class_t *wnd_basic_class_init( wnd_global_data_t *global );
 
+/* Set the default styles */
+void wnd_basic_class_set_default_styles( cfg_node_t *list );
+
 /* Get message handler and callback function */
 wnd_msg_handler_t **wnd_basic_get_msg_info( wnd_t *wnd, char *msg_name,
 		wnd_class_msg_callback_t *callback );

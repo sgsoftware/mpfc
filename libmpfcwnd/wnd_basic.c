@@ -33,7 +33,8 @@
 /* Initialize basic window class */
 wnd_class_t *wnd_basic_class_init( wnd_global_data_t *global )
 {
-	return wnd_class_new(global, "basic", NULL, wnd_basic_get_msg_info, NULL);
+	return wnd_class_new(global, "basic", NULL, wnd_basic_get_msg_info, 
+			wnd_basic_class_set_default_styles);
 } /* End of 'wnd_basic_class_init' function */
 
 /* Get message handler and callback */
@@ -294,6 +295,30 @@ wnd_msg_retcode_t wnd_basic_callback_user( wnd_t *wnd,
 	wnd_msg_user_t *d = (wnd_msg_user_t *)(msg_data->m_data);
 	return WND_MSG_USER_HANDLER(handler)(wnd, d->m_id, d->m_data);
 } /* End of 'wnd_basic_callback_user' function */
+
+/* Set the default styles */
+void wnd_basic_class_set_default_styles( cfg_node_t *list )
+{
+	/* Set styles */
+	cfg_set_var(list, "caption-style", "green:black:bold");
+	cfg_set_var(list, "border-style", "white:black:bold");
+	cfg_set_var(list, "repos-border-style", "green:black:bold");
+	cfg_set_var(list, "maximize-box-style", "red:black:bold");
+	cfg_set_var(list, "close-box-style", "red:black:bold");
+	cfg_set_var(list, "wndbar-style", "black:white");
+	cfg_set_var(list, "wndbar-focus-style", "black:green");
+	cfg_set_var(list, "text-style", "white:black");
+	cfg_set_var(list, "focus-text-style", "white:black");
+
+	/* Set default kbinds */
+	cfg_set_var(list, "kbind.refresh_screen", "<Ctrl-l>");
+	cfg_set_var(list, "kbind.close_window", "<Alt-c>");
+	cfg_set_var(list, "kbind.maximize_window", "<Alt-m>");
+	cfg_set_var(list, "kbind.move_window", "<Alt-p>");
+	cfg_set_var(list, "kbind.resize_window", "<Alt-s>");
+	cfg_set_var(list, "kbind.next_focus", "<Alt-.>");
+	cfg_set_var(list, "kbind.prev_focus", "<Alt-,>");
+} /* End of 'wnd_set_default_styles' function */
 
 /* End of 'wnd_basic.h' file */
 

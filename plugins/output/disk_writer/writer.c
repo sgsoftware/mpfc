@@ -54,6 +54,9 @@ static char *dw_desc = "Disk Writer plugin";
 /* Plugin author */
 static char *dw_author = "Sergey E. Galanov <sgsoftware@mail.ru>";
 
+/* Logger object */
+static logger_t *dw_log = NULL;
+
 /* Start plugin */
 bool_t dw_start( void )
 {
@@ -81,7 +84,10 @@ bool_t dw_start( void )
 	/* Try to open file */
 	dw_fd = file_open(full_name, "w+b", NULL);
 	if (dw_fd == NULL)
+	{
+		logger_error(dw_log, 1, _("Unable to create file %s"), full_name);
 		return FALSE;
+	}
 
 	/* Leave space for header */
 	file_seek(dw_fd, DW_HEAD_SIZE, SEEK_SET);
@@ -179,6 +185,7 @@ void plugin_exchange_data( plugin_data_t *pd )
 	dw_pmng = pd->m_pmng;
 	dw_cfg = pd->m_cfg;
 	dw_root_cfg = pd->m_root_cfg;
+	dw_log = pd->m_logger;
 } /* End of 'plugin_exchange_data' function */
 
 /* End of 'writer.c' file */

@@ -469,7 +469,34 @@ bool_t player_parse_cmd_line( int argc, char *argv[] )
 	{
 		char *name, *val;
 		char *str = argv[i];
-		int name_start, name_end;
+		int name_start, name_end, val_start;
+		cfg_var_op_t op = CFG_VAR_OP_SET;
+
+		/* Include file specification */
+		if (argv[i][1] == 'f')
+		{
+			bool_t full_name = FALSE;
+			char name[MAX_FILE_NAME];
+
+			/* Full name specification */
+			if (argv[i][2] == 'f' && argv[i][3] == 0)
+				full_name = TRUE;
+			/* Unknown key */
+			else if (argv[i][2] != 0)
+				continue;
+
+			/* Get name */
+			i ++;
+			if (i >= argc)
+				break;
+			if (full_name)
+				snprintf(name, sizeof(name), "%s", argv[i]);
+			else 
+				snprintf(name, sizeof(name), "%s/.mpfc/%s", getenv("HOME"),
+						argv[i]);
+			cfg_rcfile_read(cfg_list, name);
+			continue;
+		}
 		
 		/* Get variable name start */
 		for ( name_start = 0; str[name_start] == '-'; name_start ++ );
@@ -478,26 +505,35 @@ bool_t player_parse_cmd_line( int argc, char *argv[] )
 
 		/* Get variable name end */
 		for ( name_end = name_start; 
-				str[name_end] && str[name_end] != '=' && str[name_end] != ' '; 
-				name_end ++ );
+				str[name_end] && str[name_end] != '=' && 
+				str[name_end] != ' '; name_end ++ )
+		{
+			val_start = name_end + 2;
+			if ((str[name_end] == '+' || str[name_end] == '-')
+					&& str[name_end + 1] == '=')
+			{
+				op = (str[name_end] == '+' ? CFG_VAR_OP_ADD : CFG_VAR_OP_REM);
+				break;
+			}
+		}
 		name_end --;
 
 		/* Extract variable name */
 		name = strndup(&str[name_start], name_end - name_start + 1);
 
 		/* We have no value - assume it "1" */
-		if (name_end == strlen(str) - 1)
+		if (str[name_end + 1] == 0)
 		{
 			val = strdup("1");
 		}
 		/* Extract value */
 		else
 		{
-			val = strdup(&str[name_end + 2]);
+			val = strdup(&str[val_start]);
 		}
 		
 		/* Set respective variable */
-		cfg_set_var(cfg_list, name, val);
+		cfg_set_var_full(cfg_list, name, val, op);
 		free(name);
 		free(val);
 	}
@@ -2656,8 +2692,8 @@ void player_class_set_default_styles( cfg_node_t *list )
 	cfg_set_var(list, "kbind.time_move", "gt");
 	cfg_set_var(list, "kbind.vol_fw", "+;lv");
 	cfg_set_var(list, "kbind.vol_bw", "-;hv");
-	cfg_set_var(list, "kbind.bal_fw", "[;lb");
-	cfg_set_var(list, "kbind.bal_bw", "];hb");
+	cfg_set_var(list, "kbind.bal_fw", "];lb");
+	cfg_set_var(list, "kbind.bal_bw", "[;hb");
 	cfg_set_var(list, "kbind.info", "i");
 	cfg_set_var(list, "kbind.add", "a");
 	cfg_set_var(list, "kbind.rem", "r");
@@ -2687,7 +2723,7 @@ void player_class_set_default_styles( cfg_node_t *list )
 	cfg_set_var(list, "kbind.time_back", "<Backspace>");
 	cfg_set_var(list, "kbind.reload_plugins", "P");
 	cfg_set_var(list, "kbind.file_browser", "B");
-	cfg_set_var(list, "kbind.test", "T");
+	//cfg_set_var(list, "kbind.test", "T");
 	cfg_set_var(list, "kbind.log", "O");
 	for ( letter = 'a'; letter <= 'z'; letter ++ )
 	{

@@ -105,8 +105,17 @@ char *cfg_rcfile_read_str( char **str, char *token, char (*skipper)(char**) )
 				case 't':
 					ret[i ++] = '\t';
 					break;
+				case '\"':
+					ret[i ++] = '\"';
+					break;
+				case '\\':
+					ret[i ++] = '\\';
+					break;
 				case 'e':
 					ret[i ++] = '\033';
+					break;
+				default:
+					ret[i ++] = (**str);
 					break;
 				}
 			}

@@ -89,7 +89,7 @@ wnd_t *wnd_init( cfg_node_t *cfg_list, logger_t *log )
 	pthread_mutex_init(&global->m_display_buf.m_mutex, NULL);
 
 	/* Initialize configuration */
-	cfg_wnd = cfg_new_list(cfg_list, "windows", wnd_set_default_styles,
+	cfg_wnd = cfg_new_list(cfg_list, "windows", NULL,
 			CFG_NODE_MEDIUM_LIST | CFG_NODE_RUNTIME, 0);
 	if (cfg_wnd == NULL)
 		goto failed;
@@ -1487,30 +1487,6 @@ void wnd_regen_zvalue_list( wnd_t *wnd )
 		}
 	}
 } /* End of 'wnd_regen_zvalue_list' function */
-
-/* Set the default styles */
-void wnd_set_default_styles( cfg_node_t *list )
-{
-	/* Set styles */
-	cfg_set_var(list, "caption-style", "green:black:bold");
-	cfg_set_var(list, "border-style", "white:black:bold");
-	cfg_set_var(list, "repos-border-style", "green:black:bold");
-	cfg_set_var(list, "maximize-box-style", "red:black:bold");
-	cfg_set_var(list, "close-box-style", "red:black:bold");
-	cfg_set_var(list, "wndbar-style", "black:white");
-	cfg_set_var(list, "wndbar-focus-style", "black:green");
-	cfg_set_var(list, "text-style", "white:black");
-	cfg_set_var(list, "focus-text-style", "white:black");
-
-	/* Set default kbinds */
-	cfg_set_var(list, "kbind.refresh_screen", "<Ctrl-l>");
-	cfg_set_var(list, "kbind.close_window", "<Alt-c>");
-	cfg_set_var(list, "kbind.maximize_window", "<Alt-m>");
-	cfg_set_var(list, "kbind.move_window", "<Alt-p>");
-	cfg_set_var(list, "kbind.resize_window", "<Alt-s>");
-	cfg_set_var(list, "kbind.next_focus", "<Alt-.>");
-	cfg_set_var(list, "kbind.prev_focus", "<Alt-,>");
-} /* End of 'wnd_set_default_styles' function */
 
 /* Get window's top-level ancestor */
 wnd_t *wnd_get_top_level_ancestor( wnd_t *wnd )
