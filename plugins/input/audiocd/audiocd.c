@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Audio CD input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 1.08.2003
+ * LAST UPDATE : 8.08.2003
  * NOTE        : Module prefix 'acd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -65,6 +65,9 @@ static struct acd_trk_info_t
 static int acd_num_tracks = 0;
 static int acd_cur_track = -1;
 
+/* Current time */
+int acd_time = 0;
+
 /* Prepare cdrom for ioctls */
 int acd_prepare_cd( void )
 {
@@ -113,6 +116,7 @@ bool acd_start( char *filename )
 		close(fd);
 		return FALSE;
 	}
+	acd_time = 0;
 
 	/* Close device */
 	close(fd);
@@ -125,6 +129,7 @@ void acd_end( void )
 	int fd;
 
 	/* Open device */
+	acd_time = 0;
 	if ((fd = acd_prepare_cd()) < 0)
 		return;
 
@@ -160,6 +165,8 @@ int acd_get_stream( void *buf, int size )
 	info.cdsc_format = CDROM_MSF;
 	ioctl(fd, CDROMSUBCHNL, &info);
 	playing = (info.cdsc_audiostatus == CDROM_AUDIO_PLAY);
+	acd_time = info.cdsc_reladdr.msf.minute * 60 + 
+		info.cdsc_reladdr.msf.second;
 	close(fd);
 	return playing ? size : 0;
 } /* End of 'acd_get_stream' function */
@@ -308,6 +315,12 @@ void acd_get_audio_params( int *ch, int *freq, dword *fmt )
 	*fmt = 0;
 } /* End of 'acd_get_audio_params' function */
 
+/* Get current time */
+int acd_get_cur_time( void ) 
+{
+	return acd_time;
+} /* End of 'acd_get_cur_time' function */
+
 /* Get functions list */
 void inp_get_func_list( inp_func_list_t *fl )
 {
@@ -321,6 +334,7 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_flags = INP_NO_OUTP;
 	fl->m_pause = acd_pause;
 	fl->m_resume = acd_resume;
+	fl->m_get_cur_time = acd_get_cur_time;
 } /* End of 'inp_get_func_list' function */
 
 /* Save variables list */

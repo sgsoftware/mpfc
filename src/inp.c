@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Input plugin management functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 1.08.2003
+ * LAST UPDATE : 8.08.2003
  * NOTE        : Module prefix 'inp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -197,6 +197,14 @@ void inp_resume( in_plugin_t *p )
 	if (p != NULL && (p->m_fl.m_resume != NULL))
 		p->m_fl.m_resume();
 } /* End of 'inp_resume' function */
+
+/* Get current time */
+int inp_get_cur_time( in_plugin_t *p )
+{
+	if (p != NULL && (p->m_fl.m_get_cur_time != NULL))
+		return p->m_fl.m_get_cur_time();
+	return -1;
+} /* End of 'inp_get_cur_time' function */
 
 /* End of 'inp.c' file */
 

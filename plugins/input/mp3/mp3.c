@@ -94,6 +94,9 @@ cfg_list_t *mp3_var_list = NULL;
 /* Is ID3 tag present */
 bool mp3_tag_present = FALSE;
 
+/* Current time */
+int mp3_time = 0;
+
 /* Start play function */
 bool mp3_start( char *filename )
 {
@@ -112,8 +115,10 @@ bool mp3_start( char *filename )
 	mad_frame_init(&mp3_frame);
 	mad_synth_init(&mp3_synth);
 	mad_timer_reset(&mp3_timer);
+	mp3_timer = mad_timer_zero;
 
 	/* Save song parameters */
+	mp3_time = 0;
 	mp3_channels = 2;
 	mp3_freq = 44100;
 	mp3_fmt = AFMT_S16_LE;
@@ -145,6 +150,7 @@ void mp3_end( void )
 		
 		strcpy(mp3_file_name, "");
 		mp3_len = 0;
+		mp3_time = 0;
 	}
 } /* End of 'mp3_end' function */
 
@@ -652,6 +658,7 @@ int mp3_get_stream( void *buf, int size )
 		/* Accounting */
 		mp3_frame_count ++;
 		mad_timer_add(&mp3_timer, mp3_frame.header.duration);
+		mp3_time = mp3_timer.seconds;
 
 		/* Synthesize PCM samples */
 		mad_synth_frame(&mp3_synth, &mp3_frame);
@@ -859,6 +866,12 @@ void mp3_init_glist( void )
 	glist_add(l, "Vocal", 0x1C);
 } /* End of 'mp3_init_glist' function */
 
+/* Get current time */
+int mp3_get_cur_time( void )
+{
+	return mp3_time;
+} /* End of 'mp3_get_cur_time' function */
+
 /* Get functions list */
 void inp_get_func_list( inp_func_list_t *fl )
 {
@@ -873,6 +886,7 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_get_formats = mp3_get_formats;
 	fl->m_set_eq = mp3_set_eq;
 	fl->m_glist = mp3_glist;
+	fl->m_get_cur_time = mp3_get_cur_time;
 } /* End of 'inp_get_func_list' function */
 
 /* This function is called when initializing module */

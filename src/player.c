@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG MPFC. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 6.08.2003
+ * LAST UPDATE : 8.08.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -95,6 +95,9 @@ int player_num_obj = 0;
 
 /* Edit boxes history lists */
 hist_list_t *player_hist_lists[PLAYER_NUM_HIST_LISTS];
+
+/* Current input plugin */
+in_plugin_t *player_inp = NULL;
 
 /* Initialize player */
 bool player_init( int argc, char *argv[] )
@@ -499,6 +502,9 @@ void *player_thread( void *arg )
 			outp_set_fmt(pmng_cur_out, fmt);
 		}
 
+		/* Save current input plugin */
+		player_inp = s->m_inp;
+
 		/* Set equalizer */
 		inp_set_eq(s->m_inp);
 
@@ -571,6 +577,7 @@ void *player_thread( void *arg )
 
 		/* End playing */
 		inp_end(s->m_inp);
+		player_inp = NULL;
 
 		/* End output plugin */
 		if (!no_outp)
@@ -612,17 +619,30 @@ void *player_timer_func( void *arg )
 	{
 		time_t new_t = time(NULL);
 		struct timespec tv;
+		int tm;
 
 		/* Update timer */
 		if (player_status == PLAYER_STATUS_PAUSED)
 		{
 			t = new_t;
 		}
-		else if (new_t > t)
-		{
-			player_cur_time += (new_t - t);
-			t = new_t;
-			wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
+		else
+		{	
+			tm = inp_get_cur_time(player_inp);
+			if (tm < 0)
+			{
+				if (new_t > t)
+				{
+					player_cur_time += (new_t - t);
+					t = new_t;
+					wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
+				}
+			}
+			else if (tm - player_cur_time)
+			{
+				player_cur_time = tm;
+				wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
+			}
 		}
 
 		/* Sleep a little */
@@ -976,8 +996,7 @@ void player_var_manager( void )
 			wnd_root->m_width, 1, 256, _("Enter variable value: "), "");
 	if (ebox == NULL)
 		return;
-	ebox->m_hist_list = 
-		player_hist_lists[PLAYER_HIST_LIST_VAR_VAL];
+	ebox->m_hist_list = player_hist_lists[PLAYER_HIST_LIST_VAR_VAL];
 	wnd_run(ebox);
 	if (ebox->m_last_key != '\n')
 	{
@@ -1095,9 +1114,7 @@ void player_handle_action( int action )
 		if (player_status == PLAYER_STATUS_PAUSED)
 		{
 			player_status = PLAYER_STATUS_PLAYING;
-			if (player_plist->m_cur_song != -1)
-				inp_resume(player_plist->m_list[
-						player_plist->m_cur_song]->m_inp);
+			inp_resume(player_inp);
 		}
 		else
 			player_play();
@@ -1108,16 +1125,12 @@ void player_handle_action( int action )
 		if (player_status == PLAYER_STATUS_PLAYING)
 		{
 			player_status = PLAYER_STATUS_PAUSED;
-			if (player_plist->m_cur_song != -1)
-				inp_pause(player_plist->m_list[
-						player_plist->m_cur_song]->m_inp);
+			inp_pause(player_inp);
 		}
 		else if (player_status == PLAYER_STATUS_PAUSED)
 		{
 			player_status = PLAYER_STATUS_PLAYING;
-			if (player_plist->m_cur_song != -1)
-				inp_resume(player_plist->m_list[
-						player_plist->m_cur_song]->m_inp);
+			inp_resume(player_inp);
 		}
 		break;
 

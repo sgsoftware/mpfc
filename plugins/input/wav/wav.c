@@ -52,6 +52,9 @@ int wav_len = 0;
 /* Data offset in file */
 int wav_data_offset = 0;
 
+/* Current time */
+int wav_time = 0;
+
 /* Start play function */
 bool wav_start( char *filename )
 {
@@ -107,6 +110,7 @@ bool wav_start( char *filename )
 
 	wav_len = data_size / wav_avg_bps;
 	wav_seek_val = -1;
+	wav_time = 0;
 	free(buf);
 	return TRUE;
 } /* End of 'wav_start' function */
@@ -119,6 +123,7 @@ void wav_end( void )
 	{
 		strcpy(wav_fname, "");
 		fclose(wav_fd);
+		wav_time = 0;
 		wav_fd = NULL;
 	}
 } /* End of 'wav_end' function */
@@ -178,6 +183,7 @@ int wav_get_stream( void *buf, int size )
 		
 		memset(buf, 0, size);
 		size = fread(buf, 1, size, wav_fd);
+		wav_time = (ftell(wav_fd) - wav_data_offset) / wav_avg_bps;
 	}
 	else
 		size = 0;
@@ -201,6 +207,12 @@ void wav_get_audio_params( int *ch, int *freq, dword *fmt )
 	*fmt = wav_fmt;
 } /* End of 'wav_get_audio_params' function */
 
+/* Get current time */
+int wav_get_cur_time( void )
+{
+	return wav_time;
+} /* End of 'wav_get_cur_time' function */
+
 /* Get functions list */
 void inp_get_func_list( inp_func_list_t *fl )
 {
@@ -211,6 +223,7 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_seek = wav_seek;
 	fl->m_get_audio_params = wav_get_audio_params;
 	fl->m_get_formats = wav_get_formats;
+	fl->m_get_cur_time = wav_get_cur_time;
 } /* End of 'inp_get_func_list' function */
 
 /* Read the next chunk. Returns TRUE when 'data' chunk is read */

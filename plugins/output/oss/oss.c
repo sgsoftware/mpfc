@@ -132,7 +132,7 @@ int oss_get_volume( void )
 	fd = open("/dev/mixer", O_RDONLY);
 	if (fd < 0)
 		return 0;
-	ioctl(fd, SOUND_MIXER_READ_PCM, &v);
+	ioctl(fd, SOUND_MIXER_READ_VOLUME, &v);
 	close(fd);
 	return v & 0xFF;
 } /* End of 'oss_get_volume' function */

@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Interface for input plugin management
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 1.08.2003
+ * LAST UPDATE : 8.08.2003
  * NOTE        : Module prefix 'inp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -83,6 +83,9 @@ typedef struct
 
 	/* Resume playing */
 	void (*m_resume)( void );
+
+	/* Get current time */
+	int (*m_get_cur_time)( void );
 } inp_func_list_t;
 
 /* Input plugin type */
@@ -149,6 +152,9 @@ void inp_pause( in_plugin_t *p );
 
 /* Resume playing */
 void inp_resume( in_plugin_t *p );
+
+/* Get current time */
+int inp_get_cur_time( in_plugin_t *p );
 
 #endif
 
