@@ -58,10 +58,10 @@ int echo_apply( byte *d, int len, int fmt, int srate, int nch )
 	if (!(fmt == AFMT_S16_NE || fmt == AFMT_S16_LE || fmt == AFMT_S16_BE))
 		return len;
 
-	surround_enable = cfg_get_var_int(echo_var_list, "echo_surround_enable");
-	del = cfg_get_var_int(echo_var_list, "echo_delay");
-	volume = cfg_get_var_int(echo_var_list, "echo_volume");
-	feedback = cfg_get_var_int(echo_var_list, "echo_feedback");
+	surround_enable = cfg_get_var_int(echo_var_list, "echo-surround-enable");
+	del = cfg_get_var_int(echo_var_list, "echo-delay");
+	volume = cfg_get_var_int(echo_var_list, "echo-volume");
+	feedback = cfg_get_var_int(echo_var_list, "echo-feedback");
 
 	if (!buffer)
 		buffer = (short *)malloc(BUFFER_BYTES + 2);

@@ -75,15 +75,15 @@ void cfg_free( void )
 void cfg_init_default( void )
 {
 	/* Set variables */
-	cfg_set_var_int(cfg_list, "silent_mode", 0);
-	cfg_set_var(cfg_list, "output_plugin", "oss");
-	cfg_set_var_int(cfg_list, "update_song_len_on_play", 0);
-	cfg_set_var_int(cfg_list, "mp3_quick_get_len", 1);
-	cfg_set_var_int(cfg_list, "save_playlist_on_exit", 1);
-//	cfg_set_var(cfg_list, "lib_dir", LIBDIR"/mpfc");
-	cfg_set_var_int(cfg_list, "echo_delay", 500);
-	cfg_set_var_int(cfg_list, "echo_volume", 50);
-	cfg_set_var_int(cfg_list, "echo_feedback", 50);
+	cfg_set_var_int(cfg_list, "silent-mode", 0);
+	cfg_set_var(cfg_list, "output-plugin", "oss");
+	cfg_set_var_int(cfg_list, "update-song-len-on-play", 0);
+	cfg_set_var_int(cfg_list, "mp3-quick-get-len", 1);
+	cfg_set_var_int(cfg_list, "save-playlist-on-exit", 1);
+	cfg_set_var(cfg_list, "lib-dir", LIBDIR"/mpfc");
+	cfg_set_var_int(cfg_list, "echo-delay", 500);
+	cfg_set_var_int(cfg_list, "echo-volume", 50);
+	cfg_set_var_int(cfg_list, "echo-feedback", 50);
 } /* End of 'cfg_init_default' function */
 
 /* Read configuration file */
@@ -170,15 +170,15 @@ void cfg_parse_line( cfg_list_t *list, char *str )
 /* Initialize data base */
 void cfg_init_db( void )
 {
-	cfg_set_to_db(cfg_list, "cur_song", NULL, CFG_RUNTIME);
-	cfg_set_to_db(cfg_list, "cur_song_name", NULL, CFG_RUNTIME);
-	cfg_set_to_db(cfg_list, "cur_time", NULL, CFG_RUNTIME);
-	cfg_set_to_db(cfg_list, "player_status", NULL, CFG_RUNTIME);
-	cfg_set_to_db(cfg_list, "player_start", NULL, CFG_RUNTIME);
-	cfg_set_to_db(cfg_list, "player_end", NULL, CFG_RUNTIME);
-	cfg_set_to_db(cfg_list, "title_format", 
+	cfg_set_to_db(cfg_list, "cur-song", NULL, CFG_RUNTIME);
+	cfg_set_to_db(cfg_list, "cur-song_name", NULL, CFG_RUNTIME);
+	cfg_set_to_db(cfg_list, "cur-time", NULL, CFG_RUNTIME);
+	cfg_set_to_db(cfg_list, "player-status", NULL, CFG_RUNTIME);
+	cfg_set_to_db(cfg_list, "player-start", NULL, CFG_RUNTIME);
+	cfg_set_to_db(cfg_list, "player-end", NULL, CFG_RUNTIME);
+	cfg_set_to_db(cfg_list, "title-format", 
 			player_handle_var_title_format, 0);
-	cfg_set_to_db(cfg_list, "output_plugin", player_handle_var_outp, 0);
+	cfg_set_to_db(cfg_list, "output-plugin", player_handle_var_outp, 0);
 } /* End of 'cfg_init_db' function */
 
 /* End of 'cfg.c' file */

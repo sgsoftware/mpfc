@@ -281,211 +281,211 @@ void kbind_read_from_cfg( void )
 /* Convert variable name to action ID */
 int kbind_var2act( char *name )
 {
-	if (!strcmp(name, "kbind_quit"))
+	if (!strcmp(name, "kbind-quit"))
 		return KBIND_QUIT;
-	else if (!strcmp(name, "kbind_move_down"))
+	else if (!strcmp(name, "kbind-move-down"))
 		return KBIND_MOVE_DOWN;
-	else if (!strcmp(name, "kbind_move_up"))
+	else if (!strcmp(name, "kbind-move-up"))
 		return KBIND_MOVE_UP;
-	else if (!strcmp(name, "kbind_screen_down"))
+	else if (!strcmp(name, "kbind-screen-down"))
 		return KBIND_SCREEN_DOWN;
-	else if (!strcmp(name, "kbind_screen_up"))
+	else if (!strcmp(name, "kbind-screen-up"))
 		return KBIND_SCREEN_UP;
-	else if (!strcmp(name, "kbind_move"))
+	else if (!strcmp(name, "kbind-move"))
 		return KBIND_MOVE;
-	else if (!strcmp(name, "kbind_start_play"))
+	else if (!strcmp(name, "kbind-start-play"))
 		return KBIND_START_PLAY;
-	else if (!strcmp(name, "kbind_play"))
+	else if (!strcmp(name, "kbind-play"))
 		return KBIND_PLAY;
-	else if (!strcmp(name, "kbind_pause"))
+	else if (!strcmp(name, "kbind-pause"))
 		return KBIND_PAUSE;
-	else if (!strcmp(name, "kbind_stop"))
+	else if (!strcmp(name, "kbind-stop"))
 		return KBIND_STOP;
-	else if (!strcmp(name, "kbind_next"))
+	else if (!strcmp(name, "kbind-next"))
 		return KBIND_NEXT;
-	else if (!strcmp(name, "kbind_prev"))
+	else if (!strcmp(name, "kbind-prev"))
 		return KBIND_PREV;
-	else if (!strcmp(name, "kbind_time_fw"))
+	else if (!strcmp(name, "kbind-time-fw"))
 		return KBIND_TIME_FW;
-	else if (!strcmp(name, "kbind_time_bw"))
+	else if (!strcmp(name, "kbind-time-bw"))
 		return KBIND_TIME_BW;
-	else if (!strcmp(name, "kbind_time_move"))
+	else if (!strcmp(name, "kbind-time-move"))
 		return KBIND_TIME_MOVE;
-	else if (!strcmp(name, "kbind_vol_fw"))
+	else if (!strcmp(name, "kbind-vol-fw"))
 		return KBIND_VOL_FW;
-	else if (!strcmp(name, "kbind_vol_bw"))
+	else if (!strcmp(name, "kbind-vol-bw"))
 		return KBIND_VOL_BW;
-	else if (!strcmp(name, "kbind_vol_move"))
+	else if (!strcmp(name, "kbind-vol-move"))
 		return KBIND_VOL_MOVE;
-	else if (!strcmp(name, "kbind_bal_fw"))
+	else if (!strcmp(name, "kbind-bal-fw"))
 		return KBIND_BAL_FW;
-	else if (!strcmp(name, "kbind_bal_bw"))
+	else if (!strcmp(name, "kbind-bal-bw"))
 		return KBIND_BAL_BW;
-	else if (!strcmp(name, "kbind_bal_move"))
+	else if (!strcmp(name, "kbind-bal-move"))
 		return KBIND_BAL_MOVE;
-	else if (!strcmp(name, "kbind_info"))
+	else if (!strcmp(name, "kbind-info"))
 		return KBIND_INFO;
-	else if (!strcmp(name, "kbind_add"))
+	else if (!strcmp(name, "kbind-add"))
 		return KBIND_ADD;
-	else if (!strcmp(name, "kbind_rem"))
+	else if (!strcmp(name, "kbind-rem"))
 		return KBIND_REM;
-	else if (!strcmp(name, "kbind_save"))
+	else if (!strcmp(name, "kbind-save"))
 		return KBIND_SAVE;
-	else if (!strcmp(name, "kbind_sort"))
+	else if (!strcmp(name, "kbind-sort"))
 		return KBIND_SORT;
-	else if (!strcmp(name, "kbind_visual"))
+	else if (!strcmp(name, "kbind-visual"))
 		return KBIND_VISUAL;
-	else if (!strcmp(name, "kbind_centrize"))
+	else if (!strcmp(name, "kbind-centrize"))
 		return KBIND_CENTRIZE;
-	else if (!strcmp(name, "kbind_search"))
+	else if (!strcmp(name, "kbind-search"))
 		return KBIND_SEARCH;
-	else if (!strcmp(name, "kbind_next_match"))
+	else if (!strcmp(name, "kbind-next-match"))
 		return KBIND_NEXT_MATCH;
-	else if (!strcmp(name, "kbind_prev_match"))
+	else if (!strcmp(name, "kbind-prev-match"))
 		return KBIND_PREV_MATCH;
-	else if (!strcmp(name, "kbind_help"))
+	else if (!strcmp(name, "kbind-help"))
 		return KBIND_HELP;
-	else if (!strcmp(name, "kbind_add_obj"))
+	else if (!strcmp(name, "kbind-add-obj"))
 		return KBIND_ADD_OBJ;
-	else if (!strcmp(name, "kbind_equalizer"))
+	else if (!strcmp(name, "kbind-equalizer"))
 		return KBIND_EQUALIZER;
-	else if (!strcmp(name, "kbind_shuffle"))
+	else if (!strcmp(name, "kbind-shuffle"))
 		return KBIND_SHUFFLE;
-	else if (!strcmp(name, "kbind_loop"))
+	else if (!strcmp(name, "kbind-loop"))
 		return KBIND_LOOP;
-	else if (!strcmp(name, "kbind_var_manager"))
+	else if (!strcmp(name, "kbind-var-manager"))
 		return KBIND_VAR_MANAGER;
-	else if (!strcmp(name, "kbind_var_mini_manager"))
+	else if (!strcmp(name, "kbind-var-mini-manager"))
 		return KBIND_VAR_MINI_MANAGER;
-	else if (!strcmp(name, "kbind_plist_down"))
+	else if (!strcmp(name, "kbind-plist-down"))
 		return KBIND_PLIST_DOWN;
-	else if (!strcmp(name, "kbind_plist_up"))
+	else if (!strcmp(name, "kbind-plist-up"))
 		return KBIND_PLIST_UP;
-	else if (!strcmp(name, "kbind_plist_move"))
+	else if (!strcmp(name, "kbind-plist-move"))
 		return KBIND_PLIST_MOVE;
-	else if (!strcmp(name, "kbind_undo"))
+	else if (!strcmp(name, "kbind-undo"))
 		return KBIND_UNDO;
-	else if (!strcmp(name, "kbind_redo"))
+	else if (!strcmp(name, "kbind-redo"))
 		return KBIND_REDO;
-	else if (!strcmp(name, "kbind_reload_info"))
+	else if (!strcmp(name, "kbind-reload-info"))
 		return KBIND_RELOAD_INFO;
-	else if (!strcmp(name, "kbind_set_play_bounds"))
+	else if (!strcmp(name, "kbind-set-play-bounds"))
 		return KBIND_SET_PLAY_BOUNDS;
-	else if (!strcmp(name, "kbind_clear_play_bounds"))
+	else if (!strcmp(name, "kbind-clear-play-bounds"))
 		return KBIND_CLEAR_PLAY_BOUNDS;
-	else if (!strcmp(name, "kbind_play_bounds"))
+	else if (!strcmp(name, "kbind-play-bounds"))
 		return KBIND_PLAY_BOUNDS;
-	else if (!strcmp(name, "kbind_exec"))
+	else if (!strcmp(name, "kbind-exec"))
 		return KBIND_EXEC;
-	else if (!strcmp(name, "kbind_marka"))
+	else if (!strcmp(name, "kbind-marka"))
 		return KBIND_MARKA;
-	else if (!strcmp(name, "kbind_markb"))
+	else if (!strcmp(name, "kbind-markb"))
 		return KBIND_MARKB;
-	else if (!strcmp(name, "kbind_markc"))
+	else if (!strcmp(name, "kbind-markc"))
 		return KBIND_MARKC;
-	else if (!strcmp(name, "kbind_markd"))
+	else if (!strcmp(name, "kbind-markd"))
 		return KBIND_MARKD;
-	else if (!strcmp(name, "kbind_marke"))
+	else if (!strcmp(name, "kbind-marke"))
 		return KBIND_MARKE;
-	else if (!strcmp(name, "kbind_markf"))
+	else if (!strcmp(name, "kbind-markf"))
 		return KBIND_MARKF;
-	else if (!strcmp(name, "kbind_markg"))
+	else if (!strcmp(name, "kbind-markg"))
 		return KBIND_MARKG;
-	else if (!strcmp(name, "kbind_markh"))
+	else if (!strcmp(name, "kbind-markh"))
 		return KBIND_MARKH;
-	else if (!strcmp(name, "kbind_marki"))
+	else if (!strcmp(name, "kbind-marki"))
 		return KBIND_MARKI;
-	else if (!strcmp(name, "kbind_markj"))
+	else if (!strcmp(name, "kbind-markj"))
 		return KBIND_MARKJ;
-	else if (!strcmp(name, "kbind_markk"))
+	else if (!strcmp(name, "kbind-markk"))
 		return KBIND_MARKK;
-	else if (!strcmp(name, "kbind_markl"))
+	else if (!strcmp(name, "kbind-markl"))
 		return KBIND_MARKL;
-	else if (!strcmp(name, "kbind_markm"))
+	else if (!strcmp(name, "kbind-markm"))
 		return KBIND_MARKM;
-	else if (!strcmp(name, "kbind_markn"))
+	else if (!strcmp(name, "kbind-markn"))
 		return KBIND_MARKN;
-	else if (!strcmp(name, "kbind_marko"))
+	else if (!strcmp(name, "kbind-marko"))
 		return KBIND_MARKO;
-	else if (!strcmp(name, "kbind_markp"))
+	else if (!strcmp(name, "kbind-markp"))
 		return KBIND_MARKP;
-	else if (!strcmp(name, "kbind_markq"))
+	else if (!strcmp(name, "kbind-markq"))
 		return KBIND_MARKQ;
-	else if (!strcmp(name, "kbind_markr"))
+	else if (!strcmp(name, "kbind-markr"))
 		return KBIND_MARKR;
-	else if (!strcmp(name, "kbind_marks"))
+	else if (!strcmp(name, "kbind-marks"))
 		return KBIND_MARKS;
-	else if (!strcmp(name, "kbind_markt"))
+	else if (!strcmp(name, "kbind-markt"))
 		return KBIND_MARKT;
-	else if (!strcmp(name, "kbind_marku"))
+	else if (!strcmp(name, "kbind-marku"))
 		return KBIND_MARKU;
-	else if (!strcmp(name, "kbind_markv"))
+	else if (!strcmp(name, "kbind-markv"))
 		return KBIND_MARKV;
-	else if (!strcmp(name, "kbind_markw"))
+	else if (!strcmp(name, "kbind-markw"))
 		return KBIND_MARKW;
-	else if (!strcmp(name, "kbind_markx"))
+	else if (!strcmp(name, "kbind-markx"))
 		return KBIND_MARKX;
-	else if (!strcmp(name, "kbind_marky"))
+	else if (!strcmp(name, "kbind-marky"))
 		return KBIND_MARKY;
-	else if (!strcmp(name, "kbind_markz"))
+	else if (!strcmp(name, "kbind-markz"))
 		return KBIND_MARKZ;
-	else if (!strcmp(name, "kbind_goa"))
+	else if (!strcmp(name, "kbind-goa"))
 		return KBIND_GOA;
-	else if (!strcmp(name, "kbind_gob"))
+	else if (!strcmp(name, "kbind-gob"))
 		return KBIND_GOB;
-	else if (!strcmp(name, "kbind_goc"))
+	else if (!strcmp(name, "kbind-goc"))
 		return KBIND_GOC;
-	else if (!strcmp(name, "kbind_god"))
+	else if (!strcmp(name, "kbind-god"))
 		return KBIND_GOD;
-	else if (!strcmp(name, "kbind_goe"))
+	else if (!strcmp(name, "kbind-goe"))
 		return KBIND_GOE;
-	else if (!strcmp(name, "kbind_gof"))
+	else if (!strcmp(name, "kbind-gof"))
 		return KBIND_GOF;
-	else if (!strcmp(name, "kbind_gog"))
+	else if (!strcmp(name, "kbind-gog"))
 		return KBIND_GOG;
-	else if (!strcmp(name, "kbind_goh"))
+	else if (!strcmp(name, "kbind-goh"))
 		return KBIND_GOH;
-	else if (!strcmp(name, "kbind_goi"))
+	else if (!strcmp(name, "kbind-goi"))
 		return KBIND_GOI;
-	else if (!strcmp(name, "kbind_goj"))
+	else if (!strcmp(name, "kbind-goj"))
 		return KBIND_GOJ;
-	else if (!strcmp(name, "kbind_gok"))
+	else if (!strcmp(name, "kbind-gok"))
 		return KBIND_GOK;
-	else if (!strcmp(name, "kbind_gol"))
+	else if (!strcmp(name, "kbind-gol"))
 		return KBIND_GOL;
-	else if (!strcmp(name, "kbind_gom"))
+	else if (!strcmp(name, "kbind-gom"))
 		return KBIND_GOM;
-	else if (!strcmp(name, "kbind_gon"))
+	else if (!strcmp(name, "kbind-gon"))
 		return KBIND_GON;
-	else if (!strcmp(name, "kbind_goo"))
+	else if (!strcmp(name, "kbind-goo"))
 		return KBIND_GOO;
-	else if (!strcmp(name, "kbind_gop"))
+	else if (!strcmp(name, "kbind-gop"))
 		return KBIND_GOP;
-	else if (!strcmp(name, "kbind_goq"))
+	else if (!strcmp(name, "kbind-goq"))
 		return KBIND_GOQ;
-	else if (!strcmp(name, "kbind_gor"))
+	else if (!strcmp(name, "kbind-gor"))
 		return KBIND_GOR;
-	else if (!strcmp(name, "kbind_gos"))
+	else if (!strcmp(name, "kbind-gos"))
 		return KBIND_GOS;
-	else if (!strcmp(name, "kbind_got"))
+	else if (!strcmp(name, "kbind-got"))
 		return KBIND_GOT;
-	else if (!strcmp(name, "kbind_gou"))
+	else if (!strcmp(name, "kbind-gou"))
 		return KBIND_GOU;
-	else if (!strcmp(name, "kbind_gov"))
+	else if (!strcmp(name, "kbind-gov"))
 		return KBIND_GOV;
-	else if (!strcmp(name, "kbind_gow"))
+	else if (!strcmp(name, "kbind-gow"))
 		return KBIND_GOW;
-	else if (!strcmp(name, "kbind_gox"))
+	else if (!strcmp(name, "kbind-gox"))
 		return KBIND_GOX;
-	else if (!strcmp(name, "kbind_goy"))
+	else if (!strcmp(name, "kbind-goy"))
 		return KBIND_GOY;
-	else if (!strcmp(name, "kbind_goz"))
+	else if (!strcmp(name, "kbind-goz"))
 		return KBIND_GOZ;
-	else if (!strcmp(name, "kbind_goback"))
+	else if (!strcmp(name, "kbind-goback"))
 		return KBIND_GOBACK;
-	else if (!strcmp(name, "kbind_time_back"))
+	else if (!strcmp(name, "kbind-time-back"))
 		return KBIND_TIME_BACK;
-	else if (!strcmp(name, "kbind_reload_plugins"))
+	else if (!strcmp(name, "kbind-reload-plugins"))
 		return KBIND_RELOAD_PLUGINS;
 	return -1;
 } /* End of 'kbind_var2act' function */

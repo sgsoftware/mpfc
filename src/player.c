@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG MPFC. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 2.10.2003
+ * LAST UPDATE : 5.10.2003
  * NOTE        : Module prefix 'player'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -221,15 +221,15 @@ bool_t player_init( int argc, char *argv[] )
 	player_eq_changed = FALSE;
 
 	/* Start playing from last stop */
-	if (cfg_get_var_int(cfg_list, "play_from_stop") && 
+	if (cfg_get_var_int(cfg_list, "play-from-stop") && 
 			!player_num_files && !player_num_obj)
 	{
-		player_status = cfg_get_var_int(cfg_list, "player_status");
-		player_start = cfg_get_var_int(cfg_list, "player_start") - 1;
-		player_end = cfg_get_var_int(cfg_list, "player_end") - 1;
+		player_status = cfg_get_var_int(cfg_list, "player-status");
+		player_start = cfg_get_var_int(cfg_list, "player-start") - 1;
+		player_end = cfg_get_var_int(cfg_list, "player-end") - 1;
 		if (player_status != PLAYER_STATUS_STOPPED)
-			player_play(cfg_get_var_int(cfg_list, "cur_song"),
-					cfg_get_var_int(cfg_list, "cur_time"));
+			player_play(cfg_get_var_int(cfg_list, "cur-song"),
+					cfg_get_var_int(cfg_list, "cur-time"));
 	}
 
 	/* Exit */
@@ -242,14 +242,14 @@ void player_deinit( void )
 	int i;
 	
 	/* Save information about place in song where we stop */
-	cfg_set_var_int(cfg_list, "cur_song", 
+	cfg_set_var_int(cfg_list, "cur-song", 
 			player_plist->m_cur_song);
-	cfg_set_var_int(cfg_list, "cur_time", player_cur_time);
-	cfg_set_var_int(cfg_list, "player_status", player_status);
-	cfg_set_var_int(cfg_list, "player_start", player_start + 1);
-	cfg_set_var_int(cfg_list, "player_end", player_end + 1);
-	player_save_cfg_vars(cfg_list, "cur_song;cur_time;player_status;"
-			"player_start;player_end");
+	cfg_set_var_int(cfg_list, "cur-time", player_cur_time);
+	cfg_set_var_int(cfg_list, "player-status", player_status);
+	cfg_set_var_int(cfg_list, "player-start", player_start + 1);
+	cfg_set_var_int(cfg_list, "player-end", player_end + 1);
+	player_save_cfg_vars(cfg_list, "cur-song;cur-time;player-status;"
+			"player-start;player-end");
 	
 	/* End playing thread */
 	sat_free();
@@ -276,7 +276,7 @@ void player_deinit( void )
 	if (player_plist != NULL)
 	{
 		/* Save play list */
-		if (cfg_get_var_int(cfg_list, "save_playlist_on_exit"))
+		if (cfg_get_var_int(cfg_list, "save-playlist-on-exit"))
 			plist_save(player_plist, "~/mpfc.m3u");
 		
 		plist_free(player_plist);
@@ -361,7 +361,6 @@ void player_handle_key( wnd_t *wnd, dword data )
 /* Handle mouse left button click */
 void player_handle_mouse_click( wnd_t *wnd, dword data )
 {
-	strcpy(player_msg, "Mouse button clicked");
 } /* End of 'player_handle_mouse_click' function */
 
 /* Display player function */
@@ -399,7 +398,7 @@ void player_display( wnd_t *wnd, dword data )
 		col_set_color(wnd, COL_EL_CUR_TITLE);
 		wnd_printf(wnd, "%s\n", title);
 		col_set_color(wnd, COL_EL_CUR_TIME);
-		t = (show_rem = cfg_get_var_int(cfg_list, "show_time_remaining")) ? 
+		t = (show_rem = cfg_get_var_int(cfg_list, "show-time-remaining")) ? 
 			s->m_len - player_cur_time : player_cur_time;
 		wnd_printf(wnd, "%s%i:%02i/%i:%02i\n", 
 				show_rem ? "-" : "", t / 60, t % 60,
@@ -409,12 +408,12 @@ void player_display( wnd_t *wnd, dword data )
 
 	/* Display play modes */
 	col_set_color(wnd, COL_EL_PLAY_MODES);
-	if (cfg_get_var_int(cfg_list, "shuffle_play"))
+	if (cfg_get_var_int(cfg_list, "shuffle-play"))
 	{
 		wnd_move(wnd, wnd->m_width - 13, 0);
 		wnd_printf(wnd, "Shuffle");
 	}
-	if (cfg_get_var_int(cfg_list, "loop_play"))
+	if (cfg_get_var_int(cfg_list, "loop-play"))
 	{
 		wnd_move(wnd, wnd->m_width - 5, 0);
 		wnd_printf(wnd, "Loop");
@@ -517,7 +516,7 @@ void player_play( int song, int start_time )
 	player_end_play();
 
 	/* Start new playing thread */
-	cfg_set_var(cfg_list, "cur_song_name", 
+	cfg_set_var(cfg_list, "cur-song-name", 
 			util_get_file_short_name(s->m_file_name));
 	player_plist->m_cur_song = song;
 	player_cur_time = start_time;
@@ -532,7 +531,7 @@ void player_end_play( void )
 //	player_status = PLAYER_STATUS_STOPPED;
 	while (player_timer_tid)
 		util_delay(0, 100000);
-	cfg_set_var(cfg_list, "cur_song_name", "");
+	cfg_set_var(cfg_list, "cur-song-name", "");
 } /* End of 'player_end_play' function */
 
 /* Player thread function */
@@ -562,7 +561,7 @@ void *player_thread( void *arg )
 		player_end_track = FALSE;
 	
 		/* Get song length and information at first */
-		if (cfg_get_var_int(cfg_list, "update_song_len_on_play"))
+		if (cfg_get_var_int(cfg_list, "update-song-len-on-play"))
 			s->m_len = inp_get_len(s->m_inp, s->m_file_name);
 		song_update_info(s);
 
@@ -581,7 +580,7 @@ void *player_thread( void *arg )
 
 		/* Start output plugin */
 		if (!no_outp && (pmng_cur_out == NULL || 
-				(!cfg_get_var_int(cfg_list, "silent_mode") && 
+				(!cfg_get_var_int(cfg_list, "silent-mode") && 
 					!outp_start(pmng_cur_out))))
 		{
 			strcpy(player_msg, _("Unable to initialize output plugin"));
@@ -924,7 +923,7 @@ void player_info_dialog( void )
 
 	/* Create info dialog */
 	dlg = dlg_new(wnd_root, 2, 2, wnd_root->m_width - 4, 21, 
-			cfg_get_var_int(cfg_list, "info_editor_show_full_name") ? 
+			cfg_get_var_int(cfg_list, "info-editor-show-full-name") ? 
 			s->m_file_name : util_get_file_short_name(s->m_file_name));
 	if (!s->m_info->m_only_own)
 	{
@@ -1068,7 +1067,7 @@ void player_skip_songs( int num )
 	len = (player_start < 0) ? player_plist->m_len : 
 		(player_end - player_start + 1);
 	base = (player_start < 0) ? 0 : player_start;
-	if (cfg_get_var_int(cfg_list, "shuffle_play"))
+	if (cfg_get_var_int(cfg_list, "shuffle-play"))
 	{
 		int initial = song;
 
@@ -1083,7 +1082,7 @@ void player_skip_songs( int num )
 		else 
 			s = cur - base;
 		s += num;
-		if (cfg_get_var_int(cfg_list, "loop_play"))
+		if (cfg_get_var_int(cfg_list, "loop-play"))
 		{
 			while (s < 0)
 				s += len;
@@ -1374,14 +1373,14 @@ void player_handle_action( int action )
 
 	/* Set/unset shuffle mode */
 	case KBIND_SHUFFLE:
-		cfg_set_var_int(cfg_list, "shuffle_play",
-				!cfg_get_var_int(cfg_list, "shuffle_play"));
+		cfg_set_var_int(cfg_list, "shuffle-play",
+				!cfg_get_var_int(cfg_list, "shuffle-play"));
 		break;
 		
 	/* Set/unset loop mode */
 	case KBIND_LOOP:
-		cfg_set_var_int(cfg_list, "loop_play",
-				!cfg_get_var_int(cfg_list, "loop_play"));
+		cfg_set_var_int(cfg_list, "loop-play",
+				!cfg_get_var_int(cfg_list, "loop-play"));
 		break;
 
 	/* Variables manager */
@@ -1914,7 +1913,7 @@ void player_handle_var_outp( char *name )
 	int i;
 	for ( i = 0; i < pmng_num_outp; i ++ )
 		if (!strcmp(pmng_outp[i]->m_name, 
-					cfg_get_var(cfg_list, "output_plugin")))
+					cfg_get_var(cfg_list, "output-plugin")))
 		{
 			pmng_cur_out = pmng_outp[i];
 			break;

@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. OSS output plugin functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 16.08.2003
+ * LAST UPDATE : 4.09.2003
  * NOTE        : Module prefix 'oss'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -38,17 +38,30 @@ int oss_fd = -1;
 bool_t oss_start( void )
 {
 	int fmt;
+	int i;
+	char name[256];
 
 	/* Check if we have access to sound card */
-	oss_fd = open("/dev/dsp", O_WRONLY | O_NONBLOCK);
-	if (oss_fd == -1)
-		return FALSE;
+	strcpy(name, "/dev/dsp");
+	oss_fd = open(name, O_WRONLY | O_NONBLOCK);
+	if (oss_fd < 0)
+	{
+		for ( i = 1; i < 256; i ++ )
+		{
+			sprintf(name, "/dev/dsp%i", i);
+			oss_fd = open(name, O_WRONLY | O_NONBLOCK);
+			if (oss_fd >= 0)
+				break;
+		}
+		if (oss_fd < 0)
+			return FALSE;
+	}
 	close(oss_fd);
 	oss_fd = -1;
 
 	/* Open device */
-	oss_fd = open("/dev/dsp", O_WRONLY);
-	if (oss_fd == -1)
+	oss_fd = open(name, O_WRONLY);
+	if (oss_fd < 0)
 		return FALSE;
 	
 	return TRUE;

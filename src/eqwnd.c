@@ -222,16 +222,16 @@ void eqwnd_set_var( int pos, float val )
 void eqwnd_get_var_name( int pos, char *name )
 {
 	if (pos == 0)
-		strcpy(name, "eq_preamp");
+		strcpy(name, "eq-preamp");
 	else
-		sprintf(name, "eq_band%i", pos);
+		sprintf(name, "eq-band%i", pos);
 } /* End of 'eqwnd_get_var_name' function */
 
 /* Save equalizer parameters */
 void eqwnd_save_params( void )
 {
-	char *str = "eq_preamp;eq_band1;eq_band2;eq_band3;eq_band4;eq_band5;"
-				"eq_band6;eq_band7;eq_band8;eq_band9;eq_band10";
+	char *str = "eq-preamp;eq-band1;eq-band2;eq-band3;eq-band4;eq-band5;"
+				"eq-band6;eq-band7;eq-band8;eq-band9;eq-band10";
 	player_save_cfg_vars(cfg_list, str);
 } /* End of 'eqwnd_save_params' function */
 
@@ -285,12 +285,12 @@ void eqwnd_load_eqf( char *filename )
 			return;
 		}
 
-		cfg_set_var_float(cfg_list, "eq_preamp", 
+		cfg_set_var_float(cfg_list, "eq-preamp", 
 				20.0 - ((bands[10] * 40.0) / 63.0));
 		for ( i = 0; i < 10; i ++ )
 		{
 			char str[20];
-			sprintf(str, "eq_band%i", i + 1);
+			sprintf(str, "eq-band%i", i + 1);
 			cfg_set_var_float(cfg_list, str, 
 					20.0 - ((bands[i] * 40.0) / 64.0));
 		}

@@ -166,12 +166,12 @@ void song_get_title_from_info( song_t *song )
 		for ( i = strlen(song->m_file_name) - 1; 
 				(i >= 0) && (song->m_file_name[i] != '/'); i -- );
 		strcpy(song->m_title, &song->m_file_name[i + 1]);
-		if (cfg_get_var_int(cfg_list, "convert_underscores2spaces"))
+		if (cfg_get_var_int(cfg_list, "convert-underscores2spaces"))
 			util_under2spaces(song->m_title);
 		return;
 	}
 
-	fmt = cfg_get_var(cfg_list, "title_format");
+	fmt = cfg_get_var(cfg_list, "title-format");
 	str = song->m_title;
 	*str = 0;
 	if (*fmt && strcmp(fmt, "0") && strcmp(fmt, "1"))

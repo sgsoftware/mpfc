@@ -54,14 +54,14 @@ bool_t dw_start( void )
 	int i;
 
 	/* Get output file name */
-	cur_song = cfg_get_var(dw_var_list, "cur_song_name");
+	cur_song = cfg_get_var(dw_var_list, "cur-song-name");
 	for ( i = strlen(cur_song) - 1; i >= 0 && cur_song[i] != '.'; i -- );
 	if (i < 0)
 		i = strlen(cur_song) - 1;
 	memcpy(name, cur_song, i + 1);
 	name[i + 1] = 0;
 	sprintf(full_name, "%s/%swav", cfg_get_var(dw_var_list, 
-				"disk_writer_path"), name);
+				"disk-writer-path"), name);
 
 	/* Try to open file */
 	dw_fd = fopen(full_name, "w+b");

@@ -304,7 +304,7 @@ int mp3_get_len_quick( char *filename )
 int mp3_get_len( char *filename )
 {
 	/* See what user wants */
-	if (cfg_get_var_int(mp3_var_list, "mp3_quick_get_len"))
+	if (cfg_get_var_int(mp3_var_list, "mp3-quick-get-len"))
 		return mp3_get_len_quick(filename);
 	else
 		return mp3_get_len_correct(filename);
@@ -1007,7 +1007,7 @@ void mp3_apply_eq( void )
 	unsigned int nch, ch, ns, s, sb;
 
 	/* Do nothing if equalizer is disabled */
-	if (cfg_get_var_int(mp3_var_list, "equalizer_off"))
+	if (cfg_get_var_int(mp3_var_list, "equalizer-off"))
 		return;
 	
 	nch = MAD_NCHANNELS(&mp3_frame.header);

@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: konsamp 0.1\n"
-"POT-Creation-Date: 2003-10-02 19:28+0400\n"
+"POT-Creation-Date: 2003-10-04 21:07+0400\n"
 "PO-Revision-Date: 2003-02-13 09:15+0300\n"
 "Last-Translator: Sergey E. Galanov <sgsoftware@mail.ru>\n"
 "Language-Team: Russian <sgsoftware@mail.ru>\n"
@@ -19,7 +19,7 @@ msgstr ""
 msgid "Initialization error : %s\n"
 msgstr "Ошибка инициализии : %s\n"
 
-#: src/player.c:381
+#: src/player.c:380
 msgid ""
 "SG Software Media Player For Console\n"
 "version 1.0alpha\n"
@@ -27,129 +27,134 @@ msgstr ""
 "Плейер для консоли от SG Software\n"
 "версия 1.0-альфа\n"
 
-#: src/player.c:587
+#: src/player.c:586
 msgid "Unable to initialize output plugin"
-msgstr "Не могу сохранить выходной плагин"
+msgstr "Не могу инициализировать выходной плагин"
 
-#: src/player.c:769
+#: src/player.c:768
 msgid "Enter file (or directory) name: "
 msgstr "Введите имя файла (или каталога): "
 
-#: src/player.c:794
+#: src/player.c:793
 msgid "Enter file name: "
 msgstr "Введите имя файла: "
 
-#: src/player.c:807
+#: src/player.c:806
 msgid "Play list saved"
 msgstr "Плей-лист сохранен"
 
-#: src/player.c:808
+#: src/player.c:807
 msgid "Unable to save play list"
 msgstr "Не могу сохранить плей-лист"
 
-#: src/player.c:822
+#: src/player.c:821
 #, c-format
 msgid "Removed %i songs"
 msgstr "Удалено %i песен"
 
-#: src/player.c:835
+#: src/player.c:834
 msgid "Sort globally? (Yes/No)"
 msgstr "Сортировать глобально? (Yes/No)"
 
-#: src/player.c:847
+#: src/player.c:846
 msgid "Sort by: (T)itle, (F)ile name, (P)ath and file name"
 msgstr "Сортировать по: Заголовку(T), Имени файла(F), Пути и имени(P)"
 
-#: src/player.c:879
+#: src/player.c:878
 msgid "Enter search string: "
 msgstr "Введите строку для поиска: "
 
-#: src/player.c:893 src/player.c:1365
+#: src/player.c:892 src/player.c:1364
 msgid "String not found"
 msgstr "Строка не найдена"
 
-#: src/player.c:895 src/player.c:1367
+#: src/player.c:894 src/player.c:1366
 msgid "String found"
 msgstr "Строка найдена"
 
-#: src/player.c:932
+#: src/player.c:931
 msgid "Song name: "
 msgstr "Название песни: "
 
-#: src/player.c:934
+#: src/player.c:933
 msgid "Artist name: "
 msgstr "Исполнитель: "
 
-#: src/player.c:936
+#: src/player.c:935
 msgid "Album name: "
 msgstr "Альбом: "
 
-#: src/player.c:938
+#: src/player.c:937
 msgid "Year: "
 msgstr "Год: "
 
-#: src/player.c:940
+#: src/player.c:939
 msgid "Track No: "
 msgstr "Номер трека: "
 
-#: src/player.c:942
+#: src/player.c:941
 msgid "Comments: "
 msgstr "Комментарии: "
 
-#: src/player.c:944
+#: src/player.c:943
 msgid "Genre: "
 msgstr "Жанр: "
 
-#: src/player.c:1117
+#: src/player.c:1116
 msgid "Variables manager"
 msgstr "Менеджер переменных"
 
-#: src/player.c:1124 src/player.c:1670
+#: src/player.c:1123 src/player.c:1675
 msgid "Value: "
 msgstr "Значение: "
 
-#: src/player.c:1127 src/player.c:1666
+#: src/player.c:1126 src/player.c:1671
 msgid "New variable"
 msgstr "Новая переменная"
 
-#: src/player.c:1130
+#: src/player.c:1129
 msgid "Save"
 msgstr "Сохранить"
 
-#: src/player.c:1133
+#: src/player.c:1132
 msgid "Restore value"
 msgstr "Восстановить переменную"
 
-#: src/player.c:1167
+#: src/player.c:1166
 msgid "Enter object name: "
 msgstr "Введите имя объекта: "
 
-#: src/player.c:1531
+#: src/player.c:1536
 msgid "Enter repeat value for the next command: "
 msgstr "Введите число повторений для следующей команды: "
 
-#: src/player.c:1577
+#: src/player.c:1582
 msgid "Enter variable name: "
 msgstr "Введите имя переменной: "
 
-#: src/player.c:1596
+#: src/player.c:1601
 msgid "Enter variable value: "
 msgstr "Введите значение переменной: "
 
-#: src/player.c:1668
+#: src/player.c:1673
 msgid "Name: "
 msgstr "Имя: "
 
-#: src/player.c:1800
+#: src/player.c:1805
 msgid "Enter command: "
 msgstr "Введить команду"
 
-#: src/player.c:1855
+#: src/player.c:1860
 msgid ""
 "Search for: (T)itle, (N)ame, (A)rtist, A(l)bum, (Y)ear, (G)enre, (O)wn data"
 msgstr ""
 "Поиск по: заголовку(T), исполнителю(A), альбому(L), году(Y), жанру(G), доп. "
 "информации(O)"
+
+#: src/plist.c:765
+#, c-format
+msgid "%i/%i songs; %i:%02i:%02i/%i:%02i:%02i"
+msgstr "%i/%i песен; %i:%02i:%02i/%i:%02i:%02i"
 
 #: src/help_screen.c:79
 msgid "q:\t\t Quit program"
@@ -324,46 +329,50 @@ msgid "I:\t\t Reload songs information"
 msgstr "I:\t\t Перезагрузить информацию о песнях"
 
 #: src/help_screen.c:123
-msgid "Ps:\t\t Set play bounds"
-msgstr "Ps:\t\t Установить границы воспроизведения"
+msgid "P:\t\t Reload plugins"
+msgstr "P:\t\t Перезагрузить плагины"
 
 #: src/help_screen.c:124
-msgid "P<Ret>:\t\t Set play bounds and play"
-msgstr "P<Ввод>:\t Установить границы и начать воспроизведение"
+msgid "ps:\t\t Set play bounds"
+msgstr "ps:\t\t Установить границы воспроизведения"
 
 #: src/help_screen.c:125
-msgid "Pc:\t\t Clear play bounds"
-msgstr "Pc:\t\t Сбросить границы воспроизведения"
+msgid "p<Ret>:\t\t Set play bounds and play"
+msgstr "p<Ввод>:\t Установить границы и начать воспроизведение"
 
 #: src/help_screen.c:126
+msgid "pc:\t\t Clear play bounds"
+msgstr "pc:\t\t Сбросить границы воспроизведения"
+
+#: src/help_screen.c:127
 msgid "!:\t\t Execute command"
 msgstr "!:\t\t Выполнить команду"
 
-#: src/help_screen.c:127
+#: src/help_screen.c:128
 msgid "m<Letter>:\t Set mark <Letter>"
 msgstr "m<Буква>:\t Установить метку <Буква>"
 
-#: src/help_screen.c:128
+#: src/help_screen.c:129
 msgid "`<Letter>:\t Go to mark <Letter>"
 msgstr "`<Буква>:\t Перейти к метке <Буква>"
 
-#: src/help_screen.c:129
+#: src/help_screen.c:130
 msgid "``:\t\t Go to previous position"
 msgstr "``:\t\t Перейти в предыдущей позиции"
 
-#: src/help_screen.c:130
+#: src/help_screen.c:131
 msgid "<Backspace>:\t Go to previous time"
 msgstr "<Backspace>:\t Перейти к предыдущему времени"
 
-#: src/help_screen.c:131
+#: src/help_screen.c:132
 msgid "^l:\t\t Redisplay screen"
 msgstr "^l:\t\t Обновить экран"
 
-#: src/help_screen.c:132
+#: src/help_screen.c:133
 msgid "?:\t\t This help screen"
 msgstr "?:\t\t Этот экран помощи"
 
-#: src/help_screen.c:152
+#: src/help_screen.c:153
 msgid "MPFC Default Key Bindings"
 msgstr "Стандартные клавиши MPFC"
 

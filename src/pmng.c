@@ -148,7 +148,7 @@ int pmng_apply_effects( byte *data, int len, int fmt, int freq, int channels )
 		char name[256];
 		
 		/* Apply effect plugin if it is enabled */
-		sprintf(name, "enable_effect_%s", pmng_ep[i]->m_name);
+		sprintf(name, "enable-effect_%s", pmng_ep[i]->m_name);
 		if (cfg_get_var_int(cfg_list, name))
 			l = ep_apply(pmng_ep[i], data, l, fmt, freq, channels);
 	}
@@ -174,17 +174,17 @@ void pmng_load_plugins( void )
 
 	/* Load input plugins */
 	type = PMNG_IN;
-	sprintf(path, "%s/input", cfg_get_var(cfg_list, "lib_dir"));
+	sprintf(path, "%s/input", cfg_get_var(cfg_list, "lib-dir"));
 	find_do(path, "*.so", pmng_find_handler, &type);
 
 	/* Load output plugins */
 	type = PMNG_OUT;
-	sprintf(path, "%s/output", cfg_get_var(cfg_list, "lib_dir"));
+	sprintf(path, "%s/output", cfg_get_var(cfg_list, "lib-dir"));
 	find_do(path, "*.so", pmng_find_handler, &type);
 
 	/* Load effect plugins */
 	type = PMNG_EFFECT;
-	sprintf(path, "%s/effect", cfg_get_var(cfg_list, "lib_dir"));
+	sprintf(path, "%s/effect", cfg_get_var(cfg_list, "lib-dir"));
 	find_do(path, "*.so", pmng_find_handler, &type);
 } /* End of 'pmng_load_plugins' function */
 
@@ -220,7 +220,7 @@ int pmng_find_handler( char *name, void *data )
 			pmng_add_out(op);
 
 			/* Choose this plugin if it is set in options */
-			if (!strcmp(op->m_name, cfg_get_var(cfg_list, "output_plugin")))
+			if (!strcmp(op->m_name, cfg_get_var(cfg_list, "output-plugin")))
 				pmng_cur_out = op;
 		}
 	}
