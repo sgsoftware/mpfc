@@ -949,7 +949,7 @@ void player_save_dialog( void )
 		/* Run message loop */
 		wnd_run(fin);
 
-		/* Add file if enter was pressed */
+		/* Save list if enter was pressed */
 		if (fin->m_box.m_last_key == '\n')
 		{
 			bool_t res = plist_save(player_plist, EBOX_TEXT(fin));
@@ -1846,7 +1846,7 @@ void player_handle_action( int action )
 			/* Remember repeat value or handle last pressed command */
 			if (ebox->m_last_key != 27)
 			{
-				player_repval = atoi(ebox->m_text);
+				player_repval = atoi(EBOX_TEXT(ebox));
 				dont_change_repval = TRUE;
 				player_handle_key(wnd_root, ebox->m_last_key);
 			}
@@ -2121,7 +2121,7 @@ void player_exec( void )
 		if (ebox->m_last_key == '\n')
 		{
 			wnd_close_curses();
-			system(ebox->m_text);
+			system(EBOX_TEXT(ebox));
 			getchar();
 			wnd_restore_curses();
 		}

@@ -61,8 +61,8 @@ void hist_list_free( hist_list_t *l )
 		for ( t = l->m_head; t != NULL; )
 		{
 			t1 = t->m_next;
-			free(t);
 			free(t->m_text);
+			free(t);
 			t = t1;
 		}
 	}
