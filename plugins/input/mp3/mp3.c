@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. MP3 input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 01.02.2004
+ * LAST UPDATE : 06.02.2004
  * NOTE        : Module prefix 'mp3'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -33,8 +33,6 @@
 #include <time.h>
 #include <sys/soundcard.h>
 #include "types.h"
-#include "cfg.h"
-#include "charset.h"
 #include "file.h"
 #include "genre_list.h"
 #include "getlen.h"
@@ -48,75 +46,68 @@
 #define MP3_IN_BUF_SIZE (5*8192)
 
 /* libmad structures */
-struct mad_stream mp3_stream;
-struct mad_frame mp3_frame;
-struct mad_synth mp3_synth;
-mad_timer_t mp3_timer;
+static struct mad_stream mp3_stream;
+static struct mad_frame mp3_frame;
+static struct mad_synth mp3_synth;
+static mad_timer_t mp3_timer;
 
 /* Input buffer */
-byte mp3_in_buf[MP3_IN_BUF_SIZE];
+static byte mp3_in_buf[MP3_IN_BUF_SIZE];
 
 /* Decoded frames counter */
-dword mp3_frame_count = 0;
+static dword mp3_frame_count = 0;
 
 /* Samples pointer */
-dword mp3_samples = 0;
+static dword mp3_samples = 0;
 
 /* Current seek value */
-int mp3_seek_val = -1;
+static int mp3_seek_val = -1;
 
 /* Current song audio parameters */
-int mp3_channels = 0, mp3_freq = 0, mp3_bitrate = 0;
-dword mp3_fmt = 0;
+static int mp3_channels = 0, mp3_freq = 0, mp3_bitrate = 0;
+static dword mp3_fmt = 0;
 
 /* Current file name */
-char mp3_file_name[256] = "";
+static char mp3_file_name[MAX_FILE_NAME] = "";
 
 /* ID3 tag scheduled for saving */
-id3_tag_t *mp3_tag = NULL;
+static id3_tag_t *mp3_tag = NULL;
 
 /* Current song information */
-song_info_t mp3_cur_info;
+static song_info_t *mp3_cur_info = NULL;
 
 /* Whether we are about to remove tag? */
-bool_t mp3_need_rem_tag = FALSE;
+static bool_t mp3_need_rem_tag = FALSE;
 
 /* Genres list */
-genre_list_t *mp3_glist = NULL;
+static genre_list_t *mp3_glist = NULL;
 
 /* Current song length */
-int mp3_len = 0;
+static int mp3_len = 0;
 
 /* Multipliers for equalizer */
-mad_fixed_t mp3_eq_mul[32];
-
-/* This is pointer to global variables list */
-cfg_list_t *mp3_var_list = NULL;
-
-/* Is ID3 tag present */
-bool_t mp3_tag_present = FALSE;
+static mad_fixed_t mp3_eq_mul[32];
 
 /* Current time */
-int mp3_time = 0;
+static int mp3_time = 0;
 
 /* File object */
-file_t *mp3_fd = NULL;
+static file_t *mp3_fd = NULL;
 
 /* Plugins manager object */
-pmng_t *mp3_pmng = NULL;
+static pmng_t *mp3_pmng = NULL;
 
 /* Current song header */
 struct mad_header mp3_head;
 
 /* Message printer */
-void (*mp3_print_msg)( char *msg );
+void (*mp3_print_msg)( char *fmt, ... );
 
 /* Start play function */
 bool_t mp3_start( char *filename )
 {
 	/* Remember tag */
-	mp3_tag_present = mp3_get_info(filename, &mp3_cur_info);
-	mp3_len = mp3_get_len(filename);
+	mp3_cur_info = mp3_get_info(filename, &mp3_len);
 
 	/* Open file */
 	mp3_fd = file_open(filename, "rb", mp3_print_msg);
@@ -173,6 +164,8 @@ void mp3_end( void )
 			mp3_tag = NULL;
 		}
 		
+		si_free(mp3_cur_info);
+		mp3_cur_info = NULL;
 		strcpy(mp3_file_name, "");
 		mp3_len = 0;
 		mp3_time = 0;
@@ -180,19 +173,16 @@ void mp3_end( void )
 } /* End of 'mp3_end' function */
 
 /* Get supported formats function */
-void mp3_get_formats( char *buf )
+void mp3_get_formats( char *extensions, char *content_type )
 {
-	strcpy(buf, "mp3");
+	if (extensions != NULL)
+		strcpy(extensions, "mp3");
+	if (content_type != NULL)
+		strcpy(content_type, "audio/mpeg");
 } /* End of 'mp3_get_formats' function */
 
-/* Get supported content types function */
-void mp3_get_content_type( char *buf )
-{
-	strcpy(buf, "audio/mpeg");
-} /* End of 'mp3_get_content_type' function */
-
 /* Correct though long version of get_len function */
-int mp3_get_len_correct( char *filename )
+static int mp3_get_len_correct( char *filename )
 {
 	struct mad_stream stream;
 	struct mad_header header;
@@ -256,7 +246,7 @@ int mp3_get_len_correct( char *filename )
 } /* End of 'mp3_get_len_correct' function */
 
 /* Quick though not very correct version of get_len function */
-int mp3_get_len_quick( char *filename )
+static int mp3_get_len_quick( char *filename )
 {
 	struct mad_stream stream;
 	struct mad_header header;
@@ -342,7 +332,7 @@ int mp3_get_len( char *filename )
 #endif
 
 /* Convert MAD fixed point sample to 16-bit */
-short mp3_mad_fixed_to_short( mad_fixed_t sample )
+static short mp3_mad_fixed_to_short( mad_fixed_t sample )
 {
 	sample += (1L << (MAD_F_FRACBITS - 16));
 	if (sample >= MAD_F_ONE)
@@ -358,11 +348,17 @@ void mp3_save_info( char *filename, song_info_t *info )
 	id3_tag_t *tag;
 	byte *data = NULL;
 	int size;
-	char str[80];
 
 	/* Supported only for regular files */
 	if (file_get_type(filename) != FILE_TYPE_REGULAR)
 		return;
+
+	/* Save this tag */
+	if (!strcmp(filename, mp3_file_name))
+	{
+		si_free(mp3_cur_info);
+		mp3_cur_info = si_dup(info);
+	}
 
 	/* Read tag */
 	tag = id3_read(filename);
@@ -374,28 +370,20 @@ void mp3_save_info( char *filename, song_info_t *info )
 	}
 
 	/* Update tag fields */
-	id3_set_frame(tag, ID3_FRAME_TITLE, info->m_name);
-	id3_set_frame(tag, ID3_FRAME_ARTIST, info->m_artist);
-	id3_set_frame(tag, ID3_FRAME_ALBUM, info->m_album);
-	id3_set_frame(tag, ID3_FRAME_COMMENT, info->m_comments);
-	id3_set_frame(tag, ID3_FRAME_YEAR, info->m_year);
-	id3_set_frame(tag, ID3_FRAME_TRACK, info->m_track);
-	if (info->m_genre == GENRE_ID_OWN_STRING)
-		strcpy(str, info->m_genre_data.m_text);
-	else
-	{
-		sprintf(str, "(%d)", (info->m_genre == GENRE_ID_UNKNOWN) ? 
-				info->m_genre_data.m_data : 
-				mp3_glist->m_list[info->m_genre].m_data);
-	}
-	id3_set_frame(tag, ID3_FRAME_GENRE, str);
+	id3_set_frame(tag, ID3_FRAME_TITLE, info->m_name, info->m_charset);
+	id3_set_frame(tag, ID3_FRAME_ARTIST, info->m_artist, info->m_charset);
+	id3_set_frame(tag, ID3_FRAME_ALBUM, info->m_album, info->m_charset);
+	id3_set_frame(tag, ID3_FRAME_COMMENT, info->m_comments, info->m_charset);
+	id3_set_frame(tag, ID3_FRAME_YEAR, info->m_year, info->m_charset);
+	id3_set_frame(tag, ID3_FRAME_TRACK, info->m_track, info->m_charset);
+	id3_set_genre(tag, info->m_genre, 
+			glist_get_id_by_name(mp3_glist, info->m_genre), info->m_charset);
 
 	/* Save tag or save it later */
 	mp3_need_rem_tag = FALSE;
 	if (!strcmp(filename, mp3_file_name))
 	{
 		mp3_tag = tag;
-		memcpy(&mp3_cur_info, info, sizeof(song_info_t));
 	}
 	else
 	{
@@ -405,11 +393,13 @@ void mp3_save_info( char *filename, song_info_t *info )
 } /* End of 'mp3_save_info' function */
 
 /* Get song information */
-bool_t mp3_get_info( char *filename, song_info_t *info )
+song_info_t *mp3_get_info( char *filename, int *len )
 {
 	struct mad_header head;
-	int i, filesize, len;
+	int i, filesize;
 	id3_tag_t *tag;
+	char own_data[1024];
+	song_info_t *si = NULL;
 
 	/* Supported only for regular files; for others - 
 	 * output audio parameters */
@@ -419,11 +409,15 @@ bool_t mp3_get_info( char *filename, song_info_t *info )
 		
 		/* May return anything only for current song */
 		if (strcmp(filename, mp3_file_name))
-			return FALSE;
+		{
+			*len = 0;
+			return NULL;
+		}
 
-		info->m_genre = GENRE_ID_UNKNOWN;
-		info->m_only_own = TRUE;
-		sprintf(info->m_own_data, 
+		*len = 0;
+		si = si_new();
+		si->m_flags |= SI_ONLY_OWN;
+		sprintf(own_data, 
 			_("MPEG %s, layer %i\n"
 			"Bitrate: %i kb/s\n"
 			"Samplerate: %i Hz\n"
@@ -447,123 +441,63 @@ bool_t mp3_get_info( char *filename, song_info_t *info )
 			mp3_head.emphasis == MAD_EMPHASIS_NONE ? _("None") :
 		  		(mp3_head.emphasis == MAD_EMPHASIS_50_15_US ? 
 				 _("50/15 microseconds") : _("CCITT J.17")));
-		return TRUE;
+		si_set_own_data(si, own_data);
+		return si;
 	}
 	
 	/* Return temporary tag if we request for current playing song tag */
 	if (!strcmp(filename, mp3_file_name))
 	{
-		if (mp3_tag_present)
-		{
-			memcpy(info, &mp3_cur_info, sizeof(song_info_t));
-			return TRUE;
-		}
-		else
-			return FALSE;
+		*len = mp3_len;
+		return si_dup(mp3_cur_info);
 	}
 
 	/* Read tag */
+	si = si_new();
+	si->m_glist = mp3_glist;
 	tag = id3_read(filename);
-	if (tag == NULL)
-	{
-		memset(info, 0, sizeof(*info));
-		info->m_not_own_present = FALSE;
-	}
-	else
-		info->m_not_own_present = TRUE;
 
-	if (info->m_not_own_present)
+	if (tag != NULL)
 	{
-		/* Initialize info fields with empty values first */
-		memset(info, 0, sizeof(*info));
-		info->m_genre = GENRE_ID_UNKNOWN;
-		info->m_not_own_present = TRUE;
-
 		/* Scan tag frames */
 		for ( ;; )
 		{	
 			id3_frame_t f;
-			int size = 1;
-			char *out_str;
 			
 			/* Get next frame */
 			id3_next_frame(tag, &f);
 
-			/* Convert codepages */
-			out_str = cs_convert(f.m_val, f.m_encoding == ID3_UTF8 ?
-					"utf8" : NULL, NULL, mp3_pmng);
-			if (out_str == NULL)
-			{
-				if (f.m_val != NULL)
-					out_str = strdup(f.m_val);
-				else
-					out_str = strdup("");
-			}
-			
 			/* Handle frame */
 			if (!strcmp(f.m_name, ID3_FRAME_TITLE))
 			{
-				strncpy(info->m_name, out_str, size = sizeof(info->m_name));
-				info->m_name[size - 1] = 0;
+				si_set_name(si, f.m_val);
+				if (f.m_encoding == ID3_UTF8)
+					si_set_charset(si, "utf-8");
 			}
 			else if (!strcmp(f.m_name, ID3_FRAME_ARTIST))
-			{
-				strncpy(info->m_artist, out_str, size = sizeof(info->m_artist));
-				info->m_artist[size - 1] = 0;
-			}
+				si_set_artist(si, f.m_val);
 			else if (!strcmp(f.m_name, ID3_FRAME_ALBUM))
-			{
-				strncpy(info->m_album, out_str, size = sizeof(info->m_album));
-				info->m_album[size - 1] = 0;
-			}
+				si_set_album(si, f.m_val);
 			else if (!strcmp(f.m_name, ID3_FRAME_YEAR))
-			{
-				strncpy(info->m_year, out_str, size = sizeof(info->m_year));
-				info->m_year[size - 1] = 0;
-			}
+				si_set_year(si, f.m_val);
 			else if (!strcmp(f.m_name, ID3_FRAME_TRACK))
-			{
-				strncpy(info->m_track, out_str, size = sizeof(info->m_track));
-				info->m_track[size - 1] = 0;
-			}
+				si_set_track(si, f.m_val);
 			else if (!strcmp(f.m_name, ID3_FRAME_COMMENT))
-			{
-				strncpy(info->m_comments, out_str, 
-						size = sizeof(info->m_comments));
-				info->m_comments[size - 1] = 0;
-			}
+				si_set_comments(si, f.m_val);
 			else if (!strcmp(f.m_name, ID3_FRAME_GENRE))
-			{
-				byte genre = mp3_get_genre(out_str);
-				if (genre == 0xFE)
-				{
-					info->m_genre = GENRE_ID_OWN_STRING;
-					strncpy(info->m_genre_data.m_text, out_str,
-							size = sizeof(info->m_genre_data.m_text));
-					info->m_genre_data.m_text[size - 1] = 0;
-				}
-				else
-				{
-					info->m_genre_data.m_data = genre;
-					info->m_genre = glist_get_id(mp3_glist, genre);
-				}
-			}
+				si_set_genre(si, f.m_val);
 			else if (!strcmp(f.m_name, ID3_FRAME_FINISHED))
 			{
-				free(out_str);
 				id3_free_frame(&f);
 				break;
 			}
 
-			free(out_str);
 			id3_free_frame(&f);
 		}
 
 		/* Free tag */
 		id3_free(tag);
 	}
-	else
-		info->m_genre = GENRE_ID_UNKNOWN;
 
 	/* Obtain additional song parameters */
 	mad_header_init(&head);
@@ -573,9 +507,9 @@ bool_t mp3_get_info( char *filename, song_info_t *info )
 		int count;
 		
 		filesize = util_get_file_size(filename);
-		len = filesize / (head.bitrate >> 3);
+		*len = mp3_get_len(filename);
 		count = mad_timer_count(head.duration, MAD_UNITS_MILLISECONDS);
-		sprintf(info->m_own_data, 
+		sprintf(own_data, 
 			_("MPEG %s, layer %i\n"
 			"Bitrate: %i kb/s\n"
 			"Samplerate: %i Hz\n"
@@ -602,11 +536,12 @@ bool_t mp3_get_info( char *filename, song_info_t *info )
 			head.emphasis == MAD_EMPHASIS_NONE ? _("None") :
 		  		(head.emphasis == MAD_EMPHASIS_50_15_US ? 
 				 _("50/15 microseconds") : _("CCITT J.17")),
-			count == 0 ? 0 : len * 1000 / count, mp3_get_len(filename), 
+			count == 0 ? 0 : (*len) * 1000 / count, *len,
 			filesize);
+			si_set_own_data(si, own_data);
 	}
 	mad_header_finish(&head);
-	return TRUE;
+	return si;
 } /* End of 'mp3_get_info' function */
 
 /* Get stream function */
@@ -716,7 +651,7 @@ int mp3_get_stream( void *buf, int size )
 } /* End of 'mp3_get_stream' function */
 
 /* Seek song */
-void mp3_seek( int shift )
+void mp3_seek( int seconds )
 {
 	/* Supported only for regular files */
 	if (file_get_type(mp3_file_name) != FILE_TYPE_REGULAR)
@@ -724,16 +659,17 @@ void mp3_seek( int shift )
 	
 	if (mp3_fd != NULL)
 	{
-		mp3_seek_val = shift;
+		mp3_seek_val = seconds;
 	}
 } /* End of 'mp3_seek' function */
 
 /* Get audio parameters */
-void mp3_get_audio_params( int *ch, int *freq, dword *fmt )
+void mp3_get_audio_params( int *ch, int *freq, dword *fmt, int *bitrate )
 {
 	*ch = mp3_channels;
 	*freq = mp3_freq;
 	*fmt = mp3_fmt;
+	*bitrate = mp3_bitrate;
 } /* End of 'mp3_get_audio_params' function */
 
 /* Initialize genres list */
@@ -747,6 +683,7 @@ void mp3_init_glist( void )
 
 	/* Fill it */
 	l = mp3_glist;
+	glist_add(l, "", 0xFF);
 	glist_add(l, "A Capella", 0x7B);
 	glist_add(l, "Acid", 0x22);
 	glist_add(l, "Acid Jazz", 0x4A);
@@ -902,13 +839,11 @@ int mp3_get_cur_time( void )
 } /* End of 'mp3_get_cur_time' function */
 
 /* Remove ID3 tags */
-void mp3_remove_tag( char *filename )
+static void mp3_remove_tag( char *filename )
 {
 	if (mp3_print_msg != NULL)
 	{
-		char msg[512];
-		sprintf(msg, _("Removing tag from file %s"), filename);
-		mp3_print_msg(msg);
+		mp3_print_msg(_("Removing tag from file %s"), filename);
 	}
 	if (strcmp(filename, mp3_file_name))
 	{
@@ -916,29 +851,23 @@ void mp3_remove_tag( char *filename )
 	}
 	else
 	{
-		char *own;
-		
 		mp3_need_rem_tag = TRUE;
 		if (mp3_tag != NULL)
 		{
 			id3_free(mp3_tag);
 			mp3_tag = NULL;
 		}
-		own = strdup(mp3_cur_info.m_own_data);
-		memset(&mp3_cur_info, 0, sizeof(mp3_cur_info));
-		strcpy(mp3_cur_info.m_own_data, own);
-		mp3_cur_info.m_genre = GENRE_ID_OWN_STRING;
-		free(own);
+		if (mp3_cur_info != NULL)
+		{
+			song_info_t *si = si_new();
+			si_set_own_data(si, mp3_cur_info->m_own_data);
+			si_free(mp3_cur_info);
+			mp3_cur_info = si;
+		}
 	}
 	if (mp3_print_msg != NULL)
 		mp3_print_msg(_("OK"));
 } /* End of 'mp3_remove_tag' function */
-
-/* Get current bitrate */
-int mp3_get_bitrate( void )
-{
-	return mp3_bitrate;
-} /* End of 'mp3_get_bitrate' function */
 
 /* Get functions list */
 void inp_get_func_list( inp_func_list_t *fl )
@@ -946,19 +875,15 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_start = mp3_start;
 	fl->m_end = mp3_end;
 	fl->m_get_stream = mp3_get_stream;
-	fl->m_get_len = mp3_get_len;
 	fl->m_get_info = mp3_get_info;
 	fl->m_save_info = mp3_save_info;
 	fl->m_seek = mp3_seek;
 	fl->m_get_audio_params = mp3_get_audio_params;
-	fl->m_get_bitrate = mp3_get_bitrate;
 	fl->m_get_formats = mp3_get_formats;
 	fl->m_set_eq = mp3_set_eq;
-	fl->m_glist = mp3_glist;
 	fl->m_get_cur_time = mp3_get_cur_time;
-	fl->m_get_content_type = mp3_get_content_type;
-	mp3_print_msg = fl->m_print_msg;
 	mp3_pmng = fl->m_pmng;
+	mp3_print_msg = pmng_get_printer(mp3_pmng);
 
 	fl->m_num_spec_funcs = 1;
 	fl->m_spec_funcs = (inp_spec_func_t *)malloc(sizeof(inp_spec_func_t) * 
@@ -981,12 +906,6 @@ void _fini( void )
 	glist_free(mp3_glist);
 } /* End of '_fini' function */
 
-/* Save variables list */
-void inp_set_vars( cfg_list_t *list )
-{
-	mp3_var_list = list;
-} /* End of 'inp_set_vars' function */
-
 /* Set equalizer parameters */
 void mp3_set_eq( void )
 {
@@ -1001,8 +920,8 @@ void mp3_set_eq( void )
 		float val;
 		
 		sprintf(name, "eq-band%i", map[i] + 1);
-		val = cfg_get_var_float(mp3_var_list, "eq-preamp") + 
-			cfg_get_var_float(mp3_var_list, name);
+		val = cfg_get_var_float(pmng_get_cfg(mp3_pmng), "eq-preamp") + 
+			cfg_get_var_float(pmng_get_cfg(mp3_pmng), name);
 		if (val > 18.)
 			val = 18.;
 		val = pow(10., val / 20.);
@@ -1011,12 +930,12 @@ void mp3_set_eq( void )
 } /* End of 'mp3_set_eq' function */
 
 /* Apply equalizer to frame */
-void mp3_apply_eq( void )
+static void mp3_apply_eq( void )
 {
 	unsigned int nch, ch, ns, s, sb;
 
 	/* Do nothing if equalizer is disabled */
-	if (cfg_get_var_int(mp3_var_list, "equalizer-off"))
+	if (cfg_get_var_int(pmng_get_cfg(mp3_pmng), "equalizer-off"))
 		return;
 
 	nch = MAD_NCHANNELS(&mp3_frame.header);
@@ -1029,7 +948,7 @@ void mp3_apply_eq( void )
 } /* End of 'mp3_apply_eq' function */
 
 /* Read song parameters */
-void mp3_read_song_params( void )
+static void mp3_read_song_params( void )
 {
 	struct mad_stream stream;
 	struct mad_header head;
@@ -1084,7 +1003,7 @@ void mp3_read_song_params( void )
 } /* End of 'mp3_read_song_params' function */
 
 /* Read mp3 file header */
-void mp3_read_header( char *filename, struct mad_header *head )
+static void mp3_read_header( char *filename, struct mad_header *head )
 {
 	struct mad_stream stream;
 	byte buffer[8192];
@@ -1135,28 +1054,6 @@ void mp3_read_header( char *filename, struct mad_header *head )
 	mad_stream_finish(&stream);
 	file_close(fd);
 } /* End of 'mp3_read_header' function */
-
-/* Convert string from ID3 tag to genre id */
-byte mp3_get_genre( char *str )
-{
-	byte g = 0;
-	bool_t found = FALSE;
-
-	/* Skip braces in beginning */
-	while (*str == '(')
-		str ++;
-
-	/* Extract a number */
-	while (*str >= '0' && *str <= '9')
-	{
-		g *= 10;
-		g += (*str - '0');
-		str ++;
-		found = TRUE;
-	}
-
-	return found ? g : 0xFE;
-} /* End of 'mp3_get_genre' function */
 
 /* End of 'mp3.c' file */
 

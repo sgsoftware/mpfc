@@ -29,7 +29,8 @@
 #define __SG_MPFC_AUDIOCD_H__
 
 #include "types.h"
-#include "cfg.h"
+#include "mystring.h"
+#include "pmng.h"
 #include "song_info.h"
 
 /* The maximal number of tracks */
@@ -48,11 +49,8 @@ extern int acd_num_tracks;
 extern int acd_cur_track;
 extern bool_t acd_info_read;
 
-/* This is pointer to global variables list */
-extern cfg_list_t *acd_var_list;
-
-/* Message printer */
-extern void (*acd_print_msg)( char *msg );
+/* Plugins manager */
+extern pmng_t *acd_pmng;
 
 /* Get track start frame offset */
 #define acd_get_trk_offset(t) \
@@ -67,10 +65,10 @@ extern void (*acd_print_msg)( char *msg );
 				acd_tracks_info[acd_num_tracks - 1].m_end_frm) / 75)
 
 /* Get song info */
-bool_t acd_get_info( char *filename, song_info_t *info );
+song_info_t *acd_get_info( char *filename, int *len );
 
 /* Set song title */
-void acd_set_song_title( char *buf, char *filename );
+str_t *acd_set_song_title( char *filename );
 
 /* Print message */
 void acd_print( char *format, ... );

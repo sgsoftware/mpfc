@@ -33,8 +33,9 @@
 #include <sys/soundcard.h>
 #include <linux/videodev.h>
 #include "types.h"
-#include "cfg.h"
 #include "inp.h"
+#include "mystring.h"
+#include "pmng.h"
 #include "song.h"
 #include "song_info.h"
 #include "util.h"
@@ -42,8 +43,8 @@
 /* Convert file name to frequency */
 #define rad_name2freq(name) atof(&name[6])
 
-/* This is pointer to global variables list */
-cfg_list_t *rad_var_list = NULL;
+/* Plugins manager */
+static pmng_t *rad_pmng = NULL;
 
 /* Start play function */
 bool_t rad_start( char *filename )
@@ -95,10 +96,9 @@ int rad_get_stream( void *buf, int size )
 } /* End of 'rad_get_stream' function */
 
 /* Set song title */
-void rad_set_song_title( char *title, char *filename )
+str_t *rad_set_song_title( char *filename )
 {
-	strcpy(title, filename);
-	title[0] = 'R';
+	return str_new(filename);
 } /* End of 'rad_set_song_title' function */
 
 /* Initialize songs that respect to object */
@@ -142,7 +142,7 @@ song_t **rad_init_obj_songs( char *name, int *num_songs )
 	s = (song_t **)malloc(sizeof(song_t *));
 	s[0] = (song_t *)malloc(sizeof(song_t));
 	sprintf(s[0]->m_file_name, "radio:%f", freq);
-	rad_set_song_title(s[0]->m_title, s[0]->m_file_name);
+	s[0]->m_title = rad_set_song_title(s[0]->m_file_name);
 	s[0]->m_len = 0;
 	s[0]->m_info = NULL;
 	s[0]->m_inp = NULL;
@@ -183,11 +183,12 @@ void rad_resume( void )
 } /* End of 'rad_resume' function */
 
 /* Get audio parameters */
-void rad_get_audio_params( int *ch, int *freq, dword *fmt )
+void rad_get_audio_params( int *ch, int *freq, dword *fmt, int *bitrate )
 {
 	*ch = 2;
 	*freq = 44100;
 	*fmt = 0;
+	*bitrate = 0;
 } /* End of 'rad_get_audio_params' function */
 
 /* Get functions list */
@@ -202,13 +203,8 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_pause = rad_pause;
 	fl->m_resume = rad_resume;
 	fl->m_set_song_title = rad_set_song_title;
+	rad_pmng = fl->m_pmng;
 } /* End of 'inp_get_func_list' function */
-
-/* Save variables list */
-void inp_set_vars( cfg_list_t *list )
-{
-	rad_var_list = list;
-} /* End of 'inp_set_vars' function */
 
 /* End of 'radio.c' file */
 

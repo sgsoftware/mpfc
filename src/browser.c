@@ -311,7 +311,7 @@ void fb_load_files( browser_t *fb )
 {
 	glob_t gl;
 	int i;
-	char pattern[256];
+	char pattern[MAX_FILE_NAME];
 
 	if (fb == NULL)
 		return;
@@ -369,11 +369,8 @@ void fb_add_file( browser_t *fb, char *name )
 		isdir = TRUE;
 
 	/* Rellocate memory for files list */
-	if (fb->m_files == NULL)
-		fb->m_files = (struct browser_list_item *)malloc(sizeof(*fb->m_files));
-	else
-		fb->m_files = (struct browser_list_item *)realloc(fb->m_files,
-				(fb->m_num_files + 1) * sizeof(*fb->m_files));
+	fb->m_files = (struct browser_list_item *)realloc(fb->m_files,
+			(fb->m_num_files + 1) * sizeof(*fb->m_files));
 
 	/* If we have a directory - insert it before normal files */
 	if (isdir)
@@ -393,7 +390,7 @@ void fb_add_file( browser_t *fb, char *name )
 	/* Set file data */
 	item->m_type = isdir ? FB_ITEM_DIR : 0;
 	item->m_full_name = strdup(name);
-	item->m_name = util_get_file_short_name(item->m_full_name);
+	item->m_name = util_short_name(item->m_full_name);
 	item->m_y = -1;
 	fb->m_num_files ++;
 } /* End of 'fb_add_file' function */
@@ -403,7 +400,7 @@ void fb_go_to_dir( browser_t *fb )
 {
 	struct browser_list_item *item;
 	int cursor = 0;
-	char was_dir[256];
+	char was_dir[MAX_FILE_NAME];
 	
 	if (fb == NULL || fb->m_cursor < 0 || fb->m_cursor >= fb->m_num_files)
 		return;
@@ -469,7 +466,7 @@ void fb_add2plist( browser_t *fb )
 void fb_select_pattern( browser_t *fb, bool_t sel )
 {
 	editbox_t *box;
-	char pattern[256];
+	char *pattern;
 	int i;
 
 	if (fb == NULL)
@@ -477,7 +474,7 @@ void fb_select_pattern( browser_t *fb, bool_t sel )
 
 	/* Display box for pattern input */
 	box = ebox_new(WND_OBJ(fb), 0, WND_HEIGHT(fb) - 1, WND_WIDTH(fb), 1,
-			256, sel ? _("Select files matching pattern: ") : 
+			-1, sel ? _("Select files matching pattern: ") : 
 			_("Deselect files matching pattern: "), "*");
 	if (box == NULL)
 		return;
@@ -485,7 +482,7 @@ void fb_select_pattern( browser_t *fb, bool_t sel )
 	wnd_run(box);
 
 	/* Get pattern */
-	strcpy(pattern, box->m_text);
+	pattern = strdup(EBOX_TEXT(box));
 
 	/* Free memory */
 	wnd_destroy(box);
@@ -499,6 +496,7 @@ void fb_select_pattern( browser_t *fb, bool_t sel )
 			else
 				fb->m_files[i].m_type &= ~FB_ITEM_SEL;
 		}
+	free(pattern);
 } /* End of 'fb_select_pattern' function */
 
 /* Find a browser item by the mouse coordinates */

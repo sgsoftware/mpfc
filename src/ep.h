@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for effect plugin management
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 31.01.2004
+ * LAST UPDATE : 5.02.2004
  * NOTE        : Module prefix 'ep'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -38,11 +38,17 @@ typedef struct
 	/* Apply plugin function */
 	int (*m_apply)( byte *data, int len, int fmt, int freq, int channels );
 
+	/* Reserved */
+	byte m_reserved[124];
+
+	/* Information about plugin */
+	char *m_about;
+
 	/* Plugins manager */
 	struct tag_pmng_t *m_pmng;
 
 	/* Reserved data */
-	byte m_reserved[248];
+	byte m_reserved1[120];
 } ep_func_list_t;
 
 /* Effect plugin type */
@@ -52,7 +58,7 @@ typedef struct tag_effect_plugin_t
 	void *m_lib_handler;
 
 	/* Plugin short name */
-	char m_name[256];
+	char *m_name;
 
 	/* Functions list */
 	ep_func_list_t m_fl;
@@ -67,6 +73,9 @@ void ep_free( effect_plugin_t *plugin );
 /* Apply plugin to audio data */
 int ep_apply( effect_plugin_t *plugin, byte *data, int len, 
 	   			int fmt, int freq, int channels );
+
+/* Get information about plugin */
+char *ep_get_about( effect_plugin_t *p );
 
 #endif
 

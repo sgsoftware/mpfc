@@ -1,11 +1,11 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : history.h
  * PURPOSE     : SG MPFC. Interface for edit history functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.08.2003
+ * LAST UPDATE : 4.02.2004
  * NOTE        : Module prefix 'hist'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -35,7 +35,7 @@ typedef struct tag_hist_list_t
 	/* List */
 	struct tag_hist_list_entry_t
 	{
-		char m_text[256];
+		char *m_text;
 		struct tag_hist_list_entry_t *m_next, *m_prev;
 	} *m_head, *m_tail, *m_cur;
 } hist_list_t;

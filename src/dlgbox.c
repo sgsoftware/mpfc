@@ -25,6 +25,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include "types.h"
 #include "colors.h"
 #include "dlgbox.h"
@@ -71,11 +72,12 @@ bool_t dlg_init( dlgbox_t *dlg, wnd_t *parent, int x, int y, int w, int h,
 	/* Register message handlers */
 	wnd_register_handler(dlg, WND_MSG_DISPLAY, dlg_display);
 	wnd_register_handler(dlg, WND_MSG_KEYDOWN, dlg_handle_key);
-	((wnd_t *)dlg)->m_wnd_destroy = dlg_destroy;
+	WND_OBJ(dlg)->m_wnd_destroy = dlg_destroy;
 	
 	/* Save dialog box parameters */
-	strcpy(dlg->m_caption, caption);
-	dlg->m_caption[dlg->m_wnd.m_width - 7] = 0;
+	dlg->m_caption = strdup(caption);
+	if (strlen(dlg->m_caption) > WND_WIDTH(dlg) - 7)
+		dlg->m_caption[dlg->m_wnd.m_width - 7] = 0;
 	dlg->m_cur_focus = NULL;
 	dlg->m_ok = FALSE;
 	WND_FLAGS(dlg) |= (WND_DIALOG | WND_INITIALIZED);
@@ -85,6 +87,13 @@ bool_t dlg_init( dlgbox_t *dlg, wnd_t *parent, int x, int y, int w, int h,
 /* Destroy dialog box */
 void dlg_destroy( wnd_t *wnd )
 {
+	dlgbox_t *dlg = (dlgbox_t *)wnd;
+
+	if (dlg == NULL)
+		return;
+
+	free(dlg->m_caption);
+
 	/* Destroy window */
 	wnd_destroy_func(wnd);
 } /* End of 'dlg_destroy' function */

@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Input plugin management functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 31.01.2004
+ * LAST UPDATE : 5.02.2004
  * NOTE        : Module prefix 'inp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -27,9 +27,10 @@
 
 #include <dlfcn.h>
 #include <stdlib.h>
+#include <string.h>
 #include "types.h"
-#include "cfg.h"
 #include "inp.h"
+#include "mystring.h"
 #include "pmng.h"
 #include "song.h"
 #include "util.h"
@@ -39,7 +40,6 @@ in_plugin_t *inp_init( char *name, pmng_t *pmng )
 {
 	in_plugin_t *p;
 	void (*fl)( inp_func_list_t * );
-	void (*set_vars)( cfg_list_t * );
 
 	/* Try to allocate memory for plugin object */
 	p = (in_plugin_t *)malloc(sizeof(in_plugin_t));
@@ -52,7 +52,7 @@ in_plugin_t *inp_init( char *name, pmng_t *pmng )
 	p->m_lib_handler = dlopen(name, RTLD_NOW);
 	if (p->m_lib_handler == NULL)
 	{
-		util_log("%s\n", dlerror());
+//		util_log("error: %s\n", dlerror());
 		free(p);
 		return NULL;
 	}
@@ -64,15 +64,10 @@ in_plugin_t *inp_init( char *name, pmng_t *pmng )
 		inp_free(p);
 		return NULL;
 	}
-	util_get_plugin_short_name(p->m_name, name);
+	p->m_name = pmng_create_plugin_name(name);
 	memset(&p->m_fl, 0, sizeof(p->m_fl));
-	p->m_fl.m_print_msg = pmng->m_print_msg;
 	p->m_fl.m_pmng = pmng;
 	fl(&p->m_fl);
-
-	if ((set_vars = dlsym(p->m_lib_handler, "inp_set_vars")) != NULL)
-		set_vars(pmng->m_cfg_list);
-		
 	return p;
 } /* End of 'inp_init' function */
 
@@ -91,6 +86,8 @@ void inp_free( in_plugin_t *p )
 					free(p->m_fl.m_spec_funcs[i].m_title);
 			free(p->m_fl.m_spec_funcs);
 		}
+		if (p->m_name != NULL)
+			free(p->m_name);
 		free(p);
 	}
 } /* End of 'inp_free' function */
@@ -110,38 +107,52 @@ void inp_end( in_plugin_t *p )
 		p->m_fl.m_end();
 } /* End of 'inp_end' function */
 
-/* Get song length function */
-int inp_get_len( in_plugin_t *p, char *filename )
-{
-	if (p != NULL && (p->m_fl.m_get_len != NULL))
-		return p->m_fl.m_get_len(filename);
-	return 0;
-} /* End of 'inp_get_len' function */
-
 /* Get song information function */
-bool_t inp_get_info( in_plugin_t *p, char *file_name, song_info_t *info )
+song_info_t *inp_get_info( in_plugin_t *p, char *file_name, int *len )
 {
 	if (p != NULL && (p->m_fl.m_get_info != NULL))
-		return p->m_fl.m_get_info(file_name, info);
-	info->m_only_own = TRUE;
-	*(info->m_own_data) = 0;
-	return FALSE;
+	{
+		song_info_t *si = p->m_fl.m_get_info(file_name, len);
+		if (si != NULL)
+			si_convert_cs(si, cfg_get_var(pmng_get_cfg(p->m_fl.m_pmng), 
+						"charset-output"), p->m_fl.m_pmng);
+		return si;
+	}
+	*len = 0;
+	return NULL;
 } /* End of 'inp_get_info' function */
 	
 /* Save song information function */
 void inp_save_info( in_plugin_t *p, char *file_name, song_info_t *info )
 {
-	if (p != NULL && (p->m_fl.m_save_info != NULL))
+	if (p != NULL && (p->m_fl.m_save_info != NULL) && info != NULL)
+	{
+		/* Convert charset */
+		char *was_cs = (info->m_charset == NULL ? NULL : 
+				strdup(info->m_charset));
+		pmng_t *pmng = p->m_fl.m_pmng;
+		
+		si_convert_cs(info, cfg_get_var(pmng_get_cfg(pmng), 
+					"charset-save-info"), pmng);
 		p->m_fl.m_save_info(file_name, info);
+		si_convert_cs(info, was_cs, pmng);
+		if (was_cs != NULL)
+			free(was_cs);
+	}
 } /* End of 'inp_save_info' function */
 	
 /* Get supported file formats */
-void inp_get_formats( in_plugin_t *p, char *buf )
+void inp_get_formats( in_plugin_t *p, char *extensions, char *content_type )
 {
 	if (p != NULL && (p->m_fl.m_get_formats != NULL))
-		p->m_fl.m_get_formats(buf);
+		p->m_fl.m_get_formats(extensions, content_type);
 	else
-		strcpy(buf, "");
+	{
+		if (extensions != NULL)
+			strcpy(extensions, "");
+		if (content_type != NULL)
+			strcpy(content_type, "");
+	}
 } /* End of 'inp_get_formats' function */
 	
 /* Get stream function */
@@ -153,23 +164,24 @@ int inp_get_stream( in_plugin_t *p, void *buf, int size )
 } /* End of 'inp_get_stream' function */
 
 /* Seek song */
-void inp_seek( in_plugin_t *p, int shift )
+void inp_seek( in_plugin_t *p, int seconds )
 {
 	if (p != NULL && (p->m_fl.m_seek != NULL))
-		p->m_fl.m_seek(shift);
+		p->m_fl.m_seek(seconds);
 } /* End of 'inp_seek' function */
 
 /* Get song audio parameters */
 void inp_get_audio_params( in_plugin_t *p, int *channels, 
-							int *frequency, dword *fmt )
+							int *frequency, dword *fmt, int *bitrate )
 {
 	if (p != NULL && (p->m_fl.m_get_audio_params != NULL))
-		p->m_fl.m_get_audio_params(channels, frequency, fmt);
+		p->m_fl.m_get_audio_params(channels, frequency, fmt, bitrate);
 	else 
 	{
 		*channels = 0;
 		*frequency = 0;
 		*fmt = 0;
+		*bitrate = 0;
 	}
 } /* End of 'inp_get_audio_params' function */
 
@@ -179,14 +191,6 @@ void inp_set_eq( in_plugin_t *p )
 	if (p != NULL && (p->m_fl.m_set_eq != NULL))
 		p->m_fl.m_set_eq();
 } /* End of 'inp_set_eq' function */
-
-/* Get genre list */
-genre_list_t *inp_get_glist( in_plugin_t *p )
-{
-	if (p != NULL && (p->m_fl.m_glist != NULL))
-		return p->m_fl.m_glist;
-	return NULL;
-} /* End of 'inp_get_glist' function */
 
 /* Get plugin flags */
 dword inp_get_flags( in_plugin_t *p )
@@ -226,14 +230,6 @@ int inp_get_cur_time( in_plugin_t *p )
 	return -1;
 } /* End of 'inp_get_cur_time' function */
 
-/* Get content type */
-void inp_get_content_type( in_plugin_t *p, char *buf )
-{
-	if (p != NULL && (p->m_fl.m_get_content_type != NULL))
-		return p->m_fl.m_get_content_type(buf);
-	strcpy(buf, "");
-} /* End of 'inp_get_content_type' function */
-
 /* Get number of special functions */
 int inp_get_num_specs( in_plugin_t *p )
 {
@@ -270,15 +266,15 @@ void inp_spec_func( in_plugin_t *p, int index, char *filename )
 } /* End of 'inp_spec_func' function */
 
 /* Set song title */
-void inp_set_song_title( in_plugin_t *p, char *title, char *filename )
+str_t *inp_set_song_title( in_plugin_t *p, char *filename )
 {
-	if (title == NULL || filename == NULL)
+	if (filename == NULL)
 		return;
 	
 	if (p != NULL && p->m_fl.m_set_song_title != NULL)
-		p->m_fl.m_set_song_title(title, filename);
+		return p->m_fl.m_set_song_title(filename);
 	else
-		strcpy(title, util_get_file_short_name(filename));
+		return str_new(util_short_name(filename));
 } /* End of 'inp_set_song_title' function */
 
 /* Set next song name */
@@ -288,13 +284,14 @@ void inp_set_next_song( in_plugin_t *p, char *name )
 		p->m_fl.m_set_next_song(name);
 } /* End of 'inp_set_next_song' function */
 
-/* Get current bitrate */
-int inp_get_bitrate( in_plugin_t *p )
+/* Get information about plugin */
+char *inp_get_about( in_plugin_t *p )
 {
-	if (p != NULL && p->m_fl.m_get_bitrate != NULL)
-		return p->m_fl.m_get_bitrate();
-	return 0;
-} /* End of 'inp_get_bitrate' function */
+	if (p != NULL && p->m_fl.m_about != NULL)
+		return p->m_fl.m_about;
+	else
+		return NULL;
+} /* End of 'inp_get_about' function */
 
 /* End of 'inp.c' file */
 

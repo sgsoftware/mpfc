@@ -2,7 +2,7 @@
  * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
-/* FILE NAME   : pmng.c
+/* FILE NAME   : plugin_mng.c
  * PURPOSE     : SG MPFC. Plugins manager functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
@@ -27,6 +27,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "types.h"
 #include "cfg.h"
 #include "csp.h"
@@ -38,7 +39,7 @@
 #include "util.h"
 
 /* Initialize plugins */
-pmng_t *pmng_init( cfg_list_t *list, void (*print_msg)(char *) )
+pmng_t *pmng_init( cfg_list_t *list, pmng_print_msg_t print_msg )
 {
 	pmng_t *pmng;
 
@@ -48,7 +49,7 @@ pmng_t *pmng_init( cfg_list_t *list, void (*print_msg)(char *) )
 		return NULL;
 	memset(pmng, 0, sizeof(pmng_t));
 	pmng->m_cfg_list = list;
-	pmng->m_print_msg = print_msg;
+	pmng->m_printer = print_msg;
 	
 	/* Load plugins */
 	if (!pmng_load_plugins(pmng))
@@ -88,11 +89,8 @@ void pmng_add_in( pmng_t *pmng, in_plugin_t *p )
 	if (pmng == NULL)
 		return;
 		
-	if (pmng->m_inp == NULL)
-		pmng->m_inp = (in_plugin_t **)malloc(sizeof(in_plugin_t *));
-	else
-		pmng->m_inp = (in_plugin_t **)realloc(pmng->m_inp, 
-				sizeof(in_plugin_t *) * (pmng->m_num_inp + 1));
+	pmng->m_inp = (in_plugin_t **)realloc(pmng->m_inp, 
+			sizeof(in_plugin_t *) * (pmng->m_num_inp + 1));
 	pmng->m_inp[pmng->m_num_inp ++] = p;
 } /* End of 'pmng_add_in' function */
 
@@ -102,16 +100,35 @@ void pmng_add_out( pmng_t *pmng, out_plugin_t *p )
 	if (pmng == NULL)
 		return;
 
-	if (pmng->m_outp == NULL)
-		pmng->m_outp = (out_plugin_t **)malloc(sizeof(out_plugin_t *));
-	else
-		pmng->m_outp = (out_plugin_t **)realloc(pmng->m_outp, 
-				sizeof(out_plugin_t *) * (pmng->m_num_outp + 1));
+	pmng->m_outp = (out_plugin_t **)realloc(pmng->m_outp, 
+			sizeof(out_plugin_t *) * (pmng->m_num_outp + 1));
 	pmng->m_outp[pmng->m_num_outp ++] = p;
 
 	if (pmng->m_cur_out == NULL)
 		pmng->m_cur_out = p;
 } /* End of 'pmng_add_out' function */
+
+/* Add an effect plugin */
+void pmng_add_effect( pmng_t *pmng, effect_plugin_t *p )
+{
+	if (pmng == NULL)
+		return;
+
+	pmng->m_ep = (effect_plugin_t **)realloc(pmng->m_ep, 
+			sizeof(effect_plugin_t *) * (pmng->m_num_ep + 1));
+	pmng->m_ep[pmng->m_num_ep ++] = p;
+} /* End of 'pmng_add_effect' function */
+
+/* Add a charset plugin */
+void pmng_add_charset( pmng_t *pmng, cs_plugin_t *p )
+{
+	if (pmng == NULL)
+		return;
+
+	pmng->m_csp = (cs_plugin_t **)realloc(pmng->m_csp, 
+			sizeof(cs_plugin_t *) * (pmng->m_num_csp + 1));
+	pmng->m_csp[pmng->m_num_csp ++] = p;
+} /* End of 'pmng_add_charset' function */
 
 /* Search for input plugin supporting given format */
 in_plugin_t *pmng_search_format( pmng_t *pmng, char *format )
@@ -126,7 +143,7 @@ in_plugin_t *pmng_search_format( pmng_t *pmng, char *format )
 		char formats[128], ext[10];
 		int j, k = 0;
 	   
-		inp_get_formats(pmng->m_inp[i], formats);
+		inp_get_formats(pmng->m_inp[i], formats, NULL);
 		for ( j = 0;; ext[k ++] = formats[j ++] )
 		{
 			if (formats[j] == 0 || formats[j] == ';')
@@ -142,34 +159,6 @@ in_plugin_t *pmng_search_format( pmng_t *pmng, char *format )
 	}
 	return NULL;
 } /* End of 'pmng_search_format' function */
-
-/* Add an effect plugin */
-void pmng_add_effect( pmng_t *pmng, effect_plugin_t *p )
-{
-	if (pmng == NULL)
-		return;
-
-	if (pmng->m_ep == NULL)
-		pmng->m_ep = (effect_plugin_t **)malloc(sizeof(effect_plugin_t *));
-	else
-		pmng->m_ep = (effect_plugin_t **)realloc(pmng->m_ep, 
-				sizeof(effect_plugin_t *) * (pmng->m_num_ep + 1));
-	pmng->m_ep[pmng->m_num_ep ++] = p;
-} /* End of 'pmng_add_effect' function */
-
-/* Add a charset plugin */
-void pmng_add_charset( pmng_t *pmng, cs_plugin_t *p )
-{
-	if (pmng == NULL)
-		return;
-
-	if (pmng->m_csp == NULL)
-		pmng->m_csp = (cs_plugin_t **)malloc(sizeof(cs_plugin_t *));
-	else
-		pmng->m_csp = (cs_plugin_t **)realloc(pmng->m_csp, 
-				sizeof(cs_plugin_t *) * (pmng->m_num_csp + 1));
-	pmng->m_csp[pmng->m_num_csp ++] = p;
-} /* End of 'pmng_add_charset' function */
 
 /* Apply effect plugins */
 int pmng_apply_effects( pmng_t *pmng, byte *data, int len, int fmt, 
@@ -209,7 +198,7 @@ in_plugin_t *pmng_search_inp_by_name( pmng_t *pmng, char *name )
 /* Load plugins */
 bool_t pmng_load_plugins( pmng_t *pmng )
 {
-	char path[256];
+	char path[MAX_FILE_NAME];
 	struct 
 	{
 		int m_type;
@@ -278,14 +267,13 @@ int pmng_find_handler( char *name, void *data )
 		op = outp_init(name, pmng);
 		if (op != NULL)
 		{
-			int i, j;
-			char str1[256], str2[256];
+			char *out_plugin;
 			
 			pmng_add_out(pmng, op);
 
 			/* Choose this plugin if it is set in options */
-			if (!strcmp(op->m_name, cfg_get_var(pmng->m_cfg_list, 
-							"output-plugin")))
+			out_plugin = cfg_get_var(pmng->m_cfg_list, "output-plugin");
+			if (out_plugin != NULL && !strcmp(op->m_name, out_plugin))
 				pmng->m_cur_out = op;
 		}
 	}
@@ -313,14 +301,14 @@ int pmng_find_handler( char *name, void *data )
 /* Check if specified plugin is already loaded */
 bool_t pmng_is_loaded( pmng_t *pmng, char *name, int type )
 {
-	char sn[256];
+	char *sn;
 	int i;
 
 	if (pmng == NULL)
 		return FALSE;
 	
 	/* Get plugin short name */
-	util_get_plugin_short_name(sn, name);
+	sn = util_short_name(name);
 	
 	/* Search */
 	switch (type)
@@ -362,7 +350,7 @@ in_plugin_t *pmng_search_content_type( pmng_t *pmng, char *content )
 		char types[256], type[80];
 		int j, k = 0;
 	   
-		inp_get_content_type(pmng->m_inp[i], types);
+		inp_get_formats(pmng->m_inp[i], NULL, types);
 		if (types == NULL)
 			continue;
 		for ( j = 0;; type[k ++] = types[j ++] )
@@ -395,9 +383,9 @@ cs_plugin_t *pmng_find_charset( pmng_t *pmng, char *name, int *index )
 
 		for ( j = 0; j < num; j ++ )
 		{
-			char sn[256];
+			char *sn;
 
-			if (csp_get_cs_name(pmng->m_csp[i], sn, j))
+			if ((sn = csp_get_cs_name(pmng->m_csp[i], j)) != NULL)
 			{
 				if (!strcmp(sn, name))
 				{
@@ -409,6 +397,42 @@ cs_plugin_t *pmng_find_charset( pmng_t *pmng, char *name, int *index )
 	}
 	return NULL;
 } /* End of 'pmng_find_charset' function */
+
+/* Get configuration variables list */
+cfg_list_t *pmng_get_cfg( pmng_t *pmng )
+{
+	if (pmng == NULL)
+		return NULL;
+	else
+		return pmng->m_cfg_list;
+} /* End of 'pmng_get_cfg' function */
+
+/* Get message printer */
+pmng_print_msg_t pmng_get_printer( pmng_t *pmng )
+{
+	if (pmng != NULL)
+		return pmng->m_printer;
+	else
+		return NULL;
+} /* End of 'pmng_get_printer' function */
+
+/* Create a plugin name */
+char *pmng_create_plugin_name( char *filename )
+{
+	char *sn = util_short_name(filename), *name, *ext;
+
+	if (strncmp(sn, "lib", 3))
+		return strdup(sn);
+	sn += 3;
+	name = strdup(sn);
+	ext = util_extension(name);
+	if (ext != NULL)
+	{
+		ext --;
+		*ext = 0;
+	}
+	return name;
+} /* End of 'pmng_create_plugin_name' function */
 
 /* End of 'pmng.c' file */
 

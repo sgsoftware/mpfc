@@ -1,12 +1,12 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : util.c
  * PURPOSE     : SG MPFC. Various utility functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 22.10.2003
+ * LAST UPDATE : 5.02.2004
  * NOTE        : Module prefix 'util'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -91,12 +91,13 @@ bool_t util_search_str( char *ptext, char *text )
 } /* End of 'util_search_str' function */
 
 /* Get file extension */
-char *util_get_ext( char *name )
+char *util_extension( char *name )
 {
-	int i;
-
-	for ( i = strlen(name) - 1; i >= 0 && name[i] != '.'; i -- );
-	return &name[i + 1];
+	char *str = strrchr(name, '.');
+	if (str == NULL)
+		return name;
+	else
+		return str + 1;
 } /* End of 'util_get_ext' function */
 
 /* Delay */
@@ -110,19 +111,20 @@ void util_delay( long s, long ns )
 } /* End of 'util_delay' function */
 
 /* Get file name without full path */
-char *util_get_file_short_name( char *name )
+char *util_short_name( char *name )
 {
-	int i;
-
-	for ( i = strlen(name) - 1; i >= 0 && name[i] != '/'; i -- );
-	return (i >= 0) ? &name[i + 1] : name;
+	char *str = strrchr(name, '/');
+	if (str == NULL)
+		return name;
+	else
+		return str + 1;
 } /* End of 'util_get_file_short_name' function */
 
 /* Convert file name to the one with escaped special symbols */
 char *util_escape_fname( char *out, char *in )
 {
 	int i, j, len;
-	char in_name[256];
+	char in_name[MAX_FILE_NAME];
 	
 	len = strlen(in);
 	strcpy(in_name, in);
@@ -137,7 +139,7 @@ char *util_escape_fname( char *out, char *in )
 /* Open a file expanding home directories */
 FILE *util_fopen( char *filename, char *flags )
 {
-	char fname[256];
+	char fname[MAX_FILE_NAME];
 	FILE *fd;
 	
 	if (filename[0] == '~' && filename[1] == '/')
@@ -184,14 +186,6 @@ int util_get_file_size( char *filename )
 	fclose(fd);
 	return s;
 } /* End of 'util_get_file_size' function */
-
-/* Convert underscores in a string to spaces */
-void util_under2spaces( char *str )
-{
-	for ( ; *str; str ++ )
-		if (*str == '_')
-			*str = ' ';
-} /* End of 'util_under2spaces' function */
 
 /* Search for regexp */
 bool_t util_search_regexp( char *ptext, char *text, bool_t nocase )

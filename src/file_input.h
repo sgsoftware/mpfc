@@ -1,12 +1,12 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : file_input.h
  * PURPOSE     : SG MPFC. Interface for file input edit box
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 23.04.2003
+ * LAST UPDATE : 4.02.2004
  * NOTE        : Module prexix 'fin'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -35,7 +35,7 @@
 /* Directory contents list type */
 typedef struct tag_fin_list
 {
-	char m_name[256];
+	char *m_name;
 	struct tag_fin_list *m_next;
 } fin_list_t;
 
@@ -46,7 +46,7 @@ typedef struct
 	editbox_t m_box;
 
 	/* Current path */
-	char m_cur_path[256];
+	char m_cur_path[MAX_FILE_NAME];
 
 	/* Cursor position before path expansion */
 	int m_was_cursor;

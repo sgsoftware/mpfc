@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for output plugin management
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 31.01.2004
+ * LAST UPDATE : 5.02.2004
  * NOTE        : Module prefix 'outp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -41,6 +41,9 @@ typedef struct
 	/* Plugin end function */
 	void (*m_end)( void );
 
+	/* Play stream function */
+	void (*m_play)( void *buf, int size );
+
 	/* Set channels number function */
 	void (*m_set_channels)( int ch );
 
@@ -50,21 +53,24 @@ typedef struct
 	/* Set format function */
 	void (*m_set_fmt)( dword fmt );
 	
-	/* Play stream function */
-	void (*m_play)( void *buf, int size );
+	/* Set/get volume */
+	void (*m_set_volume)( int left, int right );
+	void (*m_get_volume)( int *left, int *right );
 
 	/* Flush function */
 	void (*m_flush)( void );
 
-	/* Set/get volume */
-	void (*m_set_volume)( int left, int right );
-	void (*m_get_volume)( int *left, int *right );
+	/* Reserved data */
+	byte m_reserved[88];
+
+	/* Information about plugin */
+	char *m_about;
 
 	/* Plugins manager */
 	struct tag_pmng_t *m_pmng;
 
 	/* Reserved data */
-	byte m_reserved[216];
+	byte m_reserved1[120];
 } outp_func_list_t;
 
 /* Output plugin type */
@@ -74,7 +80,7 @@ typedef struct tag_out_plugin_t
 	void *m_lib_handler;
 
 	/* Plugin short name */
-	char m_name[256];
+	char *m_name;
 
 	/* Functions list */
 	outp_func_list_t m_fl;
@@ -112,6 +118,9 @@ void outp_set_volume( out_plugin_t *p, int left, int right );
 
 /* Get volume */
 void outp_get_volume( out_plugin_t *p, int *left, int *right );
+
+/* Get information about plugin */
+char *outp_get_about( out_plugin_t *p );
 
 #endif
 

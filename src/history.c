@@ -1,11 +1,11 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : history.c
  * PURPOSE     : SG MPFC. Edit history functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 6.08.2003
+ * LAST UPDATE : 4.02.2004
  * NOTE        : Module prefix 'hist'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -25,6 +25,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include "types.h"
 #include "error.h"
 #include "history.h"
@@ -61,6 +62,7 @@ void hist_list_free( hist_list_t *l )
 		{
 			t1 = t->m_next;
 			free(t);
+			free(t->m_text);
 			t = t1;
 		}
 	}
@@ -88,7 +90,7 @@ void hist_add_item( hist_list_t *l, char *text )
 		t->m_prev = l->m_tail;
 	}
 	t->m_next = NULL;
-	strcpy(t->m_text, text);
+	t->m_text = strdup(text);
 	l->m_tail = t;
 } /* End of 'hist_add_item' function */
 

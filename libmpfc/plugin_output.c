@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Output plugin management functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 31.01.2004
+ * LAST UPDATE : 5.02.2004
  * NOTE        : Module prefix 'outp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -27,19 +27,19 @@
 
 #include <dlfcn.h>
 #include <stdlib.h>
+#include <string.h>
 #include "types.h"
-#include "cfg.h"
 #include "inp.h"
 #include "outp.h"
 #include "pmng.h"
 #include "song.h"
+#include "util.h"
 
 /* Initialize output plugin */
 out_plugin_t *outp_init( char *name, pmng_t *pmng )
 {
 	out_plugin_t *p;
 	void (*fl)( outp_func_list_t * );
-	void (*set_vars)( cfg_list_t * );
 
 	/* Try to allocate memory for plugin object */
 	p = (out_plugin_t *)malloc(sizeof(out_plugin_t));
@@ -63,14 +63,10 @@ out_plugin_t *outp_init( char *name, pmng_t *pmng )
 		outp_free(p);
 		return NULL;
 	}
-	util_get_plugin_short_name(p->m_name, name);
+	p->m_name = pmng_create_plugin_name(name);
 	memset(&p->m_fl, 0, sizeof(p->m_fl));
 	p->m_fl.m_pmng = pmng;
 	fl(&p->m_fl);
-
-	if ((set_vars = dlsym(p->m_lib_handler, "outp_set_vars")) != NULL)
-		set_vars(pmng->m_cfg_list);
-		
 	return p;
 } /* End of 'outp_init' function */
 
@@ -80,6 +76,8 @@ void outp_free( out_plugin_t *p )
 	if (p != NULL)
 	{
 		dlclose(p->m_lib_handler);
+		if (p->m_name != NULL)
+			free(p->m_name);
 		free(p);
 	}
 } /* End of 'outp_free' function */
@@ -149,6 +147,15 @@ void outp_get_volume( out_plugin_t *p, int *left, int *right )
 	else
 		*left = *right = 0;
 } /* End of 'outp_get_volume' function */
+
+/* Get information about plugin */
+char *outp_get_about( out_plugin_t *p )
+{
+	if (p != NULL && p->m_fl.m_about != NULL)
+		return p->m_fl.m_about;
+	else
+		return NULL;
+} /* End of 'outp_get_about' function */
 
 /* End of 'outp.c' file */
 

@@ -38,13 +38,13 @@ void util_log( char *format, ... );
 bool_t util_search_str( char *ptext, char *text );
 
 /* Get file extension */
-char *util_get_ext( char *name );
+char *util_extension( char *name );
+
+/* Get file name without full path */
+char *util_short_name( char *name );
 
 /* Delay */
 void util_delay( long s, long ns );
-
-/* Get file name without full path */
-char *util_get_file_short_name( char *name );
 
 /* Convert file name to the one with escaped special symbols */
 char *util_escape_fname( char *out, char *in );

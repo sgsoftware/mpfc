@@ -1,12 +1,12 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : cfg.c
  * PURPOSE     : SG MPFC. High-level configuration handling 
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 22.11.2003
+ * LAST UPDATE : 3.02.2004
  * NOTE        : Module prefix 'cfg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -30,6 +30,7 @@
 #include <string.h>
 #include "types.h"
 #include "cfg.h"
+#include "file.h"
 #include "player.h"
 #include "util.h"
 
@@ -42,9 +43,6 @@ cfg_list_t *cfg_list;
 /* Initialize configuration */
 void cfg_init( void )
 {
-	char str[256];
-	int i;
-	
 	/* Initialize variables with initial values */
 	cfg_list = (cfg_list_t *)malloc(sizeof(cfg_list_t));
 	cfg_list->m_vars = NULL;
@@ -59,8 +57,7 @@ void cfg_init( void )
 
 	/* Read rc file from home directory and from current directory */
 	cfg_read_rcfile(cfg_list, "/etc/mpfcrc");
-	sprintf(str, "%s/.mpfcrc", getenv("HOME"));
-	cfg_read_rcfile(cfg_list, str);
+	cfg_read_rcfile(cfg_list, player_cfg_file);
 	cfg_read_rcfile(cfg_list, "./.mpfcrc");
 } /* End of 'cfg_init' function */
 
@@ -89,39 +86,40 @@ void cfg_init_default( void )
 /* Read configuration file */
 void cfg_read_rcfile( cfg_list_t *list, char *name )
 {
-	FILE *fd;
+	file_t *fd;
 
 	if (list == NULL)
 		return;
 
 	/* Try to open file */
-	fd = util_fopen(name, "rt");
+	fd = file_open(name, "rt", NULL);
 	if (fd == NULL)
 		return;
 
 	/* Read */
-	while (!feof(fd))
+	while (!file_eof(fd))
 	{
-		char str[1024];
-
+		str_t *str;
+		
 		/* Read line */
-		fgets(str, sizeof(str), fd);
+		str = file_get_str(fd);
 
 		/* Parse this line */
-		cfg_parse_line(list, str);
+		cfg_parse_line(list, STR_TO_CPTR(str));
+		str_free(str);
 	}
 
 	/* Close file */
-	fclose(fd);
+	file_close(fd);
 } /* End of 'cfg_read_rcfile' function */
 
 /* Parse one line from configuration file */
 void cfg_parse_line( cfg_list_t *list, char *str )
 {
 	int i, j, len;
-	char name[80], val[256];
+	char *name, *val;
 
-	if (list == NULL)
+	if (list == NULL || str == NULL)
 		return;
 	
 	/* If string begins with '#' - it is comment */
@@ -138,6 +136,7 @@ void cfg_parse_line( cfg_list_t *list, char *str )
 		j --;
 
 	/* Extract variable name */
+	name = (char *)malloc(j - i + 2);
 	memcpy(name, &str[i], j - i + 1);
 	name[j - i + 1] = 0;
 
@@ -148,6 +147,7 @@ void cfg_parse_line( cfg_list_t *list, char *str )
 	if (j == len)
 	{
 		cfg_set_var(list, name, "1");
+		free(name);
 	}
 	/* Read value */
 	else
@@ -161,9 +161,12 @@ void cfg_parse_line( cfg_list_t *list, char *str )
 			j --;
 
 		/* Extract value and set it */
+		val = (char *)malloc(j - i + 2);
 		memcpy(val, &str[i], j - i + 1);
 		val[j - i + 1] = 0;
 		cfg_set_var(list, name, val);
+		free(name);
+		free(val);
 	}
 } /* End of 'cfg_parse_line' function */
 

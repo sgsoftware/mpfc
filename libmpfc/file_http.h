@@ -1,12 +1,12 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : http.h
  * PURPOSE     : SG MPFC. Interface for file library http
  *               files managament functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 25.10.2003
+ * LAST UPDATE : 5.02.2004
  * NOTE        : Module prefix 'fhttp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -30,6 +30,7 @@
 
 #include "types.h"
 #include "file.h"
+#include "mystring.h"
 
 /* HTTP file additional data */
 typedef struct tag_file_http_data_t
@@ -75,6 +76,9 @@ size_t fhttp_write( void *buf, size_t size, size_t nmemb, file_t *f );
 
 /* Get line from file */
 char *fhttp_gets( char *s, int size, file_t *f );
+
+/* Get string from file */
+str_t *fhttp_get_str( file_t *f );
 
 /* Check for end of file */
 bool_t fhttp_eof( file_t *f );

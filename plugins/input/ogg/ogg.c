@@ -32,53 +32,53 @@
 #include <vorbis/codec.h>
 #include <vorbis/vorbisfile.h>
 #include "types.h"
-#include "cfg.h"
 #include "file.h"
 #include "genre_list.h"
 #include "inp.h"
+#include "pmng.h"
 #include "song_info.h"
 #include "util.h"
 #include "vcedit.h"
 
 /* Ogg Vorbis file object */
-OggVorbis_File ogg_vf;
+static OggVorbis_File ogg_vf;
 
 /* Audio parameters */
-int ogg_channels = 0, ogg_freq = 0, ogg_bitrate = 0;
-dword ogg_fmt = 0;
+static int ogg_channels = 0, ogg_freq = 0, ogg_bitrate = 0;
+static dword ogg_fmt = 0;
 
 /* Genres list */
-genre_list_t *ogg_glist = NULL;
+static genre_list_t *ogg_glist = NULL;
 
-/* Variables list */
-cfg_list_t *ogg_var_list = NULL;
+/* Plugins manager */
+static pmng_t *ogg_pmng = NULL;
 
 /* Currently playing song file name */
-char ogg_filename[256];
+static char ogg_filename[MAX_FILE_NAME] = "";
 
 /* Song info to save after play end */
-song_info_t ogg_info;
-bool_t ogg_need_save_info = FALSE;
+song_info_t *ogg_info = NULL;
 
 /* Audio information of the current song */
-vorbis_info *ogg_vi = NULL;
+static vorbis_info *ogg_vi = NULL;
 
 /* Some declarations */
 void ogg_save_info( char *filename, song_info_t *info );
 
-/* Message printer */
-void (*ogg_print_msg)( char *msg );
-
 /* Callback functions for libvorbis */
-size_t ogg_file_read( void *ptr, size_t size, size_t nmemb, void *datasource );
-int ogg_file_seek( void *datasource, ogg_int64_t offset, int whence );
-int ogg_file_close( void *datasource );
-long ogg_file_tell( void *datasource );
-ov_callbacks ogg_callbacks = { ogg_file_read, ogg_file_seek, ogg_file_close, 
-								ogg_file_tell };
+static size_t ogg_file_read( void *ptr, size_t size, size_t nmemb, 
+		void *datasource );
+static int ogg_file_seek( void *datasource, ogg_int64_t offset, int whence );
+static int ogg_file_close( void *datasource );
+static long ogg_file_tell( void *datasource );
+static ov_callbacks ogg_callbacks = { ogg_file_read, ogg_file_seek, 
+	ogg_file_close, ogg_file_tell };
 
 /* Mutex for synchronizing operations */
-pthread_mutex_t ogg_mutex;
+static pthread_mutex_t ogg_mutex;
+
+/* Message printer */
+pmng_print_msg_t ogg_print_msg = NULL;
 
 /* Start playing */
 bool_t ogg_start( char *filename )
@@ -106,7 +106,7 @@ bool_t ogg_start( char *filename )
 	ogg_channels = ogg_vi->channels;
 	ogg_freq = ogg_vi->rate;
 	ogg_bitrate = 0;
-	ogg_need_save_info = FALSE;
+	ogg_info = NULL;
 	strcpy(ogg_filename, filename);
 	return TRUE;
 } /* End of 'ogg_start' function */
@@ -114,7 +114,7 @@ bool_t ogg_start( char *filename )
 /* End playing */
 void ogg_end( void )
 {
-	char fname[256];
+	char fname[MAX_FILE_NAME];
 	
 	ov_clear(&ogg_vf);
 
@@ -122,10 +122,11 @@ void ogg_end( void )
 	strcpy(fname, ogg_filename);
 	strcpy(ogg_filename, "");
 	ogg_vi = NULL;
-	if (ogg_need_save_info)
+	if (ogg_info != NULL)
 	{
-		ogg_save_info(fname, &ogg_info);
-		ogg_need_save_info = FALSE;
+		ogg_save_info(fname, ogg_info);
+		si_free(ogg_info);
+		ogg_info = NULL;
 	}
 	ogg_bitrate = 0;
 	ogg_freq = 0;
@@ -137,51 +138,25 @@ void ogg_end( void )
 } /* End of 'ogg_end' function */
 
 /* Lock mutex */
-void ogg_lock( void )
+static void ogg_lock( void )
 {
 	pthread_mutex_lock(&ogg_mutex);
 } /* End of 'ogg_lock' function */
 
 /* Unlock mutex */
-void ogg_unlock( void )
+static void ogg_unlock( void )
 {
 	pthread_mutex_unlock(&ogg_mutex);
 } /* End of 'ogg_unlock' function */
 
 /* Get supported formats */
-void ogg_get_formats( char *buf )
+void ogg_get_formats( char *extensions, char *content_type )
 {
-	strcpy(buf, "ogg");
+	if (extensions != NULL)
+		strcpy(extensions, "ogg");
+	if (content_type != NULL)
+		strcpy(content_type, "");
 } /* End of 'ogg_get_formats' function */
-
-/* Get song length */
-int ogg_get_len( char *filename )
-{
-	OggVorbis_File vf;
-	file_t *fd;
-	int len;
-
-	/* Supported only for regular files */
-	if (file_get_type(filename) != FILE_TYPE_REGULAR)
-		return 0;
-	
-	/* Create file object */
-	fd = file_open(filename, "rb", ogg_print_msg);
-	if (fd == NULL)
-	{
-		return 0;
-	}
-	if (ov_open_callbacks(fd, &vf, NULL, 0, ogg_callbacks) < 0)
-	{
-		file_close(fd);
-		return 0;
-	}
-
-	/* Get length */
-	len = (int)ov_time_total(&vf, -1);
-	ov_clear(&vf);
-	return len;
-} /* End of 'ogg_get_len' function */
 
 /* Get stream */
 int ogg_get_stream( void *buf, int size ) 
@@ -213,19 +188,14 @@ void ogg_seek( int val )
 } /* End of 'ogg_seek' function */
 
 /* Get audio parameters */
-void ogg_get_audio_params( int *ch, int *freq, dword *fmt )
+void ogg_get_audio_params( int *ch, int *freq, dword *fmt, int *bitrate )
 {
 	*ch = ogg_channels;
 	*freq = ogg_freq;
 	*fmt = ogg_fmt;
+	*bitrate = ogg_bitrate;
 } /* End of 'ogg_get_audio_params' function */
 
-/* Get current bitrate */
-int ogg_get_bitrate( void )
-{
-	return ogg_bitrate;
-} /* End of 'ogg_get_bitrate' function */  
-	
 /* Get current time */
 int ogg_get_cur_time( void )
 {
@@ -233,7 +203,7 @@ int ogg_get_cur_time( void )
 } /* End of 'ogg_get_cur_time' function */
 
 /* Get comments list from vorbis comment */
-char **ogg_get_comment_list( vorbis_comment *vc )
+static char **ogg_get_comment_list( vorbis_comment *vc )
 {
 	int i;
 	char **strv;
@@ -246,7 +216,7 @@ char **ogg_get_comment_list( vorbis_comment *vc )
 } /* End of 'ogg_get_comment_list' function */
 
 /* Add tag to comments list */
-char **ogg_add_tag( char **list, char *label, char *tag )
+static char **ogg_add_tag( char **list, char *label, char *tag )
 {
 	char str[256];
 	int len;
@@ -273,7 +243,7 @@ char **ogg_add_tag( char **list, char *label, char *tag )
 } /* End of 'ogg_add_tag' function */
 
 /* Add comments list to vorbis comment */
-void ogg_add_list( vorbis_comment *vc, char **comments )
+static void ogg_add_list( vorbis_comment *vc, char **comments )
 {
 	while (*comments)
 		vorbis_comment_add(vc, *comments++);
@@ -287,7 +257,7 @@ void ogg_save_info( char *filename, song_info_t *info )
 	vorbis_comment *comment;
 	FILE *in, *out;
 	int i, outfd;
-	char tmpfn[256];
+	char tmpfn[MAX_FILE_NAME];
 	
 	/* Supported only for regular files */
 	if (file_get_type(filename) != FILE_TYPE_REGULAR)
@@ -296,8 +266,7 @@ void ogg_save_info( char *filename, song_info_t *info )
 	/* Schedule info for saving if we are playing this file now */
 	if (!strcmp(filename, ogg_filename))
 	{
-		memcpy(&ogg_info, info, sizeof(*info));
-		ogg_need_save_info = TRUE;
+		ogg_info = info;
 		return;
 	}
 
@@ -325,11 +294,7 @@ void ogg_save_info( char *filename, song_info_t *info )
 	comment_list = ogg_add_tag(comment_list, "album", info->m_album);
 	comment_list = ogg_add_tag(comment_list, "tracknumber", info->m_track);
 	comment_list = ogg_add_tag(comment_list, "date", info->m_year);
-	comment_list = ogg_add_tag(comment_list, "genre", 
-			(info->m_genre == GENRE_ID_OWN_STRING) ? 
-			info->m_genre_data.m_text :
-			((info->m_genre == GENRE_ID_UNKNOWN) ? "" :
-			 ogg_glist->m_list[info->m_genre].m_name));
+	comment_list = ogg_add_tag(comment_list, "genre", info->m_genre);
 	//comment_list = ogg_add_tag(comment_list, "", info->m_comments);
 	ogg_add_list(comment, comment_list);
 	for ( i = 0; comment_list[i] != NULL; i ++ )
@@ -359,89 +324,79 @@ void ogg_save_info( char *filename, song_info_t *info )
 } /* End of 'ogg_save_info' function */
 
 /* Get song information */
-bool_t ogg_get_info( char *filename, song_info_t *info )
+song_info_t *ogg_get_info( char *filename, int *len )
 {
 	OggVorbis_File vf;
 	file_t *fd;
-	char *str;
 	vorbis_comment *comment;
 	vorbis_info *vi;
-	bool_t ret = FALSE;
+	song_info_t *si = NULL;
+	char own_data[1024];
 
 	/* For non-regular files return only audio parameters */
+	*len = 0;
 	if (file_get_type(filename) != FILE_TYPE_REGULAR)
 	{
 		if (strcmp(filename, ogg_filename))
-			return FALSE;
+			return NULL;
 
-		info->m_genre = GENRE_ID_UNKNOWN;
-		info->m_only_own = TRUE;
-		sprintf(info->m_own_data, 
+		si = si_new();
+		si->m_flags |= SI_ONLY_OWN;
+		sprintf(own_data, 
 				_("Nominal bitrate: %i kb/s\n"
 				"Samplerate: %i Hz\n"
 				"Channels: %i"),
 				ogg_vi->bitrate_nominal / 1000, ogg_vi->rate, 
 				ogg_vi->channels);
-		return TRUE;
+		si_set_own_data(si, own_data);
+		return si;
 	}
 
 	/* Return current info if we have it */
-	if (ogg_need_save_info && !strcmp(filename, ogg_filename))
+	if (ogg_info != NULL && !strcmp(filename, ogg_filename))
 	{
-		memcpy(info, &ogg_info, sizeof(ogg_info));
-		return TRUE;
+		return si_dup(ogg_info);
 	}
 
 	/* Open file */
 	fd = file_open(filename, "rb", ogg_print_msg);
 	if (fd == NULL)
-		return FALSE;
+		return NULL;
 	if (ov_open_callbacks(fd, &vf, NULL, 0, ogg_callbacks) < 0)
 	{
 		file_close(fd);
-		return FALSE;
+		return NULL;
 	}
 
-	memset(info, 0, sizeof(*info));
+	*len = ov_time_total(&vf, -1);
+	si = si_new();
+	si->m_glist = ogg_glist;
 	comment = ov_comment(&vf, -1);
-	str = vorbis_comment_query(comment, "title", 0);
-	strcpy(info->m_name, str == NULL ? "" : (ret = TRUE, str));
-	str = vorbis_comment_query(comment, "artist", 0);
-	strcpy(info->m_artist, str == NULL ? "" : (ret = TRUE, str));
-	str = vorbis_comment_query(comment, "album", 0);
-	strcpy(info->m_album, str == NULL ? "" : (ret = TRUE, str));
-	str = vorbis_comment_query(comment, "tracknumber", 0);
-	strcpy(info->m_track, str == NULL ? "" : (ret = TRUE, str));
-	str = vorbis_comment_query(comment, "date", 0);
-	strcpy(info->m_year, str == NULL ? "" : (ret = TRUE, str));
-	str = vorbis_comment_query(comment, "genre", 0);
-	info->m_genre = glist_get_id_by_text(ogg_glist, 
-			str == NULL ? "" : (ret = TRUE, str));
-	if (info->m_genre == GENRE_ID_UNKNOWN)
-	{
-		info->m_genre = GENRE_ID_OWN_STRING;
-		strcpy(info->m_genre_data.m_text, str == NULL ? "" : str);
-	}
+	si_set_name(si, vorbis_comment_query(comment, "title", 0));
+	si_set_artist(si, vorbis_comment_query(comment, "artist", 0));
+	si_set_album(si, vorbis_comment_query(comment, "album", 0));
+	si_set_track(si, vorbis_comment_query(comment, "tracknumber", 0));
+	si_set_year(si, vorbis_comment_query(comment, "date", 0));
+	si_set_genre(si, vorbis_comment_query(comment, "genre", 0));
 
 	/* Set additional information */
 	vi = ov_info(&vf, -1);
 	if (vi != NULL)
 	{
-		sprintf(info->m_own_data, 
+		sprintf(own_data, 
 				_("Nominal bitrate: %i kb/s\n"
 				"Samplerate: %i Hz\n"
 				"Channels: %i\n"
 				"Length: %i seconds\n"
 				"File size: %i bytes"),
 				vi->bitrate_nominal / 1000, vi->rate, vi->channels, 
-				(int)ov_time_total(&vf, -1), util_get_file_size(filename));
+				*len, util_get_file_size(filename));
+		si_set_own_data(si, own_data);
 	}
-	info->m_not_own_present = ret;
 
 	/* Close file */
 	ov_clear(&vf);
-	return TRUE;
-	return FALSE;
+	return si;
 } /* End of 'ogg_get_info' function */
 
 /* Get functions list */
@@ -449,27 +404,19 @@ void inp_get_func_list( inp_func_list_t *fl )
 {
 	fl->m_start = ogg_start;
 	fl->m_end = ogg_end;
-	fl->m_get_len = ogg_get_len;
 	fl->m_get_stream = ogg_get_stream;
 	fl->m_seek = ogg_seek;
 	fl->m_get_audio_params = ogg_get_audio_params;
-	fl->m_get_bitrate = ogg_get_bitrate;
 	fl->m_get_cur_time = ogg_get_cur_time;
 	fl->m_get_formats = ogg_get_formats;
 	fl->m_save_info = ogg_save_info;
 	fl->m_get_info = ogg_get_info;
-	fl->m_glist = ogg_glist;
-	ogg_print_msg = fl->m_print_msg;
+	ogg_pmng = fl->m_pmng;
+	ogg_print_msg = pmng_get_printer(ogg_pmng);
 } /* End of 'ogg_get_func_list' function */
 
-/* Save variables list */
-void inp_save_vars( cfg_list_t *l )
-{
-	ogg_var_list = l;
-} /* End of 'inp_save_vars' function */
-
 /* Initialize genres list */
-void ogg_init_glist( void )
+static void ogg_init_glist( void )
 {
 	genre_list_t *l;
 
@@ -640,7 +587,7 @@ void _fini( void )
 } /* End of '_fini' function */
 
 /* Helper seeking function */
-int ogg_file_seek( void *datasource, ogg_int64_t offset, int whence )
+static int ogg_file_seek( void *datasource, ogg_int64_t offset, int whence )
 {
 	file_t *fd = (file_t *)datasource;
 
@@ -651,19 +598,20 @@ int ogg_file_seek( void *datasource, ogg_int64_t offset, int whence )
 } /* End of 'ogg_file_seek' function */
 	
 /* Helper reading function */
-size_t ogg_file_read( void *ptr, size_t size, size_t nmemb, void *datasource )
+static size_t ogg_file_read( void *ptr, size_t size, size_t nmemb, 
+		void *datasource )
 {
 	return file_read(ptr, size, nmemb, datasource);
 } /* End of 'ogg_file_read' function */
 
 /* Helper file closing function */
-int ogg_file_close( void *datasource )
+static int ogg_file_close( void *datasource )
 {
 	return file_close(datasource);
 } /* End of 'ogg_file_close' function */
 
 /* Helper file position telling function */
-long ogg_file_tell( void *datasource )
+static long ogg_file_tell( void *datasource )
 {
 	return file_tell(datasource);
 } /* End of 'ogg_file_tell' function */

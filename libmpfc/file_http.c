@@ -1,12 +1,12 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : http.c
  * PURPOSE     : SG MPFC. File library http files managament 
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 25.10.2003
+ * LAST UPDATE : 5.02.2004
  * NOTE        : Module prefix 'fhttp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -38,6 +38,7 @@
 #include "types.h"
 #include "file.h"
 #include "file_http.h"
+#include "mystring.h"
 
 /* Get file data */
 #define FHTTP_GET_DATA(data, file) \
@@ -455,6 +456,17 @@ bool_t fhttp_eof( file_t *f )
 	FHTTP_GET_DATA(data, f);
 	return data->m_eof;
 } /* End of 'fhttp_eof' function */
+
+/* Get string from file */
+str_t *fhttp_get_str( file_t *f )
+{
+	char s[1024];
+	str_t *str;
+	FHTTP_GET_DATA(data, f);
+
+	fhttp_gets(s, sizeof(s), f);
+	return str_new(s);
+} /* End of 'fhttp_get_str' function */
 
 /* End of 'http.c' file */
 

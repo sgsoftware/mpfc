@@ -46,9 +46,9 @@
 #define CDDB_PORT 8880
 
 /* Data */
-char **cddb_data = NULL;
-int cddb_data_len = 0;
-bool_t cddb_server_found = TRUE;
+static char **cddb_data = NULL;
+static int cddb_data_len = 0;
+static bool_t cddb_server_found = TRUE;
 
 /* Initialize CDDB entry for currently playing disc */
 bool_t cddb_read( void )
@@ -71,13 +71,16 @@ bool_t cddb_read( void )
 } /* End of 'cddb_read' function */
 
 /* Fill song info for specified track */
-bool_t cddb_get_trk_info( int track, song_info_t *info )
+song_info_t *cddb_get_trk_info( int track )
 {
 	int i;
+	song_info_t *si;
+	char tr[10];
 
 	if (cddb_data == NULL)
-		return FALSE;
+		return NULL;
 
+	si = si_new();
 	for ( i = 0; i < cddb_data_len; i ++ )
 	{
 		char *str = cddb_data[i];
@@ -88,25 +91,23 @@ bool_t cddb_get_trk_info( int track, song_info_t *info )
 			for ( j = 0; str[j] && str[j] != '/'; j ++ );
 			if (str[j] == '/')
 			{
-				memcpy(info->m_artist, &str[7], j - 8);
-				info->m_artist[j - 8] = 0;
+				si_set_artist(si, &str[7]);
+				si->m_artist[j - 8] = 0;
 			}
 			else
 			{
-				strcpy(info->m_artist, &str[7]);
+				si_set_artist(si, &str[7]);
 				continue;
 			}
-			strcpy(info->m_album, &str[j + 2]);
+			si_set_album(si, &str[j + 2]);
 		}	
 		else if (!strncmp(str, "DYEAR", 5))
 		{
-			strcpy(info->m_year, &str[6]);
+			si_set_year(si, &str[6]);
 		}
 		else if (!strncmp(str, "DGENRE", 6))
 		{
-			char *g = &str[7];
-			info->m_genre = GENRE_ID_OWN_STRING;
-			strcpy(info->m_genre_data.m_text, g);
+			si_set_genre(si, &str[7]);
 		}
 		else if (!strncmp(str, "TTITLE", 6))
 		{
@@ -118,11 +119,12 @@ bool_t cddb_get_trk_info( int track, song_info_t *info )
 					t[k ++] = str[j], j ++ );
 			t[k] = 0;
 			if (track == atoi(t))
-				strcpy(info->m_name, &str[j + 1]);
+				si_set_name(si, &str[j + 1]);
 		}
 	}
-	sprintf(info->m_track, "%i", track + 1);
-	return TRUE;
+	sprintf(tr, "%i", track + 1);
+	si_set_track(si, tr);
+	return si;
 } /* End of 'cddb_get_trk_info' function */
 
 /* Calculate disc ID */
@@ -155,7 +157,7 @@ int cddb_sum( int n )
 /* Search for CDDB entry on local machine */
 bool_t cddb_read_local( dword id )
 {
-	char fn[256];
+	char fn[MAX_FILE_NAME];
 	FILE *fd;
 
 	/* Construct file name and open it */
@@ -198,7 +200,7 @@ bool_t cddb_read_server( dword id )
 	char buf[CDDB_BUF_SIZE];
 	struct hostent *he;
 	struct sockaddr_in their_addr;
-	char host[256];
+	char host[MAX_FILE_NAME];
 	char category[80];
 
 	if (!cddb_server_found)
@@ -358,7 +360,7 @@ void cddb_server2data( char *buf )
 /* Save CDDB data */
 void cddb_save_data( dword id )
 {
-	char fn[256];
+	char fn[MAX_FILE_NAME];
 	FILE *fd;
 	int i;
 
@@ -416,8 +418,7 @@ void cddb_save_trk_info( int track, song_info_t *info )
 		cddb_data_add(str, -1);
 		sprintf(str, "DYEAR=%s", info->m_year);
 		cddb_data_add(str, -1);
-		sprintf(str, "DGENRE=%s", info->m_genre == GENRE_ID_OWN_STRING ?
-				info->m_genre_data.m_text : "");
+		sprintf(str, "DGENRE=%s", info->m_genre);
 		cddb_data_add(str, -1);
 		for ( i = 0; i < acd_num_tracks; i ++ )
 		{
@@ -454,9 +455,7 @@ void cddb_save_trk_info( int track, song_info_t *info )
 			else if (!strncmp(cddb_data[i], "DGENRE=", 7))
 			{
 				free(cddb_data[i]);
-				sprintf(str, "DGENRE=%s", 
-						info->m_genre == GENRE_ID_OWN_STRING ? 
-						info->m_genre_data.m_text : "");
+				sprintf(str, "DGENRE=%s", info->m_genre);
 				cddb_data[i] = strdup(str);
 				dgenre = TRUE;
 			}
@@ -484,8 +483,7 @@ void cddb_save_trk_info( int track, song_info_t *info )
 		}
 		if (!dgenre)
 		{
-			sprintf(str, "DGENRE=%s", info->m_genre == GENRE_ID_OWN_STRING ? 
-						info->m_genre_data.m_text : "");
+			sprintf(str, "DGENRE=%s", info->m_genre);
 			cddb_data_add(str, -1);
 		}
 		if (!dyear)
@@ -508,10 +506,7 @@ void cddb_save_trk_info( int track, song_info_t *info )
 void cddb_data_add( char *str, int index )
 {
 	/* Reallocate memory for data */
-	if (cddb_data == NULL)
-		cddb_data = (char **)malloc(sizeof(char *) * (cddb_data_len + 1));
-	else
-		cddb_data = (char **)realloc(cddb_data, 
+	cddb_data = (char **)realloc(cddb_data, 
 				sizeof(char *) * (cddb_data_len + 1));
 
 	/* Add string */
@@ -543,7 +538,7 @@ void cddb_submit( char *filename )
 	char buf[CDDB_BUF_SIZE];
 	struct hostent *he;
 	struct sockaddr_in their_addr;
-	char host[256];
+	char host[MAX_FILE_NAME];
 	char *post_str;
 	
 	/* Check data */
@@ -554,14 +549,14 @@ void cddb_submit( char *filename )
 	}
 	
 	/* Check email and category (set through variables) */
-	email = cfg_get_var(acd_var_list, "cddb-email");
+	email = cfg_get_var(pmng_get_cfg(acd_pmng), "cddb-email");
 	if (strlen(email) <= 1)
 	{
 		acd_print_msg(_("CDDB submit error: you must specify your email "
 					"address"));
 		return;
 	}
-	category = cfg_get_var(acd_var_list, "cddb-category");
+	category = cfg_get_var(pmng_get_cfg(acd_pmng), "cddb-category");
 	if (!cddb_valid_category(category))
 	{
 		acd_print_msg(_("CDDB submit error: you must specify your category"));
@@ -618,8 +613,9 @@ close:
 /* Get host name */
 void cddb_get_host_name( char *name )
 {
-	if (cfg_get_var_int(acd_var_list, "cddb-host"))
-		strcpy(name, cfg_get_var(acd_var_list, "cddb-host"));
+	char *host = cfg_get_var(pmng_get_cfg(acd_pmng), "cddb-host");
+	if (host != NULL)
+		strcpy(name, host);
 	else
 		strcpy(name, "freedb.freedb.org");
 } /* End of 'cddb_get_host_name' function */

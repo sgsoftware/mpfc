@@ -28,54 +28,59 @@
 #include <stdio.h>
 #include <sys/soundcard.h>
 #include "types.h"
-#include "cfg.h"
+#include "file.h"
 #include "outp.h"
+#include "pmng.h"
 
 /* Header size */
 #define DW_HEAD_SIZE 44
 
 /* Output file handler */
-FILE *dw_fd = NULL;
+static file_t *dw_fd = NULL;
 
 /* Song parameters */
-short dw_channels = 2;
-long dw_freq = 44100;
-dword dw_fmt = 0;
-long dw_file_size = 0;
+static short dw_channels = 2;
+static long dw_freq = 44100;
+static dword dw_fmt = 0;
+static long dw_file_size = 0;
 
-/* Configuration variables list */
-cfg_list_t *dw_var_list = NULL;
+/* Plugins manager */
+static pmng_t *dw_pmng = NULL;
 
 /* Start plugin */
 bool_t dw_start( void )
 {
-	char name[256], full_name[256];
-	char *cur_song;
+	char name[MAX_FILE_NAME], full_name[MAX_FILE_NAME];
+	char *str;
 	int i;
 
 	/* Get output file name */
-	cur_song = cfg_get_var(dw_var_list, "cur-song-name");
-	for ( i = strlen(cur_song) - 1; i >= 0 && cur_song[i] != '.'; i -- );
-	if (i < 0)
-		i = strlen(cur_song) - 1;
-	memcpy(name, cur_song, i + 1);
-	name[i + 1] = 0;
-	sprintf(full_name, "%s/%swav", cfg_get_var(dw_var_list, 
-				"disk-writer-path"), name);
+	str = cfg_get_var(pmng_get_cfg(dw_pmng), "cur-song-name");
+	if (str == NULL)
+		return FALSE;
+	strcpy(name, str);
+	str = strrchr(name, '.');
+	if (str != NULL)
+		strcpy(str, ".wav");
+	else
+		strcat(name, ".wav");
+	str = cfg_get_var(pmng_get_cfg(dw_pmng), "disk-writer-path");
+	if (str != NULL)
+		sprintf(full_name, "%s/%s", str, name);
 
 	/* Try to open file */
-	dw_fd = fopen(full_name, "w+b");
+	dw_fd = file_open(full_name, "w+b", NULL);
 	if (dw_fd == NULL)
 		return FALSE;
 
 	/* Leave space for header */
-	fseek(dw_fd, DW_HEAD_SIZE, SEEK_SET);
+	file_seek(dw_fd, DW_HEAD_SIZE, SEEK_SET);
 	dw_file_size = DW_HEAD_SIZE;
 	return TRUE;
 } /* End of 'dw_start' function */
 
 /* Write WAV header */
-void dw_write_head( void )
+static void dw_write_head( void )
 {
 	long chunksize1 = 16, chunksize2 = dw_file_size - DW_HEAD_SIZE;
 	short format_tag = 1;
@@ -94,20 +99,20 @@ void dw_write_head( void )
 	avg_bps = dw_freq * block_align;
 
 	/* Write header */
-	fseek(dw_fd, 0, SEEK_SET);
-	fwrite("RIFF", 1, 4, dw_fd);
-	fwrite(&dw_file_size, 4, 1, dw_fd);
-	fwrite("WAVE", 1, 4, dw_fd);
-	fwrite("fmt ", 1, 4, dw_fd);
-	fwrite(&chunksize1, 4, 1, dw_fd);
-	fwrite(&format_tag, 2, 1, dw_fd);
-	fwrite(&dw_channels, 2, 1, dw_fd);
-	fwrite(&dw_freq, 4, 1, dw_fd);
-	fwrite(&avg_bps, 4, 1, dw_fd);
-	fwrite(&block_align, 2, 1, dw_fd);
-	fwrite(&databits, 2, 1, dw_fd);
-	fwrite("data", 1, 4, dw_fd);
-	fwrite(&chunksize2, 4, 1, dw_fd);
+	file_seek(dw_fd, 0, SEEK_SET);
+	file_write("RIFF", 1, 4, dw_fd);
+	file_write(&dw_file_size, 4, 1, dw_fd);
+	file_write("WAVE", 1, 4, dw_fd);
+	file_write("fmt ", 1, 4, dw_fd);
+	file_write(&chunksize1, 4, 1, dw_fd);
+	file_write(&format_tag, 2, 1, dw_fd);
+	file_write(&dw_channels, 2, 1, dw_fd);
+	file_write(&dw_freq, 4, 1, dw_fd);
+	file_write(&avg_bps, 4, 1, dw_fd);
+	file_write(&block_align, 2, 1, dw_fd);
+	file_write(&databits, 2, 1, dw_fd);
+	file_write("data", 1, 4, dw_fd);
+	file_write(&chunksize2, 4, 1, dw_fd);
 } /* End of 'dw_write_head' function */
 
 /* Stop plugin */
@@ -116,7 +121,7 @@ void dw_end( void )
 	if (dw_fd != NULL)
 	{
 		dw_write_head();
-		fclose(dw_fd);
+		file_close(dw_fd);
 		dw_fd = NULL;
 	}
 } /* End of 'dw_end' function */
@@ -127,7 +132,7 @@ void dw_play( void *buf, int size )
 	if (dw_fd == NULL)
 		return;
 	
-	fwrite(buf, 1, size, dw_fd);
+	file_write(buf, 1, size, dw_fd);
 	dw_file_size += size;
 } /* End of 'dw_play' function */
 
@@ -158,13 +163,8 @@ void outp_get_func_list( outp_func_list_t *fl )
 	fl->m_set_channels = dw_set_channels;
 	fl->m_set_freq = dw_set_freq;
 	fl->m_set_fmt = dw_set_fmt;
+	dw_pmng = fl->m_pmng;
 } /* End of 'outp_get_func_list' function */
-
-/* Save variables list */
-void outp_set_vars( cfg_list_t *list )
-{
-	dw_var_list = list;
-} /* End of 'outp_set_vars' function */
 
 /* End of 'writer.c' file */
 

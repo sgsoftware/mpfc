@@ -1,11 +1,11 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : editbox.h
  * PURPOSE     : SG MPFC. Interface for edit box functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 9.11.2003
+ * LAST UPDATE : 4.02.2004
  * NOTE        : Module prefix 'ebox'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -29,6 +29,7 @@
 
 #include "types.h"
 #include "history.h"
+#include "mystring.h"
 #include "window.h"
 
 /* Edit box type */
@@ -38,17 +39,16 @@ typedef struct
 	wnd_t m_wnd;
 
 	/* Edit box label */
-	char m_label[80];
+	char *m_label;
 
 	/* Edit box text */
-	char m_text[256];
-	int m_len;
+	str_t *m_text;
 
 	/* History list associated with this edit box */
 	hist_list_t *m_hist_list;
 
 	/* Text before changing with history */
-	char m_text_before_hist[256];
+	char *m_text_before_hist;
 
 	/* Whether text was changed after using history */
 	bool_t m_changed;
@@ -68,6 +68,19 @@ typedef struct
 	/* Scroll value */
 	int m_scrolled;
 } editbox_t;
+
+/* Convert window to edit box type */
+#define EBOX_OBJ(wnd) ((editbox_t *)wnd)
+
+/* Check that text length is acceptable */
+#define EBOX_CHECK_LEN(box, len) ((box)->m_max_len >= 0 && \
+									(len) >= (box)->m_max_len)
+
+/* Get edit box text length */
+#define EBOX_LEN(box) (STR_LEN((box)->m_text))
+
+/* Get edit box text */
+#define EBOX_TEXT(box) (STR_TO_CPTR(((editbox_t *)(box))->m_text))
 
 /* Create a new edit box */
 editbox_t *ebox_new( wnd_t *parent, int x, int y, int width, 
@@ -112,6 +125,9 @@ void ebox_hist_move( editbox_t *box, bool_t up );
 
 /* Save history information */
 void ebox_hist_save( editbox_t *box, int key );
+
+/* Save 'm_text_before_hist' member */
+void ebox_save_text_before_hist( editbox_t *box );
 
 #endif
 

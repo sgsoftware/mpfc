@@ -29,22 +29,22 @@
 #include <sys/soundcard.h>
 #include <sys/ioctl.h>
 #include "types.h"
-#include "cfg.h"
 #include "outp.h"
+#include "pmng.h"
 
 /* Audio device file handle */
-int oss_fd = -1;
+static int oss_fd = -1;
 
 /* Some function declarations */
-bool_t oss_get_dev( char *name );
+static bool_t oss_get_dev( char *name );
 
-/* This is pointer to global variables list */
-cfg_list_t *oss_var_list = NULL;
+/* Plugins manager  */
+static pmng_t *oss_pmng = NULL;
 
 /* Start plugin */
 bool_t oss_start( void )
 {
-	char name[256];
+	char name[MAX_FILE_NAME];
 
 	/* Check if we have access to sound card */
 	if (!oss_get_dev(name))
@@ -156,21 +156,22 @@ void outp_get_func_list( outp_func_list_t *fl )
 	fl->m_flush = oss_flush;
 	fl->m_set_volume = oss_set_volume;
 	fl->m_get_volume = oss_get_volume;
+	oss_pmng = fl->m_pmng;
 } /* End of 'outp_get_func_list' function */
 
 /* Some function declarations */
 bool_t oss_get_dev( char *name )
 {
-	char str[256], *s;
+	char *dev, *s;
 	int fd;
 	
 	/* Get respective variable value */
-	strcpy(str, cfg_get_var(oss_var_list, "oss-device"));
-	if (!strcmp(str, "0"))
-		strcpy(str, "/dev/dsp,/dev/dsp1");
+	dev = cfg_get_var(pmng_get_cfg(oss_pmng), "oss-device");
+	if (dev == NULL)
+		dev = "/dev/dsp,/dev/dsp1";
 
 	/* Search specified devices */
-	for ( s = str; *s; )
+	for ( s = dev; *s; )
 	{
 		int i = 0;
 
@@ -195,12 +196,6 @@ bool_t oss_get_dev( char *name )
 	}
 	return FALSE;
 } /* End of 'oss_get_dev' function */
-
-/* Save variables list */
-void outp_set_vars( cfg_list_t *list )
-{
-	oss_var_list = list;
-} /* End of 'oss_set_vars' function */
 
 /* End of 'oss.c' file */
 

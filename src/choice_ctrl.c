@@ -26,6 +26,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include "types.h"
 #include "choice_ctrl.h"
 #include "error.h"
@@ -70,8 +71,8 @@ bool_t choice_init( choice_ctrl_t *ch, wnd_t *parent, int x, int y, int w,
 	wnd_register_handler(ch, WND_MSG_KEYDOWN, choice_handle_key);
 
 	/* Set choice control specific fields */
-	strcpy(ch->m_prompt, prompt);
-	strcpy(ch->m_choices, choices);
+	ch->m_prompt = strdup(prompt);
+	ch->m_choices = strdup(choices);
 	ch->m_choice = 0;
 	WND_OBJ(ch)->m_flags |= (WND_INITIALIZED);
 	return TRUE;
@@ -80,6 +81,15 @@ bool_t choice_init( choice_ctrl_t *ch, wnd_t *parent, int x, int y, int w,
 /* Destroy choice control */
 void choice_destroy( wnd_t *wnd )
 {
+	choice_ctrl_t *ch = (choice_ctrl_t *)wnd;
+
+	if (ch == NULL)
+		return;
+
+	if (ch->m_prompt != NULL)
+		free(ch->m_prompt);
+	if (ch->m_choices != NULL)
+		free(ch->m_choices);
 	wnd_destroy_func(wnd);
 } /* End of 'choice_destroy' function */
 

@@ -56,7 +56,7 @@ typedef struct
 	wnd_t m_wnd;
 
 	/* Dialog box caption */
-	char m_caption[256];
+	char *m_caption;
 
 	/* Current focused item */
 	wnd_t *m_cur_focus;

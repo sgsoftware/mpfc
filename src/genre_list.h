@@ -35,17 +35,11 @@ typedef struct tag_genre_list_t
 {
 	struct tag_glist_item_t
 	{
-		char m_name[80];
+		char *m_name;
 		byte m_data;
 	} *m_list;
 	int m_size;
 } genre_list_t;
-
-/* Unknown genre ID */
-#define GENRE_ID_UNKNOWN 0xFF
-
-/* Own string ID */
-#define GENRE_ID_OWN_STRING 0xFE
 
 /* Create a new genre list */
 genre_list_t *glist_new( void );
@@ -56,11 +50,17 @@ void glist_free( genre_list_t *l );
 /* Add genre to list */
 void glist_add( genre_list_t *l, char *name, byte data );
 
-/* Get genre id by its inner data */
-byte glist_get_id( genre_list_t *l, byte data );
+/* Get genre name */
+char *glist_get_name( genre_list_t *l, int id );
 
-/* Get genre if by its textual data */
-byte glist_get_id_by_text( genre_list_t *l, char *text );
+/* Get genre name by its id */
+char *glist_get_name_by_id( genre_list_t *l, int id );
+
+/* Get genre id by its name */
+byte glist_get_id_by_name( genre_list_t *l, char *name );
+
+/* Convert genre string to id */
+int glist_str2num( char *str );
 
 #endif
 

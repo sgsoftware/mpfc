@@ -35,8 +35,8 @@
 #include "types.h"
 #include "audiocd.h"
 #include "cddb.h"
-#include "cfg.h"
 #include "inp.h"
+#include "pmng.h"
 #include "song.h"
 #include "song_info.h"
 #include "util.h"
@@ -51,37 +51,37 @@
 	((acd_tracks_info[trk].m_start_min * 60 + \
 	  acd_tracks_info[trk].m_start_sec)))
 
-/* This is pointer to global variables list */
-cfg_list_t *acd_var_list = NULL;
+/* Plugins manager */
+pmng_t *acd_pmng = NULL;
 
 /* Tracks information array */
 struct acd_trk_info_t acd_tracks_info[ACD_MAX_TRACKS];
 int acd_num_tracks = 0;
-int acd_cur_track = -1;
-bool_t acd_info_read = FALSE;
+static int acd_cur_track = -1;
+static bool_t acd_info_read = FALSE;
 
 /* Current time */
-int acd_time = 0;
+static int acd_time = 0;
 
 /* Whether running first time? */
-bool_t acd_first_time = TRUE;
+static bool_t acd_first_time = TRUE;
 
 /* The next track */
-char acd_next_song[256] = "";
+static char acd_next_song[MAX_FILE_NAME] = "";
 
 /* Message printer */
-void (*acd_print_msg)( char *msg );
+pmng_print_msg_t acd_print_msg = NULL;
 
 /* Prepare cdrom for ioctls */
-int acd_prepare_cd( void )
+static int acd_prepare_cd( void )
 {
 	int fd;
-	char dev[256];
+	char *dev;
 
 	/* Get device name */
-	strcpy(dev, cfg_get_var(acd_var_list, "audiocd-device"));
-	if (*dev >= '0' && *dev <= '9')
-		strcpy(dev, "/dev/cdrom");
+	dev = cfg_get_var(pmng_get_cfg(acd_pmng), "audiocd-device");
+	if (dev == NULL)
+		dev = "/dev/cdrom";
 	
 	/* Open device */
 	fd = open(dev, O_RDONLY|O_NONBLOCK);
@@ -158,7 +158,7 @@ void acd_end( void )
 } /* End of 'acd_end' function */
 
 /* Get length */
-int acd_get_len( char *filename )
+static int acd_get_len( char *filename )
 {
 	int track;
 	
@@ -269,7 +269,7 @@ song_t **acd_init_obj_songs( char *name, int *num_songs )
 		s[j ++] = song = (song_t *)malloc(sizeof(song_t));
 		sprintf(song->m_file_name, "audiocd:track%02d", 
 				acd_tracks_info[i].m_number);
-		acd_set_song_title(song->m_title, song->m_file_name);
+		song->m_title = acd_set_song_title(song->m_file_name);
 		song->m_len = acd_tracks_info[i].m_len;
 		song->m_inp = NULL;
 		song->m_info = NULL;
@@ -355,11 +355,12 @@ void acd_seek( int shift )
 } /* End of 'acd_seek' function */
 
 /* Get audio parameters */
-void acd_get_audio_params( int *ch, int *freq, dword *fmt )
+void acd_get_audio_params( int *ch, int *freq, dword *fmt, int *bitrate )
 {
 	*ch = 2;
 	*freq = 44100;
 	*fmt = 0;
+	*bitrate = 0;
 } /* End of 'acd_get_audio_params' function */
 
 /* Get current time */
@@ -369,25 +370,25 @@ int acd_get_cur_time( void )
 } /* End of 'acd_get_cur_time' function */
 
 /* Get song info */
-bool_t acd_get_info( char *filename, song_info_t *info )
+song_info_t *acd_get_info( char *filename, int *len )
 {
 	int track;
+
+	/* Get length */
+	*len = acd_get_len(filename);
 
 	/* Get track number from filename */
 	track = acd_fname2trk(filename);
 	if (track < 0 || track >= acd_num_tracks || 
 			track > acd_tracks_info[acd_num_tracks - 1].m_number)
-		return FALSE;
+		return NULL;
 
 	/* Read whole disc info */
-	info->m_not_own_present = TRUE;
 	if (!cddb_read())
-		return FALSE;
+		return NULL;
 
 	/* Save info for specified track */
-	if (!cddb_get_trk_info(track, info))
-		return FALSE;
-	return TRUE;
+	return cddb_get_trk_info(track);
 } /* End of 'acd_get_info' function */
 
 /* Save song info */
@@ -420,7 +421,6 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_start = acd_start;
 	fl->m_end = acd_end;
 	fl->m_get_stream = acd_get_stream;
-	fl->m_get_len = acd_get_len;
 	fl->m_seek = acd_seek;
 	fl->m_get_audio_params = acd_get_audio_params;
 	fl->m_init_obj_songs = acd_init_obj_songs;
@@ -432,7 +432,8 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_save_info = acd_save_info;
 	fl->m_set_song_title = acd_set_song_title;
 	fl->m_set_next_song = acd_set_next_song;
-	acd_print_msg = fl->m_print_msg;
+	acd_pmng = fl->m_pmng;
+	acd_print_msg = pmng_get_printer(acd_pmng);
 
 	fl->m_num_spec_funcs = 2;
 	fl->m_spec_funcs = (inp_spec_func_t *)malloc(sizeof(inp_spec_func_t) * 
@@ -444,12 +445,6 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_spec_funcs[1].m_flags = INP_SPEC_SAVE_INFO;
 	fl->m_spec_funcs[1].m_func = cddb_submit;
 } /* End of 'inp_get_func_list' function */
-
-/* Save variables list */
-void inp_set_vars( cfg_list_t *list )
-{
-	acd_var_list = list;
-} /* End of 'inp_set_vars' function */
 
 /* Print message */
 void acd_print( char *format, ... )
@@ -466,10 +461,12 @@ void acd_print( char *format, ... )
 } /* End of 'acd_print' function */
 
 /* Set song title */
-void acd_set_song_title( char *buf, char *filename )
+str_t *acd_set_song_title( char *filename )
 {
 	int track = acd_fname2trk(filename);
-	sprintf(buf, "Track %02d", track + 1);
+	str_t *title = str_new("");
+	str_printf(title, "Track %02d", track + 1);
+	return title;
 } /* End of 'acd_set_song_title' function */
 
 /* End of 'audiocd.c' file */

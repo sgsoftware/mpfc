@@ -37,7 +37,7 @@ typedef struct tag_browser_t
 	wnd_t m_wnd;
 
 	/* Current directory name */
-	char m_cur_dir[256];
+	char m_cur_dir[MAX_FILE_NAME];
 
 	/* Directory contents */
 	struct browser_list_item

@@ -30,10 +30,11 @@
 /* Charsets IDs */
 #define RU_KOI8_R 0
 #define RU_CP1251 1
-#define RU_NUMBER 2
+#define RU_AUTO   2
+#define RU_NUMBER 3
 
 /* Codes table */
-dword ru_table[RU_NUMBER][128] = 
+static dword ru_table[RU_NUMBER][128] = 
 {
 	{ 
 		0x2500, 0x2502, 0x250c, 0x2510, 0x2514, 0x2518, 0x251c, 0x2524, 
@@ -73,6 +74,16 @@ dword ru_table[RU_NUMBER][128] =
 	}
 };
 
+/* Charsets names */
+static char *ru_names[RU_NUMBER] = { "koi8-r", "cp1251", "ru-auto" };
+
+/* About string */
+static char *ru_about = "Russian codepages support plugin\n";
+
+/* Names of charset automatic charset may expand to */
+static char *ru_auto_koi8_r = "koi8-r", *ru_auto_cp1251 = "cp1251",
+			*ru_auto_utf8 = "utf-8";
+
 /* Get number of charsets supportde */
 int ru_get_num_sets( void )
 {
@@ -80,24 +91,18 @@ int ru_get_num_sets( void )
 } /* End of 'ru_get_num_sets' function */
 
 /* Get charset name */
-bool_t ru_get_cs_name( char *name, int index )
+char *ru_get_cs_name( int index )
 {
-	switch (index)
-	{
-	case RU_KOI8_R:
-		strcpy(name, "koi8-r");
-		return TRUE;
-	case RU_CP1251:
-		strcpy(name, "cp1251");
-		return TRUE;
-	}
-	return FALSE;
+	if (index >= 0 && index < RU_NUMBER)
+		return ru_names[index];
+	else
+		return NULL;
 } /* End of 'ru_get_cs_name' function */
 
 /* Get symbol unicode */
 dword ru_get_code( byte ch, int index )
 {
-	if (index < 0 || index >= RU_NUMBER)
+	if (index < 0 || index >= RU_NUMBER || index == RU_AUTO)
 		return 0;
 
 	if (ch < 128)
@@ -106,12 +111,79 @@ dword ru_get_code( byte ch, int index )
 		return ru_table[index][ch - 128];
 } /* End of 'ru_get_code' function */
 
+/* Get charset flags */
+dword ru_get_flags( int index )
+{
+	if (index == RU_AUTO)
+		return CSP_AUTO;
+	else
+		return 0;
+} /* End of 'ru_get_flags' function */
+
+/* Expand automatic charset */
+char *ru_expand_auto( char *sample_str, int index )
+{
+	int len, i, big, small, rus, proper_len;
+	
+	if (index != RU_AUTO)
+		return NULL;
+	if (sample_str == NULL)
+		return ru_auto_koi8_r;
+
+	/* Test UTF-8 first. If number of russian symbols is more than a half
+	 * it might be UTF-8. Russian symbol code has leading byte 0xD0 or 0xD1
+	 * and the next byte 10xxxxxx */
+	len = strlen(sample_str);
+	for ( i = 0, rus = 0, proper_len = 0; i < len; i ++ )
+	{
+		byte first = (byte)sample_str[i];
+		int bytes;
+		
+		if (!first)
+			break;
+		bytes = cs_utf8_get_num_bytes(first);
+		if (bytes <= 0)
+			break;
+
+		proper_len ++;
+		if ((first == 0xD0 || first == 0xD1) && (sample_str[i + 1] & 0x80) &&
+				!(sample_str[i + 1] & 0x40))
+		{
+			rus ++;
+			i ++;
+		}
+	}
+	if (rus >= proper_len / 2)
+		return ru_auto_utf8;
+
+	/* Try to guess charset (between "koi8-r" and "cp1251") by looking at 
+	 * number of big letters - it is commonly less than the number of small 
+	 * letters. First think that it is "koi8-r" and if out proposition is
+	 * false - it's "cp1251" */
+	for ( i = 0, big = 0, small = 0; i < len; i ++ )
+	{
+		byte ch = (byte)sample_str[i];
+		
+		if (ch >= 0xE0)
+			big ++;
+		else if (ch >= 0xC0 && ch <= 0xDF)
+			small ++;
+	}
+	if (big <= small)
+		return ru_auto_koi8_r;
+	else
+		return ru_auto_cp1251;
+} /* End of 'ru_expand_auto' function */
+
 /* Get functions list */
 void csp_get_func_list( csp_func_list_t *fl )
 {
 	fl->m_get_num_sets = ru_get_num_sets;
 	fl->m_get_cs_name = ru_get_cs_name;
 	fl->m_get_code = ru_get_code;
+	fl->m_get_flags = ru_get_flags;
+	fl->m_expand_auto = ru_expand_auto;
+	fl->m_about = ru_about;
 } /* End of 'inp_get_func_list' function */
 
 /* End of 'ru.c' file */

@@ -46,14 +46,19 @@ typedef struct
 	int m_index;
 } cs_info_t;
 
+/* Output string helper type */
+typedef struct
+{
+	char *m_str;
+	int m_len;
+	int m_allocated;
+} cs_output_t;
+
 /* Convert string between charsets */
 char *cs_convert( char *str, char *cs_in, char *cs_out, pmng_t *pmng );
 
 /* Get charset info */
 void cs_get_info( char *name, cs_info_t *info, pmng_t *pmng );
-
-/* Get string length (in symbols) */
-int cs_get_len( char *str, cs_info_t *info );
 
 /* Get next character from string */
 dword cs_get_next_ch( char **str, cs_info_t *info );
@@ -63,6 +68,15 @@ dword cs_to_unicode( dword ch, cs_info_t *info );
 
 /* Convert unicode to character code */
 dword cs_from_unicode( dword unicode, cs_info_t *info );
+
+/* Reallocate memory for output string */
+void cs_reallocate( cs_output_t *str, int new_len );
+
+/* Append character to output string */
+void cs_append2out( cs_output_t *str, char ch );
+
+/* Add a unicode character to output string */
+void cs_unicode2str( cs_output_t *str, dword unicode, cs_info_t *info );
 
 /* Get number of bytes occupied by symbol in UTF-8 charset (looking
  * at its first byte) */

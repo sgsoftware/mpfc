@@ -1,12 +1,12 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : mp3.h
  * PURPOSE     : SG Konsamp. Interface for MP3 input plugin 
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 12.07.2003
+ * LAST UPDATE : 6.02.2004
  * NOTE        : Module prefix 'mp3'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -26,6 +26,8 @@
  */
 
 #include "types.h"
+#include "file.h"
+#include "song_info.h"
 
 /* Start play function */
 bool_t mp3_start( char *filename );
@@ -34,49 +36,43 @@ bool_t mp3_start( char *filename );
 void mp3_end( void );
 
 /* Get supported formats function */
-void mp3_get_formats( char *buf );
-
-/* Get song length */
-int mp3_get_len( char *filename );
-
-/* Get song information */
-bool_t mp3_get_info( char *filename, song_info_t *info );
+void mp3_get_formats( char *extensions, char *content_type );
 
 /* Get stream function */
 int mp3_get_stream( void *buf, int size );
 
 /* Seek song */
-void mp3_seek( int shift );
+void mp3_seek( int seconds );
+
+/* Get song information */
+song_info_t *mp3_get_info( char *filename, int *len );
+
+/* Set equalizer parameters */
+void mp3_set_eq( void );
 
 /* Get audio parameters */
-void mp3_get_audio_params( int *ch, int *freq, dword *fmt );
+void mp3_get_audio_params( int *ch, int *freq, dword *fmt, int *bitrate );
 
 /* Get functions list */
 void inp_get_func_list( inp_func_list_t *fl );
 
 /* Decode a frame */
-void mp3_decode_frame( void );
+static void mp3_decode_frame( void );
 
 /* Save ID3 tag */
-void mp3_save_tag( char *filename, byte *tag, int tag_size );
-
-/* Set equalizer parameters */
-void mp3_set_eq( void );
+static void mp3_save_tag( char *filename, byte *tag, int tag_size );
 
 /* Apply equalizer to frame */
-void mp3_apply_eq( void );
+static void mp3_apply_eq( void );
 
 /* Buffering read from file */
-int mp3_read( void *ptr, int size, FILE *fd );
+static int mp3_read( void *ptr, int size, file_t *fd );
 
 /* Read song parameters */
-void mp3_read_song_params( void );
+static void mp3_read_song_params( void );
 
 /* Read mp3 file header */
-void mp3_read_header( char *filename, struct mad_header *head );
-
-/* Convert string from ID3 tag to genre id */
-byte mp3_get_genre( char *str );
+static void mp3_read_header( char *filename, struct mad_header *head );
 
 /* End of 'mp3.h' file */
 

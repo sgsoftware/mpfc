@@ -2,11 +2,11 @@
  * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
-/* FILE NAME   : help_screen.h
- * PURPOSE     : SG MPFC. Interface for help screen functions.
+/* FILE NAME   : button.h
+ * PURPOSE     : SG MPFC. Interface for button functions.
  * PROGRAMMER  : Sergey Galanov
  * LAST UPDATE : 4.02.2004
- * NOTE        : Module prefix 'help'.
+ * NOTE        : Module prefix 'btn'.
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 
@@ -24,52 +24,47 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef __SG_MPFC_HELP_SCREEN_H__
-#define __SG_MPFC_HELP_SCREEN_H__
+#ifndef __SG_MPFC_BUTTON_H__
+#define __SG_MPFC_BUTTON_H__
 
 #include "types.h"
 #include "window.h"
 
-/* Help screen window type */
-typedef struct tag_help_screen_t
+/* Button type */
+typedef struct
 {
-	/* Window part */
+	/* Common window object */
 	wnd_t m_wnd;
 
-	/* Current screen number */
-	int m_screen;
+	/* Button text */
+	char *m_text;
+} button_t;
 
-	/* Number of screens */
-	int m_num_screens;
+/* Button notification messages */
+#define BTN_CLICKED 0
 
-	/* Screen height */
-	int m_screen_size;
+/* Create a new button */
+button_t *btn_new( wnd_t *parent, int x, int y, int w, char *text );
 
-	/* Items */
-	char **m_items;
-	int m_num_items;
-} help_screen_t;
+/* Initialize button */
+bool_t btn_init( button_t *btn, wnd_t *parent, int x, int y, int w, char *text );
 
-/* Create new help screen */
-help_screen_t *help_new( wnd_t *parent, int x, int y, int w, int h );
+/* Destroy button */
+void btn_destroy( wnd_t *wnd );
 
-/* Initialize help screen */
-bool_t help_init( help_screen_t *help, wnd_t *parent, int x, int y, 
-	   int w, int h );
+/* Button display function */
+void btn_display( wnd_t *wnd, dword data );
 
-/* Destroy help screen */
-void help_free( wnd_t *wnd );
+/* Button key handler function */
+void btn_handle_key( wnd_t *wnd, dword data );
 
-/* Handle display message */
-void help_display( wnd_t *wnd, dword data );
+/* Button left mouse click handler */
+void btn_handle_mouse( wnd_t *wnd, dword data );
 
-/* Handle key message */
-void help_handle_key( wnd_t *wnd, dword data );
-
-/* Add item */
-void help_add( help_screen_t *h, char *name );
+/* Postponed notify message handler */
+void btn_handle_pp_notify( wnd_t *wnd, dword data );
 
 #endif
 
-/* End of 'help_screen.h' file */
+/* End of 'button.h' file */
 

@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Fffect plugin management functions
  * 	             implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 31.01.2004
+ * LAST UPDATE : 5.02.2004
  * NOTE        : Module prefix 'ep'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -27,17 +27,17 @@
 
 #include <dlfcn.h>
 #include <stdlib.h>
+#include <string.h>
 #include "types.h"
-#include "cfg.h"
 #include "ep.h"
 #include "pmng.h"
+#include "util.h"
 
 /* Initialize effect plugin */
 effect_plugin_t *ep_init( char *name, pmng_t *pmng )
 {
 	effect_plugin_t *p;
 	void (*fl)( ep_func_list_t * );
-	void (*set_vars)( cfg_list_t * );
 
 	/* Try to allocate memory for plugin object */
 	p = (effect_plugin_t *)malloc(sizeof(effect_plugin_t));
@@ -61,14 +61,10 @@ effect_plugin_t *ep_init( char *name, pmng_t *pmng )
 		ep_free(p);
 		return NULL;
 	}
-	util_get_plugin_short_name(p->m_name, name);
+	p->m_name = pmng_create_plugin_name(name);
 	memset(&p->m_fl, 0, sizeof(p->m_fl));
 	p->m_fl.m_pmng = pmng;
 	fl(&p->m_fl);
-
-	if ((set_vars = dlsym(p->m_lib_handler, "ep_set_vars")) != NULL)
-		set_vars(pmng->m_cfg_list);
-		
 	return p;
 } /* End of 'ep_init' function */
 
@@ -78,6 +74,8 @@ void ep_free( effect_plugin_t *p )
 	if (p != NULL)
 	{
 		dlclose(p->m_lib_handler);
+		if (p->m_name != NULL)
+			free(p->m_name);
 		free(p);
 	}
 } /* End of 'ep_free' function */
@@ -90,6 +88,15 @@ int ep_apply( effect_plugin_t *p, byte *data, int len,
 		return p->m_fl.m_apply(data, len, fmt, freq, channels);
 	return len;
 } /* End of 'ep_apply' function */
+
+/* Get information about plugin */
+char *ep_get_about( effect_plugin_t *p )
+{
+	if (p != NULL && (p->m_fl.m_about != NULL))
+		return p->m_fl.m_about;
+	else
+		return NULL;
+} /* End of 'ep_get_about' function */
 
 /* End of 'ep.c' file */
 

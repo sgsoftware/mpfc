@@ -41,6 +41,9 @@
 #define PMNG_EFFECT	 2
 #define PMNG_CHARSET 3
 
+/* Message printer function type */
+typedef void (*pmng_print_msg_t)( char *fmt, ... );
+
 /* Plugin manager type */
 typedef struct tag_pmng_t
 {
@@ -67,11 +70,11 @@ typedef struct tag_pmng_t
 	cfg_list_t *m_cfg_list;
 
 	/* Message printing function */
-	void (*m_print_msg)( char *msg );
+	pmng_print_msg_t m_printer;
 } pmng_t;
 
 /* Initialize plugins */
-pmng_t *pmng_init( cfg_list_t *list, void (*print_msg)(char *) );
+pmng_t *pmng_init( cfg_list_t *list, pmng_print_msg_t print_msg );
 
 /* Unitialize plugins */
 void pmng_free( pmng_t *pmng );
@@ -112,6 +115,15 @@ in_plugin_t *pmng_search_content_type( pmng_t *pmng, char *content );
 
 /* Find charset plugin which supports specified set */
 cs_plugin_t *pmng_find_charset( pmng_t *pmng, char *name, int *index );
+
+/* Get configuration variables list */
+cfg_list_t *pmng_get_cfg( pmng_t *pmng );
+
+/* Get message printer */
+pmng_print_msg_t pmng_get_printer( pmng_t *pmng );
+
+/* Create a plugin name */
+char *pmng_create_plugin_name( char *filename );
 
 #endif
 

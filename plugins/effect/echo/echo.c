@@ -28,6 +28,7 @@
 #include "types.h"
 #include "cfg.h"
 #include "ep.h"
+#include "pmng.h"
 #include "util.h"
 
 #define CLAMP(x, low, high)  (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
@@ -40,11 +41,11 @@
 #define BUFFER_SHORTS (BUFFER_SAMPLES * MAX_CHANNELS)
 #define BUFFER_BYTES (BUFFER_SHORTS * BYTES_PS)
 
-/* This is pointer to global variables list */
-cfg_list_t *echo_var_list = NULL;
-
 static short *buffer = NULL;
 static int w_ofs = 0;
+
+/* Plugins manager */
+static pmng_t *echo_pmng = NULL;
 
 /* Apply echo plugin function */
 int echo_apply( byte *d, int len, int fmt, int srate, int nch )
@@ -58,10 +59,11 @@ int echo_apply( byte *d, int len, int fmt, int srate, int nch )
 	if (!(fmt == AFMT_S16_NE || fmt == AFMT_S16_LE || fmt == AFMT_S16_BE))
 		return len;
 
-	surround_enable = cfg_get_var_int(echo_var_list, "echo-surround-enable");
-	del = cfg_get_var_int(echo_var_list, "echo-delay");
-	volume = cfg_get_var_int(echo_var_list, "echo-volume");
-	feedback = cfg_get_var_int(echo_var_list, "echo-feedback");
+	surround_enable = cfg_get_var_int(pmng_get_cfg(echo_pmng), 
+			"echo-surround-enable");
+	del = cfg_get_var_int(pmng_get_cfg(echo_pmng), "echo-delay");
+	volume = cfg_get_var_int(pmng_get_cfg(echo_pmng), "echo-volume");
+	feedback = cfg_get_var_int(pmng_get_cfg(echo_pmng), "echo-feedback");
 
 	if (!buffer)
 		buffer = (short *)malloc(BUFFER_BYTES + 2);
@@ -113,13 +115,8 @@ int echo_apply( byte *d, int len, int fmt, int srate, int nch )
 void ep_get_func_list( ep_func_list_t *fl )
 {
 	fl->m_apply = echo_apply;
+	echo_pmng = fl->m_pmng;
 } /* End of 'inp_get_func_list' function */
-
-/* Save variables list */
-void ep_set_vars( cfg_list_t *list )
-{
-	echo_var_list = list;
-} /* End of 'inp_set_vars' function */
 
 /* End of 'echo.c' file */
 

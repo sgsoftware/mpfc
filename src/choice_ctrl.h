@@ -40,10 +40,10 @@ typedef struct
 	wnd_t m_wnd;
 
 	/* Choice prompt */
-	char m_prompt[256];
+	char *m_prompt;
 
 	/* Choices */
-	char m_choices[256];
+	char *m_choices;
 
 	/* Choice made */
 	char m_choice;

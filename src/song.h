@@ -1,12 +1,12 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : song.h
  * PURPOSE     : SG MPFC. Interface for songs manipulation
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 7.03.2003
+ * LAST UPDATE : 3.02.2004
  * NOTE        : Module prefix 'song'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -29,6 +29,7 @@
 #define __SG_MPFC_SONG_H__
 
 #include "types.h"
+#include "mystring.h"
 #include "song_info.h"
 
 /* Declare this type */
@@ -43,10 +44,12 @@ struct tag_in_plugin_t;
 typedef struct
 {
 	/* Song title */
-	char m_title[256];
+	str_t *m_title;
 
 	/* Song file name */
-	char m_file_name[256];
+	char m_file_name[MAX_FILE_NAME];
+	char *m_short_name;
+	char *m_file_ext;
 
 	/* Song length */
 	int m_len;
@@ -67,20 +70,11 @@ song_t *song_new( char *filename, char *title, int len );
 /* Free song */
 void song_free( song_t *song );
 
-/* Save song information */
-void song_set_info( song_t *song, song_info_t *info );
-
 /* Update song information */
 void song_update_info( song_t *song );
 
-/* Initialize song info and length */
-void song_init_info_and_len( song_t *song );
-
 /* Fill song title from data from song info and other parameters */
-void song_get_title_from_info( song_t *song );
-
-/* Get song genre name */
-char *song_get_genre_name( song_t *song );
+void song_update_title( song_t *song );
 
 /* Get input plugin */
 struct tag_in_plugin_t *song_get_inp( song_t *song );

@@ -100,6 +100,9 @@ extern hist_list_t *player_hist_lists[PLAYER_NUM_HIST_LISTS];
 /* Plugins manager */
 extern pmng_t *player_pmng;
 
+/* User configuration file name */
+extern char player_cfg_file[MAX_FILE_NAME];
+
 /* Initialize player */
 bool_t player_init( int argc, char *argv[] );
 
@@ -261,7 +264,7 @@ void player_handle_kbind_scheme( char *name );
 void player_time_back( void );
 
 /* Message printer */
-void player_print_msg( char *msg );
+void player_print_msg( char *format, ... );
 
 /* Info reload dialog */
 void player_info_reload_dialog( void );
@@ -277,6 +280,9 @@ void player_save_info_dlg( wnd_t *wnd );
 
 /* Launch file browser */
 void player_file_browser( void );
+
+/* Set a new search string */
+void player_set_search_string( char *str );
 
 #endif
 

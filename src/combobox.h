@@ -1,11 +1,11 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : combobox.h
  * PURPOSE     : SG MPFC. Interface for combo box functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 9.11.2003
+ * LAST UPDATE : 5.02.2004
  * NOTE        : Module prefix 'cbox'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -28,6 +28,7 @@
 #define __SG_MPFC_COMBO_BOX_H__
 
 #include "types.h"
+#include "mystring.h"
 #include "window.h"
 
 /* Combo box type */
@@ -41,8 +42,7 @@ typedef struct
 	int m_label_len;
 
 	/* Edit mode text */
-	char m_text[256];
-	int m_text_len;
+	str_t *m_text;
 	int m_edit_cursor;
 
 	/* List */
@@ -61,6 +61,12 @@ typedef struct
 	/* Whether item is grayed when not changed */
 	bool_t m_grayed;
 } combobox_t;
+
+/* Get edit box text length */
+#define CBOX_EDIT_LEN(cb) (STR_LEN((cb)->m_text))
+
+/* Get edit box text */
+#define CBOX_TEXT(cb) (STR_TO_CPTR((cb)->m_text))
 
 /* Create a new combo box */
 combobox_t *cbox_new( wnd_t *parent, int x, int y, int width, 

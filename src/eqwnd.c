@@ -85,7 +85,7 @@ void eqwnd_free( wnd_t *wnd )
 /* Handle display message */
 void eqwnd_display( wnd_t *wnd, dword data )
 {
-	char title[80];
+	char *title = _("MPFC Equalizer");
 	eq_wnd_t *eq = (eq_wnd_t *)wnd;
 	int i;
 	int x;
@@ -94,7 +94,6 @@ void eqwnd_display( wnd_t *wnd, dword data )
 	
 	/* Print title */
 	wnd_clear(wnd, FALSE);
-	strcpy(title, _("MPFC Equalizer"));
 	wnd_move(wnd, (wnd->m_width - strlen(title)) / 2, 0);
 	wnd_set_attrib(wnd, A_BOLD);
 	wnd_printf(wnd, "%s\n\n", title);
@@ -257,7 +256,7 @@ void eqwnd_load_eqf_dlg( void )
 
 		/* Add file if enter was pressed */
 		if (fin->m_box.m_last_key == '\n')
-			eqwnd_load_eqf(fin->m_box.m_text);
+			eqwnd_load_eqf(EBOX_TEXT(fin));
 
 		/* Destroy edit box */
 		wnd_destroy(fin);

@@ -1,12 +1,12 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : reg.c
  * PURPOSE     : SG MPFC. File library regular files managament 
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 25.10.2003
+ * LAST UPDATE : 5.02.2004
  * NOTE        : Module prefix 'freg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -30,6 +30,7 @@
 #include "types.h"
 #include "file.h"
 #include "file_reg.h"
+#include "mystring.h"
 
 /* Get file data */
 #define FREG_GET_DATA(data, file) \
@@ -127,6 +128,17 @@ bool_t freg_eof( file_t *f )
 	FREG_GET_DATA(data, f);
 	return feof(data->m_fd);
 } /* End of 'freg_eof' function */
+
+/* Get string from file */
+str_t *freg_get_str( file_t *f )
+{
+	char s[1024];
+	str_t *str;
+	FREG_GET_DATA(data, f);
+
+	fgets(s, sizeof(s), data->m_fd);
+	return str_new(s);
+} /* End of 'freg_get_str' function */
 
 /* End of 'reg.c' file */
 

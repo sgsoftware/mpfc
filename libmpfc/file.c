@@ -1,11 +1,11 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : file.c
  * PURPOSE     : SG MPFC. File library functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 25.10.2003
+ * LAST UPDATE : 5.02.2004
  * NOTE        : Module prefix 'file'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -232,6 +232,22 @@ bool_t file_eof( file_t *f )
 	}
 	return FALSE;
 } /* End of 'file_eof' function */
+
+/* Get string from file */
+str_t *file_get_str( file_t *f )
+{
+	if (f == NULL)
+		return;
+	
+	switch (f->m_type)
+	{
+	case FILE_TYPE_REGULAR:
+		return freg_get_str(f);
+	case FILE_TYPE_HTTP:
+		return fhttp_get_str(f);
+	}
+	return NULL;
+} /* End of 'file_get_str' function */
 
 /* End of 'file.c' file */
 

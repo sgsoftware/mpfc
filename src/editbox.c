@@ -5,7 +5,7 @@
 /* FILE NAME   : editbox.c
  * PURPOSE     : SG MPFC. Edit box functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 14.01.2004
+ * LAST UPDATE : 4.02.2004
  * NOTE        : Module prefix 'ebox'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -32,6 +32,7 @@
 #include "editbox.h"
 #include "error.h"
 #include "history.h"
+#include "mystring.h"
 #include "window.h"
 #include "util.h"
 
@@ -75,9 +76,9 @@ bool_t ebox_init( editbox_t *wnd, wnd_t *parent, int x, int y, int width,
 	wnd_register_handler(wnd, WND_MSG_MOUSE_LEFT_CLICK, ebox_handle_mouse);
 
 	/* Set editbox-specific fields */
-	strcpy(wnd->m_label, label);
-	strcpy(wnd->m_text, text);
-	wnd->m_cursor = wnd->m_len = strlen(wnd->m_text);
+	wnd->m_label = strdup(label);
+	wnd->m_text = str_new(text);
+	wnd->m_cursor = EBOX_LEN(wnd);
 	if (wnd->m_cursor >= width)
 		wnd->m_cursor = 0;
 	wnd->m_last_key = 0;
@@ -86,8 +87,8 @@ bool_t ebox_init( editbox_t *wnd, wnd_t *parent, int x, int y, int width,
 	wnd->m_hist_list = NULL;
 	wnd->m_changed = FALSE;
 	wnd->m_grayed = FALSE;
-	strcpy(wnd->m_text_before_hist, wnd->m_text);
-	((wnd_t *)wnd)->m_wnd_destroy = ebox_destroy;
+	wnd->m_text_before_hist = strdup(text);
+	WND_OBJ(wnd)->m_wnd_destroy = ebox_destroy;
 	WND_OBJ(wnd)->m_flags |= (WND_ITEM | WND_INITIALIZED);
 	return TRUE;
 } /* End of 'ebox_init' function */
@@ -95,6 +96,17 @@ bool_t ebox_init( editbox_t *wnd, wnd_t *parent, int x, int y, int width,
 /* Destroy edit box */
 void ebox_destroy( wnd_t *wnd )
 {
+	editbox_t *box = (editbox_t *)wnd;
+
+	if (wnd == NULL)
+		return;
+
+	if (box->m_label != NULL)
+		free(box->m_label);
+	if (box->m_text_before_hist != NULL)
+		free(box->m_text_before_hist);
+	str_free(box->m_text);
+
 	/* Destroy window */
 	wnd_destroy_func(wnd);
 } /* End of 'ebox_destroy' function */
@@ -112,7 +124,7 @@ void ebox_display( wnd_t *wnd, dword data )
 	/* Print edit box text */
 	col_set_color(wnd, (!box->m_changed && box->m_grayed) ?
 			COL_EL_DLG_ITEM_GRAYED : COL_EL_DLG_ITEM_CONTENT);
-	wnd_printf(wnd, "%s\n", &box->m_text[box->m_scrolled]);
+	wnd_printf(wnd, "%s\n", STR_TO_CPTR(box->m_text) + box->m_scrolled);
 	col_set_color(wnd, COL_EL_DEFAULT);
 
 	/* Move cursor to respective place */
@@ -139,14 +151,14 @@ void ebox_handle_key( wnd_t *wnd, dword data )
 	else if (key == KEY_HOME)
 		ebox_move(box, FALSE, 0);
 	else if (key == KEY_END)
-		ebox_move(box, FALSE, box->m_len);
+		ebox_move(box, FALSE, EBOX_LEN(box));
 	/* Various delete portion of a string functions */
 	else if (key == 21)
 		ebox_del_range(box, 0, box->m_cursor - 1);
 	else if (key == '\v')
-		ebox_del_range(box, box->m_cursor, box->m_len - 1);
+		ebox_del_range(box, box->m_cursor, EBOX_LEN(box) - 1);
 	else if (key == 25)
-		ebox_del_range(box, 0, box->m_len - 1);
+		ebox_del_range(box, 0, EBOX_LEN(box) - 1);
 	/* History stuff */
 	else if (key == KEY_UP)
 		ebox_hist_move(box, TRUE);
@@ -170,14 +182,10 @@ void ebox_handle_key( wnd_t *wnd, dword data )
 /* Add a character to edit box */
 void ebox_add( editbox_t *box, char c )
 {
-	if (box->m_len >= box->m_max_len - 1)
+	if (EBOX_CHECK_LEN(box, EBOX_LEN(box) + 1))
 		return;
 	
-	memmove(&box->m_text[box->m_cursor + 1], 
-			&box->m_text[box->m_cursor],
-			box->m_len - box->m_cursor + 1);
-	box->m_text[box->m_cursor] = c;
-	box->m_len ++;
+	str_insert_char(box->m_text, c, box->m_cursor);
 	box->m_changed = TRUE;
 	ebox_set_cursor(box, box->m_cursor + 1);
 } /* End of 'ebox_add' function */
@@ -185,12 +193,9 @@ void ebox_add( editbox_t *box, char c )
 /* Delete a character */
 void ebox_del( editbox_t *box, int index )
 {
-	if (index >= 0 && index < box->m_len)
+	if (str_delete_char(box->m_text, index))
 	{
-		memmove(&box->m_text[index], &box->m_text[index + 1], 
-				box->m_len - index);
 		ebox_set_cursor(box, index);
-		box->m_len --;
 		box->m_changed = TRUE;
 	}
 } /* End of 'ebox_del' function */
@@ -205,13 +210,14 @@ void ebox_move( editbox_t *box, bool_t rel, int offset )
 void ebox_set_cursor( editbox_t *box, int new_pos )
 {
 	int old_cur = box->m_cursor, page_size;
+	int len = EBOX_LEN(box);
 	
 	/* Set cursor position */
 	box->m_cursor = new_pos;
 	if (box->m_cursor < 0)
 		box->m_cursor = 0;
-	else if (box->m_cursor > box->m_len)
-		box->m_cursor = box->m_len;
+	else if (box->m_cursor > len)
+		box->m_cursor = len;
 
 	/* Handle scrolling */
 	page_size = box->m_wnd.m_width - strlen(box->m_label);
@@ -221,8 +227,8 @@ void ebox_set_cursor( editbox_t *box, int new_pos )
 		box->m_scrolled ++;
 	if (box->m_scrolled < 0)
 		box->m_scrolled = 0;
-	else if (box->m_scrolled >= box->m_len)
-		box->m_scrolled = box->m_len - 1;
+	else if (box->m_scrolled >= EBOX_LEN(box))
+		box->m_scrolled = EBOX_LEN(box) - 1;
 } /* End of 'ebox_set_cursor' function */
 
 /* Handle history moving */
@@ -237,7 +243,7 @@ void ebox_hist_move( editbox_t *box, bool_t up )
 			if (l->m_cur == NULL)
 			{
 				l->m_cur = l->m_tail;
-				strcpy(box->m_text_before_hist, box->m_text);
+				ebox_save_text_before_hist(box);
 			}
 			else if (l->m_cur->m_prev != NULL)
 				l->m_cur = l->m_cur->m_prev;
@@ -252,12 +258,11 @@ void ebox_hist_move( editbox_t *box, bool_t up )
 				l->m_cur = l->m_cur->m_next;
 		}
 		if (l->m_cur != NULL)
-			strcpy(box->m_text, l->m_cur->m_text);
+			ebox_set_text(box, l->m_cur->m_text);
 		else if (!up)
-			strcpy(box->m_text, box->m_text_before_hist);
-		box->m_len = strlen(box->m_text);
+			ebox_set_text(box, box->m_text_before_hist);
 		box->m_changed = FALSE;
-		ebox_move(box, FALSE, strlen(box->m_text));
+		ebox_move(box, FALSE, EBOX_LEN(box));
 	}
 } /* End of 'ebox_hist_move' function */
 
@@ -265,8 +270,8 @@ void ebox_hist_move( editbox_t *box, bool_t up )
 void ebox_hist_save( editbox_t *box, int key )
 {
 	if (key == '\n' && box->m_hist_list != NULL && box->m_changed &&
-			strlen(box->m_text))
-		hist_add_item(box->m_hist_list, box->m_text);
+			EBOX_LEN(box))
+		hist_add_item(box->m_hist_list, EBOX_TEXT(box));
 	if (box->m_hist_list != NULL)
 		box->m_hist_list->m_cur = NULL;
 } /* End of 'ebox_hist_save' function */
@@ -277,9 +282,8 @@ void ebox_set_text( editbox_t *box, char *text )
 	if (box == NULL || text == NULL)
 		return;
 
-	strcpy(box->m_text, text);
-	box->m_len = strlen(box->m_text);
-	ebox_set_cursor(box, box->m_len);
+	str_copy_cptr(box->m_text, text);
+	ebox_set_cursor(box, EBOX_LEN(box));
 	wnd_send_msg(box, WND_MSG_DISPLAY, 0);
 } /* End of 'ebox_set_text' function */
 
@@ -309,6 +313,17 @@ void ebox_handle_mouse( wnd_t *wnd, dword data )
 			box->m_scrolled);
 	wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
 } /* End of 'ebox_handle_mouse' function */
+
+/* Save 'm_text_before_hist' member */
+void ebox_save_text_before_hist( editbox_t *box )
+{
+	if (box == NULL)
+		return;
+
+	if (box->m_text_before_hist != NULL)
+		free(box->m_text_before_hist);
+	box->m_text_before_hist = strdup(EBOX_TEXT(box));
+} /* End of 'ebox_save_text_before_hist' function */
 
 /* End of 'editbox.c' file */
 

@@ -90,9 +90,7 @@ void *iwt_thread( void *arg )
 		/* Pop song */
 		if ((song = iwt_pop()) != NULL)
 		{
-			char msg[512];
-			sprintf(msg, _("Saving info to file %s"), song->m_file_name);
-			player_print_msg(msg);
+			player_print_msg(_("Saving info to file %s"), song->m_file_name);
 			inp_save_info(song_get_inp(song), song->m_file_name, song->m_info);
 			song->m_flags &= (~SONG_SAVE_INFO);
 			plist_lock(player_plist);

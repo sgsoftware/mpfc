@@ -5,7 +5,7 @@
 /* FILE NAME   : help_screen.c
  * PURPOSE     : SG MPFC. Help screen functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 1.01.2004
+ * LAST UPDATE : 4.02.2004
  * NOTE        : Module prefix 'help'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -73,6 +73,7 @@ bool_t help_init( help_screen_t *help, wnd_t *parent, int x, int y,
 	help->m_num_items = 0;
 	help->m_screen_size = wnd->m_height - 4;
 	help->m_num_screens = 0;
+	help->m_items = NULL;
 	wnd->m_wnd_destroy = help_free;
 
 	/* Initialize items */
@@ -139,6 +140,18 @@ bool_t help_init( help_screen_t *help, wnd_t *parent, int x, int y,
 /* Destroy help screen */
 void help_free( wnd_t *wnd )
 {
+	help_screen_t *h = (help_screen_t *)wnd;
+	int i;
+
+	if (h == NULL)
+		return;
+	
+	if (h->m_items != NULL)
+	{
+		for ( i = 0; i < h->m_num_items; i ++ )
+			free(h->m_items[i]);	
+		free(h->m_items);
+	}
 	wnd_destroy_func(wnd);
 } /* End of 'help_free' function */
 
@@ -146,13 +159,12 @@ void help_free( wnd_t *wnd )
 void help_display( wnd_t *wnd, dword data )
 {
 	help_screen_t *h = (help_screen_t *)wnd;
-	char title[80];
+	char *title = _("MPFC Default Key Bindings");
 	int i;
 	
 	/* Print title */
 	wnd_clear(wnd, FALSE);
 	col_set_color(wnd, COL_EL_HELP_TITLE);
-	strcpy(title, _("MPFC Default Key Bindings"));
 	wnd_move(wnd, (wnd->m_width - strlen(title)) / 2, 0);
 	wnd_printf(wnd, "%s\n\n", title);
 	col_set_color(wnd, COL_EL_DEFAULT);
@@ -199,10 +211,9 @@ void help_handle_key( wnd_t *wnd, dword data )
 /* Add item */
 void help_add( help_screen_t *h, char *name )
 {
-	if (h->m_num_items >= HELP_MAX_ITEMS)
-		return;
-
-	strcpy(h->m_items[h->m_num_items ++], name);
+	h->m_items = (char **)realloc(h->m_items, sizeof(char *) * 
+			(h->m_num_items + 1));
+	h->m_items[h->m_num_items ++] = strdup(name);
 	if ((h->m_num_items % h->m_screen_size) == 1)
 		h->m_num_screens ++;
 } /* End of 'help_add' function */

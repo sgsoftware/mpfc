@@ -1,12 +1,12 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : cfg.h
  * PURPOSE     : SG MPFC. Interface for configuration handling
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 29.09.2003
+ * LAST UPDATE : 3.02.2004
  * NOTE        : Module prefix 'cfg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -37,7 +37,7 @@
 typedef struct tag_cfg_db_t
 {
 	/* Variable name */
-	char m_name[80];
+	char *m_name;
 
 	/* Variable handler (is called when variable is set) */
 	void (*m_handler)( char *name );
@@ -53,10 +53,10 @@ typedef struct tag_cfg_db_t
 typedef struct tag_cfg_var_t
 {
 	/* Variable name */
-	char m_name[80];
+	char *m_name;
 
 	/* Variable value */
-	char m_val[256];
+	char *m_val;
 } cfg_var_t;
 
 /* Variables list type */

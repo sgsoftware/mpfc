@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Play list manipulation
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 7.01.2004
+ * LAST UPDATE : 3.02.2004
  * NOTE        : Module prefix 'plist'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -100,10 +100,10 @@ void plist_free( plist_t *pl )
 bool_t plist_add( plist_t *pl, char *filename )
 {
 	int i, num = 0;
-	char fname[256];
+	char fname[MAX_FILE_NAME];
 
 	/* Do nothing if path is empty */
-	if (!filename[0])
+	if (pl == NULL || !filename[0])
 		return FALSE;
 
 	/* Get full path of filename */
@@ -111,10 +111,10 @@ bool_t plist_add( plist_t *pl, char *filename )
 	if (file_get_type(filename) == FILE_TYPE_REGULAR && 
 			filename[0] != '/' && filename[0] != '~')
 	{
-		char wd[256];
-		char fn[256];
+		char wd[MAX_FILE_NAME];
+		char fn[MAX_FILE_NAME];
 		
-		getcwd(wd, 256);
+		getcwd(wd, sizeof(wd));
 		strcpy(fn, fname);
 		sprintf(fname, "%s/%s", wd, fn);
 	}
@@ -173,15 +173,8 @@ int plist_add_song( plist_t *pl, char *filename, char *title, int len,
 
 	/* Try to reallocate memory for play list */
 	was_len = pl->m_len;
-	if (pl->m_list == NULL)
-	{
-		pl->m_list = (song_t **)malloc(sizeof(song_t *));
-	}
-	else
-	{
-		pl->m_list = (song_t **)realloc(pl->m_list,
-				sizeof(song_t *) * (pl->m_len + 1));
-	}
+	pl->m_list = (song_t **)realloc(pl->m_list,
+			sizeof(song_t *) * (pl->m_len + 1));
 	if (pl->m_list == NULL)
 	{
 		pl->m_len = 0;
@@ -228,7 +221,7 @@ int plist_add_song( plist_t *pl, char *filename, char *title, int len,
 int plist_add_list( plist_t *pl, char *filename )
 {
 	PLIST_ASSERT_RET(pl, FALSE);
-	char *ext = util_get_ext(filename);
+	char *ext = util_extension(filename);
 
 	/* Choose play list format */
 	if (!strcasecmp(ext, "m3u"))
@@ -245,7 +238,7 @@ int plist_add_list( plist_t *pl, char *filename )
 int plist_add_m3u( plist_t *pl, char *filename )
 {
 	file_t *fd;
-	char str[256];
+	char str[1024];
 	int num = 0;
 
 	/* Try to open file */
@@ -267,23 +260,23 @@ int plist_add_m3u( plist_t *pl, char *filename )
 	/* Read file contents */
 	while (!file_eof(fd))
 	{
-		char len[10], title[256];
-		int i, j, song_len;
+		char len[10], *title;
+		int i, j, song_len, str_len;
 		
 		/* Read song length and title string */
 		file_gets(str, sizeof(str), fd);
-		if (file_eof(fd))
+		if (file_eof(fd) || strlen(str) < 10)
 			break;
 
 		/* Extract song length from string read */
-		for ( i = 8, j = 0; str[i] && str[i] != ','; i ++, j ++ )
+		for ( i = 8, j = 0; str[i] && str[i] != ',' && j < sizeof(len); 
+				i ++, j ++ )
 			len[j] = str[i];
 		len[j] = 0;
 		if (str[i])
 			song_len = atoi(len);
 
-		/* Extract song title from string read */
-		strcpy(title, &str[i + 1]);
+		title = strdup(&str[i + 1]);
 		util_del_nl(title, title);
 
 		/* Read song file name */
@@ -296,6 +289,7 @@ int plist_add_m3u( plist_t *pl, char *filename )
 		/* Add this song to list */
 		else
 			num += plist_add_song(pl, str, title, song_len, -1);
+		free(title);
 	}
 
 	/* Close file */
@@ -308,7 +302,7 @@ int plist_add_pls( plist_t *pl, char *filename )
 {
 	file_t *fd;
 	int num = 0;
-	char str[256];
+	char str[1024];
 
 	/* Try to open file */
 	fd = file_open(filename, "rt", NULL);
@@ -379,15 +373,8 @@ bool_t __plist_add_song( plist_t *pl, char *filename, char *title, int len,
 
 	/* Try to reallocate memory for play list */
 	was_len = pl->m_len;
-	if (pl->m_list == NULL)
-	{
-		pl->m_list = (song_t **)malloc(sizeof(song_t *));
-	}
-	else
-	{
-		pl->m_list = (song_t **)realloc(pl->m_list,
-				sizeof(song_t *) * (pl->m_len + 1));
-	}
+	pl->m_list = (song_t **)realloc(pl->m_list,
+			sizeof(song_t *) * (pl->m_len + 1));
 	if (pl->m_list == NULL)
 	{
 		pl->m_len = 0;
@@ -433,7 +420,7 @@ bool_t __plist_add_song( plist_t *pl, char *filename, char *title, int len,
 bool_t plist_save( plist_t *pl, char *filename )
 {
 	PLIST_ASSERT_RET(pl, FALSE);
-	char *ext = util_get_ext(filename);
+	char *ext = util_extension(filename);
 
 	if (!strcasecmp(ext, "m3u"))
 		return plist_save_m3u(pl, filename);
@@ -463,7 +450,8 @@ bool_t plist_save_m3u( plist_t *pl, char *filename )
 	for ( i = 0; i < pl->m_len; i ++ )
 	{
 		fprintf(fd, "#EXTINF:%i,%s\n%s\n", pl->m_list[i]->m_len,
-				pl->m_list[i]->m_title, pl->m_list[i]->m_file_name);
+				STR_TO_CPTR(pl->m_list[i]->m_title), 
+				pl->m_list[i]->m_file_name);
 	}
 
 	/* Close file */
@@ -537,13 +525,13 @@ void plist_sort( plist_t *pl, bool_t global, int criteria )
 		switch (criteria)
 		{
 		case PLIST_SORT_BY_TITLE:
-			str1 = s->m_title;
+			str1 = STR_TO_CPTR(s->m_title);
 			break;
 		case PLIST_SORT_BY_PATH:
 			str1 = s->m_file_name;
 			break;
 		case PLIST_SORT_BY_NAME:
-			str1 = util_get_file_short_name(s->m_file_name);
+			str1 = util_short_name(s->m_file_name);
 			break;
 		}
 		
@@ -553,13 +541,13 @@ void plist_sort( plist_t *pl, bool_t global, int criteria )
 			switch (criteria)
 			{
 			case PLIST_SORT_BY_TITLE:
-				str2 = pl->m_list[j]->m_title;
+				str2 = STR_TO_CPTR(pl->m_list[j]->m_title);
 				break;
 			case PLIST_SORT_BY_PATH:
 				str2 = pl->m_list[j]->m_file_name;
 				break;
 			case PLIST_SORT_BY_NAME:
-				str2 = util_get_file_short_name(pl->m_list[j]->m_file_name);
+				str2 = util_short_name(pl->m_list[j]->m_file_name);
 				break;
 			}
 
@@ -726,7 +714,7 @@ bool_t plist_search( plist_t *pl, char *pstr, int dir, int criteria )
 		switch (criteria)
 		{
 		case PLIST_SEARCH_TITLE:
-			str = s->m_title;
+			str = STR_TO_CPTR(s->m_title);
 			break;
 		case PLIST_SEARCH_NAME:
 			str = s->m_info->m_name;
@@ -741,7 +729,7 @@ bool_t plist_search( plist_t *pl, char *pstr, int dir, int criteria )
 			str = s->m_info->m_year;
 			break;
 		case PLIST_SEARCH_GENRE:
-			str = song_get_genre_name(s);
+			str = s->m_info->m_genre;
 			break;
 		case PLIST_SEARCH_COMMENT:
 			str = s->m_info->m_comments;
@@ -861,17 +849,10 @@ void plist_display( plist_t *pl, wnd_t *wnd )
 		{
 			song_t *s = pl->m_list[j];
 			char len[10];
-			char title[80];
 			int x;
 			
-			if (strlen(s->m_title) >= wnd->m_width - 13)
-			{
-				memcpy(title, s->m_title, wnd->m_width - 16);
-				strcpy(&title[wnd->m_width - 16], "...");
-			}
-			else
-				strcpy(title, s->m_title);
-			wnd_printf(wnd, "%i. %s", j + 1, title);
+			wnd_printf_bound(wnd, wnd->m_width - 13, "%i. %s", j + 1, 
+					STR_TO_CPTR(s->m_title));
 			sprintf(len, "%i:%02i", s->m_len / 60, s->m_len % 60);
 			x = wnd->m_width - strlen(len) - 1;
 			while (wnd_getx(wnd) != x)
@@ -917,7 +898,7 @@ void plist_unlock( plist_t *pl )
 /* Add an object */
 int plist_add_obj( plist_t *pl, char *name, char *title, int where )
 {
-	char plugin_name[256], obj_name[256];
+	char *plugin_name, *obj_name, *str;
 	in_plugin_t *inp;
 	int num_songs, was_len, i, j;
 	song_t **s;
@@ -926,20 +907,33 @@ int plist_add_obj( plist_t *pl, char *name, char *title, int where )
 		return 0;
 
 	/* Get respective input plugin name */
-	for ( i = 0; name[i] && name[i] != ':'; i ++ );
-	memcpy(plugin_name, name, i);
-	plugin_name[i] = 0;
+	str = strchr(name, ':');
+	if (str == NULL)
+	{
+		plugin_name = strdup(name);
+		obj_name = strdup("");
+	}
+	else
+	{
+		int pos = str - name;
+		plugin_name = (char *)malloc(pos + 1);
+		memcpy(plugin_name, name, pos);
+		plugin_name[pos] = 0;
+		obj_name = strdup(&name[pos + 1]);
+	}
 
 	/* Search for this plugin */
 	inp = pmng_search_inp_by_name(player_pmng, plugin_name);
 	if (inp == NULL)
+	{
+		if (plugin_name != NULL)
+			free(plugin_name);
+		if (obj_name != NULL)
+			free(obj_name);
 		return 0;
+	}
 
 	/* Initialize songs */
-	if (name[i])
-		strcpy(obj_name, &name[i + 1]);
-	else
-		strcpy(obj_name, "");
 	s = inp_init_obj_songs(inp, obj_name, &num_songs);
 	if (s == NULL || !num_songs)
 		return 0;
@@ -950,11 +944,7 @@ int plist_add_obj( plist_t *pl, char *name, char *title, int where )
 		where = pl->m_len;
 	was_len = pl->m_len;
 	pl->m_len += num_songs;
-	if (pl->m_list == NULL)
-		pl->m_list = (song_t **)malloc(sizeof(song_t *) * pl->m_len);
-	else
-		pl->m_list = (song_t **)realloc(pl->m_list, 
-				sizeof(song_t *) * pl->m_len);
+	pl->m_list = (song_t **)realloc(pl->m_list, sizeof(song_t *) * pl->m_len);
 	memmove(&pl->m_list[where + num_songs], &pl->m_list[where],
 			sizeof(song_t *) * (was_len - where));
 	memcpy(&pl->m_list[where], s, 
@@ -966,7 +956,7 @@ int plist_add_obj( plist_t *pl, char *name, char *title, int where )
 		if (title == NULL)
 			sat_push(pl, i);
 		else
-			strcpy(pl->m_list[i]->m_title, title);
+			str_copy_cptr(pl->m_list[i]->m_title, title);
 	}
 
 	/* If list was empty - put cursor to the first song */
@@ -1089,7 +1079,7 @@ void plist_set_song_info( plist_t *pl, int index )
 		return;
 
 	plist_lock(pl);
-	song_init_info_and_len(pl->m_list[index]);
+	song_update_info(pl->m_list[index]);
 	pl->m_list[index]->m_flags &= (~SONG_GET_INFO);
 	plist_unlock(pl);
 	wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);

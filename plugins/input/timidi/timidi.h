@@ -29,6 +29,7 @@
 #define __SG_MPFC_TIMIDI_H__
 
 #include "types.h"
+#include "mystring.h"
 
 /* Start playing */
 bool_t midi_start( char *filename );
@@ -36,11 +37,8 @@ bool_t midi_start( char *filename );
 /* End playing */
 void midi_end( void );
 
-/* Get song length */
-int midi_get_len( char *filename );
-
 /* Get supported file formats */
-void midi_get_formats( char *buf );
+void midi_get_formats( char *extensions, char *content_type );
 
 /* Get audio stream */
 int midi_get_stream( void *buf, int size );
@@ -49,16 +47,13 @@ int midi_get_stream( void *buf, int size );
 void midi_seek( int shift );
 
 /* Get song audio parameters */
-void midi_get_audio_params( int *ch, int *freq, dword *fmt );
+void midi_get_audio_params( int *ch, int *freq, dword *fmt, int *bitrate );
 
 /* Get current time */
 int midi_get_cur_time( void );
 
-/* Get content type */
-void midi_get_content_type( char *buf );
-
 /* Set song title */
-void midi_set_song_title( char *title, char *filename );
+str_t *midi_set_song_title( char *filename );
 
 #endif
 

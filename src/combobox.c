@@ -1,11 +1,11 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : combobox.c
  * PURPOSE     : SG MPFC. Combo box functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 9.11.2003
+ * LAST UPDATE : 5.02.2004
  * NOTE        : Module prefix 'cbox'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -83,8 +83,7 @@ bool_t cbox_init( combobox_t *wnd, wnd_t *parent, int x, int y, int width,
 	/* Set combobox-specific fields */
 	wnd->m_label = strdup(label);
 	wnd->m_label_len = strlen(label);
-	strcpy(wnd->m_text, "");
-	wnd->m_text_len = 0;
+	wnd->m_text = str_new("");
 	wnd->m_edit_cursor = 0;
 	wnd->m_list = NULL;
 	wnd->m_list_size = 0;
@@ -109,6 +108,7 @@ void cbox_destroy( wnd_t *wnd )
 	
 	if (cb->m_label != NULL)
 		free(cb->m_label);
+	str_free(cb->m_text);
 	for ( i = 0; i < cb->m_list_size; i ++ )
 		free(cb->m_list[i]);
 	if (cb->m_list != NULL)
@@ -133,7 +133,7 @@ void cbox_display( wnd_t *wnd, dword data )
 	/* Display edit box */
 	col_set_color(wnd, (!cb->m_changed && cb->m_grayed) ?
 			COL_EL_DLG_ITEM_GRAYED : COL_EL_DLG_ITEM_CONTENT);
-	wnd_printf(wnd, "%s", cb->m_text);
+	wnd_printf(wnd, "%s", STR_TO_CPTR(cb->m_text));
 	col_set_color(wnd, COL_EL_DEFAULT);
 
 	/* Display list box */
@@ -217,7 +217,7 @@ void cbox_handle_key( wnd_t *wnd, dword data )
 	else if (key == KEY_HOME)
 		cbox_move_edit_cursor(cb, FALSE, 0);
 	else if (key == KEY_END)
-		cbox_move_edit_cursor(cb, FALSE, cb->m_text_len);
+		cbox_move_edit_cursor(cb, FALSE, CBOX_EDIT_LEN(cb));
 	/* Common dialog box item actions */
 	else DLG_ITEM_HANDLE_COMMON(wnd, key);
 } /* End of 'cbox_handle_key' function */
@@ -229,9 +229,8 @@ void cbox_set_text( combobox_t *cb, char *text )
 		return;
 
 	/* Update text */
-	strcpy(cb->m_text, text);
-	cb->m_text_len = strlen(text);
-	cb->m_edit_cursor = cb->m_text_len;
+	str_copy_cptr(cb->m_text, text);
+	cb->m_edit_cursor = CBOX_EDIT_LEN(cb);
 
 	/* Update list box */
 	if (*text)
@@ -241,7 +240,9 @@ void cbox_set_text( combobox_t *cb, char *text )
 /* Move edit box cursor */
 void cbox_move_edit_cursor( combobox_t *cb, bool_t rel, int pos )
 {
-	if (cb == NULL || !cb->m_text_len)
+	int len;
+	
+	if (cb == NULL || !(len = CBOX_EDIT_LEN(cb)))
 		return;
 
 	/* Move cursor */
@@ -251,8 +252,8 @@ void cbox_move_edit_cursor( combobox_t *cb, bool_t rel, int pos )
 		cb->m_edit_cursor = pos;
 	if (cb->m_edit_cursor < 0)
 		cb->m_edit_cursor = 0;
-	else if (cb->m_edit_cursor > cb->m_text_len)
-		cb->m_edit_cursor = cb->m_text_len;
+	else if (cb->m_edit_cursor > len)
+		cb->m_edit_cursor = len;
 } /* End of 'cbox_move_edit_cursor' function */
 
 /* Add charater to edit box */
@@ -262,11 +263,8 @@ void cbox_add_ch( combobox_t *cb, char ch )
 		return;
 
 	/* Add character */
-	memmove(&cb->m_text[cb->m_edit_cursor + 1], &cb->m_text[cb->m_edit_cursor],
-			(cb->m_text_len - cb->m_edit_cursor + 1));
-	cb->m_text[cb->m_edit_cursor] = ch;
+	str_insert_char(cb->m_text, ch, cb->m_edit_cursor);
 	cb->m_edit_cursor ++;
-	cb->m_text_len ++;
 	cb->m_changed = TRUE;
 
 	/* Update list box */
@@ -283,10 +281,9 @@ void cbox_del_ch( combobox_t *cb, bool_t before_cursor )
 
 	/* Delete character */
 	i = before_cursor ? cb->m_edit_cursor - 1 : cb->m_edit_cursor;
-	if (i < 0 || i >= cb->m_text_len)
+	if (i < 0 || i >= CBOX_EDIT_LEN(cb))
 		return;
-	memmove(&cb->m_text[i], &cb->m_text[i + 1], cb->m_text_len - i);
-	cb->m_text_len --;
+	str_delete_char(cb->m_text, i);
 	cb->m_changed = TRUE;
 
 	/* Move cursor */
@@ -303,11 +300,8 @@ void cbox_list_add( combobox_t *cb, char *str )
 	if (cb == NULL)
 		return;
 
-	if (cb->m_list == NULL)
-		cb->m_list = (char **)malloc(sizeof(char *));
-	else
-		cb->m_list = (char **)realloc(cb->m_list, 
-				sizeof(char *) * (cb->m_list_size + 1));
+	cb->m_list = (char **)realloc(cb->m_list, 
+			sizeof(char *) * (cb->m_list_size + 1));
 	cb->m_list[cb->m_list_size ++] = strdup(str);
 } /* End of 'cbox_list_add' function */
 
@@ -351,9 +345,8 @@ void cbox_move_list_cursor( combobox_t *cb, bool_t rel, int pos, bool_t expand,
 	/* Update edit box */
 	if (change_edit)
 	{
-		strcpy(cb->m_text, cb->m_list[cb->m_list_cursor]);
-		cb->m_text_len = strlen(cb->m_text);
-		cb->m_edit_cursor = cb->m_text_len;
+		str_copy_cptr(cb->m_text, cb->m_list[cb->m_list_cursor]);
+		cb->m_edit_cursor = CBOX_EDIT_LEN(cb);
 	}
 } /* End of 'cbox_move_list_cursor' function */
 
@@ -366,13 +359,14 @@ void cbox_edit2list( combobox_t *cb )
 		return;
 
 	/* If there is no text make no selection */
-	if (!(*(cb->m_text)))
+	if (!CBOX_EDIT_LEN(cb))
 		i = -1;
 	else
 	{
 		/* Search list box for item with this text */
 		for ( i = 0; i < cb->m_list_size; i ++ )
-			if (!strncmp(cb->m_list[i], cb->m_text, cb->m_text_len))
+			if (!strncmp(cb->m_list[i], STR_TO_CPTR(cb->m_text), 
+						CBOX_EDIT_LEN(cb)))
 				break;
 	}
 

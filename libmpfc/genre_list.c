@@ -26,6 +26,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include "types.h"
 #include "error.h"
 #include "genre_list.h"
@@ -55,7 +56,13 @@ void glist_free( genre_list_t *l )
 	if (l != NULL)
 	{
 		if (l->m_list != NULL)
+		{
+			int i;
+			
+			for ( i = 0; i < l->m_size; i ++ )
+				free(l->m_list[i].m_name);
 			free(l->m_list);
+		}
 		free(l);
 	}
 } /* End of 'glist_free' function */
@@ -66,42 +73,83 @@ void glist_add( genre_list_t *l, char *name, byte data )
 	if (l == NULL)
 		return;
 
-	if (l->m_list == NULL)
-		l->m_list = (struct tag_glist_item_t *)malloc(sizeof(*(l->m_list)));
-	else
-		l->m_list = (struct tag_glist_item_t *)realloc(l->m_list,
+	l->m_list = (struct tag_glist_item_t *)realloc(l->m_list,
 				sizeof(*(l->m_list)) * (l->m_size + 1));
-	strcpy(l->m_list[l->m_size].m_name, name);
+	l->m_list[l->m_size].m_name = strdup(name);
 	l->m_list[l->m_size ++].m_data = data;
 } /* End of 'glist_add' function */
 
-/* Get genre id by its inner data */
-byte glist_get_id( genre_list_t *l, byte data )
+/* Get genre name */
+char *glist_get_name( genre_list_t *l, int id )
+{
+	if (l == NULL || id < 0 || id >= l->m_size)
+		return NULL;
+	return l->m_list[id].m_name;
+} /* End of 'glist_get_name' function */
+
+/* Get genre name by its id */
+char *glist_get_name_by_id( genre_list_t *l, int id )
 {
 	int i;
 
 	if (l == NULL)
-		return 0xFF;
+		return NULL;
 
 	for ( i = 0; i < l->m_size; i ++ )
-		if (l->m_list[i].m_data == data)
-			return i;
-	return GENRE_ID_UNKNOWN;
-} /* End of 'glist_get_id' function */
+		if (l->m_list[i].m_data == id)
+			return l->m_list[i].m_name;
+	return NULL;
+} /* End of 'glist_get_name_by_id' function */
 
-/* Get genre if by its textual data */
-byte glist_get_id_by_text( genre_list_t *l, char *text )
+/* Convert genre string to id */
+int glist_str2num( char *str )
 {
-	int i;
+	int num = -1;
 
-	if (l == NULL)
+	if (str == NULL)
+		return -1;
+
+	for ( ; *str; str ++ )
+	{
+		if (*str >= '0' && *str <= '9')
+		{
+			if (num == -1)
+				num = (*str - '0');
+			else
+			{
+				num *= 10;
+				num += (*str - '0');
+			}
+		}
+		else if (*str == '(' && num < 0)
+			continue;
+		else if (*str == ')' && num >= 0)
+			return num;
+		else
+			return -1;
+	}
+	return num;
+} /* End of 'glist_str2num' function */
+
+/* Get genre id by its name */
+byte glist_get_id_by_name( genre_list_t *l, char *name )
+{
+	int id, i;
+	
+	if (l == NULL || name == NULL)
 		return 0xFF;
 
+	/* If name is in fact number - return it */
+	id = glist_str2num(name);
+	if (id >= 0)
+		return id;
+	
+	/* Search for genre with such name */
 	for ( i = 0; i < l->m_size; i ++ )
-		if (!strcmp(l->m_list[i].m_name, text))
-			return i;
-	return GENRE_ID_UNKNOWN;
-} /* End of 'glist_get_id_by_text' function */
+		if (!strcmp(l->m_list[i].m_name, name))
+			return l->m_list[i].m_data;
+	return 0xFF;
+} /* End of 'glist_get_id_by_name' function */
 
 /* End of 'genre_list.c' file */
 

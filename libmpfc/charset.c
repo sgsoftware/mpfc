@@ -30,62 +30,58 @@
 #include "charset.h"
 #include "pmng.h"
 
+/* Output string memory portion size */
+#define CS_PORTION_SIZE 64
+
 /* Convert string between charsets */
 char *cs_convert( char *str, char *cs_in, char *cs_out, pmng_t *pmng )
 {
 	cs_info_t in_info, out_info;
-	int len, i;
-	char *out_str;
-	char in_name[80], out_name[80];
+	cs_output_t out_str;
 
 	/* Check input */
-	if (str == NULL || pmng == NULL)
+	if (str == NULL || pmng == NULL || cs_in == NULL || cs_out == NULL)
 		return NULL;
-
-	util_log("string is %s\n", str);
-
-	/* Get charset names if they are not specified */
-	if (cs_in == NULL)
-		cs_in = cfg_get_var(pmng->m_cfg_list, "charset-in");
-	if (cs_out == NULL)
-		cs_out = cfg_get_var(pmng->m_cfg_list, "charset-out");
-	util_log("input cs is %s, output is %s\n", cs_in, cs_out);
 
 	/* Get information about specified charsets */
 	cs_get_info(cs_in, &in_info, pmng);
 	cs_get_info(cs_out, &out_info, pmng);
 
 	/* Check that these charsets are correct */
-	if (in_info.m_id == CS_UNKNOWN || out_info.m_id != CS_1_BYTE)
+	if (in_info.m_id == CS_UNKNOWN || out_info.m_id == CS_UNKNOWN)
 		return NULL;
 
-	/* Get number of symbols in our string */
-	len = cs_get_len(str, &in_info);
-	util_log("string length is %d\n", len);
+	/* Expand input charset if it is automatic */
+	if (csp_get_flags(in_info.m_csp, in_info.m_index) & CSP_AUTO)
+	{
+		cs_in = csp_expand_auto(in_info.m_csp, str, in_info.m_index);
+		if (cs_in == NULL)
+			return NULL;
+		cs_get_info(cs_in, &in_info, pmng);
+		if (in_info.m_id == CS_UNKNOWN)
+			return NULL;
+	}
 
-	/* Allocate memory for output string */
-	out_str = (char *)malloc(len + 1);
-	if (out_str == NULL)
-		return NULL;
+	/* Initialize output string */
+	out_str.m_str = NULL;
+	out_str.m_allocated = out_str.m_len = 0;
 
 	/* Process input string */
-	for ( i = 0; i < len; i ++ )
+	for ( ;; )
 	{
 		dword ch, unicode;
 		
 		/* Obtain next character */
-		util_log("getting next symbol\n");
 		ch = cs_get_next_ch(&str, &in_info);
-		util_log("it's %d\n", ch);
 
 		/* Convert it between charsets */
 		unicode = cs_to_unicode(ch, &in_info);
-		util_log("unicode is %d\n", unicode);
-		out_str[i] = cs_from_unicode(unicode, &out_info);
-		util_log("converted\n");
+		cs_unicode2str(&out_str, unicode, &out_info);
+		if (!ch)
+			break;
 	}
-	out_str[i] = 0;
-	return out_str;
+	out_str.m_str = (char *)realloc(out_str.m_str, out_str.m_len);
+	return out_str.m_str;
 } /* End of 'cs_convert' function */
 
 /* Get charset info */
@@ -111,34 +107,6 @@ void cs_get_info( char *name, cs_info_t *info, pmng_t *pmng )
 	}
 } /* End of 'cs_get_info' function */
 
-/* Get string length (in symbols) */
-int cs_get_len( char *str, cs_info_t *info )
-{
-	int len;
-
-	/* For 1-byte charset string length in symbols is equal to the one
-	 * in bytes */
-	if (info->m_id == CS_1_BYTE)
-		return strlen(str);
-	
-	/* Parse string */
-	for ( len = 0;; len ++ )
-	{
-		int bytes;
-		
-		switch (info->m_id)
-		{
-		case CS_UTF8:
-			bytes = cs_utf8_get_num_bytes(*str);
-			if (bytes < 0)
-				return 0;
-			str += bytes;
-			break;			
-		}
-	}
-	return len;
-} /* End of 'cs_get_len' function */
-
 /* Get next character from string */
 dword cs_get_next_ch( char **str, cs_info_t *info )
 {
@@ -149,31 +117,32 @@ dword cs_get_next_ch( char **str, cs_info_t *info )
 		(*str) ++;
 		return (dword)ch;
 	}
-
 	/* UTF-8 */
-	if (info->m_id == CS_UTF8)
+	else if (info->m_id == CS_UTF8)
 	{
 		byte first = (byte)(**str);
 		int bytes = cs_utf8_get_num_bytes(first), bits;
 		dword ch;
 		int shift = 6 * (bytes - 1);
-		 
+
 		/* Check errors */
 		if (bytes < 0)
 			return 0;
 
 		/* Get lower bits of first bytes (containing data) */
 		bits = (bytes == 1) ? bytes : bytes + 1;
-		ch = (first & (0xff >> bits)) << shift;
+		ch = ((byte)first & (0xFF >> bits)) << shift;
 		shift -= (8 - bits);
 		(*str) ++;
 		while (shift > 0)
 		{
-			ch |= (((byte)(**str) & 0x40) << shift);
+			ch |= (((byte)(**str) & 0x3F));
 			shift -= 6;
+			(*str) ++;
 		}
 		return ch;
 	}
+	return 0;
 } /* End of 'cs_get_next_ch' function */
 
 /* Convert character code to unicode */
@@ -215,6 +184,92 @@ dword cs_from_unicode( dword unicode, cs_info_t *info )
 	return ' ';
 } /* End of 'cs_from_unicode' function */
 
+/* Add a unicode character to output string */
+void cs_unicode2str( cs_output_t *str, dword unicode, cs_info_t *info )
+{
+	dword ch;
+	
+	if (str == NULL || info == NULL)
+		return;
+
+	/* Convert from unicode */
+	ch = cs_from_unicode(unicode, info);
+
+	/* Case of 1-byte charset */
+	if (info->m_id == CS_1_BYTE)
+	{
+		cs_append2out(str, (char)ch);
+	}
+	/* UTF-8 */
+	else if (info->m_id == CS_UTF8)
+	{
+		int bytes, bits = 32;
+		dword code = unicode;
+
+		/* Get number of significant bits */
+		while (!(code & 0x80000000) && (bits > 0))
+		{
+			bits --;
+			code <<= 1;
+		}
+		if (bits <= 7)
+		{
+			cs_append2out(str, (char)unicode);
+		}
+		else
+		{
+			byte utf_code[6];
+			int first_byte = 5;
+			
+			/* Convert to UTF bytes */
+			code = unicode;
+			for ( ;; )
+			{
+				if (bits > 6)
+				{
+					utf_code[first_byte] = (0x80 | (code & 0x3F));
+					bits -= 6;
+					first_byte --;
+					code >>= 6;
+				}
+				else
+				{
+					utf_code[first_byte] = ((0xFF << (bits + 1)) | code);
+					break;
+				}
+			}
+
+			/* Write to output */
+			for ( ; first_byte < 6; first_byte ++ )
+				cs_append2out(str, (char)(utf_code[first_byte]));
+		}
+	}
+} /* End of 'cs_unicode2str' function */
+
+/* Reallocate memory for output string */
+void cs_reallocate( cs_output_t *str, int new_len )
+{
+	int new_allocated;
+	
+	if (str == NULL)
+		return;
+
+	new_allocated = new_len;
+	while (new_allocated % CS_PORTION_SIZE)
+		new_allocated ++;
+	str->m_str = (char *)realloc(str->m_str, new_allocated);
+} /* End of 'cs_reallocate' function */
+
+/* Append character to output string */
+void cs_append2out( cs_output_t *str, char ch )
+{
+	if (str == NULL)
+		return;
+
+	cs_reallocate(str, str->m_len + 1);
+	str->m_str[str->m_len ++] = ch;
+} /* End of 'cs_append2out' function */
+
 /* Get number of bytes occupied by symbol in UTF-8 charset (looking
  * at its first byte) */
 int cs_utf8_get_num_bytes( byte first )
@@ -222,7 +277,7 @@ int cs_utf8_get_num_bytes( byte first )
 	if (!(first & 0x80))
 		return 1;
 	else if (!(first & 0x40))
-		return -1;
+		return 0;
 	else if (!(first & 0x20))
 		return 2;
 	else if (!(first & 0x10))
@@ -234,7 +289,7 @@ int cs_utf8_get_num_bytes( byte first )
 	else if (!(first & 0x02))
 		return 6;
 	else
-		return -1;
+		return 0;
 } /* End of 'cs_utf8_get_num_bytes' function */
 
 /* End of 'charset.c' file */

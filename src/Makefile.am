@@ -4,7 +4,7 @@ mpfc_SOURCES = main.c types.h error.h error.c player.c player.h \
 					cfg.h cfg.c song_info.h \
 					window.c window.h editbox.c editbox.h \
 					choice_ctrl.c choice_ctrl.h file_input.c file_input.h \
-					dlgbox.c dlgbox.h menu.c menu.h \
+					dlgbox.c dlgbox.h \
 					listbox.c listbox.h help_screen.c help_screen.h \
 					sat.c sat.h eqwnd.c eqwnd.h key_bind.c key_bind.h \
 					colors.c colors.h history.c history.h button.c button.h \

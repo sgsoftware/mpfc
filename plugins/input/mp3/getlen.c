@@ -79,7 +79,7 @@ struct frame
 	int framesize;		/* computed framesize */
 };
 
-int tabsel_123[2][3][16] =
+static int tabsel_123[2][3][16] =
 {
 	{
     {0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448,},
@@ -92,7 +92,7 @@ int tabsel_123[2][3][16] =
 	    {0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160,}}
 };
 
-long mpg123_freqs[9] =
+static long mpg123_freqs[9] =
 {44100, 48000, 32000, 22050, 24000, 16000, 11025, 12000, 8000};
 
 static int grp_3tab[32 * 3] =
@@ -103,7 +103,7 @@ static int grp_9tab[1024 * 3] =
 {0,};				/* used: 729 */
 
 static int fsizeold = 0, ssize;
-real mpg123_muls[27][64];	/* also used by layer 1 */
+static real mpg123_muls[27][64];	/* also used by layer 1 */
 
 #define g_malloc malloc
 #define g_free free
@@ -129,7 +129,7 @@ static guint32 convert_to_header(guint8 * buf)
 	return (buf[0] << 24) + (buf[1] << 16) + (buf[2] << 8) + buf[3];
 }
 
-void mpg123_init_layer2(void)
+static void mpg123_init_layer2(void)
 {
 	static double mulmul[27] = {
 		0.0, -2.0 / 3.0, 2.0 / 3.0, 2.0 / 7.0, 2.0 / 15.0,
@@ -173,7 +173,7 @@ void mpg123_init_layer2(void)
 	}
 }
 
-double mpg123_compute_bpf(struct frame *fr)
+static double mpg123_compute_bpf(struct frame *fr)
 {
 	double bpf;
 
@@ -197,7 +197,7 @@ double mpg123_compute_bpf(struct frame *fr)
 	return bpf;
 }
 
-int mpg123_get_xing_header(xing_header_t * xing, unsigned char *buf)
+static int mpg123_get_xing_header(xing_header_t * xing, unsigned char *buf)
 {	
 	int i, head_flags;
 	int id, mode;
@@ -259,7 +259,7 @@ int mpg123_get_xing_header(xing_header_t * xing, unsigned char *buf)
 	return 1;
 }
 
-double mpg123_compute_tpf(struct frame *fr)
+static double mpg123_compute_tpf(struct frame *fr)
 {
 	const int bs[4] = {0, 384, 1152, 1152};
 	double tpf;
@@ -273,7 +273,7 @@ double mpg123_compute_tpf(struct frame *fr)
  * the code a header and write the information
  * into the frame structure
  */
-int mpg123_decode_header(struct frame *fr, unsigned long newhead)
+static int mpg123_decode_header(struct frame *fr, unsigned long newhead)
 {
 	if (newhead & (1 << 20))
 	{
@@ -346,7 +346,7 @@ int mpg123_decode_header(struct frame *fr, unsigned long newhead)
 	return 1;
 }
 
-int mpg123_head_check(unsigned long head)
+static int mpg123_head_check(unsigned long head)
 {
 	if ((head & 0xffe00000) != 0xffe00000)
 		return FALSE;
@@ -398,7 +398,7 @@ int mp3_get_len( char *filename )
 	}
 	if (mpg123_decode_header(&frm, head))
 	{
-		buf = g_malloc(frm.framesize + 4);
+		buf = (guchar *)g_malloc(frm.framesize + 4);
 		fseek(file, -4, SEEK_CUR);
 		fread(buf, 1, frm.framesize + 4, file);
 		tpf = mpg123_compute_tpf(&frm);

@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Charset plugin management functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 1.02.2004
+ * LAST UPDATE : 6.02.2004
  * NOTE        : Module prefix 'csp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -27,8 +27,8 @@
 
 #include <dlfcn.h>
 #include <stdlib.h>
+#include <string.h>
 #include "types.h"
-#include "cfg.h"
 #include "csp.h"
 #include "pmng.h"
 #include "util.h"
@@ -38,7 +38,6 @@ cs_plugin_t *csp_init( char *name, struct tag_pmng_t *pmng )
 {
 	cs_plugin_t *p;
 	void (*fl)( csp_func_list_t * );
-	void (*set_vars)( cfg_list_t * );
 
 	/* Try to allocate memory for plugin object */
 	p = (cs_plugin_t *)malloc(sizeof(cs_plugin_t));
@@ -62,14 +61,10 @@ cs_plugin_t *csp_init( char *name, struct tag_pmng_t *pmng )
 		csp_free(p);
 		return NULL;
 	}
-	util_get_plugin_short_name(p->m_name, name);
+	p->m_name = pmng_create_plugin_name(name);
 	memset(&p->m_fl, 0, sizeof(p->m_fl));
 	p->m_fl.m_pmng = pmng;
 	fl(&p->m_fl);
-
-	if ((set_vars = dlsym(p->m_lib_handler, "csp_set_vars")) != NULL)
-		set_vars(pmng->m_cfg_list);
-		
 	return p;
 } /* End of 'csp_init' function */
 
@@ -79,6 +74,8 @@ void csp_free( cs_plugin_t *p )
 	if (p != NULL)
 	{
 		dlclose(p->m_lib_handler);
+		if (p->m_name != NULL)
+			free(p->m_name);
 		free(p);
 	}
 } /* End of 'csp_free' function */
@@ -93,12 +90,12 @@ int csp_get_num_sets( cs_plugin_t *p )
 } /* End of 'csp_get_num_sets' function */
 
 /* Get charset name */
-bool_t csp_get_cs_name( cs_plugin_t *p, char *buf, int index )
+char *csp_get_cs_name( cs_plugin_t *p, int index )
 {
 	if (p != NULL && p->m_fl.m_get_cs_name != NULL)
-		return p->m_fl.m_get_cs_name(buf, index);
+		return p->m_fl.m_get_cs_name(index);
 	else
-		return FALSE;
+		return NULL;
 } /* End of 'csp_get_cs_name' function */
 
 /* Get symbol code */
@@ -109,6 +106,33 @@ dword csp_get_code( cs_plugin_t *p, byte ch, int index )
 	else
 		return 0;
 } /* End of 'csp_get_code' function */
+
+/* Get information about plugin */
+char *csp_get_about( cs_plugin_t *p )
+{
+	if (p != NULL && p->m_fl.m_about != NULL)
+		return p->m_fl.m_about;
+	else
+		return NULL;
+} /* End of 'csp_get_about' function */
+
+/* Expand automatic charset */
+char *csp_expand_auto( cs_plugin_t *p, char *sample_str, int index )
+{
+	if (p != NULL && p->m_fl.m_expand_auto != NULL)
+		return p->m_fl.m_expand_auto(sample_str, index);
+	else
+		return NULL;
+} /* End of 'csp_expand_auto' function */
+
+/* Get charset flags */
+dword csp_get_flags( cs_plugin_t *p, int index )
+{
+	if (p != NULL && p->m_fl.m_get_flags != NULL)
+		return p->m_fl.m_get_flags(index);
+	else
+		return 0;
+} /* End of 'csp_get_flags' function */
 
 /* End of 'csp.c' file */
 

@@ -38,7 +38,7 @@
 FILE *midi_pfd = NULL;
 
 /* Current song name */
-char midi_fname[256] = "";
+char midi_fname[MAX_FILE_NAME] = "";
 
 /* Start playing */
 bool_t midi_start( char *filename )
@@ -68,16 +68,13 @@ void midi_end( void )
 	strcpy(midi_fname, "");
 } /* End of 'midi_end' function */
 
-/* Get song length */
-int midi_get_len( char *filename )
-{
-	return 0;
-} /* End of 'midi_get_len' function */
-
 /* Get supported file formats */
-void midi_get_formats( char *buf )
+void midi_get_formats( char *extensions, char *content_type )
 {
-	strcpy(buf, "mid");
+	if (extensions != NULL)
+		strcpy(extensions, "mid;midi");
+	if (content_type != NULL)
+		strcpy(content_type, "audio/midi");
 } /* End of 'midi_get_formats' function */
 
 /* Get audio stream */
@@ -96,11 +93,12 @@ void midi_seek( int shift )
 } /* End of 'midi_seek' function */
 
 /* Get song audio parameters */
-void midi_get_audio_params( int *ch, int *freq, dword *fmt )
+void midi_get_audio_params( int *ch, int *freq, dword *fmt, int *bitrate )
 {
 	*ch = 2;
 	*freq = 44100;
 	*fmt = AFMT_S16_LE;
+	*bitrate = 0;
 } /* End of 'midi_get_audio_params' function */
 
 /* Get current time */
@@ -109,16 +107,10 @@ int midi_get_cur_time( void )
 	return -1;
 } /* End of 'midi_get_cur_time' function */
 
-/* Get content type */
-void midi_get_content_type( char *buf )
-{
-	strcpy(buf, "audio/midi");
-} /* End of 'midi_get_content_type' function */
-
 /* Set song title */
-void midi_set_song_title( char *title, char *filename )
+str_t *midi_set_song_title( char *filename )
 {
-	strcpy(title, filename);
+	return str_new(filename);
 } /* End of 'midi_set_song_title' function */
 
 /* Get functions list */
@@ -127,7 +119,6 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_start = midi_start;
 	fl->m_end = midi_end;
 	fl->m_get_stream = midi_get_stream;
-	fl->m_get_len = midi_get_len;
 	fl->m_seek = midi_seek;
 	fl->m_get_audio_params = midi_get_audio_params;
 	fl->m_get_formats = midi_get_formats;

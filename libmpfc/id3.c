@@ -53,29 +53,29 @@ id3_tag_t *id3_new( void )
 /* Read tag from file */
 id3_tag_t *id3_read( char *filename )
 {
-	FILE *fd;
+	file_t *fd;
 	id3_tag_t *tag;
 	byte id[3];
 	bool_t has_v1 = FALSE, has_v2 = FALSE;
 
 	/* Try to open file */
-	fd = fopen(filename, "rb");
+	fd = file_open(filename, "rb", NULL);
 	if (fd == NULL)
 		return NULL;
 
 	/* Find tags */
-	fread(id, 1, 3, fd);
+	file_read(id, 1, 3, fd);
 	if (!strncmp(id, "ID3", 3))
 		has_v2 = TRUE;
-	fseek(fd, -ID3_V1_TOTAL_SIZE, SEEK_END);
-	fread(id, 1, 3, fd);
+	file_seek(fd, -ID3_V1_TOTAL_SIZE, SEEK_END);
+	file_read(id, 1, 3, fd);
 	if (!strncmp(id, "TAG", 3))
 		has_v1 = TRUE;
 
 	/* No tag found */
 	if (!has_v1 && !has_v2)
 	{
-		fclose(fd);
+		file_close(fd);
 		return NULL;
 	}
 
@@ -96,7 +96,7 @@ id3_tag_t *id3_read( char *filename )
 		id3_v2_new(&tag->m_v2);
 	
 	/* Close file */
-	fclose(fd);
+	file_close(fd);
 	return tag;
 } /* End of 'id3_read' function */
 
@@ -124,14 +124,14 @@ void id3_next_frame( id3_tag_t *tag, id3_frame_t *frame )
 } /* End of 'id3_next_frame' function */
 
 /* Set frame value */
-void id3_set_frame( id3_tag_t *tag, char *name, char *val )
+void id3_set_frame( id3_tag_t *tag, char *name, char *val, char *cs )
 {
 	if (tag == NULL || name == NULL || val == NULL)
 		return;
 
 	/* Set frame to tags */
 	id3_v1_set_frame(&tag->m_v1, name, val);
-	id3_v2_set_frame(&tag->m_v2, name, val);
+	id3_v2_set_frame(&tag->m_v2, name, val, cs);
 } /* End of 'id3_set_frame' function */
 
 /* Free tag */
@@ -191,30 +191,30 @@ void id3_v2_new( id3_tag_data_t *tag )
 } /* End of 'id3_v2_new' function */
 
 /* Read ID3V1 */
-void id3_v1_read( id3_tag_data_t *tag, FILE *fd )
+void id3_v1_read( id3_tag_data_t *tag, file_t *fd )
 {
 	/* Seek to tag start */
-	fseek(fd, -128, SEEK_END);
+	file_seek(fd, -128, SEEK_END);
 	
 	/* Create an empty tag at first */
 	id3_v1_new(tag);
 
 	/* Read data from file */
-	fread(tag->m_stream, 1, tag->m_stream_len, fd);
+	file_read(tag->m_stream, 1, tag->m_stream_len, fd);
 } /* End of 'id3_v1_read' function */
 
 /* Read ID3V2 */
-void id3_v2_read( id3_tag_data_t *tag, FILE *fd )
+void id3_v2_read( id3_tag_data_t *tag, file_t *fd )
 {
 	byte flags;
 	int real_size, ext_size;
 	byte header[ID3_HEADER_SIZE];
 
 	/* Seek to tag start */
-	fseek(fd, 0, SEEK_SET);
+	file_seek(fd, 0, SEEK_SET);
 
 	/* Read header */
-	fread(header, 1, ID3_HEADER_SIZE, fd);
+	file_read(header, 1, ID3_HEADER_SIZE, fd);
 	flags = *(header + 5);
 	real_size = ID3_CONVERT_FROM_SYNCHSAFE(*(dword *)(header + 6));
 
@@ -229,7 +229,7 @@ void id3_v2_read( id3_tag_data_t *tag, FILE *fd )
 	if (tag->m_stream == NULL)
 		return;
 	memcpy(tag->m_stream, header, ID3_HEADER_SIZE);
-	fread(tag->m_stream + ID3_HEADER_SIZE, 1, 
+	file_read(tag->m_stream + ID3_HEADER_SIZE, 1, 
 			tag->m_stream_len - ID3_HEADER_SIZE, fd);
 
 	/* Get extended header size */
@@ -470,7 +470,7 @@ void id3_v1_set_frame( id3_tag_data_t *tag, char *name, char *val )
 } /* End of 'id3_v1_set_frame' function */
 
 /* Set frame value in ID3V2 */
-void id3_v2_set_frame( id3_tag_data_t *tag, char *name, char *val )
+void id3_v2_set_frame( id3_tag_data_t *tag, char *name, char *val, char *cs )
 {
 	byte *p;
 	bool_t found, finished;
@@ -530,6 +530,8 @@ void id3_v2_set_frame( id3_tag_data_t *tag, char *name, char *val )
 		memset(p, 0, new_size + 10);
 		memcpy(p, name, 4);
 		*(dword *)(p + 4) = ID3_CONVERT_TO_SYNCHSAFE(new_size);
+		if (cs != NULL && !strcasecmp(cs, "utf-8"))
+			*(p + 10) = ID3_UTF8;
 		memcpy(p + 11, val, len);
 		*(dword *)(tag->m_stream + 6) = ID3_CONVERT_TO_SYNCHSAFE(
 				tag->m_stream_len - 
@@ -550,6 +552,8 @@ void id3_v2_set_frame( id3_tag_data_t *tag, char *name, char *val )
 		memset(p, 0, new_size + 10);
 		memcpy(p, name, 4);
 		*(dword *)(p + 4) = ID3_CONVERT_TO_SYNCHSAFE(new_size);
+		if (cs != NULL && !strcasecmp(cs, "utf-8"))
+			*(p + 10) = ID3_UTF8;
 		memcpy(p + 11, val, len);
 		*(dword *)(tag->m_stream + 6) = ID3_CONVERT_TO_SYNCHSAFE(
 				tag->m_stream_len - 
@@ -664,6 +668,20 @@ void id3_remove( char *filename )
 	fclose(fd);
 	free(buf);
 } /* End of 'id3_remove' function */
+
+/* Set genre frame */
+void id3_set_genre( id3_tag_t *tag, char *val, byte id, char *cs )
+{
+	char str[20];
+	
+	if (tag == NULL || val == NULL)
+		return;
+
+	/* Set frame to tags */
+	sprintf(str, "(%d)", id);
+	id3_v1_set_frame(&tag->m_v1, ID3_FRAME_GENRE, str);
+	id3_v2_set_frame(&tag->m_v2, ID3_FRAME_GENRE, val, cs);
+} /* End of 'id3_set_genre' function */
 
 /* End of 'id3.c' file */
 

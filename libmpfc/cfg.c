@@ -1,12 +1,12 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : cfg.c
  * PURPOSE     : SG MPFC. Basic configuration handling functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 2.10.2003
+ * LAST UPDATE : 3.02.2004
  * NOTE        : Module prefix 'cfg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -33,16 +33,13 @@
 /* Add variable */
 void cfg_new_var( cfg_list_t *list, char *name, char *val )
 {
-	if (list == NULL)
+	if (list == NULL || name == NULL || val == NULL)
 		return;
 	
-	if (list->m_vars == NULL)
-		list->m_vars = (cfg_var_t *)malloc(sizeof(cfg_var_t));
-	else
-		list->m_vars = (cfg_var_t *)realloc(list->m_vars, sizeof(cfg_var_t) * 
-				(list->m_num_vars + 1));
-	strcpy(list->m_vars[list->m_num_vars].m_name, name);
-	strcpy(list->m_vars[list->m_num_vars].m_val, val);
+	list->m_vars = (cfg_var_t *)realloc(list->m_vars, sizeof(cfg_var_t) * 
+			(list->m_num_vars + 1));
+	list->m_vars[list->m_num_vars].m_name = strdup(name);
+	list->m_vars[list->m_num_vars].m_val = strdup(val);
 	list->m_num_vars ++;
 } /* End of 'cfg_new_var' function */
 
@@ -74,7 +71,8 @@ void cfg_set_var( cfg_list_t *list, char *name, char *val )
 	/* Variable exists - modify its value */
 	if (i >= 0)
 	{
-		strcpy(list->m_vars[i].m_val, val);
+		free(list->m_vars[i].m_val);
+		list->m_vars[i].m_val = strdup(val);
 	}
 	/* Create new variable */
 	else
@@ -92,7 +90,7 @@ void cfg_set_var_int( cfg_list_t *list, char *name, int val )
 	if (list == NULL)
 		return;
 
-	sprintf(str, "%i", val);
+	sprintf(str, "%d", val);
 	cfg_set_var(list, name, str);
 } /* End of 'cfg_set_var_int' function */
 
@@ -102,17 +100,21 @@ char *cfg_get_var( cfg_list_t *list, char *name )
 	int i;
 
 	if (list == NULL)
-		return "0";
+		return NULL;
 
 	/* Search for this variable */
 	i = cfg_search_var(list, name);
-	return (i >= 0) ? list->m_vars[i].m_val : "0";
+	return (i >= 0) ? list->m_vars[i].m_val : NULL;
 } /* End of 'cfg_get_var' function */
 
 /* Get variable integer value */
 int cfg_get_var_int( cfg_list_t *list, char *name )
 {
-	return atoi(cfg_get_var(list, name));
+	char *val = cfg_get_var(list, name);
+	if (val == NULL)
+		return 0;
+	else
+		return atoi(val);
 } /* End of 'cfg_get_var_int' function */
 
 /* Set variable integer float */
@@ -130,7 +132,11 @@ void cfg_set_var_float( cfg_list_t *list, char *name, float val )
 /* Get variable float value */
 float cfg_get_var_float( cfg_list_t *list, char *name )
 {
-	return atof(cfg_get_var(list, name));
+	char *val = cfg_get_var(list, name);
+	if (val == NULL)
+		return 0;
+	else
+		return atof(val);
 } /* End of 'cfg_get_var_float' function */
 
 /* Free configuration list */
@@ -143,12 +149,23 @@ void cfg_free_list( cfg_list_t *list )
 		for ( t = list->m_db; t != NULL; )
 		{
 			t1 = t->m_next;
+			if (t->m_name != NULL)
+				free(t->m_name);
 			free(t);
 			t = t1;
 		}
 		
 		if (list->m_vars != NULL)
+		{
+			int i;
+
+			for ( i = 0; i < list->m_num_vars; i ++ )
+			{
+				free(list->m_vars[i].m_name);
+				free(list->m_vars[i].m_val);
+			}
 			free(list->m_vars);
+		}
 		free(list);
 	}
 } /* End of 'cfg_free_list' function */
@@ -206,10 +223,13 @@ void cfg_set_to_db( cfg_list_t *list, char *name,
 		else
 			t = p->m_next = (cfg_db_t *)malloc(sizeof(cfg_db_t));
 		t->m_next = NULL;
+		t->m_name = NULL;
 	}
 
 	/* Set data */
-	strcpy(t->m_name, name);
+	if (t->m_name != NULL)
+		free(t->m_name);
+	t->m_name = strdup(name);
 	t->m_handler = handler;
 	t->m_flags = flags;
 } /* End of 'cfg_set_to_db' function */

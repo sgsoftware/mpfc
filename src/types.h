@@ -1,11 +1,11 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : types.h
  * PURPOSE     : SG MPFC. Basic types declaration.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 7.02.2003
+ * LAST UPDATE : 3.02.2004
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -48,6 +48,9 @@ typedef byte bool_t;
 #define _(str) gettext (str)
 #define gettext_noop(str) str
 #define N_(str) gettext_noop(str)
+
+/* The maximal file name length */
+#define MAX_FILE_NAME 256
 
 #endif
 

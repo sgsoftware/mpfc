@@ -38,7 +38,7 @@ bool_t cddb_read( void );
 void cddb_free( void );
 
 /* Fill song info for specified track */
-bool_t cddb_get_trk_info( int track, song_info_t *info );
+song_info_t *cddb_get_trk_info( int track );
 
 /* Save track info */
 void cddb_save_trk_info( int track, song_info_t *info );

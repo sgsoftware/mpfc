@@ -5,7 +5,7 @@
 /* FILE NAME   : myid3.h
  * PURPOSE     : SG MPFC. Interface for ID3 tags handling library.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 1.02.2004
+ * LAST UPDATE : 4.02.2004
  * NOTE        : Module prefix 'id3'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -27,8 +27,8 @@
 #ifndef __SG_MPFC_MYID3_H__
 #define __SG_MPFC_MYID3_H__
 
-#include <stdio.h>
 #include "types.h"
+#include "file.h"
 
 /* Tag data */
 typedef struct
@@ -146,7 +146,10 @@ void id3_write( id3_tag_t *tag, char *filename );
 void id3_next_frame( id3_tag_t *tag, id3_frame_t *frame );
 
 /* Set frame value */
-void id3_set_frame( id3_tag_t *tag, char *name, char *val );
+void id3_set_frame( id3_tag_t *tag, char *name, char *val, char *cs );
+
+/* Set genre frame */
+void id3_set_genre( id3_tag_t *tag, char *val, byte id, char *cs );
 
 /* Remove tags from file */
 void id3_remove( char *filename );
@@ -164,10 +167,10 @@ void id3_v1_new( id3_tag_data_t *tag );
 void id3_v2_new( id3_tag_data_t *tag );
 
 /* Read ID3V1 */
-void id3_v1_read( id3_tag_data_t *tag, FILE *fd );
+void id3_v1_read( id3_tag_data_t *tag, file_t *fd );
 
 /* Read ID3V2 */
-void id3_v2_read( id3_tag_data_t *tag, FILE *fd );
+void id3_v2_read( id3_tag_data_t *tag, file_t *fd );
 
 /* Read next frame in ID3V1 */
 void id3_v1_next_frame( id3_tag_data_t *tag, id3_frame_t *frame );
@@ -179,7 +182,7 @@ void id3_v2_next_frame( id3_tag_data_t *tag, id3_frame_t *frame );
 void id3_v1_set_frame( id3_tag_data_t *tag, char *name, char *val );
 
 /* Set frame value in ID3V2 */
-void id3_v2_set_frame( id3_tag_data_t *tag, char *name, char *val );
+void id3_v2_set_frame( id3_tag_data_t *tag, char *name, char *val, char *cs );
 
 /* Save ID3V1 tag to file */
 void id3_v1_write( id3_tag_data_t *tag, char *filename );
