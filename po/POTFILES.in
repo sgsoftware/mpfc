@@ -1,3 +1,4 @@
 src/main.c
 src/player.c
 src/plist.c
+src/help_screen.c

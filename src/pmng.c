@@ -50,9 +50,15 @@ bool pmng_init( void )
 	in_plugin_t *ip;
 	out_plugin_t *op;
 	FILE *fd;
+	char str[256];
 	
 	/* Initialize input plugins */ 
-	fd = popen("ls /usr/local/lib/mpfc/input/*.so", "r");
+	if (cfg_get_var_int("plugins_search_subdirs"))
+		sprintf(str, "find %s/input/ 2>/dev/null | grep \"\\.so\"", 
+				cfg_get_var("lib_dir"));
+	else
+		sprintf(str, "ls %s/input/*.so 2>/dev/null", cfg_get_var("lib_dir"));
+	fd = popen(str, "r");
 	if (fd == NULL)
 		return FALSE;
 	while (!feof(fd))
@@ -68,7 +74,12 @@ bool pmng_init( void )
 	pclose(fd);
 
 	/* Initialize output plugins */ 
-	fd = popen("ls /usr/local/lib/mpfc/output/*.so", "r");
+	if (cfg_get_var_int("plugins_search_subdirs"))
+		sprintf(str, "find %s/output/ 2>/dev/null | grep \"\\.so\"", 
+				cfg_get_var("lib_dir"));
+	else
+		sprintf(str, "ls %s/output/*.so 2>/dev/null", cfg_get_var("lib_dir"));
+	fd = popen(str, "r");
 	if (fd == NULL)
 		return FALSE;
 	while (!feof(fd))
@@ -79,7 +90,25 @@ bool pmng_init( void )
 		name[strlen(name) - 1] = 0;
 		op = outp_init(name);
 		if (op != NULL)
+		{
+			int i, j;
+			char str1[256], str2[256];
+			
 			pmng_add_out(op);
+
+			/* Choose this plugin if it is set in options */
+			for ( i = strlen(name) - 1; i >= 0 && name[i] != '.'; i -- );
+			if (i <= 0)
+				continue;
+			for ( j = i - 1; j >= 0 && name[j] != '/'; j -- );
+			if (j < 0)
+				continue;
+			memcpy(str1, &name[j + 1], i - j - 1);
+			str1[i - j - 1] = 0;
+			sprintf(str2, "lib%s", cfg_get_var("output_plugin"));
+			if (!strcmp(str1, str2))
+				pmng_cur_out = op;
+		}
 	}
 	pclose(fd);
 

@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "types.h"
+#include "cfg.h"
 #include "choice_ctrl.h"
 #include "dlgbox.h"
 #include "editbox.h"
@@ -37,7 +38,6 @@
 #include "help_screen.h"
 #include "listbox.h"
 #include "menu.h"
-#include "options.h"
 #include "player.h"
 #include "plist.h"
 #include "pmng.h"
@@ -81,6 +81,9 @@ int player_status = PLAYER_STATUS_STOPPED;
 bool player_init( int argc, char *argv[] )
 {
 	int i;
+
+	/* Initialize configuration */
+	cfg_init();
 
 	/* Parse command line */
 	if (!player_parse_cmd_line(argc, argv))
@@ -147,39 +150,46 @@ bool player_run( void )
 bool player_parse_cmd_line( int argc, char *argv[] )
 {
 	int i;
-	int c;
-	char options[] = "s";
-	static struct option long_options[] = 
+
+	/* Get options */
+	for ( i = 1; i < argc && argv[i][0] == '-'; i ++ )
 	{
-		{ "silent_mode", 0, 0, 's' },
-	};
-	int index;
-	
-	/* Parse command line */
-	while ((c = getopt_long(argc, argv, options, long_options, &index)) != -1)
-	{
-		switch (c)
+		char name[80], val[256];
+		char *str = argv[i];
+		int name_start, name_end;
+		
+		/* Get variable name start */
+		for ( name_start = 0; str[name_start] == '-'; name_start ++ );
+		if (name_start >= strlen(str))
+			continue;
+
+		/* Get variable name end */
+		for ( name_end = name_start; str[name_end] && str[name_end] != '='; 
+				name_end ++ );
+		name_end --;
+
+		/* Extract variable name */
+		memcpy(name, &str[name_start], name_end - name_start + 1);
+		name[name_end - name_start + 1] = 0;
+
+		/* We have no value - assume it "1" */
+		if (name_end == strlen(str) - 1)
 		{
-		/* Silent mode */
-		case 's':
-			opt_silent = TRUE;
-			break;
-
-		/* Missing parameter */
-		case ':':
-			fprintf(stderr, "Missing parameter for %s option\n", 
-					long_options[index].name);
-			break;
-
-		/* Unknown option */
-		case '?':
-			break;
+			strcpy(val, "1");
 		}
+		/* Extract value */
+		else
+		{
+			strcpy(val, &str[name_end + 2]);
+		}
+		
+		/* Set respective variable */
+		cfg_set_var(name, val);
 	}
 
 	/* Get file names from command line */
-	player_num_files = argc - optind;
-	player_files = &argv[optind];
+	player_num_files = argc - i;
+	player_files = &argv[i];
 	return TRUE;
 } /* End of 'player_parse_cmd_line' function */
 
@@ -554,7 +564,8 @@ void *player_thread( void *arg )
 	}
 
 	/* Start output plugin */
-	if (pmng_cur_out == NULL || (!opt_silent && !pmng_cur_out->m_fl.m_start()))
+	if (pmng_cur_out == NULL || (!cfg_get_var_int("silent_mode") && 
+				!pmng_cur_out->m_fl.m_start()))
 	{
 		strcpy(player_msg, "Unable to initialize output plugin");
 //		wnd_send_msg(wnd_root, WND_MSG_USER, PLAYER_MSG_END_TRACK);
