@@ -1,13 +1,8 @@
 /******************************************************************
- * Copyright (C) 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : wnd_scrollable.h
- * PURPOSE     : SG MPFC. Interface for scrollable windows
- *               functions.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 18.10.2004
- * NOTE        : Module prefix 'scrollable'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * SG MPFC. Interface for scrollable windows functions.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

@@ -1,12 +1,8 @@
 /******************************************************************
- * Copyright (C) 2003 - 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : history.c
- * PURPOSE     : SG MPFC. Edit history functions implementation.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 4.02.2004
- * NOTE        : Module prefix 'hist'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * SG MPFC. Edit history functions implementation.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

@@ -1,13 +1,8 @@
 /******************************************************************
- * Copyright (C) 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : wnd_editbox.c
- * PURPOSE     : MPFC Window Library. Edit box functions 
- *               implementation.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 29.10.2004
- * NOTE        : Module prefix 'editbox'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * MPFC Window Library. Edit box functions implementation.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

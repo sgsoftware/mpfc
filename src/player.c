@@ -1,12 +1,8 @@
 /******************************************************************
  * Copyright (C) 2003 - 2005 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : player.c
- * PURPOSE     : SG MPFC. Main player functions implementation.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 20.02.2005
- * NOTE        : Module prefix 'player'.
+ *
+ * SG MPFC. Main player functions implementation.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

@@ -1,13 +1,9 @@
 /******************************************************************
- * Copyright (C) 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : wnd_multiview_dialog.h
- * PURPOSE     : MPFC Window Library. Interface for multiview 
- *               dialog box functions.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 27.10.2004
- * NOTE        : Module prefix 'mview_dialog'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * MPFC Window Library. Interface for multiview dialog box 
+ * functions.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

@@ -1,12 +1,8 @@
 /******************************************************************
- * Copyright (C) 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : wnd_types.h
- * PURPOSE     : MPFC Window Library. Basic types declarations.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 9.08.2004
- * NOTE        : None.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * MPFC Window Library. Basic types declarations. 
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

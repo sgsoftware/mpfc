@@ -1,13 +1,8 @@
 /******************************************************************
- * Copyright (C) 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : wnd_combobox.h
- * PURPOSE     : MPFC Window Library. Interface for combo box
- *               functions.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 20.08.2004
- * NOTE        : Module prefix 'combo'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * MPFC Window Library. Interface for combo box functions.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

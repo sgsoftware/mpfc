@@ -1,13 +1,8 @@
 /******************************************************************
- * Copyright (C) 2005 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : genp.h
- * PURPOSE     : SG MPFC. Interface for general plugin management
- *               functions.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 15.02.2005
- * NOTE        : Module prefix 'genp'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * SG MPFC. Interface for general plugin management functions.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

@@ -1,13 +1,8 @@
 /******************************************************************
  * Copyright (C) 2003 - 2005 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : pmng.h
- * PURPOSE     : SG MPFC. Interface for plugins manager 
- *               functions.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 18.02.2005
- * NOTE        : Module prefix 'pmng'.
+ *
+ * SG MPFC. Interface for plugins manager functions.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

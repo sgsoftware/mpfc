@@ -1,13 +1,8 @@
 /******************************************************************
- * Copyright (C) 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : vfs.h
- * PURPOSE     : SG MPFC. Interface for virtual file system
- *               functions.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 17.09.2004
- * NOTE        : Module prefix 'vfs'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * SG MPFC. Interface for virtual file system functions.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

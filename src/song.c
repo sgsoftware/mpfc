@@ -1,13 +1,8 @@
 /******************************************************************
- * Copyright (C) 2003 - 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : song.c
- * PURPOSE     : SG MPFC. Songs manipulation functions
- *               implementation.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 7.11.2004
- * NOTE        : Module prefix 'song'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * SG MPFC. Songs manipulation functions implementation.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

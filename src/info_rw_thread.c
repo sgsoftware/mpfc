@@ -1,13 +1,9 @@
 /******************************************************************
- * Copyright (C) 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : info_rw_thread.c
- * PURPOSE     : SG MPFC. Song information read/write thread 
- *               functions implementation.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 8.11.2004
- * NOTE        : Module prefix 'irw'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * SG MPFC. Song information read/write thread functions 
+ * implementation.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

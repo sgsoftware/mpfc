@@ -1,13 +1,8 @@
 /******************************************************************
- * Copyright (C) 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : wnd_basic.c
- * PURPOSE     : MPFC Window Library. 'basic' window class
- *               implementation.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 29.09.2004
- * NOTE        : Module prefix 'wnd_basic'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * MPFC Window Library. 'basic' window class implementation.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

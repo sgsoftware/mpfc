@@ -1,13 +1,8 @@
 /******************************************************************
- * Copyright (C) 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : logger_view.h
- * PURPOSE     : SG MPFC. Interface for logger view window 
- *               functions.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 22.09.2004
- * NOTE        : Module prefix 'logview'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * SG MPFC. Interface for logger view window functions.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

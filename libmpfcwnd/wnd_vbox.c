@@ -1,13 +1,8 @@
 /******************************************************************
- * Copyright (C) 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : wnd_vbox.c
- * PURPOSE     : SG MPFC Window Library. Vertical box functions
- *               implementation.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 17.08.2004
- * NOTE        : Module prefix 'vbox'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * SG MPFC Window Library. Vertical box functions implementation.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

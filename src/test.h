@@ -1,12 +1,8 @@
 /******************************************************************
- * Copyright (C) 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : test.h
- * PURPOSE     : SG MPFC. Interface for testing facilities.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 6.09.2004
- * NOTE        : Module prefix 'test'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * SG MPFC. Interface for testing facilities.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

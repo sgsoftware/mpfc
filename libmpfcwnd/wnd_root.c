@@ -1,13 +1,8 @@
 /******************************************************************
- * Copyright (C) 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : wnd_root.c
- * PURPOSE     : MPFC Window Library. Root window functions
- *               implementation.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 18.10.2004
- * NOTE        : Module prefix 'wnd_root'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * MPFC Window Library. Root window functions implementation.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

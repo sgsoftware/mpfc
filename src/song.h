@@ -1,13 +1,8 @@
 /******************************************************************
- * Copyright (C) 2003 - 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : song.h
- * PURPOSE     : SG MPFC. Interface for songs manipulation
- *               functions.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 7.11.2004
- * NOTE        : Module prefix 'song'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * SG MPFC. Interface for songs manipulation functions.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

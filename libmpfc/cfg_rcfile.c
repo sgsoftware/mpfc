@@ -1,13 +1,9 @@
 /******************************************************************
- * Copyright (C) 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : cfg_rcfile.h
- * PURPOSE     : SG MPFC Library. Configuration files manipulation
- *               functions implementation
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 6.10.2004
- * NOTE        : Module prefix 'cfg_rcfile'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * SG MPFC Library. Configuration files manipulation functions 
+ * implementation.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

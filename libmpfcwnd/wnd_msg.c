@@ -1,13 +1,8 @@
 /******************************************************************
- * Copyright (C) 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : wnd_msg.c
- * PURPOSE     : MPFC Window Library. Message functions 
- *               implementation.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 28.06.2004
- * NOTE        : Module prefix 'wnd_msg'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * MPFC Window Library. Message functions implementation.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

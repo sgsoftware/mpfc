@@ -1,12 +1,8 @@
 /******************************************************************
- * Copyright (C) 2003 - 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : browser.h
- * PURPOSE     : SG MPFC. Interface for file browser functions.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 20.09.2004
- * NOTE        : Module prefix 'fb'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * SG MPFC. Interface for file browser functions.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

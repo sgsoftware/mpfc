@@ -1,12 +1,8 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : file.h
- * PURPOSE     : SG MPFC. Interface for file library functions.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 22.09.2004
- * NOTE        : Module prefix 'file'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * SG MPFC. Interface for file library functions.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

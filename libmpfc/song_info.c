@@ -1,13 +1,8 @@
 /******************************************************************
- * Copyright (C) 2003 - 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : song_info.c
- * PURPOSE     : SG MPFC. Song info management functions 
- *               implementation.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.02.2004
- * NOTE        : Module prefix 'si'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * SG MPFC. Song info management functions implementation.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

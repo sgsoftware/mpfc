@@ -1,13 +1,9 @@
 /******************************************************************
- * Copyright (C) 2003 - 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : http.h
- * PURPOSE     : SG MPFC. Interface for file library http
- *               files managament functions.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.02.2004
- * NOTE        : Module prefix 'fhttp'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * SG MPFC. Interface for file library http files managament 
+ * functions.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

@@ -1,13 +1,8 @@
 /******************************************************************
- * Copyright (C) 2003 - 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : outp.c
- * PURPOSE     : SG MPFC. Output plugin management functions
- *               implementation.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 19.09.2004
- * NOTE        : Module prefix 'outp'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * SG MPFC. Output plugin management functions implementation.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

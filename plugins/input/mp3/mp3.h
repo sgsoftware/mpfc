@@ -1,13 +1,8 @@
 /******************************************************************
- * Copyright (C) 2003 - 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : mp3.h
- * PURPOSE     : SG Konsamp. Interface for MP3 input plugin 
- *               functions.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 6.02.2004
- * NOTE        : Module prefix 'mp3'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * SG MPFC. Interface for MP3 input plugin functions.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

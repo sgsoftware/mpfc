@@ -1,13 +1,9 @@
 /******************************************************************
- * Copyright (C) 2003 - 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : reg.c
- * PURPOSE     : SG MPFC. File library regular files managament 
- *               functions implementation.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.02.2004
- * NOTE        : Module prefix 'freg'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * SG MPFC. File library regular files managament functions 
+ * implementation.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

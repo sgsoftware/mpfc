@@ -1,13 +1,9 @@
 /******************************************************************
- * Copyright (C) 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : wnd_kbind.h
- * PURPOSE     : MPFC Window Library. Interface for key bindings
- *               management functions.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 29.09.2004
- * NOTE        : Module prefix 'wnd_kbind'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * MPFC Window Library. Interface for key bindings management 
+ * functions.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

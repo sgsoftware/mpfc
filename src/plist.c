@@ -1,13 +1,8 @@
 /******************************************************************
- * Copyright (C) 2003 - 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : plist.c
- * PURPOSE     : SG MPFC. Play list manipulation
- *               functions implementation.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 15.09.2004
- * NOTE        : Module prefix 'plist'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * SG MPFC. Play list manipulation functions.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

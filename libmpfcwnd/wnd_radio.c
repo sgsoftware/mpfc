@@ -1,13 +1,8 @@
 /******************************************************************
- * Copyright (C) 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : wnd_radio.c
- * PURPOSE     : MPFC Window Library. Radio button functions
- *               implementation.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 19.08.2004
- * NOTE        : Module prefix 'radio'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * MPFC Window Library. Radio button functions implementation.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

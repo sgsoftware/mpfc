@@ -1,13 +1,8 @@
 /******************************************************************
- * Copyright (C) 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : wnd_hbox.h
- * PURPOSE     : SG MPFC Window Library. Interface for horizontal
- *               box functions.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 16.08.2004
- * NOTE        : Module prefix 'hbox'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * SG MPFC Window Library. Interface for horizontal box functions.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

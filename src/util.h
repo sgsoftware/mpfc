@@ -1,13 +1,8 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : util.h
- * PURPOSE     : SG MPFC. Interface for different utility
- *               functions.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 28.11.2003
- * NOTE        : Module prefix 'util'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * SG MPFC. Interface for different utility functions.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

@@ -1,13 +1,8 @@
 /******************************************************************
- * Copyright (C) 2003 - 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : id3.c
- * PURPOSE     : SG MPFC. ID3 tags handling library functions 
- *               implementation.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 1.02.2004
- * NOTE        : Module prefix 'id3'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * SG MPFC. ID3 tags handling library functions implementation.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

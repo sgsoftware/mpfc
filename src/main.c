@@ -1,12 +1,8 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : main.c
- * PURPOSE     : SG MPFC. Main program module.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 24.03.2004
- * NOTE        : None.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * SG MPFC. Main program module.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

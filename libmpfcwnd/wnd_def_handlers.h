@@ -1,13 +1,8 @@
 /******************************************************************
- * Copyright (C) 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : wnd_def_handlers.h
- * PURPOSE     : MPFC Window Library. Interface for default 
- *               message handlers. 
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 24.07.2004
- * NOTE        : Module prefix 'wnd_default'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * MPFC Window Library. Interface for default *message handlers. 
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

@@ -1,13 +1,8 @@
 /******************************************************************
- * Copyright (C) 2003 - 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : cfg.c
- * PURPOSE     : SG MPFC. Configuration handling functions 
- *               implementation.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 6.10.2004
- * NOTE        : Module prefix 'cfg'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * SG MPFC. Configuration handling functions implementation.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 
@@ -24,6 +19,7 @@
  * Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, 
  * MA 02111-1307, USA.
  */
+
 
 #include <assert.h>
 #include <stdio.h>

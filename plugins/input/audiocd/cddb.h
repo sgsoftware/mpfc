@@ -1,13 +1,8 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : cddb.h
- * PURPOSE     : SG MPFC AudioCD input plugin. Interface for CDDB
- *               support functions.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 11.09.2003
- * NOTE        : Module prefix 'cddb'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * SG MPFC AudioCD input plugin. Interface for CDDB support functions.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

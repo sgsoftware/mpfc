@@ -1,13 +1,8 @@
 /******************************************************************
- * Copyright (C) 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : wnd_print.h
- * PURPOSE     : MPFC Window Library. Interface for printing 
- *               functions.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 13.08.2004
- * NOTE        : Module prefix 'wnd'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * MPFC Window Library. Interface for printing functions.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

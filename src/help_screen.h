@@ -1,12 +1,8 @@
 /******************************************************************
- * Copyright (C) 2003 - 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : help_screen.h
- * PURPOSE     : SG MPFC. Interface for help screen functions.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 18.08.2004
- * NOTE        : Module prefix 'help'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * SG MPFC. Interface for help screen functions.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

@@ -1,12 +1,8 @@
 /******************************************************************
- * Copyright (C) 2003 - 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : wav.h
- * PURPOSE     : SG MPFC. Interface for WAV input plugin functions.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 6.02.2004
- * NOTE        : Module prefix 'wav'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * SG MPFC. Interface for WAV input plugin functions.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

@@ -1,12 +1,8 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : eqwnd.c
- * PURPOSE     : SG MPFC. Equalizer window functions implementation.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 3.10.2004
- * NOTE        : Module prefix 'eqwnd'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * SG MPFC. Equalizer window functions implementation.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

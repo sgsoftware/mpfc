@@ -1,12 +1,8 @@
 /******************************************************************
- * Copyright (C) 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : charset.c
- * PURPOSE     : SG MPFC. libcharset functions implementation.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 31.01.2004
- * NOTE        : Module prefix 'cs'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * SG MPFC. libcharset functions implementation.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

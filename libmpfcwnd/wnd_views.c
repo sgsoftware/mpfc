@@ -1,13 +1,8 @@
 /******************************************************************
- * Copyright (C) 2004 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : wnd_views.c
- * PURPOSE     : MPFC Window Library. Views list control functions
- *               implementation.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 27.10.2004
- * NOTE        : Module prefix 'views'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * MPFC Window Library. Views list control functions implementation.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

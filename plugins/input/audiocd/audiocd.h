@@ -1,13 +1,8 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : audiocd.h
- * PURPOSE     : SG MPFC AudioCD input plugin. Interface for main
- *               stuff.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 11.11.2003
- * NOTE        : Module prefix 'acd'.
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * SG MPFC AudioCD input plugin. Interface for main stuff.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 

@@ -1,13 +1,8 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
- ******************************************************************/
-
-/* FILE NAME   : genre_list.h
- * PURPOSE     : SG MPFC. Interface for genres list management 
- *               functions.
- * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 12.08.2003
- * NOTE        : Module prefix 'glist'. 
+ * Copyright (C) 2003 - 2005 by SG Software.
+ *
+ * SG MPFC. Interface for genres list management functions.
+ * $Id$
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 
