@@ -10,3 +10,4 @@ libmp3_la_LIBADD = $(top_builddir)/src/util/libutil.a \
 					$(top_builddir)/src/myid3/libmyid3.a \
 					$(top_builddir)/src/file/libfile.a 
 libmp3_la_LDFLAGS = -Xcompiler -nostartfiles 
+localedir = $(datadir)/locale

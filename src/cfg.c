@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. High-level configuration handling 
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 25.10.2003
+ * LAST UPDATE : 22.11.2003
  * NOTE        : Module prefix 'cfg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -58,6 +58,7 @@ void cfg_init( void )
 	cfg_init_default();
 
 	/* Read rc file from home directory and from current directory */
+	cfg_read_rcfile(cfg_list, "/etc/mpfcrc");
 	sprintf(str, "%s/.mpfcrc", getenv("HOME"));
 	cfg_read_rcfile(cfg_list, str);
 	cfg_read_rcfile(cfg_list, "./.mpfcrc");

@@ -29,6 +29,7 @@
 #define __SG_MPFC_AUDIOCD_H__
 
 #include "types.h"
+#include "cfg.h"
 #include "song_info.h"
 
 /* The maximal number of tracks */
@@ -46,6 +47,9 @@ extern struct acd_trk_info_t
 extern int acd_num_tracks;
 extern int acd_cur_track;
 extern bool_t acd_info_read;
+
+/* This is pointer to global variables list */
+extern cfg_list_t *acd_var_list;
 
 /* Message printer */
 extern void (*acd_print_msg)( char *msg );

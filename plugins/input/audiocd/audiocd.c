@@ -414,9 +414,11 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_num_spec_funcs = 2;
 	fl->m_spec_funcs = (inp_spec_func_t *)malloc(sizeof(inp_spec_func_t) * 
 			fl->m_num_spec_funcs);
-	fl->m_spec_funcs[0].m_title = strdup("Reload info from CDDB");
+	fl->m_spec_funcs[0].m_title = strdup(_("Reload info from CDDB"));
+	fl->m_spec_funcs[0].m_flags = 0;
 	fl->m_spec_funcs[0].m_func = cddb_reload;
-	fl->m_spec_funcs[1].m_title = strdup("Submit info to CDDB");
+	fl->m_spec_funcs[1].m_title = strdup(_("Submit info to CDDB"));
+	fl->m_spec_funcs[1].m_flags = INP_SPEC_SAVE_INFO;
 	fl->m_spec_funcs[1].m_func = cddb_submit;
 } /* End of 'inp_get_func_list' function */
 

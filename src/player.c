@@ -448,7 +448,7 @@ void player_display( wnd_t *wnd, dword data )
 	{
 		col_set_color(wnd, COL_EL_ABOUT);
 		wnd_printf(wnd, _("SG Software Media Player For Console\n"
-				"version 1.0\n"));
+				"version 1.1\n"));
 		col_set_color(wnd, COL_EL_DEFAULT);
 	}
 	else
@@ -2216,6 +2216,11 @@ void player_info_notify( wnd_t *wnd, dword data )
 {
 	int i;
 
+	/* Save info if need */
+	if (inp_get_spec_flags(player_info_song->m_inp, data) &
+			INP_SPEC_SAVE_INFO)
+		player_save_info_dlg(wnd);
+
 	/* Call special functions */
 	if (player_info_local)
 	{
@@ -2231,8 +2236,10 @@ void player_info_notify( wnd_t *wnd, dword data )
 		{
 			if (PLIST_HAS_INFO(player_plist->m_list[i]) && 
 					inp == player_plist->m_list[i]->m_inp)
+			{
 				inp_spec_func(inp, data, player_plist->m_list[i]->m_file_name);
-			song_update_info(player_plist->m_list[i]);
+				song_update_info(player_plist->m_list[i]);
+			}
 		}
 	}
 
@@ -2293,6 +2300,82 @@ void player_handle_mouse_middle( wnd_t *wnd, dword data )
 		wnd_send_msg(wnd, WND_MSG_DISPLAY, 0);
 	}
 } /* End of 'player_handle_mouse_middle' function */
+
+/* Save currently opened info editor dialog */
+void player_save_info_dlg( wnd_t *wnd )
+{
+	char msg[512];
+	song_t *s = player_info_song;
+	editbox_t *name, *artist, *album, *track, *year, *comments;
+	combobox_t *genre;
+	label_t *own_data;
+	int i;
+
+	if (player_info_song == NULL || player_info_start < 0 || 
+			player_info_end < 0)
+		return;
+
+	/* Get dialog items */
+	name = (editbox_t *)wnd_find_child_by_id(wnd, PLAYER_INFO_NAME);
+	artist = (editbox_t *)wnd_find_child_by_id(wnd, PLAYER_INFO_ARTIST);
+	album = (editbox_t *)wnd_find_child_by_id(wnd, PLAYER_INFO_ALBUM);
+	year = (editbox_t *)wnd_find_child_by_id(wnd, PLAYER_INFO_YEAR);
+	track = (editbox_t *)wnd_find_child_by_id(wnd, PLAYER_INFO_TRACK);
+	comments = (editbox_t *)wnd_find_child_by_id(wnd, PLAYER_INFO_COMMENTS);
+	genre = (combobox_t *)wnd_find_child_by_id(wnd, PLAYER_INFO_GENRE);
+	own_data = (label_t *)wnd_find_child_by_id(wnd, PLAYER_INFO_LABEL);
+	if (name == NULL || artist == NULL || album == NULL || year == NULL ||
+			track == NULL || comments == NULL || own_data == NULL)
+		return;
+
+	/* Save info */
+	for ( i = player_info_start; i <= player_info_end; i ++ )
+	{
+		if (!player_info_local)
+		{
+			s = player_plist->m_list[i];
+			if (!PLIST_HAS_INFO(s))
+				continue;
+		}
+		if (name->m_changed)
+			strcpy(s->m_info->m_name, name->m_text);
+		if (artist->m_changed)
+			strcpy(s->m_info->m_artist, artist->m_text);
+		if (album->m_changed)
+			strcpy(s->m_info->m_album, album->m_text);
+		if (year->m_changed)
+			strcpy(s->m_info->m_year, year->m_text);
+		if (comments->m_changed)
+			strcpy(s->m_info->m_comments, comments->m_text);
+		if (track->m_changed)
+			strcpy(s->m_info->m_track, track->m_text);
+		if (genre->m_changed)
+		{
+			if (genre->m_list_cursor < 0)
+			{
+				s->m_info->m_genre = GENRE_ID_OWN_STRING;
+				strcpy(s->m_info->m_genre_data.m_text, genre->m_text);
+			}
+			else
+				s->m_info->m_genre = genre->m_list_cursor;
+		}
+		s->m_info->m_not_own_present = TRUE;
+	
+		/* Save info */
+		sprintf(msg, _("Saving info to file %s"), 
+				util_get_file_short_name(s->m_file_name));
+		player_print_msg(msg);
+		inp_save_info(song_get_inp(s), s->m_file_name, s->m_info);
+		player_print_msg(_("Saved"));
+
+		/* Update */
+		song_update_info(s);
+
+		/* Break if local */
+		if (player_info_local)
+			break;
+	}
+} /* End of 'player_save_info_dlg' function */
 
 /* End of 'player.c' file */
 

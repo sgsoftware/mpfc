@@ -166,7 +166,7 @@ void help_display( wnd_t *wnd, dword data )
 
 	wnd_move(wnd, 0, wnd->m_height - 1);
 	col_set_color(wnd, COL_EL_STATUS);
-	wnd_printf(wnd, "Press <Space> to see next screen and <q> to exit\n");
+	wnd_printf(wnd, _("Press <Space> to see next screen and <q> to exit\n"));
 	col_set_color(wnd, COL_EL_DEFAULT);
 	
 	wnd_move(wnd, wnd->m_width - 1, wnd->m_height - 1);

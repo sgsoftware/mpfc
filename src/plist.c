@@ -795,8 +795,8 @@ void plist_move( plist_t *pl, int y, bool_t relative )
 		pl->m_scrolled += (pl->m_sel_end - old_end);
 		if (pl->m_scrolled < 0)
 			pl->m_scrolled = 0;
-		else if (pl->m_scrolled >= pl->m_len)
-			pl->m_scrolled = pl->m_len - 1;
+		else if (pl->m_scrolled >= pl->m_len - pl->m_height)
+			pl->m_scrolled = pl->m_len - pl->m_height;
 	}
 
 	/* Let selection start follow the end in non-visual mode */
@@ -823,6 +823,8 @@ void plist_centrize( plist_t *pl, int index )
 		pl->m_scrolled = pl->m_sel_end - (pl->m_height + 1) / 2;
 		if (pl->m_scrolled < 0)
 			pl->m_scrolled = 0;
+		else if (pl->m_scrolled >= pl->m_len - pl->m_height)
+			pl->m_scrolled = pl->m_len - pl->m_height;
 	}
 } /* End of 'plist_centrize' function */
 

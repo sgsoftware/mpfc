@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC AudioCD input plugin. CDDB support 
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 11.09.2003
+ * LAST UPDATE : 22.11.2003
  * NOTE        : Module prefix 'cddb'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -42,7 +42,7 @@
 /* Maximal line length */
 #define CDDB_MAX_LINE_LEN 256
 
-#define CDDB_BUF_SIZE 4096
+#define CDDB_BUF_SIZE 65536
 #define CDDB_PORT 8880
 
 /* Data */
@@ -204,14 +204,18 @@ bool_t cddb_read_server( dword id )
 	if (!cddb_server_found)
 		return FALSE;
 
+	/* Get host name */
+	if (cfg_get_var_int(acd_var_list, "cddb-host"))
+		host = cfg_get_var(acd_var_list, "cddb-host");
+
 	/* Get host address */
-	acd_print("Getting address of %s", host);
+	acd_print(_("Getting address of %s"), host);
 	he = gethostbyname(host);
 	if (he == NULL)
 		goto close;
 
 	/* Initialize socket and connect */
-	acd_print("Connecting to %s", host);
+	acd_print(_("Connecting to %s"), host);
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (sockfd < 0)
 		goto close;
@@ -224,7 +228,7 @@ bool_t cddb_read_server( dword id )
 		goto close;
 
 	/* Communicate with server */
-	acd_print("Sending query to server");
+	acd_print(_("Sending query to server"));
 	if (!cddb_server_recv(sockfd, buf, CDDB_BUF_SIZE - 1))
 		goto close;
 	sprintf(buf, "cddb hello %s %s mpfc 1.1\n", getenv("USER"), 
@@ -256,12 +260,12 @@ bool_t cddb_read_server( dword id )
 	cddb_server2data(buf);
 
 	/* Save data */
-	acd_print("Saving data");
+	acd_print(_("Saving data"));
 	cddb_save_data(id);
-	acd_print("Success");
+	acd_print(_("Success"));
 	return TRUE;
 close:
-	acd_print("Failed!");
+	acd_print(_("Failed!"));
 	cddb_server_found = FALSE;
 	if (sockfd >= 0)
 		close(sockfd);
@@ -534,7 +538,68 @@ void cddb_reload( char *filename )
 
 /* Submit info to server */
 void cddb_submit( char *filename )
-{
+{	
+#if 0
+	char *email, *category;
+	int sockfd = -1, i;
+	char buf[CDDB_BUF_SIZE];
+	struct hostent *he;
+	struct sockaddr_in their_addr;
+	char *host = "freedb.freedb.org";
+	dword id;
+
+	/* Calculate disc ID and check data */
+	id = cddb_id();
+	if (cddb_data == NULL)
+	{
+		acd_print_msg(_("CDDB submit error: no existing info found"));
+		return;
+	}
+	
+	/* Check email and category (set through variables) */
+	email = cfg_get_var(acd_var_list, "cddb-email");
+	if (strlen(email) <= 1)
+	{
+		acd_print_msg(_("CDDB submit error: you must specify your email "
+					"address"));
+		return;
+	}
+	category = cfg_get_var(acd_var_list, "cddb-category");
+	if (!cddb_valid_category(category))
+	{
+		acd_print_msg(_("CDDB submit error: you must specify your category"));
+		return;
+	}
+
+	/* Get host address */
+	acd_print(_("Getting address of %s"), host);
+	he = gethostbyname(host);
+	if (he == NULL)
+		goto close;
+
+	/* Initialize socket and connect */
+	acd_print(_("Connecting to %s"), host);
+	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	if (sockfd < 0)
+		goto close;
+	their_addr.sin_family = AF_INET;
+	their_addr.sin_port = htons(CDDB_PORT);
+	their_addr.sin_addr = *((struct in_addr *)he->h_addr);
+	memset(&(their_addr.sin_zero), 0, 8);
+	if (connect(sockfd, (struct sockaddr *)&their_addr, 
+				sizeof(struct sockaddr)) < 0)
+		goto close;
+
+	/* Communicate with server */
+	acd_print(_("Posting data to server"));
+	sprintf(buf, "POST /~cddb/submit.cgi\r\n");
+	if (!cddb_server_send(sockfd, buf, CDDB_BUF_SIZE - 1))
+		goto close;
+	sprintf(buf, "cddb hello %s %s mpfc 1.1\n", getenv("USER"), 
+			getenv("HOSTNAME"));
+	if (!cddb_server_send(sockfd, buf, CDDB_BUF_SIZE - 1))
+		goto close;
+#endif
 } /* End of 'cddb_submit' function */
 
 /* End of 'cddb.c' file */

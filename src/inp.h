@@ -36,11 +36,17 @@
 /* Input plugin flags */
 #define INP_NO_OUTP 0x00000001
 
+/* Special function flags */
+#define INP_SPEC_SAVE_INFO 0x00000001
+
 /* Special input plugin function type */
 typedef struct
 {
 	/* Function title */
 	char *m_title;
+
+	/* Flags */
+	dword m_flags;
 
 	/* Function */
 	void (*m_func)( char *filename );
@@ -187,6 +193,9 @@ int inp_get_num_specs( in_plugin_t *p );
 
 /* Get special function title */
 char *inp_get_spec_title( in_plugin_t *p, int index );
+
+/* Get special function flags */
+dword inp_get_spec_flags( in_plugin_t *p, int index );
 
 /* Call special function */
 void inp_spec_func( in_plugin_t *p, int index, char *filename );

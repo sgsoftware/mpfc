@@ -791,16 +791,19 @@ void *wnd_mouse_thread( void *arg )
 		Gpm_Event event;
 		int ret;
 		
-		/* Initialize stuff for select */
-		FD_ZERO(&readset);
-		FD_SET(gpm_fd, &readset);
-		memset(&tv, 0, sizeof(tv));
-		
-		/* Check for events */
-		if ((ret = select(gpm_fd + 1, &readset, NULL, NULL, &tv)) > 0)
+		if (gpm_fd >= 0)
 		{
-			if (Gpm_GetEvent(&event) > 0)
-				wnd_mouse_handler(&event, NULL);
+			/* Initialize stuff for select */
+			FD_ZERO(&readset);
+			FD_SET(gpm_fd, &readset);
+			memset(&tv, 0, sizeof(tv));
+			
+			/* Check for events */
+			if ((ret = select(gpm_fd + 1, &readset, NULL, NULL, &tv)) > 0)
+			{
+				if (Gpm_GetEvent(&event) > 0)
+					wnd_mouse_handler(&event, NULL);
+			}
 		}
 
 		/* Wait a little */

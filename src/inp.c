@@ -54,7 +54,6 @@ in_plugin_t *inp_init( char *name )
 	p->m_lib_handler = dlopen(name, RTLD_NOW);
 	if (p->m_lib_handler == NULL)
 	{
-		util_log("error: %s\n", dlerror());
 		error_set_code(ERROR_IN_PLUGIN_ERROR);
 		free(p);
 		return NULL;
@@ -253,6 +252,15 @@ char *inp_get_spec_title( in_plugin_t *p, int index )
 		return p->m_fl.m_spec_funcs[index].m_title;
 	return NULL;
 } /* End of 'inp_get_spec_title' function */
+
+/* Get special function flags */
+dword inp_get_spec_flags( in_plugin_t *p, int index )
+{
+	if (p != NULL && index >= 0 && index < p->m_fl.m_num_spec_funcs &&
+			p->m_fl.m_spec_funcs != NULL)
+		return p->m_fl.m_spec_funcs[index].m_flags;
+	return 0;
+} /* End of 'inp_get_spec_flags' function */
 
 /* Call special function */
 void inp_spec_func( in_plugin_t *p, int index, char *filename )

@@ -260,6 +260,9 @@ void player_info_notify( wnd_t *wnd, dword data );
 /* Update currently opened info editor dialog */
 void player_update_info_dlg( wnd_t *wnd );
 
+/* Save currently opened info editor dialog */
+void player_save_info_dlg( wnd_t *wnd );
+
 #endif
 
 /* End of 'player.h' file */
