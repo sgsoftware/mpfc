@@ -198,15 +198,14 @@ bool_t cddb_read_server( dword id )
 	char buf[CDDB_BUF_SIZE];
 	struct hostent *he;
 	struct sockaddr_in their_addr;
-	char *host = "freedb.freedb.org";
+	char host[256];
 	char category[80];
 
 	if (!cddb_server_found)
 		return FALSE;
 
 	/* Get host name */
-	if (cfg_get_var_int(acd_var_list, "cddb-host"))
-		host = cfg_get_var(acd_var_list, "cddb-host");
+	cddb_get_host_name(host);
 
 	/* Get host address */
 	acd_print(_("Getting address of %s"), host);
@@ -539,17 +538,15 @@ void cddb_reload( char *filename )
 /* Submit info to server */
 void cddb_submit( char *filename )
 {	
-#if 0
 	char *email, *category;
 	int sockfd = -1, i;
 	char buf[CDDB_BUF_SIZE];
 	struct hostent *he;
 	struct sockaddr_in their_addr;
-	char *host = "freedb.freedb.org";
-	dword id;
-
-	/* Calculate disc ID and check data */
-	id = cddb_id();
+	char host[256];
+	char *post_str;
+	
+	/* Check data */
 	if (cddb_data == NULL)
 	{
 		acd_print_msg(_("CDDB submit error: no existing info found"));
@@ -570,6 +567,9 @@ void cddb_submit( char *filename )
 		acd_print_msg(_("CDDB submit error: you must specify your category"));
 		return;
 	}
+
+	/* Get host name */
+	cddb_get_host_name(host);
 
 	/* Get host address */
 	acd_print(_("Getting address of %s"), host);
@@ -592,15 +592,88 @@ void cddb_submit( char *filename )
 
 	/* Communicate with server */
 	acd_print(_("Posting data to server"));
-	sprintf(buf, "POST /~cddb/submit.cgi\r\n");
-	if (!cddb_server_send(sockfd, buf, CDDB_BUF_SIZE - 1))
+	post_str = cddb_make_post_string(email, category);
+	if (post_str == NULL)
 		goto close;
-	sprintf(buf, "cddb hello %s %s mpfc 1.1\n", getenv("USER"), 
-			getenv("HOSTNAME"));
-	if (!cddb_server_send(sockfd, buf, CDDB_BUF_SIZE - 1))
+	if (!cddb_server_send(sockfd, post_str, strlen(post_str)))
+	{
+		free(post_str);
 		goto close;
-#endif
+	}
+
+	/* Get response */
+	acd_print(_("Getting response"));
+	if (!cddb_server_recv(sockfd, buf, CDDB_BUF_SIZE - 1))
+		goto close;
+	close(sockfd);
+	acd_print("%s", buf);
+	return;
+	
+close:
+	acd_print(_("Failure!"));
+	if (sockfd >= 0)
+		close(sockfd);
 } /* End of 'cddb_submit' function */
+
+/* Get host name */
+void cddb_get_host_name( char *name )
+{
+	if (cfg_get_var_int(acd_var_list, "cddb-host"))
+		strcpy(name, cfg_get_var(acd_var_list, "cddb-host"));
+	else
+		strcpy(name, "freedb.freedb.org");
+} /* End of 'cddb_get_host_name' function */
+
+/* Create string to submit to CDDB */
+char *cddb_make_post_string( char *email, char *category )
+{
+	char *buf;
+	dword id;
+	int i, size = 0;
+
+	/* Calculate disc id */
+	id = cddb_id();
+
+	/* Get needed buffer size */
+	for ( i = 0; i < cddb_data_len; i ++ )
+		if (cddb_data[i] != NULL)
+			size += strlen(cddb_data[i]) + 2; 
+
+	/* Allocate memory */
+	buf = (char *)malloc(size + 1024);
+	if (buf == NULL)
+		return NULL;
+
+	/* Fill buffer */
+	sprintf(buf, "POST /~cddb/submit.cgi HTTP/1.0\r\nCategory: %s\r\n"
+			"Discid: %x\r\nUser-Mail: %s\r\nSubmut-Mode: submit\r\n"
+			"Charset: ISO-8859-1\r\n"
+			"X-Cddbd-Note: Sent by MPFC\r\n"
+			"Content-Length: %d\r\n\r\n",
+			category, id, email, size);
+	for ( i = 0; i < cddb_data_len; i ++ )
+	{
+		int last;
+
+		strcat(buf, cddb_data[i]);
+		last = strlen(buf);
+		buf[last] = '\r';
+		buf[last + 1] = '\n';
+		buf[last + 2] = 0;
+	}
+	return buf;
+} /* End of 'cddb_make_post_string' function */
+
+/* Check if specified category is valid */
+bool_t cddb_valid_category( char *cat )
+{
+	return (!strcmp(cat, "blues") || !strcmp(cat, "classical") || 
+			!strcmp(cat, "country") || !strcmp(cat, "data") ||
+			!strcmp(cat, "folk") || !strcmp(cat, "jazz") ||
+			!strcmp(cat, "misc") || !strcmp(cat, "newage") ||
+			!strcmp(cat, "reggae") || !strcmp(cat, "rock") ||
+			!strcmp(cat, "soundtrack"));
+} /* End of 'cdbd_valid_category' function */
 
 /* End of 'cddb.c' file */
 

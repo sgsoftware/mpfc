@@ -1093,7 +1093,7 @@ void player_info_dialog( void )
 				256, _("Track No: "), s->m_info->m_track);
 		comments = ebox_new((wnd_t *)dlg, 2, y ++, WND_WIDTH(dlg) - 6, 1, 
 				256, _("Comments: "), s->m_info->m_comments);
-		genre = cbox_new((wnd_t *)dlg, 2, y ++, WND_WIDTH(dlg) - 6, 12,
+		genre = cbox_new((wnd_t *)dlg, 2, y ++, WND_WIDTH(dlg) - 25, 12,
 				_("Genre: "));
 		glist = inp_get_glist(song_get_inp(s));
 		for ( i = 0; glist != NULL && i < glist->m_size; i ++ )
@@ -2215,16 +2215,17 @@ void player_info_reload_dialog( void )
 void player_info_notify( wnd_t *wnd, dword data )
 {
 	int i;
+	int id = WND_NOTIFY_ID(data);
 
 	/* Save info if need */
-	if (inp_get_spec_flags(player_info_song->m_inp, data) &
+	if (inp_get_spec_flags(player_info_song->m_inp, id) &
 			INP_SPEC_SAVE_INFO)
 		player_save_info_dlg(wnd);
 
 	/* Call special functions */
 	if (player_info_local)
 	{
-		inp_spec_func(player_info_song->m_inp, data, 
+		inp_spec_func(player_info_song->m_inp, id, 
 				player_info_song->m_file_name);
 		song_update_info(player_info_song);
 	}
@@ -2237,7 +2238,7 @@ void player_info_notify( wnd_t *wnd, dword data )
 			if (PLIST_HAS_INFO(player_plist->m_list[i]) && 
 					inp == player_plist->m_list[i]->m_inp)
 			{
-				inp_spec_func(inp, data, player_plist->m_list[i]->m_file_name);
+				inp_spec_func(inp, id, player_plist->m_list[i]->m_file_name);
 				song_update_info(player_plist->m_list[i]);
 			}
 		}

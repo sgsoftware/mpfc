@@ -76,6 +76,15 @@ void cddb_reload( char *filename );
 /* Submit info to server */
 void cddb_submit( char *filename );
 
+/* Create string to submit to CDDB */
+char *cddb_make_post_string( char *email, char *category );
+
+/* Get host name */
+void cddb_get_host_name( char *name );
+
+/* Check if specified category is valid */
+bool_t cddb_valid_category( char *cat );
+
 #endif
 
 /* End of 'cddb.h' file */

@@ -54,6 +54,7 @@ in_plugin_t *inp_init( char *name )
 	p->m_lib_handler = dlopen(name, RTLD_NOW);
 	if (p->m_lib_handler == NULL)
 	{
+		util_log("%s\n", dlerror());
 		error_set_code(ERROR_IN_PLUGIN_ERROR);
 		free(p);
 		return NULL;

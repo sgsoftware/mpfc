@@ -754,7 +754,7 @@ wnd_t *wnd_get_wnd_under_cursor( int x, int y )
 
 	for ( wnd = wnd_root; wnd != NULL; )
 	{
-		wnd_t *fw;
+		wnd_t *fw, *last_suitable = NULL;
 		
 		/* Find a child under cursor */
 		w = fw = wnd_find_focus_branch(wnd);
@@ -765,8 +765,9 @@ wnd_t *wnd_get_wnd_under_cursor( int x, int y )
 				if (w == fw)
 					continue;
 				if (wnd_pt_belongs(w, x, y))
-					break;
+					last_suitable = w;
 			}
+			w = last_suitable;
 		}
 
 		/* If not found - return current window */
