@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: mpfc 1.1\n"
-"POT-Creation-Date: 2004-01-02 01:15+0300\n"
+"POT-Creation-Date: 2004-01-03 18:16+0300\n"
 "PO-Revision-Date: 2003-02-13 09:15+0300\n"
 "Last-Translator: Sergey E. Galanov <sgsoftware@mail.ru>\n"
 "Language-Team: Russian <sgsoftware@mail.ru>\n"
@@ -20,12 +20,13 @@ msgid "Initialization error : %s\n"
 msgstr "Ошибка инициализии : %s\n"
 
 #: src/player.c:457
+#, c-format
 msgid ""
 "SG Software Media Player For Console\n"
-"version 1.1\n"
+"version %s\n"
 msgstr ""
 "Плейер для консоли от SG Software\n"
-"версия 1.1\n"
+"версия %s\n"
 
 #: src/player.c:668
 msgid "Unable to initialize output plugin"
@@ -438,16 +439,17 @@ msgstr "Загрузить из файла Winamp EQF"
 msgid "Current directory is %s\n"
 msgstr "Текущий каталог %s\n"
 
-#: src/browser.c:481
+#: src/browser.c:480
 msgid "Select files matching pattern: "
 msgstr "Выбрать файлы, удовлетворяющие шаблону: "
 
-#: src/browser.c:482
+#: src/browser.c:481
 msgid "Deselect files matching pattern: "
 msgstr "Снять выделение с файлов, удовлетворяющих шаблону: "
 
+# c-format
 #: src/file/http.c:84
-#, fuzzy, c-format
+#, c-format
 msgid "Getting address of host %s"
 msgstr "Получаю адрес %s"
 
@@ -462,19 +464,21 @@ msgstr "OK"
 msgid "Connecting to %s"
 msgstr "Подключаюсь к %s"
 
+# c-format
 #: src/file/http.c:107
-#, fuzzy, c-format
+#, c-format
 msgid "Sending request for file %s"
-msgstr "Удаляю тег из файла %s"
+msgstr "Отправляю запрос на файл %s"
 
 #: src/file/http.c:114
 msgid "Getting HTTP header"
-msgstr ""
+msgstr "Получаю заголовок HTTP"
 
+# c-format
 #: src/file/http.c:175
-#, fuzzy, c-format
+#, c-format
 msgid "Redirect to %s"
-msgstr "Подключаюсь к %s"
+msgstr "Перенаправление к %s"
 
 #: src/file/http.c:184 plugins/input/audiocd/cddb.c:613
 msgid "Failure!"
@@ -483,7 +487,7 @@ msgstr "Облом!"
 #: src/file/http.c:252 src/file/http.c:257
 #, c-format
 msgid "Filling buffer: %d%% done"
-msgstr ""
+msgstr "Заполняю буфер: %d%%"
 
 #: plugins/input/mp3/mp3.c:419
 #, c-format

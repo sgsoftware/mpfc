@@ -478,7 +478,7 @@ void fb_select_pattern( browser_t *fb, bool_t sel )
 	/* Display box for pattern input */
 	box = ebox_new(WND_OBJ(fb), 0, WND_HEIGHT(fb) - 1, WND_WIDTH(fb), 1,
 			256, sel ? _("Select files matching pattern: ") : 
-			_("Deselect files matching pattern: "), "");
+			_("Deselect files matching pattern: "), "*");
 	if (box == NULL)
 		return;
 	box->m_hist_list = player_hist_lists[PLAYER_HIST_FB_PATTERN];

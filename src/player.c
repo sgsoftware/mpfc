@@ -455,7 +455,7 @@ void player_display( wnd_t *wnd, dword data )
 	{
 		col_set_color(wnd, COL_EL_ABOUT);
 		wnd_printf(wnd, _("SG Software Media Player For Console\n"
-				"version 1.1\n"));
+				"version %s\n"), VERSION);
 		col_set_color(wnd, COL_EL_DEFAULT);
 	}
 	else

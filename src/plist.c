@@ -795,9 +795,11 @@ void plist_move( plist_t *pl, int y, bool_t relative )
 		pl->m_scrolled += (pl->m_sel_end - old_end);
 		if (pl->m_scrolled < 0)
 			pl->m_scrolled = 0;
-		else if (pl->m_scrolled >= pl->m_len - pl->m_height)
-			pl->m_scrolled = pl->m_len - pl->m_height;
 	}
+	if (pl->m_scrolled >= pl->m_len - pl->m_height)
+		pl->m_scrolled = pl->m_len - pl->m_height;
+	if (pl->m_scrolled < 0)
+		pl->m_scrolled = 0;
 
 	/* Let selection start follow the end in non-visual mode */
 	if (!pl->m_visual)
