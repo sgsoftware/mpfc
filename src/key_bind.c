@@ -93,6 +93,7 @@ void kbind_init( void )
 	kbind_add(KBIND_VISUAL, 1, 'V');
 	kbind_add(KBIND_CENTRIZE, 1, 'C');
 	kbind_add(KBIND_SEARCH, 1, '/');
+	kbind_add(KBIND_ADVANCED_SEARCH, 1, '\\');
 	kbind_add(KBIND_NEXT_MATCH, 1, 'n');
 	kbind_add(KBIND_PREV_MATCH, 1, 'N');
 	kbind_add(KBIND_HELP, 1, '?');

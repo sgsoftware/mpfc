@@ -142,7 +142,8 @@
 #define KBIND_GOY				109
 #define KBIND_GOZ				110
 #define KBIND_GOBACK			111
-#define KBIND_NUM_ACTIONS		112
+#define KBIND_ADVANCED_SEARCH	112
+#define KBIND_NUM_ACTIONS		113
 
 /* The maximal key sequence length */
 #define KBIND_MAX_SEQ_LEN 10

@@ -3,10 +3,10 @@
  ******************************************************************/
 
 /* FILE NAME   : plist.h
- * PURPOSE     : SG MPFC. Interface fort play list manipulation
+ * PURPOSE     : SG MPFC. Interface for play list manipulation
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.08.2003
+ * LAST UPDATE : 27.09.2003
  * NOTE        : Module prefix 'plist'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -66,6 +66,17 @@ typedef struct
 #define PLIST_SORT_BY_NAME  1
 #define PLIST_SORT_BY_PATH  2
 
+/* Search criterias */
+#define PLIST_SEARCH_TITLE		0
+#define PLIST_SEARCH_NAME		1
+#define PLIST_SEARCH_ARTIST		2
+#define PLIST_SEARCH_ALBUM		3
+#define PLIST_SEARCH_YEAR		4
+#define PLIST_SEARCH_COMMENT	5
+#define PLIST_SEARCH_GENRE		6
+#define PLIST_SEARCH_TRACK		7
+#define PLIST_SEARCH_OWN		8
+
 /* Get real selection start and end */
 #define PLIST_GET_SEL(pl, start, end) \
 	(((pl)->m_sel_start < (pl)->m_sel_end) ? ((start) = (pl)->m_sel_start, \
@@ -108,7 +119,7 @@ void plist_sort( plist_t *pl, bool_t global, int criteria );
 void plist_rem( plist_t *pl );
 
 /* Search for string */
-bool_t plist_search( plist_t *pl, char *str, int dir );
+bool_t plist_search( plist_t *pl, char *str, int dir, int criteria );
 
 /* Move cursor in play list */
 void plist_move( plist_t *pl, int y, bool_t relative );

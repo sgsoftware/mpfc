@@ -137,7 +137,7 @@ void player_sort_dialog( void );
 void player_info_dialog( void );
 
 /* Process search play list dialog */
-void player_search_dialog( void );
+void player_search_dialog( int criteria );
 
 /* Process equalizer dialog */
 void player_eq_dialog( void );
@@ -202,6 +202,9 @@ void player_goto_mark( char m );
 
 /* Go back in play list */
 void player_go_back( void );
+
+/* Advanced search dialog */
+void player_advanced_search_dialog( void );
 
 #endif
 

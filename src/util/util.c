@@ -200,6 +200,9 @@ bool_t util_search_regexp( char *ptext, char *text )
 	regmatch_t pmatch;
 	int res;
 
+	if (ptext == NULL || text == NULL)
+		return FALSE;
+
 	if (regcomp(&preg, ptext, 0))
 		return FALSE;
 	res = regexec(&preg, text, 1, &pmatch, 0);

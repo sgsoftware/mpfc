@@ -62,8 +62,9 @@ plist_t *player_plist = NULL;
 /* Command repeat value */
 int player_repval = 0;
 
-/* Search string and position */
+/* Search string and criteria */
 char player_search_string[256] = "";
+int player_search_criteria = PLIST_SEARCH_TITLE;
 
 /* Message text */
 char player_msg[80] = "";
@@ -863,7 +864,7 @@ void player_sort_dialog( void )
 } /* End of 'player_sort_dialog' function */
 
 /* Process search play list dialog */
-void player_search_dialog( void )
+void player_search_dialog( int criteria )
 {
 	editbox_t *ebox;
 
@@ -880,7 +881,9 @@ void player_search_dialog( void )
 		if (ebox->m_last_key == '\n')
 		{
 			strcpy(player_search_string, ebox->m_text);
-			if (!plist_search(player_plist, player_search_string, 1))
+			player_search_criteria = criteria;
+			if (!plist_search(player_plist, player_search_string, 1, 
+						criteria))
 				strcpy(player_msg, _("String not found"));
 			else
 				strcpy(player_msg, _("String found"));
@@ -1335,14 +1338,20 @@ void player_handle_action( int action )
 
 	/* Search */
 	case KBIND_SEARCH:
-		player_search_dialog();
+		player_search_dialog(PLIST_SEARCH_TITLE);
+		break;
+
+	/* Advanced search */
+	case KBIND_ADVANCED_SEARCH:
+		player_advanced_search_dialog();
 		break;
 
 	/* Find next/previous search match */
 	case KBIND_NEXT_MATCH:
 	case KBIND_PREV_MATCH:
 		if (!plist_search(player_plist, player_search_string, 
-					(action == KBIND_NEXT_MATCH) ? 1 : -1))
+					(action == KBIND_NEXT_MATCH) ? 1 : -1, 
+					player_search_criteria))
 			strcpy(player_msg, _("String not found"));
 		else
 			strcpy(player_msg, _("String found"));
@@ -1811,6 +1820,54 @@ void player_go_back( void )
 		plist_move(player_plist, player_last_pos, FALSE);
 	}
 } /* End of 'player_go_back' function */
+
+/* Advanced search dialog */
+void player_advanced_search_dialog( void )
+{
+	choice_ctrl_t *ch;
+	char choice;
+	int t;
+
+	/* Get search criteria */
+	ch = choice_new(wnd_root, 0, wnd_root->m_height - 1, wnd_root->m_width,
+		1, _("Search for: (T)itle, (N)ame, (A)rtist, A(l)bum, (Y)ear, "
+			"(G)enre, (O)wn data"), 
+		"tnalygo");
+	if (ch == NULL)
+		return;
+	wnd_run(ch);
+	choice = ch->m_choice;
+	wnd_destroy(ch);
+	if (!CHOICE_VALID(choice))
+		return;
+
+	/* Search */
+	switch (choice)
+	{
+	case 't':
+		t = PLIST_SEARCH_TITLE;
+		break;
+	case 'n':
+		t = PLIST_SEARCH_NAME;
+		break;
+	case 'a':
+		t = PLIST_SEARCH_ARTIST;
+		break;
+	case 'l':
+		t = PLIST_SEARCH_ALBUM;
+		break;
+	case 'y':
+		t = PLIST_SEARCH_YEAR;
+		break;
+	case 'g':
+		t = PLIST_SEARCH_GENRE;
+		break;
+	case 'o':
+		t = PLIST_SEARCH_OWN;
+		break;
+	}
+	player_search_dialog(t);
+} /* End of 'player_advanced_search_dialog' function */
 
 /* End of 'player.c' file */
 

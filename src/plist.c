@@ -624,7 +624,7 @@ void plist_rem( plist_t *pl )
 } /* End of 'plist_rem' function */
 
 /* Search for string */
-bool_t plist_search( plist_t *pl, char *str, int dir )
+bool_t plist_search( plist_t *pl, char *pstr, int dir, int criteria )
 {
 	int i, count = 0;
 	bool_t found = FALSE;
@@ -636,6 +636,9 @@ bool_t plist_search( plist_t *pl, char *str, int dir )
 	/* Search */
 	for ( i = pl->m_sel_end, count = 0; count < pl->m_len && !found; count ++ )
 	{
+		char *str;
+		song_t *s;
+		
 		/* Go to next song */
 		i += dir;
 		if (i < 0 && dir < 0)
@@ -643,8 +646,41 @@ bool_t plist_search( plist_t *pl, char *str, int dir )
 		else if (i >= pl->m_len && dir > 0)
 			i = 0;
 
-		/* Search for specified string in song title */
-		found = util_search_regexp(str, pl->m_list[i]->m_title);
+		/* Search for specified string */
+		s = pl->m_list[i];
+		if (criteria != PLIST_SEARCH_TITLE && s->m_info == NULL)
+			continue;
+		switch (criteria)
+		{
+		case PLIST_SEARCH_TITLE:
+			str = s->m_title;
+			break;
+		case PLIST_SEARCH_NAME:
+			str = s->m_info->m_name;
+			break;
+		case PLIST_SEARCH_ARTIST:
+			str = s->m_info->m_artist;
+			break;
+		case PLIST_SEARCH_ALBUM:
+			str = s->m_info->m_album;
+			break;
+		case PLIST_SEARCH_YEAR:
+			str = s->m_info->m_year;
+			break;
+		case PLIST_SEARCH_GENRE:
+			str = song_get_genre_name(s);
+			break;
+		case PLIST_SEARCH_COMMENT:
+			str = s->m_info->m_comments;
+			break;
+		case PLIST_SEARCH_OWN:
+			str = s->m_info->m_own_data;
+			break;
+		case PLIST_SEARCH_TRACK:
+			str = s->m_info->m_track;
+			break;
+		}
+		found = util_search_regexp(pstr, str);
 		if (found)
 			plist_move(pl, i, FALSE);
 	} 
