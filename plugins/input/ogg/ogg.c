@@ -416,20 +416,20 @@ song_info_t *ogg_get_info( char *filename, int *len )
 	return si;
 } /* End of 'ogg_get_info' function */
 
-/* Get functions list */
-void inp_get_func_list( inp_func_list_t *fl )
+/* Exchange data with main program */
+void plugin_exchange_data( plugin_data_t *pd )
 {
-	fl->m_start = ogg_start;
-	fl->m_end = ogg_end;
-	fl->m_get_stream = ogg_get_stream;
-	fl->m_seek = ogg_seek;
-	fl->m_get_audio_params = ogg_get_audio_params;
-	fl->m_get_cur_time = ogg_get_cur_time;
-	fl->m_get_formats = ogg_get_formats;
-	fl->m_save_info = ogg_save_info;
-	fl->m_get_info = ogg_get_info;
-	ogg_pmng = fl->m_pmng;
-	ogg_log = pmng_get_logger(ogg_pmng);
+	INP_DATA(pd)->m_start = ogg_start;
+	INP_DATA(pd)->m_end = ogg_end;
+	INP_DATA(pd)->m_get_stream = ogg_get_stream;
+	INP_DATA(pd)->m_seek = ogg_seek;
+	INP_DATA(pd)->m_get_audio_params = ogg_get_audio_params;
+	INP_DATA(pd)->m_get_cur_time = ogg_get_cur_time;
+	INP_DATA(pd)->m_get_formats = ogg_get_formats;
+	INP_DATA(pd)->m_save_info = ogg_save_info;
+	INP_DATA(pd)->m_get_info = ogg_get_info;
+	ogg_pmng = pd->m_pmng;
+	ogg_log = pd->m_logger;
 } /* End of 'ogg_get_func_list' function */
 
 /* Initialize genres list */

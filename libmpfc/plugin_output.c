@@ -36,146 +36,109 @@
 #include "util.h"
 
 /* Initialize output plugin */
-out_plugin_t *outp_init( char *name, pmng_t *pmng )
+plugin_t *outp_init( char *name, pmng_t *pmng )
 {
-	out_plugin_t *p;
-	void (*fl)( outp_func_list_t * );
+	outp_data_t pd;
+	plugin_t *p;
 
-	/* Try to allocate memory for plugin object */
-	p = (out_plugin_t *)malloc(sizeof(out_plugin_t));
+	/* Create plugin */
+	memset(&pd, 0, sizeof(pd));
+	p = plugin_init(pmng, name, PLUGIN_TYPE_OUTPUT, sizeof(out_plugin_t), 
+			PLUGIN_DATA(&pd));
 	if (p == NULL)
-	{
 		return NULL;
-	}
 
-	/* Load respective library */
-	p->m_lib_handler = dlopen(name, RTLD_LAZY);
-	if (p->m_lib_handler == NULL)
-	{
-		free(p);
-		return NULL;
-	}
-
-	/* Initialize plugin */
-	fl = dlsym(p->m_lib_handler, "outp_get_func_list");
-	if (fl == NULL)
-	{
-		outp_free(p);
-		return NULL;
-	}
-	p->m_name = pmng_create_plugin_name(name);
-	memset(&p->m_fl, 0, sizeof(p->m_fl));
-	p->m_fl.m_pmng = pmng;
-	fl(&p->m_fl);
+	/* Set other fields */
+	OUTPUT_PLUGIN(p)->m_pd = pd;
+	p->m_pd = PLUGIN_DATA(&OUTPUT_PLUGIN(p)->m_pd);
 	return p;
 } /* End of 'outp_init' function */
-
-/* Free output plugin object */
-void outp_free( out_plugin_t *p )
-{
-	if (p != NULL)
-	{
-		dlclose(p->m_lib_handler);
-		if (p->m_name != NULL)
-			free(p->m_name);
-		free(p);
-	}
-} /* End of 'outp_free' function */
 
 /* Plugin start function */
 bool_t outp_start( out_plugin_t *p )
 {
-	if (p != NULL && (p->m_fl.m_start != NULL))
-		return p->m_fl.m_start();
+	if (p != NULL && (p->m_pd.m_start != NULL))
+		return p->m_pd.m_start();
 	return FALSE;
 } /* End of 'outp_start' function */
 
 /* Plugin end function */
 void outp_end( out_plugin_t *p )
 {
-	if (p != NULL && (p->m_fl.m_end != NULL))
-		p->m_fl.m_end();
+	if (p != NULL && (p->m_pd.m_end != NULL))
+		p->m_pd.m_end();
 } /* End of 'outp_end' function */
 
 /* Set channels number function */
 void outp_set_channels( out_plugin_t *p, int ch )
 {
-	if (p != NULL && (p->m_fl.m_set_channels != NULL))
-		p->m_fl.m_set_channels(ch);
+	if (p != NULL && (p->m_pd.m_set_channels != NULL))
+		p->m_pd.m_set_channels(ch);
 } /* End of 'outp_set_channels' function */
 
 /* Set frequency function */
 void outp_set_freq( out_plugin_t *p, int freq )
 {
-	if (p != NULL && (p->m_fl.m_set_freq != NULL))
-		p->m_fl.m_set_freq(freq);
+	if (p != NULL && (p->m_pd.m_set_freq != NULL))
+		p->m_pd.m_set_freq(freq);
 } /* End of 'outp_set_freq' function */
 
 /* Set format function */
 void outp_set_fmt( out_plugin_t *p, dword fmt )
 {
-	if (p != NULL && (p->m_fl.m_set_fmt != NULL))
-		p->m_fl.m_set_fmt(fmt);
+	if (p != NULL && (p->m_pd.m_set_fmt != NULL))
+		p->m_pd.m_set_fmt(fmt);
 } /* End of 'outp_set_fmt' function */
 	
 /* Play stream function */
 void outp_play( out_plugin_t *p, void *buf, int size )
 {
-	if (p != NULL && (p->m_fl.m_play != NULL))
-		p->m_fl.m_play(buf, size);
+	if (p != NULL && (p->m_pd.m_play != NULL))
+		p->m_pd.m_play(buf, size);
 } /* End of 'outp_play' function */
 
 /* Flush function */
 void outp_flush( out_plugin_t *p )
 {
-	if (p != NULL && (p->m_fl.m_flush != NULL))
-		p->m_fl.m_flush();
+	if (p != NULL && (p->m_pd.m_flush != NULL))
+		p->m_pd.m_flush();
 } /* End of 'outp_flush' function */
 
 /* Pause playing */
 void outp_pause( out_plugin_t *p )
 {
-	if (p != NULL && (p->m_fl.m_pause != NULL))
-		p->m_fl.m_pause();
+	if (p != NULL && (p->m_pd.m_pause != NULL))
+		p->m_pd.m_pause();
 } /* End of 'outp_pause' function */
 
 /* Resume playing */
 void outp_resume( out_plugin_t *p )
 {
-	if (p != NULL && (p->m_fl.m_resume != NULL))
-		p->m_fl.m_resume();
+	if (p != NULL && (p->m_pd.m_resume != NULL))
+		p->m_pd.m_resume();
 } /* End of 'outp_resume' function */
 
 /* Set volume */
 void outp_set_volume( out_plugin_t *p, int left, int right )
 {
-	if (p != NULL && (p->m_fl.m_set_volume != NULL))
-		p->m_fl.m_set_volume(left, right);
+	if (p != NULL && (p->m_pd.m_set_volume != NULL))
+		p->m_pd.m_set_volume(left, right);
 } /* End of 'outp_set_volume' function */
 
 /* Get volume */
 void outp_get_volume( out_plugin_t *p, int *left, int *right )
 {
-	if (p != NULL && (p->m_fl.m_get_volume != NULL))
-		p->m_fl.m_get_volume(left, right);
+	if (p != NULL && (p->m_pd.m_get_volume != NULL))
+		p->m_pd.m_get_volume(left, right);
 	else
 		*left = *right = 0;
 } /* End of 'outp_get_volume' function */
-
-/* Get information about plugin */
-char *outp_get_about( out_plugin_t *p )
-{
-	if (p != NULL && p->m_fl.m_about != NULL)
-		return p->m_fl.m_about;
-	else
-		return NULL;
-} /* End of 'outp_get_about' function */
 
 /* Get plugin flags */
 dword outp_get_flags( out_plugin_t *p )
 {
 	if (p != NULL)
-		return p->m_fl.m_flags;
+		return p->m_pd.m_flags;
 	else
 		return 0;
 } /* End of 'outp_get_flags' function */

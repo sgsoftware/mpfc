@@ -142,8 +142,7 @@ void vfs_glob( vfs_t *vfs, char *pattern, vfs_callback_t callback, void *data,
 				dh = vfs_opendir(vfs, &fd);
 				if (dh == NULL)
 				{
-					logger_message(VFS_LOGGER(vfs), LOGGER_MSG_ERROR,
-							LOGGER_LEVEL_DEFAULT, 
+					logger_error(VFS_LOGGER(vfs), 1, 
 							_("Unable to read directory %s"), fd.m_full_name);
 					continue;
 				}
@@ -215,8 +214,7 @@ void vfs_visit_match( vfs_t *vfs, vfs_file_t *file, vfs_callback_t callback,
 	/* Get file parameters */
 	if (file->m_stat_return != 0)
 	{
-		logger_message(VFS_LOGGER(vfs), LOGGER_MSG_ERROR,
-				LOGGER_LEVEL_DEFAULT, 
+		logger_error(VFS_LOGGER(vfs), 1,
 				_("Unable to stat file %s"), file->m_full_name);
 		return;
 	}
@@ -247,8 +245,7 @@ void vfs_visit_match( vfs_t *vfs, vfs_file_t *file, vfs_callback_t callback,
 		dh = vfs_opendir(vfs, file);
 		if (dh == NULL)
 		{
-			logger_message(VFS_LOGGER(vfs), LOGGER_MSG_ERROR,
-					LOGGER_LEVEL_DEFAULT, 
+			logger_error(VFS_LOGGER(vfs), 1,
 					_("Unable to read directory %s"), file->m_full_name);
 			return;
 		}
@@ -353,7 +350,7 @@ void vfs_file_escape( vfs_file_t *dest, vfs_file_t *src,
  * prefix */
 in_plugin_t *vfs_plugin_from_prefix( vfs_t *vfs, char *full_name, char **name )
 {
-	in_plugin_t *inp;
+	plugin_t *inp;
 
 	if (vfs == NULL || vfs->m_pmng == NULL)
 	{
@@ -375,13 +372,13 @@ in_plugin_t *vfs_plugin_from_prefix( vfs_t *vfs, char *full_name, char **name )
 
 	/* Search for this plugin */
 	(**name) = 0;
-	inp = pmng_search_inp_by_name(vfs->m_pmng, full_name);
+	inp = pmng_search_by_name(vfs->m_pmng, full_name, PLUGIN_TYPE_INPUT);
 	(**name) = ':';
 	if (inp == NULL)
 		(*name) = full_name;
 	else
 		(*name) += 3;
-	return inp;
+	return INPUT_PLUGIN(inp);
 } /* End of 'vfs_plugin_from_prefix' function */
 
 /* Returns absolute path of this pattern */

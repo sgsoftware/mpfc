@@ -129,13 +129,6 @@ void undo_do( struct tag_undo_list_item_t *item )
 		plist_add_set(player_plist, data->m_set);
 		plist_flush_scheduled(player_plist);
 	}
-	/* Add object */
-	else if (item->m_type == UNDO_ADD_OBJ)
-	{
-		struct tag_undo_list_add_obj_t *data = &item->m_data.m_add_obj;
-		plist_add_obj(player_plist, data->m_obj_name, NULL, -1);
-		plist_flush_scheduled(player_plist);
-	}
 	/* Remove songs */
 	else if (item->m_type == UNDO_REM)
 	{

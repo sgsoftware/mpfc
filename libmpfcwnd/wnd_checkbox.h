@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Interface for checkbox
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 18.08.2004
+ * LAST UPDATE : 7.10.2004
  * NOTE        : Module prefix 'checkbox'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -65,6 +65,9 @@ wnd_msg_retcode_t checkbox_on_display( wnd_t *wnd );
 /* 'mouse_ldown' message handler */
 wnd_msg_retcode_t checkbox_on_mouse( wnd_t *wnd, int x, int y, 
 		wnd_mouse_button_t mb, wnd_mouse_event_t type );
+
+/* 'quick_change_focus' message handler */
+wnd_msg_retcode_t checkbox_on_quick_change_focus( wnd_t *wnd );
 
 /* Toggle checked state */
 void checkbox_toggle( checkbox_t *cb );

@@ -210,13 +210,13 @@ bool_t cddb_read_server( dword id )
 	cddb_get_host_name(host);
 
 	/* Get host address */
-	acd_print(_("Getting address of %s"), host);
+	logger_message(acd_log, 1, _("Getting address of %s"), host);
 	he = gethostbyname(host);
 	if (he == NULL)
 		goto close;
 
 	/* Initialize socket and connect */
-	acd_print(_("Connecting to %s"), host);
+	logger_message(acd_log, 1, _("Connecting to %s"), host);
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (sockfd < 0)
 		goto close;
@@ -229,7 +229,7 @@ bool_t cddb_read_server( dword id )
 		goto close;
 
 	/* Communicate with server */
-	acd_print(_("Sending query to server"));
+	logger_message(acd_log, 1, _("Sending query to server"));
 	if (!cddb_server_recv(sockfd, buf, CDDB_BUF_SIZE - 1))
 		goto close;
 	snprintf(buf, sizeof(buf), "cddb hello %s %s mpfc 1.1\n", getenv("USER"), 
@@ -263,12 +263,12 @@ bool_t cddb_read_server( dword id )
 	cddb_server2data(buf);
 
 	/* Save data */
-	acd_print(_("Saving data"));
+	logger_message(acd_log, 1, _("Saving data"));
 	cddb_save_data(id);
-	acd_print(_("Success"));
+	logger_message(acd_log, 1, _("Success"));
 	return TRUE;
 close:
-	acd_print(_("Failed!"));
+	logger_error(acd_log, 1, _("Failed!"));
 	cddb_server_found = FALSE;
 	if (sockfd >= 0)
 		close(sockfd);
@@ -551,23 +551,23 @@ void cddb_submit( char *filename )
 	/* Check data */
 	if (cddb_data == NULL)
 	{
-		logger_message(acd_log, LOGGER_MSG_ERROR, LOGGER_LEVEL_DEFAULT,
+		logger_error(acd_log, 1,
 				_("CDDB submit error: no existing info found"));
 		return;
 	}
 	
 	/* Check email and category (set through variables) */
-	email = cfg_get_var(pmng_get_cfg(acd_pmng), "cddb-email");
+	email = cfg_get_var(acd_cfg, "cddb-email");
 	if (strlen(email) <= 1)
 	{
-		logger_message(acd_log, LOGGER_MSG_ERROR, LOGGER_LEVEL_DEFAULT,
+		logger_error(acd_log, 1,
 				_("CDDB submit error: you must specify your email address"));
 		return;
 	}
-	category = cfg_get_var(pmng_get_cfg(acd_pmng), "cddb-category");
+	category = cfg_get_var(acd_cfg, "cddb-category");
 	if (!cddb_valid_category(category))
 	{
-		logger_message(acd_log, LOGGER_MSG_ERROR, LOGGER_LEVEL_DEFAULT,
+		logger_error(acd_log, 1,
 				_("CDDB submit error: you must specify your category"));
 		return;
 	}
@@ -576,13 +576,13 @@ void cddb_submit( char *filename )
 	cddb_get_host_name(host);
 
 	/* Get host address */
-	acd_print(_("Getting address of %s"), host);
+	logger_message(acd_log, 1, _("Getting address of %s"), host);
 	he = gethostbyname(host);
 	if (he == NULL)
 		goto close;
 
 	/* Initialize socket and connect */
-	acd_print(_("Connecting to %s"), host);
+	logger_message(acd_log, 1, _("Connecting to %s"), host);
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (sockfd < 0)
 		goto close;
@@ -595,7 +595,7 @@ void cddb_submit( char *filename )
 		goto close;
 
 	/* Communicate with server */
-	acd_print(_("Posting data to server"));
+	logger_message(acd_log, 1, _("Posting data to server"));
 	post_str = cddb_make_post_string(email, category);
 	if (post_str == NULL)
 		goto close;
@@ -606,15 +606,15 @@ void cddb_submit( char *filename )
 	}
 
 	/* Get response */
-	acd_print(_("Getting response"));
+	logger_message(acd_log, 1, _("Getting response"));
 	if (!cddb_server_recv(sockfd, buf, CDDB_BUF_SIZE - 1))
 		goto close;
 	close(sockfd);
-	acd_print("%s", buf);
+	logger_message(acd_log, 1, "%s", buf);
 	return;
 	
 close:
-	acd_print(_("Failure!"));
+	logger_message(acd_log, 1, _("Failure!"));
 	if (sockfd >= 0)
 		close(sockfd);
 } /* End of 'cddb_submit' function */
@@ -622,7 +622,7 @@ close:
 /* Get host name */
 void cddb_get_host_name( char *name )
 {
-	char *host = cfg_get_var(pmng_get_cfg(acd_pmng), "cddb-host");
+	char *host = cfg_get_var(acd_cfg, "cddb-host");
 	if (host != NULL)
 		strcpy(name, host);
 	else

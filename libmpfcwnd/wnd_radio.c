@@ -67,6 +67,8 @@ bool_t radio_construct( radio_t *r, wnd_t *parent, char *title, char *id,
 	wnd_msg_add_handler(WND_OBJ(r), "action", radio_on_action);
 	wnd_msg_add_handler(WND_OBJ(r), "display", radio_on_display);
 	wnd_msg_add_handler(WND_OBJ(r), "mouse_ldown", radio_on_mouse);
+	wnd_msg_add_handler(WND_OBJ(r), "quick_change_focus", 
+			radio_on_quick_change_focus);
 
 	/* Set fields */
 	r->m_checked = checked;
@@ -116,6 +118,13 @@ wnd_msg_retcode_t radio_on_mouse( wnd_t *wnd, int x, int y,
 	radio_check(RADIO_OBJ(wnd));
 	return WND_MSG_RETCODE_OK;
 } /* End of 'radio_on_mouse' function */
+
+/* 'quick_change_focus' message handler */
+wnd_msg_retcode_t radio_on_quick_change_focus( wnd_t *wnd )
+{
+	radio_check(RADIO_OBJ(wnd));
+	return WND_MSG_RETCODE_OK;
+} /* End of 'radio_on_quick_change_focus' function */
 
 /* Set checked state */
 void radio_check( radio_t *r )

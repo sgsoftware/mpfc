@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Keyboard functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 13.08.2004
+ * LAST UPDATE : 10.10.2004
  * NOTE        : Module prefix 'wnd_kbd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -413,7 +413,9 @@ int wnd_kbd_test_seq( wnd_kbd_data_t *data, char *seq, int len,
 		{
 			matches ++;
 			if (sl == len)
+			{
 				(*code) = s->m_code;
+			}
 		}
 	}
 	if (matches > 0)
@@ -422,7 +424,7 @@ int wnd_kbd_test_seq( wnd_kbd_data_t *data, char *seq, int len,
 	/* Test common keys */
 	if ((*seq) != 27)
 	{
-		(*code) = (*seq);
+		(*code) = (byte)(*seq);
 		return 1;
 	}
 	return 0;

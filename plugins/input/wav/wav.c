@@ -59,6 +59,12 @@ static int wav_data_offset = 0;
 /* Current time */
 static int wav_time = 0;
 
+/* Plugin description */
+static char *wav_desc = "WAV files playback plugin";
+
+/* Plugin author */
+static char *wav_author = "Sergey E. Galanov <sgsoftware@mail.ru>";
+
 /* Start play function */
 bool_t wav_start( char *filename )
 {
@@ -254,18 +260,20 @@ song_info_t *wav_get_info( char *filename, int *length )
 	return si;
 } /* End of 'wav_get_info' function */ 
 
-/* Get functions list */
-void inp_get_func_list( inp_func_list_t *fl )
+/* Exchange data with main program */
+void plugin_exchange_data( plugin_data_t *pd )
 {
-	fl->m_start = wav_start;
-	fl->m_end = wav_end;
-	fl->m_get_stream = wav_get_stream;
-	fl->m_seek = wav_seek;
-	fl->m_get_audio_params = wav_get_audio_params;
-	fl->m_get_formats = wav_get_formats;
-	fl->m_get_cur_time = wav_get_cur_time;
-	fl->m_get_info = wav_get_info;
-} /* End of 'inp_get_func_list' function */
+	pd->m_desc = wav_desc;
+	pd->m_author = wav_author;
+	INP_DATA(pd)->m_start = wav_start;
+	INP_DATA(pd)->m_end = wav_end;
+	INP_DATA(pd)->m_get_stream = wav_get_stream;
+	INP_DATA(pd)->m_seek = wav_seek;
+	INP_DATA(pd)->m_get_audio_params = wav_get_audio_params;
+	INP_DATA(pd)->m_get_formats = wav_get_formats;
+	INP_DATA(pd)->m_get_cur_time = wav_get_cur_time;
+	INP_DATA(pd)->m_get_info = wav_get_info;
+} /* End of 'plugin_exchange_data' function */
 
 /* Read the next chunk. Returns TRUE when 'data' chunk is read */
 static bool_t wav_read_next_chunk( file_t *fd, void **fmt_buf, 

@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "types.h"
-#include "colors.h"
 #include "help_screen.h"
 #include "wnd.h"
 

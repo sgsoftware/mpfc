@@ -74,7 +74,16 @@ static char acd_next_song[MAX_FILE_NAME] = "";
 static int audio_fd = -1;
 
 /* Logger */
-static logger_t *acd_log = NULL;
+logger_t *acd_log = NULL;
+
+/* Plugin description */
+static char *acd_desc = "AudioCD playback plugin";
+
+/* Configuration list */
+cfg_node_t *acd_cfg = NULL;
+
+/* Plugin author */
+static char *acd_author = "Sergey E. Galanov <sgsoftware@mail.ru>";
 
 /* Prepare cdrom for ioctls */
 static int acd_prepare_cd( void )
@@ -83,7 +92,7 @@ static int acd_prepare_cd( void )
 	char *dev;
 
 	/* Get device name */
-	dev = cfg_get_var(pmng_get_cfg(acd_pmng), "audiocd-device");
+	dev = cfg_get_var(acd_cfg, "device");
 	if (dev == NULL)
 		dev = "/dev/cdrom";
 	
@@ -526,39 +535,43 @@ int acd_stat( char *name, struct stat *sb )
 	return ENOENT;
 } /* End of 'acd_stat' function */
 
-/* Get functions list */
-void inp_get_func_list( inp_func_list_t *fl )
+/* Exchange data with main program */
+void plugin_exchange_data( plugin_data_t *pd )
 {
-	fl->m_start = acd_start;
-	fl->m_end = acd_end;
-	fl->m_get_stream = acd_get_stream;
-	fl->m_seek = acd_seek;
-	fl->m_get_audio_params = acd_get_audio_params;
-	fl->m_flags = INP_OWN_SOUND | INP_VFS;
-	fl->m_pause = acd_pause;
-	fl->m_resume = acd_resume;
-	fl->m_get_cur_time = acd_get_cur_time;
-	fl->m_get_info = acd_get_info;
-	fl->m_save_info = acd_save_info;
-	fl->m_set_song_title = acd_set_song_title;
-	fl->m_set_next_song = acd_set_next_song;
-	fl->m_vfs_opendir = acd_opendir;
-	fl->m_vfs_closedir = acd_closedir;
-	fl->m_vfs_readdir = acd_readdir;
-	fl->m_vfs_stat = acd_stat;
-	acd_pmng = fl->m_pmng;
-	acd_log = pmng_get_logger(acd_pmng);
+	pd->m_desc = acd_desc;
+	pd->m_author = acd_author;
+	INP_DATA(pd)->m_start = acd_start;
+	INP_DATA(pd)->m_end = acd_end;
+	INP_DATA(pd)->m_get_stream = acd_get_stream;
+	INP_DATA(pd)->m_seek = acd_seek;
+	INP_DATA(pd)->m_get_audio_params = acd_get_audio_params;
+	INP_DATA(pd)->m_flags = INP_OWN_SOUND | INP_VFS;
+	INP_DATA(pd)->m_pause = acd_pause;
+	INP_DATA(pd)->m_resume = acd_resume;
+	INP_DATA(pd)->m_get_cur_time = acd_get_cur_time;
+	INP_DATA(pd)->m_get_info = acd_get_info;
+	INP_DATA(pd)->m_save_info = acd_save_info;
+	INP_DATA(pd)->m_set_song_title = acd_set_song_title;
+	INP_DATA(pd)->m_set_next_song = acd_set_next_song;
+	INP_DATA(pd)->m_vfs_opendir = acd_opendir;
+	INP_DATA(pd)->m_vfs_closedir = acd_closedir;
+	INP_DATA(pd)->m_vfs_readdir = acd_readdir;
+	INP_DATA(pd)->m_vfs_stat = acd_stat;
+	acd_pmng = pd->m_pmng;
+	acd_log = pd->m_logger;
+	acd_cfg = pd->m_cfg;
 
-	fl->m_num_spec_funcs = 2;
-	fl->m_spec_funcs = (inp_spec_func_t *)malloc(sizeof(inp_spec_func_t) * 
-			fl->m_num_spec_funcs);
-	fl->m_spec_funcs[0].m_title = strdup(_("Reload info from CDDB"));
-	fl->m_spec_funcs[0].m_flags = 0;
-	fl->m_spec_funcs[0].m_func = cddb_reload;
-	fl->m_spec_funcs[1].m_title = strdup(_("Submit info to CDDB"));
-	fl->m_spec_funcs[1].m_flags = INP_SPEC_SAVE_INFO;
-	fl->m_spec_funcs[1].m_func = cddb_submit;
-} /* End of 'inp_get_func_list' function */
+	INP_DATA(pd)->m_num_spec_funcs = 2;
+	INP_DATA(pd)->m_spec_funcs = 
+		(inp_spec_func_t *)malloc(sizeof(inp_spec_func_t) * 
+								  INP_DATA(pd)->m_num_spec_funcs);
+	INP_DATA(pd)->m_spec_funcs[0].m_title = strdup(_("Reload info from CDDB"));
+	INP_DATA(pd)->m_spec_funcs[0].m_flags = 0;
+	INP_DATA(pd)->m_spec_funcs[0].m_func = cddb_reload;
+	INP_DATA(pd)->m_spec_funcs[1].m_title = strdup(_("Submit info to CDDB"));
+	INP_DATA(pd)->m_spec_funcs[1].m_flags = INP_SPEC_SAVE_INFO;
+	INP_DATA(pd)->m_spec_funcs[1].m_func = cddb_submit;
+} /* End of 'plugin_exchange_data' function */
 
 /* Set song title */
 str_t *acd_set_song_title( char *filename )

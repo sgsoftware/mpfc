@@ -254,9 +254,6 @@ void player_search_dialog( void );
 /* Launch advanced search dialog */
 void player_advanced_search_dialog( void );
 
-/* Launch variables mini-manager */
-void player_var_mini_manager( void );
-
 /* Launch variables manager */
 void player_var_manager( void );
 
@@ -309,11 +306,11 @@ wnd_msg_retcode_t player_on_adv_search( wnd_t *wnd );
 /* Handle 'ok_clicked' for info reload dialog */
 wnd_msg_retcode_t player_on_info_reload( wnd_t *wnd );
 
-/* Handle 'ok_clicked' for mini variables manager */
-wnd_msg_retcode_t player_on_mini_var( wnd_t *wnd );
+/* Handle 'ok_clicked' for variables manager */
+wnd_msg_retcode_t player_on_var( wnd_t *wnd );
 
-/* Handle 'clicked' for mini variables manager view value button */
-wnd_msg_retcode_t player_on_mini_var_view( wnd_t *wnd );
+/* Handle 'clicked' for variables manager view value button */
+wnd_msg_retcode_t player_on_var_view( wnd_t *wnd );
 
 /* Handle 'keydown' for repeat value dialog edit box */
 wnd_msg_retcode_t player_repval_on_keydown( wnd_t *wnd, wnd_key_t key );

@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Common dialog item 
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 16.08.2004
+ * LAST UPDATE : 7.10.2004
  * NOTE        : Module prefix 'dlgitem'
  *
  * This program is free software; you can redistribute it and/or 
@@ -114,6 +114,8 @@ wnd_msg_retcode_t dlgitem_on_keydown( wnd_t *wnd, wnd_key_t key )
 		if (child != NULL)
 		{
 			wnd_set_focus(WND_OBJ(child));
+			wnd_msg_send(WND_OBJ(child), "quick_change_focus",
+					dlgitem_msg_quick_change_focus_new());
 			return WND_MSG_RETCODE_STOP;
 		}
 	}
@@ -196,7 +198,7 @@ int dlgitem_label_text_len( wnd_t *wnd, char *text )
 wnd_class_t *dlgitem_class_init( wnd_global_data_t *global )
 {
 	wnd_class_t *klass = wnd_class_new(global, "dlgitem", 
-			wnd_basic_class_init(global), NULL, 
+			wnd_basic_class_init(global), dlgitem_get_msg_info, 
 			dlgitem_class_set_default_styles);
 	return klass;
 } /* End of 'dlgitem_class_init' function */
@@ -209,6 +211,19 @@ void dlgitem_class_set_default_styles( cfg_node_t *list )
 	cfg_set_var(list, "kbind.ok", "<Enter>");
 	cfg_set_var(list, "kbind.cancel", "<Escape>;<Ctrl-g>");
 } /* End of 'dlgitem_class_set_default_styles' function */
+
+/* Get message information */
+wnd_msg_handler_t **dlgitem_get_msg_info( wnd_t *wnd, char *msg_name,
+		wnd_class_msg_callback_t *callback )
+{
+	if (!strcmp(msg_name, "quick_change_focus"))
+	{
+		if (callback != NULL)
+			(*callback) = wnd_basic_callback_noargs;
+		return &DLGITEM_OBJ(wnd)->m_on_quick_change_focus;
+	}
+	return NULL;
+} /* End of 'dlgitem_get_msg_info' function */
 
 /* End of 'wnd_dlgitem.c' file */
 

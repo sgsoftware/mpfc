@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Plugins manager functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 17.09.2004
+ * LAST UPDATE : 9.10.2004
  * NOTE        : Module prefix 'pmng'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -34,6 +34,7 @@
 #include "ep.h"
 #include "inp.h"
 #include "outp.h"
+#include "plugin.h"
 #include "pmng.h"
 #include "util.h"
 #include "vfs.h"
@@ -68,89 +69,49 @@ void pmng_free( pmng_t *pmng )
 	if (pmng == NULL)
 		return;
 	
-	for ( i = 0; i < pmng->m_num_inp; i ++ )
-		inp_free(pmng->m_inp[i]);
-	free(pmng->m_inp);
-	for ( i = 0; i < pmng->m_num_outp; i ++ )
-		outp_free(pmng->m_outp[i]);
-	free(pmng->m_outp);
-	for ( i = 0; i < pmng->m_num_ep; i ++ )
-		ep_free(pmng->m_ep[i]);
-	free(pmng->m_ep);
-	for ( i = 0; i < pmng->m_num_csp; i ++ )
-		csp_free(pmng->m_csp[i]);
-	free(pmng->m_csp);
+	for ( i = 0; i < pmng->m_num_plugins; i ++ )
+		plugin_free(pmng->m_plugins[i]);
+	free(pmng->m_plugins);
 	free(pmng);
 } /* End of 'pmng_free' function */
 
-/* Add an input plugin */
-void pmng_add_in( pmng_t *pmng, in_plugin_t *p )
+/* Add a plugin */
+void pmng_add_plugin( pmng_t *pmng, plugin_t *p )
 {
 	if (pmng == NULL)
 		return;
-		
-	pmng->m_inp = (in_plugin_t **)realloc(pmng->m_inp, 
-			sizeof(in_plugin_t *) * (pmng->m_num_inp + 1));
-	pmng->m_inp[pmng->m_num_inp ++] = p;
-} /* End of 'pmng_add_in' function */
-
-/* Add an output plugin */
-void pmng_add_out( pmng_t *pmng, out_plugin_t *p )
-{
-	if (pmng == NULL)
-		return;
-
-	pmng->m_outp = (out_plugin_t **)realloc(pmng->m_outp, 
-			sizeof(out_plugin_t *) * (pmng->m_num_outp + 1));
-	pmng->m_outp[pmng->m_num_outp ++] = p;
-
-	if (pmng->m_cur_out == NULL)
-		pmng->m_cur_out = p;
-} /* End of 'pmng_add_out' function */
-
-/* Add an effect plugin */
-void pmng_add_effect( pmng_t *pmng, effect_plugin_t *p )
-{
-	if (pmng == NULL)
-		return;
-
-	pmng->m_ep = (effect_plugin_t **)realloc(pmng->m_ep, 
-			sizeof(effect_plugin_t *) * (pmng->m_num_ep + 1));
-	pmng->m_ep[pmng->m_num_ep ++] = p;
-} /* End of 'pmng_add_effect' function */
-
-/* Add a charset plugin */
-void pmng_add_charset( pmng_t *pmng, cs_plugin_t *p )
-{
-	if (pmng == NULL)
-		return;
-
-	pmng->m_csp = (cs_plugin_t **)realloc(pmng->m_csp, 
-			sizeof(cs_plugin_t *) * (pmng->m_num_csp + 1));
-	pmng->m_csp[pmng->m_num_csp ++] = p;
-} /* End of 'pmng_add_charset' function */
+	pmng->m_plugins = (plugin_t **)realloc(pmng->m_plugins,
+			sizeof(plugin_t *) * (pmng->m_num_plugins + 1));
+	assert(pmng->m_plugins);
+	pmng->m_plugins[pmng->m_num_plugins ++] = p;
+} /* End of 'pmng_add_plugin' function */
 
 /* Search for input plugin supporting given format */
 in_plugin_t *pmng_search_format( pmng_t *pmng, char *format )
 {
-	int i;
+	pmng_iterator_t iter;
 
 	if (pmng == NULL || !(*format))
 		return NULL;
 
-	for ( i = 0; i < pmng->m_num_inp; i ++ )
+	iter = pmng_start_iteration(pmng, PLUGIN_TYPE_INPUT);
+	for ( ;; )
 	{
 		char formats[128], ext[10];
 		int j, k = 0;
+		in_plugin_t *inp;
 	   
-		inp_get_formats(pmng->m_inp[i], formats, NULL);
+		inp = INPUT_PLUGIN(pmng_iterate(&iter));
+		if (inp == NULL)
+			break;
+		inp_get_formats(inp, formats, NULL);
 		for ( j = 0;; ext[k ++] = formats[j ++] )
 		{
 			if (formats[j] == 0 || formats[j] == ';')
 			{
 				ext[k] = 0;
 				if (!strcasecmp(ext, format))
-					return pmng->m_inp[i];
+					return inp;
 				k = 0;
 			}
 			if (!formats[j])
@@ -164,36 +125,50 @@ in_plugin_t *pmng_search_format( pmng_t *pmng, char *format )
 int pmng_apply_effects( pmng_t *pmng, byte *data, int len, int fmt, 
 		int freq, int channels )
 {
-	int l = len, i;
+	int l = len;
+	pmng_iterator_t iter;
 
 	if (pmng == NULL)
 		return 0;
 
-	for ( i = 0; i < pmng->m_num_ep; i ++ )
+	iter = pmng_start_iteration(pmng, PLUGIN_TYPE_EFFECT);
+	for ( ;; )
 	{
 		char name[256];
+		effect_plugin_t *ep;
 		
 		/* Apply effect plugin if it is enabled */
-		snprintf(name, sizeof(name), "enable-effect-%s", pmng->m_ep[i]->m_name);
+		ep = EFFECT_PLUGIN(pmng_iterate(&iter));
+		if (ep == NULL)
+			break;
+		snprintf(name, sizeof(name), "enable-effect-%s", PLUGIN(ep)->m_name);
 		if (cfg_get_var_int(pmng->m_cfg_list, name))
-			l = ep_apply(pmng->m_ep[i], data, l, fmt, freq, channels);
+			l = ep_apply(ep, data, l, fmt, freq, channels);
 	}
 	return l;
 } /* End of 'pmng_apply_effects' function */
 
-/* Search for input plugin with specified name */
-in_plugin_t *pmng_search_inp_by_name( pmng_t *pmng, char *name )
+/* Search for plugin with a specified name */
+plugin_t *pmng_search_by_name( pmng_t *pmng, char *name, 
+		plugin_type_t type_mask )
 {
-	int i;
+	pmng_iterator_t iter;
 
 	if (pmng == NULL)
 		return NULL;
 
-	for ( i = 0; i < pmng->m_num_inp; i ++ )
-		if (!strcmp(name, pmng->m_inp[i]->m_name))
-			return pmng->m_inp[i];
+	/* Iterate through plugins */
+	iter = pmng_start_iteration(pmng, type_mask);
+	for ( ;; )
+	{
+		plugin_t *p = pmng_iterate(&iter);
+		if (p == NULL)
+			return NULL;
+		else if (!strcmp(name, p->m_name))
+			return p;
+	}
 	return NULL;
-} /* End of 'pmng_search_inp_by_name' function */
+} /* End of 'pmng_search_by_name' function */
 
 /* Load plugins */
 bool_t pmng_load_plugins( pmng_t *pmng )
@@ -201,40 +176,31 @@ bool_t pmng_load_plugins( pmng_t *pmng )
 	char path[MAX_FILE_NAME];
 	struct 
 	{
-		int m_type;
+		plugin_type_t m_type;
 		pmng_t *pmng;
 	} data = {0, pmng};
-
+	struct
+	{
+		plugin_type_t m_type;
+		char *m_dir;
+	} types[] = { { PLUGIN_TYPE_INPUT, "input" }, 
+				{ PLUGIN_TYPE_OUTPUT, "output" },
+				{ PLUGIN_TYPE_EFFECT, "effect" },
+				{ PLUGIN_TYPE_CHARSET, "charset" } };
+	int num_types, i;
 	if (pmng == NULL)
 		return FALSE;
 
-	/* Load input plugins */
-	data.m_type = PMNG_IN;
-	snprintf(path, sizeof(path), "%s/input", 
-			cfg_get_var(pmng->m_cfg_list, "lib-dir"));
-	vfs_glob(NULL, path, pmng_glob_handler, &data, VFS_LEVEL_INFINITE, 
-			VFS_GLOB_NOPATTERN);
-
-	/* Load output plugins */
-	data.m_type = PMNG_OUT;
-	snprintf(path, sizeof(path), "%s/output", 
-			cfg_get_var(pmng->m_cfg_list, "lib-dir"));
-	vfs_glob(NULL, path, pmng_glob_handler, &data, VFS_LEVEL_INFINITE, 
-			VFS_GLOB_NOPATTERN);
-
-	/* Load effect plugins */
-	data.m_type = PMNG_EFFECT;
-	snprintf(path, sizeof(path), "%s/effect", 
-			cfg_get_var(pmng->m_cfg_list, "lib-dir"));
-	vfs_glob(NULL, path, pmng_glob_handler, &data, VFS_LEVEL_INFINITE, 
-			VFS_GLOB_NOPATTERN);
-
-	/* Load charset plugins */
-	data.m_type = PMNG_CHARSET;
-	snprintf(path, sizeof(path), "%s/charset", 
-			cfg_get_var(pmng->m_cfg_list, "lib-dir"));
-	vfs_glob(NULL, path, pmng_glob_handler, &data, VFS_LEVEL_INFINITE, 
-			VFS_GLOB_NOPATTERN);
+	/* Load plugins of all types */
+	num_types = sizeof(types) / sizeof(types[0]);
+	for ( i = 0; i < num_types; i ++ )
+	{
+		data.m_type = types[i].m_type;
+		snprintf(path, sizeof(path), "%s/%s", 
+				cfg_get_var(pmng->m_cfg_list, "lib-dir"), types[i].m_dir);
+		vfs_glob(NULL, path, pmng_glob_handler, &data, VFS_LEVEL_INFINITE, 
+				VFS_GLOB_NOPATTERN);
+	}
 	return TRUE;
 } /* End of 'pmng_load_plugins' function */
 
@@ -243,12 +209,13 @@ void pmng_glob_handler( vfs_file_t *file, void *data )
 {
 	struct data_t
 	{
-		int m_type;
+		plugin_type_t m_type;
 		pmng_t *m_pmng;
 	} *pmng_data;
 	pmng_t *pmng;
-	int type;
+	plugin_type_t type;
 	char *name;
+	plugin_t *p = NULL;
 
 	/* Filter files */
 	if (strcmp(file->m_extension, "so"))
@@ -264,58 +231,40 @@ void pmng_glob_handler( vfs_file_t *file, void *data )
 	if (pmng_is_loaded(pmng, name, type))
 		return;
 
-	/* Input plugin */
-	if (type == PMNG_IN)
-	{
-		in_plugin_t *ip;
+	/* Initialize plugin */
+	if (type == PLUGIN_TYPE_INPUT)
+		p = inp_init(name, pmng);
+	else if (type == PLUGIN_TYPE_OUTPUT)
+		p = outp_init(name, pmng);
+	else if (type == PLUGIN_TYPE_EFFECT)
+		p = ep_init(name, pmng);
+	else if (type == PLUGIN_TYPE_CHARSET)
+		p = csp_init(name, pmng);
+	if (p == NULL)
+		return;
 
-		ip = inp_init(name, pmng);
-		if (ip != NULL)
-			pmng_add_in(pmng, ip);
-	}
-	/* Output plugin */
-	else if (type == PMNG_OUT)
-	{
-		out_plugin_t *op;
-		
-		op = outp_init(name, pmng);
-		if (op != NULL)
-		{
-			char *out_plugin;
-			
-			pmng_add_out(pmng, op);
+	/* Add plugin to the list */
+	pmng_add_plugin(pmng, p);
 
-			/* Choose this plugin if it is set in options */
-			out_plugin = cfg_get_var(pmng->m_cfg_list, "output-plugin");
-			if (out_plugin != NULL && !strcmp(op->m_name, out_plugin))
-				pmng->m_cur_out = op;
-		}
-	}
-	/* Effect plugin */
-	else if (type == PMNG_EFFECT)
+	/* Extra work for output plugins */
+	if (type == PLUGIN_TYPE_OUTPUT)
 	{
-		effect_plugin_t *ep;
-		
-		ep = ep_init(name, pmng);
-		if (ep != NULL)
-			pmng_add_effect(pmng, ep);
-	}
-	/* Charset plugin */
-	else if (type == PMNG_CHARSET)
-	{
-		cs_plugin_t *csp;
-		
-		csp = csp_init(name, pmng);
-		if (csp != NULL)
-			pmng_add_charset(pmng, csp);
+		char *out_plugin;
+		out_plugin_t *op = OUTPUT_PLUGIN(p);
+
+		if (pmng->m_cur_out == NULL)
+			pmng->m_cur_out = op;
+		out_plugin = cfg_get_var(pmng->m_cfg_list, "output-plugin");
+		if (out_plugin != NULL && !strcmp(PLUGIN(op)->m_name, out_plugin))
+			pmng->m_cur_out = op;
 	}
 } /* End of 'pmng_glob_handler' function */
 
 /* Check if specified plugin is already loaded */
-bool_t pmng_is_loaded( pmng_t *pmng, char *name, int type )
+bool_t pmng_is_loaded( pmng_t *pmng, char *name, plugin_type_t type )
 {
 	char *sn;
-	int i;
+	pmng_iterator_t iter;
 
 	if (pmng == NULL)
 		return FALSE;
@@ -324,28 +273,14 @@ bool_t pmng_is_loaded( pmng_t *pmng, char *name, int type )
 	sn = util_short_name(name);
 	
 	/* Search */
-	switch (type)
+	iter = pmng_start_iteration(pmng, type);
+	for ( ;; )
 	{
-	case PMNG_IN:
-		for ( i = 0; i < pmng->m_num_inp; i ++ )
-			if (!strcmp(sn, pmng->m_inp[i]->m_name))
-				return TRUE;
-		break;
-	case PMNG_OUT:
-		for ( i = 0; i < pmng->m_num_outp; i ++ )
-			if (!strcmp(sn, pmng->m_outp[i]->m_name))
-				return TRUE;
-		break;
-	case PMNG_EFFECT:
-		for ( i = 0; i < pmng->m_num_ep; i ++ )
-			if (!strcmp(sn, pmng->m_ep[i]->m_name))
-				return TRUE;
-		break;
-	case PMNG_CHARSET:
-		for ( i = 0; i < pmng->m_num_csp; i ++ )
-			if (!strcmp(sn, pmng->m_csp[i]->m_name))
-				return TRUE;
-		break;
+		plugin_t *p = pmng_iterate(&iter);
+		if (p == NULL)
+			break;
+		if (!strcmp(sn, p->m_name))
+			return TRUE;
 	}
 	return FALSE;
 } /* End of 'pmng_is_loaded' function */
@@ -353,17 +288,21 @@ bool_t pmng_is_loaded( pmng_t *pmng, char *name, int type )
 /* Search plugin for content-type */
 in_plugin_t *pmng_search_content_type( pmng_t *pmng, char *content )
 {
-	int i;
+	pmng_iterator_t iter;
 
 	if (content == NULL || pmng == NULL)
 		return NULL;
 
-	for ( i = 0; i < pmng->m_num_inp; i ++ )
+	iter = pmng_start_iteration(pmng, PLUGIN_TYPE_INPUT);
+	for ( ;; )
 	{
 		char types[256], type[80];
 		int j, k = 0;
-	   
-		inp_get_formats(pmng->m_inp[i], NULL, types);
+		in_plugin_t *inp = INPUT_PLUGIN(pmng_iterate(&iter));
+		if (inp == NULL)
+			break;
+
+		inp_get_formats(inp, NULL, types);
 		if (types == NULL)
 			continue;
 		for ( j = 0;; type[k ++] = types[j ++] )
@@ -372,7 +311,7 @@ in_plugin_t *pmng_search_content_type( pmng_t *pmng, char *content )
 			{
 				type[k] = 0;
 				if (!strcasecmp(type, content))
-					return pmng->m_inp[i];
+					return inp;
 				k = 0;
 			}
 			if (!types[j])
@@ -385,25 +324,30 @@ in_plugin_t *pmng_search_content_type( pmng_t *pmng, char *content )
 /* Find charset plugin which supports specified set */
 cs_plugin_t *pmng_find_charset( pmng_t *pmng, char *name, int *index )
 {
-	int i;
+	pmng_iterator_t iter;
 	
 	if (pmng == NULL)
 		return NULL;
 
-	for ( i = 0; i < pmng->m_num_csp; i ++ )
+	iter = pmng_start_iteration(pmng, PLUGIN_TYPE_CHARSET);
+	for ( ;; )
 	{
-		int num = csp_get_num_sets(pmng->m_csp[i]), j;
+		int num, j;
+		cs_plugin_t *csp = CHARSET_PLUGIN(pmng_iterate(&iter));
+		if (csp == NULL)
+			break;
 
+		num = csp_get_num_sets(csp);
 		for ( j = 0; j < num; j ++ )
 		{
 			char *sn;
 
-			if ((sn = csp_get_cs_name(pmng->m_csp[i], j)) != NULL)
+			if ((sn = csp_get_cs_name(csp, j)) != NULL)
 			{
 				if (!strcmp(sn, name))
 				{
 					*index = j;
-					return pmng->m_csp[i];
+					return csp;
 				}
 			}
 		}
@@ -446,6 +390,31 @@ char *pmng_create_plugin_name( char *filename )
 	}
 	return name;
 } /* End of 'pmng_create_plugin_name' function */
+
+/* Start iteration */
+pmng_iterator_t pmng_start_iteration( pmng_t *pmng, plugin_type_t type_mask )
+{
+	pmng_iterator_t iter;
+	iter.m_pmng = pmng;
+	iter.m_index = 0;
+	iter.m_type_mask = type_mask;
+	return iter;
+} /* End of 'pmng_start_iteration' function */
+
+/* Make an iteration */
+plugin_t *pmng_iterate( pmng_iterator_t *iter )
+{
+	pmng_t *pmng = iter->m_pmng;
+
+	/* Iterate */
+	while (iter->m_index < pmng->m_num_plugins &&
+			!(pmng->m_plugins[iter->m_index]->m_type & iter->m_type_mask))
+		iter->m_index ++;
+
+	/* Return plugin */
+	return (iter->m_index >= pmng->m_num_plugins ? NULL : 
+			pmng->m_plugins[iter->m_index ++]);
+} /* End of 'pmng_iterate' function */
 
 /* End of 'pmng.c' file */
 

@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for charset plugin management
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 7.02.2004
+ * LAST UPDATE : 9.10.2004
  * NOTE        : Module prefix 'csp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -29,12 +29,16 @@
 #define __SG_MPFC_CSP_H__
 
 #include "types.h"
+#include "plugin.h"
 
 struct tag_pmng_t;
 
-/* Plugin functions list structure */
+/* Data for exchange */
 typedef struct
 {
+	/* Common plugin data */
+	plugin_data_t m_pd;
+
 	/* Get number of supported character sets */
 	int (*m_get_num_sets)( void );
 
@@ -53,37 +57,29 @@ typedef struct
 	/* Reserved data */
 	byte m_reserved[116];
 
-	/* Information about plugin */
-	char *m_about;
-	
-	/* Plugins manager */
-	struct tag_pmng_t *m_pmng;
-
 	/* Reserved data */
-	byte m_reserved1[120];
-} csp_func_list_t;
+	byte m_reserved1[64];
+} csp_data_t;
 
 /* Charset plugin type */
 typedef struct tag_cs_plugin_t
 {
-	/* Plugin library handler */
-	void *m_lib_handler;
+	/* Common plugin data */
+	plugin_t m_plugin;
 
-	/* Plugin name */
-	char *m_name;
-
-	/* Functions list */
-	csp_func_list_t m_fl;
+	/* Data for exchange */
+	csp_data_t m_pd;
 } cs_plugin_t;
+
+/* Helper macros */
+#define CHARSET_PLUGIN(p) ((cs_plugin_t *)p)
+#define CSP_DATA(pd) ((csp_data_t *)pd)
 
 /* Charset flags */
 #define CSP_AUTO 0x00000001
 
 /* Initialize charset plugin */
-cs_plugin_t *csp_init( char *name, struct tag_pmng_t *pmng );
-
-/* Free charset plugin object */
-void csp_free( cs_plugin_t *p );
+plugin_t *csp_init( char *name, struct tag_pmng_t *pmng );
 
 /* Get number of supported character sets */
 int csp_get_num_sets( cs_plugin_t *p );
@@ -99,9 +95,6 @@ char *csp_expand_auto( cs_plugin_t *p, char *sample_str, int index );
 
 /* Get charset flags */
 dword csp_get_flags( cs_plugin_t *p, int index );
-
-/* Get information about plugin */
-char *csp_get_about( cs_plugin_t *p );
 
 #endif
 

@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Interface for common dialog
  *               item functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 16.08.2004
+ * LAST UPDATE : 7.10.2004
  * NOTE        : Module prefix 'dlgitem'
  *
  * This program is free software; you can redistribute it and/or 
@@ -52,6 +52,9 @@ typedef struct tag_dlgitem_t
 {
 	/* Window part */
 	wnd_t m_wnd;
+
+	/* Message handlers */
+	wnd_msg_handler_t *m_on_quick_change_focus;
 
 	/* Item letter */
 	char m_letter;
@@ -111,6 +114,13 @@ wnd_class_t *dlgitem_class_init( wnd_global_data_t *global );
 
 /* Set dialog item class default styles */
 void dlgitem_class_set_default_styles( cfg_node_t *list );
+
+/* Get message information */
+wnd_msg_handler_t **dlgitem_get_msg_info( wnd_t *wnd, char *msg_name,
+		wnd_class_msg_callback_t *callback );
+
+/* Aliases for message data creating */
+#define dlgitem_msg_quick_change_focus_new	wnd_msg_noargs_new
 
 #endif
 

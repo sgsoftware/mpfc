@@ -30,7 +30,6 @@
 #include <sys/types.h>
 #include "types.h"
 #include "browser.h"
-#include "colors.h"
 #include "help_screen.h"
 #include "player.h"
 #include "plist.h"
@@ -60,9 +59,9 @@
 
 /* Variable names associated with columns length */
 char *fb_vars[FB_COL_NUM] = 
-{ "fb-fname-len", "fb-title-len", "fb-artist-len", "fb-album-len", 
-  "fb-year-len", "fb-genre-len", "fb-comments-len", "fb-track-len", 
-  "fb-time-len" };
+{ "fname-len", "title-len", "artist-len", "album-len", 
+  "year-len", "genre-len", "comments-len", "track-len", 
+  "time-len" };
 
 /* Create a new file browser window */
 browser_t *fb_new( wnd_t *parent, char *dir )
@@ -775,12 +774,12 @@ void fb_print_info_col( browser_t *fb, int id, struct browser_list_item *item )
 	if (id < 0 || id >= FB_COL_NUM)
 		return;
 
-	size = cfg_get_var_int(cfg_list, fb_vars[id]);
+	size = wnd_get_style_int(WND_OBJ(fb), fb_vars[id]);
 	if (size == 0)
 		return;
 	for ( i = id + 1; i < FB_COL_NUM; i ++ )
 	{
-		next_size = cfg_get_var_int(cfg_list, fb_vars[i]);
+		next_size = wnd_get_style_int(WND_OBJ(fb), fb_vars[i]);
 		if (next_size > 0)
 			break;
 	}
@@ -900,6 +899,15 @@ void fb_class_set_default_styles( cfg_node_t *list )
 	cfg_set_var(list, "search-string-style", "white:black");
 	cfg_set_var(list, "title-style", "green:black:bold");
 	cfg_set_var(list, "header-style", "green:black:bold");
+	cfg_set_var_int(list, "fname-len", 0);
+	cfg_set_var_int(list, "artist-len", 15);
+	cfg_set_var_int(list, "title-len", 30);
+	cfg_set_var_int(list, "album-len", 20);
+	cfg_set_var_int(list, "year-len", 4);
+	cfg_set_var_int(list, "comments-len", 0);
+	cfg_set_var_int(list, "genre-len", 0);
+	cfg_set_var_int(list, "track-len", 0);
+	cfg_set_var_int(list, "time-len", 5);
 
 	/* Set kbinds */
 	cfg_set_var(list, "kbind.quit", "q;<Escape>");

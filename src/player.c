@@ -36,7 +36,6 @@
 #include "types.h"
 #include "browser.h"
 #include "cfg.h"
-#include "colors.h"
 #include "eqwnd.h"
 #include "file.h"
 #include "help_screen.h"
@@ -214,8 +213,7 @@ bool_t player_init( int argc, char *argv[] )
 	}
 	t = time(NULL);
 	str_time = ctime(&t);
-	logger_message(player_log, LOGGER_MSG_STATUS, LOGGER_LEVEL_LOW, 
-			_("MPFC %s Log\n%s"), VERSION, str_time);
+	logger_status_msg(player_log, 0, _("MPFC %s Log\n%s"), VERSION, str_time);
 //	free(str_time);
 
 	/* Parse command line */
@@ -226,22 +224,17 @@ bool_t player_init( int argc, char *argv[] )
 	wnd_root = wnd_init(cfg_list, player_log);
 	if (wnd_root == NULL)
 	{
-		logger_message(player_log, LOGGER_MSG_FATAL, LOGGER_LEVEL_LOW,
-				_("Window system initialization failed"));
+		logger_fatal(player_log, 0, _("Window system initialization failed"));
 		return FALSE;
 	}
 	wnd_msg_add_handler(wnd_root, "destructor", player_deinit);
 	player_wnd = player_wnd_new(wnd_root);
 	if (player_wnd == NULL)
 	{
-		logger_message(player_log, LOGGER_MSG_FATAL, LOGGER_LEVEL_LOW,
-				_("Unable to initialize play list window"));
+		logger_fatal(player_log, 0, _("Unable to initialize play list window"));
 		return FALSE;
 	}
 	logger_attach_handler(player_log, player_on_log_msg, NULL);
-
-	/* Initialize colors */
-	col_init();
 
 	/* Initialize file browser directory */
 	getcwd(player_fb_dir, sizeof(player_fb_dir));
@@ -266,8 +259,7 @@ bool_t player_init( int argc, char *argv[] )
 	player_plist = plist_new(3);
 	if (player_plist == NULL)
 	{
-		logger_message(player_log, LOGGER_MSG_FATAL, LOGGER_LEVEL_LOW,
-				_("Play list initialization failed"));
+		logger_fatal(player_log, 0, _("Play list initialization failed"));
 		return FALSE;
 	}
 
@@ -329,8 +321,7 @@ bool_t player_init( int argc, char *argv[] )
 	}
 
 	/* Exit */
-	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_LOW, 
-			_("Player initialized"));
+	logger_message(player_log, 0, _("Player initialized"));
 	return TRUE;
 } /* End of 'player_init' function */
 
@@ -374,12 +365,10 @@ void player_deinit( wnd_t *wnd_root )
 {
 	int i;
 
-	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-			"In player_deinit");
+	logger_debug(player_log, "In player_deinit");
 
 	/* Save information about place in song where we stop */
-	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-			"Saving position to configuration");
+	logger_debug(player_log, "Saving position to configuration");
 	cfg_set_var_int(cfg_list, "cur-song", 
 			player_plist->m_cur_song);
 	cfg_set_var_int(cfg_list, "cur-time", player_cur_time);
@@ -389,19 +378,15 @@ void player_deinit( wnd_t *wnd_root )
 	player_save_cfg();
 	
 	/* End playing thread */
-	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-			"Doing sat_free");
+	logger_debug(player_log, "Doing sat_free");
 	sat_free();
-	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-			"Doing iwt_free");
+	logger_debug(player_log, "Doing iwt_free");
 	iwt_free();
-	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-			"Setting next song to NULL");
+	logger_debug(player_log, "Setting next song to NULL");
 	inp_set_next_song(player_inp, NULL);
 	if (player_tid)
 	{
-		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-				"Stopping player thread");
+		logger_debug(player_log, "Stopping player thread");
 		player_end_play(FALSE);
 		player_end_track = TRUE;
 		player_end_thread = TRUE;
@@ -411,14 +396,12 @@ void player_deinit( wnd_t *wnd_root )
 	}
 	
 	/* Uninitialize plugin manager */
-	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-			"Doing pmng_free");
+	logger_debug(player_log, "Doing pmng_free");
 	pmng_free(player_pmng);
 	player_pmng = NULL;
 
 	/* Uninitialize history lists */
-	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-			"Freeing history list");
+	logger_debug(player_log, "Freeing history list");
 	for ( i = 0; i < PLAYER_NUM_HIST_LISTS; i ++ )
 	{
 		editbox_history_free(player_hist_lists[i]);
@@ -426,8 +409,7 @@ void player_deinit( wnd_t *wnd_root )
 	}
 
 	/* Free memory allocated for strings */
-	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-			"Freeing strings");
+	logger_debug(player_log, "Freeing strings");
 	if (player_search_string != NULL)
 	{
 		free(player_search_string);
@@ -440,31 +422,25 @@ void player_deinit( wnd_t *wnd_root )
 		/* Save play list */
 		if (cfg_get_var_int(cfg_list, "save-playlist-on-exit"))
 		{
-			logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-					"Saving play list");
+			logger_debug(player_log, "Saving play list");
 			plist_save(player_plist, "~/.mpfc/list.m3u");
 		}
 		
-		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-				"Destroying play list");
+		logger_debug(player_log, "Destroying play list");
 		plist_free(player_plist);
 		player_plist = NULL;
 	}
-	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-			"Freeing undo information");
+	logger_debug(player_log, "Freeing undo information");
 	undo_free(player_ul);
 	player_ul = NULL;
-	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-			"Freeing VFS");
+	logger_debug(player_log, "Freeing VFS");
 	vfs_free(player_vfs);
 
 	/* Free logger */
 	if (player_log != NULL)
 	{
-		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-				"Stopping logger");
-		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_LOW,
-				_("Left MPFC"));
+		logger_debug(player_log, "Stopping logger");
+		logger_message(player_log, 0, _("Left MPFC"));
 		logger_free(player_log);
 	}
 
@@ -555,30 +531,14 @@ bool_t player_init_cfg( void )
 			player_handle_kbind_scheme);
 
 	/* Set default variable values */
-	log_file = (char *)malloc(strlen(getenv("HOME")) + 
-			strlen("/.mpfc/log") + 1);
-	strcpy(log_file, getenv("HOME"));
-	strcat(log_file, "/.mpfc/log");
+	log_file = util_strcat(getenv("HOME"), "/.mpfc/log", NULL);
 	cfg_set_var(cfg_list, "log-file", log_file);
 	free(log_file);
 	cfg_set_var(cfg_list, "output-plugin", "oss");
-	cfg_set_var_int(cfg_list, "mp3-quick-get-len", 1);
 	cfg_set_var_int(cfg_list, "save-playlist-on-exit", 1);
 	cfg_set_var_int(cfg_list, "play-from-stop", 1);
 	cfg_set_var(cfg_list, "lib-dir", LIBDIR"/mpfc");
 	cfg_set_var_bool(cfg_list, "equalizer.enable-on-change", TRUE);
-	cfg_set_var_int(cfg_list, "echo-delay", 500);
-	cfg_set_var_int(cfg_list, "echo-volume", 50);
-	cfg_set_var_int(cfg_list, "echo-feedback", 50);
-	cfg_set_var_int(cfg_list, "fb-fname-len", 0);
-	cfg_set_var_int(cfg_list, "fb-artist-len", 15);
-	cfg_set_var_int(cfg_list, "fb-title-len", 30);
-	cfg_set_var_int(cfg_list, "fb-album-len", 21);
-	cfg_set_var_int(cfg_list, "fb-year-len", 4);
-	cfg_set_var_int(cfg_list, "fb-comments-len", 0);
-	cfg_set_var_int(cfg_list, "fb-genre-len", 0);
-	cfg_set_var_int(cfg_list, "fb-track-len", 0);
-	cfg_set_var_int(cfg_list, "fb-time-len", 5);
 
 	/* Read configuration files */
 	cfg_rcfile_read(cfg_list, player_cfg_autosave_file);
@@ -849,11 +809,10 @@ wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action )
 		if (!plist_search(player_plist, player_search_string, 
 					(action[0] == 'n' || action[0] == 'N') ? 1 : -1, 
 					player_search_criteria))
-			logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
-					_("String `%s' not found"), 
+			logger_message(player_log, 1, _("String `%s' not found"), 
 					player_search_string);
 		else
-			logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
+			logger_message(player_log, 1,
 					_("String `%s' found at position %d"), player_search_string,
 					player_plist->m_sel_end);
 		long_jump = TRUE;
@@ -876,9 +835,9 @@ wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action )
 				!cfg_get_var_int(cfg_list, "loop-play"));
 	}
 	/* Variables manager */
-	else if (!strcasecmp(action, "var_mini_manager"))
+	else if (!strcasecmp(action, "var_manager"))
 	{
-		player_var_mini_manager();
+		player_var_manager();
 	}
 	/* Move play list down */
 	else if (!strcasecmp(action, "plist_down"))
@@ -1510,8 +1469,7 @@ void *player_thread( void *arg )
 {
 	bool_t no_outp = FALSE;
 	
-	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-			"In player_thread");
+	logger_debug(player_log, "In player_thread");
 
 	/* Main loop */
 	while (!player_end_thread)
@@ -1539,17 +1497,15 @@ void *player_thread( void *arg )
 		//player_status = PLAYER_STATUS_PLAYING;
 		player_end_track = FALSE;
 	
-		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-				"Playing track %s", s->m_full_name);
+		logger_debug(player_log, "Playing track %s", s->m_full_name);
 
 		/* Start playing */
-		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-				"Starting input plugin");
+		logger_debug(player_log, "Starting input plugin");
 		inp = song_get_inp(s, &fd);
 		if (!inp_start(inp, s->m_file_name, fd))
 		{
 			player_next_track();
-			logger_message(player_log, LOGGER_MSG_ERROR, LOGGER_LEVEL_LOW,
+			logger_debug(player_log, 
 					_("Input plugin for file %s failed"), s->m_file_name);
 			wnd_invalidate(player_wnd);
 			continue;
@@ -1562,19 +1518,16 @@ void *player_thread( void *arg )
 			((in_flags & INP_OWN_SOUND) && !(out_flags & OUTP_NO_SOUND));
 
 		/* Get song length and information */
-		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-				"Updating song info");
+		logger_debug(player_log, "Updating song info");
 		song_update_info(s);
 
 		/* Start output plugin */
-		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-				"Starting output plugin");
+		logger_debug(player_log, "Starting output plugin");
 		if (!no_outp && (player_pmng->m_cur_out == NULL || 
 				(!cfg_get_var_int(cfg_list, "silent-mode") && 
 					!outp_start(player_pmng->m_cur_out))))
 		{
-			logger_message(player_log, LOGGER_MSG_ERROR, LOGGER_LEVEL_LOW,
-					"Output plugin initialization failed");
+			logger_debug(player_log, "Output plugin initialization failed");
 //			wnd_send_msg(wnd_root, WND_MSG_USER, PLAYER_MSG_END_TRACK);
 			inp_end(inp);
 			player_status = PLAYER_STATUS_STOPPED;
@@ -1597,15 +1550,13 @@ void *player_thread( void *arg )
 		inp_set_eq(inp);
 
 		/* Start timer thread */
-		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-				"Creating timer thread");
+		logger_debug(player_log, "Creating timer thread");
 		pthread_create(&player_timer_tid, NULL, player_timer_func, 0);
 		//wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
 	
 		/* Play */
 		disp_count = 0;
-		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-				"Going into track playing cycle");
+		logger_debug(player_log, "Going into track playing cycle");
 		while (!player_end_track)
 		{
 			byte buf[8192];
@@ -1685,33 +1636,28 @@ void *player_thread( void *arg )
 				util_wait();
 			}
 		}
-		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-				"End playing track");
+		logger_debug(player_log, "End playing track");
 
 		/* Wait until we really stop playing */
 		if (!no_outp)
 		{
-			logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-					"outp_flush");
+			logger_debug(player_log, "outp_flush");
 			outp_flush(player_pmng->m_cur_out);
 		}
 
 		/* Stop timer thread */
-		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-				"Stopping timer");
+		logger_debug(player_log, "Stopping timer");
 		player_stop_timer();
 
 		/* Send message about track end */
 		if (!player_end_track)
 		{
-			logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-					"Going to the next track");
+			logger_debug(player_log, "Going to the next track");
 			player_next_track();
 		}
 
 		/* End playing */
-		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-				"inp_end");
+		logger_debug(player_log, "inp_end");
 		inp_end(inp);
 		player_inp = NULL;
 		player_bitrate = player_freq = player_stereo = 0;
@@ -1719,16 +1665,14 @@ void *player_thread( void *arg )
 		/* End output plugin */
 		if (!no_outp)
 		{
-			logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-					"outp_end");
+			logger_debug(player_log, "outp_end");
 			outp_end(player_pmng->m_cur_out);
 		}
 
 		/* Update screen */
 		wnd_invalidate(player_wnd);
 	}
-	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
-			"Player thread finished");
+	logger_debug(player_log, "Player thread finished");
 	return NULL;
 } /* End of 'player_thread' function */
 
@@ -1901,8 +1845,8 @@ bool_t player_info_dialog_fill( dialog_t *dlg, bool_t first_call )
 		if (start != end)
 		{
 			checkbox_t *cb = checkbox_new(WND_OBJ(dlg->m_vbox), 
-					_("Write info in &all the selected songs"),
-					"write_in_all", 'a', TRUE);
+					_("Write in&fo in all the selected songs"),
+					"write_in_all", 'f', TRUE);
 			wnd_msg_add_handler(WND_OBJ(cb), "clicked", 
 					player_on_info_cb_clicked);
 		}
@@ -2060,12 +2004,13 @@ void player_search_dialog( void )
 	dialog_arrange_children(dlg);
 } /* End of 'player_search_dialog' function */
 
-/* Display mini configuration manager */
-void player_var_mini_manager( void )
+/* Display variables manager */
+void player_var_manager( void )
 {
 	dialog_t *dlg;
 	editbox_t *eb;
 	button_t *btn;
+	vbox_t *vbox;
 
 	dlg = dialog_new(wnd_root, _("Mini variables manager"));
 	eb = editbox_new_with_label(WND_OBJ(dlg->m_vbox), _("&Name: "),
@@ -2076,10 +2021,14 @@ void player_var_mini_manager( void )
 	eb->m_history = player_hist_lists[PLAYER_HIST_LIST_VAR_VAL];
 	btn = button_new(WND_OBJ(dlg->m_hbox), _("Vie&w current value"),
 			"", 'w');
-	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_mini_var);
-	wnd_msg_add_handler(WND_OBJ(btn), "clicked", player_on_mini_var_view);
+	vbox = vbox_new(WND_OBJ(dlg->m_vbox), _("Operation"), 0);
+	radio_new(WND_OBJ(vbox), _("S&et"), "set", 'e', TRUE);
+	radio_new(WND_OBJ(vbox), _("&Add"), "add", 'a', FALSE);
+	radio_new(WND_OBJ(vbox), _("&Remove"), "rem", 'r', FALSE);
+	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_var);
+	wnd_msg_add_handler(WND_OBJ(btn), "clicked", player_on_var_view);
 	dialog_arrange_children(dlg);
-} /* End of 'player_var_mini_manager' function */
+} /* End of 'player_var_manager' function */
 
 /* Launch advanced search dialog */
 void player_advanced_search_dialog( void )
@@ -2111,7 +2060,7 @@ void player_rem_dialog( void )
 	int was = player_plist->m_len;
 	
 	plist_rem(player_plist);
-	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
+	logger_message(player_log, 1,
 			_("Removed %d songs"), was - player_plist->m_len);
 } /* End of 'player_rem_dialog' function */
 
@@ -2189,10 +2138,10 @@ wnd_msg_retcode_t player_on_save( wnd_t *wnd )
 	assert(eb);
 	res = plist_save(player_plist, EDITBOX_TEXT(eb));
 	if (res)
-		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
+		logger_message(player_log, 1,
 				_("Play list saved to %s"), EDITBOX_TEXT(eb));
 	else
-		logger_message(player_log, LOGGER_MSG_ERROR, LOGGER_LEVEL_DEFAULT,
+		logger_error(player_log, 1,
 				_("Unable to save play list to %s"), EDITBOX_TEXT(eb));
 	return WND_MSG_RETCODE_OK;
 } /* End of 'player_on_save' function */
@@ -2418,11 +2367,10 @@ wnd_msg_retcode_t player_on_search( wnd_t *wnd )
 	player_search_criteria = PLIST_SEARCH_TITLE;
 	if (!plist_search(player_plist, player_search_string, 1, 
 				player_search_criteria))
-		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
-				_("String `%s' not found"), 
+		logger_message(player_log, 1, _("String `%s' not found"), 
 				player_search_string);
 	else
-		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
+		logger_message(player_log, 1,
 				_("String `%s' found at position %d"), player_search_string,
 				player_plist->m_sel_end);
 	if (was_pos != player_plist->m_sel_end)
@@ -2460,11 +2408,10 @@ wnd_msg_retcode_t player_on_adv_search( wnd_t *wnd )
 		return WND_MSG_RETCODE_OK;
 	if (!plist_search(player_plist, player_search_string, 1, 
 				player_search_criteria))
-		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
-				_("String `%s' not found"), 
+		logger_message(player_log, 1, _("String `%s' not found"), 
 				player_search_string);
 	else
-		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
+		logger_message(player_log, 1,
 				_("String `%s' found at position %d"), player_search_string,
 				player_plist->m_sel_end);
 	if (was_pos != player_plist->m_sel_end)
@@ -2482,19 +2429,29 @@ wnd_msg_retcode_t player_on_info_reload( wnd_t *wnd )
 	return WND_MSG_RETCODE_OK;
 } /* End of 'player_on_info_reload' function */
 
-/* Handle 'ok_clicked' for mini variables manager */
-wnd_msg_retcode_t player_on_mini_var( wnd_t *wnd )
+/* Handle 'ok_clicked' for variables manager */
+wnd_msg_retcode_t player_on_var( wnd_t *wnd )
 {
 	editbox_t *name = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "name"));
 	editbox_t *val = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "value"));
-	assert(name);
-	assert(val);
-	cfg_set_var(cfg_list, EDITBOX_TEXT(name), EDITBOX_TEXT(val));
-	return WND_MSG_RETCODE_OK;
-} /* End of 'player_on_mini_var' function */
+	radio_t *set = RADIO_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "set"));
+	radio_t *add = RADIO_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "add"));
+	radio_t *rem = RADIO_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "rem"));
+	cfg_var_op_t op = CFG_VAR_OP_SET;
+	assert(name && val && set && add && rem);
 
-/* Handle 'clicked' for mini variables manager view value button */
-wnd_msg_retcode_t player_on_mini_var_view( wnd_t *wnd )
+	if (set->m_checked)
+		op = CFG_VAR_OP_SET;
+	else if (add->m_checked)
+		op = CFG_VAR_OP_ADD;
+	else if (rem->m_checked)
+		op = CFG_VAR_OP_REM;
+	cfg_set_var_full(cfg_list, EDITBOX_TEXT(name), EDITBOX_TEXT(val), op);
+	return WND_MSG_RETCODE_OK;
+} /* End of 'player_on_var' function */
+
+/* Handle 'clicked' for variables manager view value button */
+wnd_msg_retcode_t player_on_var_view( wnd_t *wnd )
 {
 	char *value;
 	editbox_t *eb_value = (editbox_t *)dialog_find_item(
@@ -2505,7 +2462,7 @@ wnd_msg_retcode_t player_on_mini_var_view( wnd_t *wnd )
 	value = cfg_get_var(cfg_list, EDITBOX_TEXT(eb_name));
 	editbox_set_text(eb_value, value == NULL ? "" : value);
 	return WND_MSG_RETCODE_OK;
-} /* End of 'player_on_mini_var_view' function */
+} /* End of 'player_on_var_view' function */
 
 /* Handle 'keydown' for repeat value dialog edit box */
 wnd_msg_retcode_t player_repval_on_keydown( wnd_t *wnd, wnd_key_t key )
@@ -2591,22 +2548,27 @@ bool_t player_handle_var_title_format( cfg_node_t *var, char *value,
 } /* End of 'player_handle_var_title_format' function */
 
 /* Handle 'output_plugin' variable setting */
-bool_t player_handle_var_outp( cfg_node_t *var, char *value, 
-		void *data )
+bool_t player_handle_var_outp( cfg_node_t *var, char *value, void *data )
 {
-	int i;
+	pmng_iterator_t iter;
 
 	if (player_pmng == NULL)
 		return TRUE;
 
 	/* Choose new output plugin */
-	for ( i = 0; i < player_pmng->m_num_outp; i ++ )
-		if (!strcmp(player_pmng->m_outp[i]->m_name, 
-					cfg_get_var(cfg_list, "output-plugin")))
+	iter = pmng_start_iteration(player_pmng, PLUGIN_TYPE_OUTPUT);
+	for ( ;; )
+	{
+		plugin_t *p = pmng_iterate(&iter);
+		if (p == NULL)
+			break;
+
+		if (!strcmp(p->m_name, cfg_get_var(cfg_list, "output-plugin")))
 		{
-			player_pmng->m_cur_out = player_pmng->m_outp[i];
+			player_pmng->m_cur_out = OUTPUT_PLUGIN(p);
 			break;
 		}
+	}
 	return TRUE;
 } /* End of 'player_handle_var_outp' function */
 
@@ -2620,6 +2582,7 @@ bool_t player_handle_color_scheme( cfg_node_t *node, char *value,
 	snprintf(fname, sizeof(fname), "%s/.mpfc/colors/%s", 
 			getenv("HOME"), cfg_get_var(cfg_list, node->m_name));
 	cfg_rcfile_read(cfg_list, fname);
+	wnd_invalidate(wnd_root);
 	return TRUE;
 } /* End of 'player_handle_color_scheme' function */
 
@@ -2707,7 +2670,7 @@ void player_class_set_default_styles( cfg_node_t *list )
 	cfg_set_var(list, "kbind.help", "?");
 	cfg_set_var(list, "kbind.equalizer", "e");
 	cfg_set_var(list, "kbind.shuffle", "R");
-	cfg_set_var(list, "kbind.var_mini_manager", "o");
+	cfg_set_var(list, "kbind.var_manager", "o");
 	cfg_set_var(list, "kbind.plist_down", "J");
 	cfg_set_var(list, "kbind.plist_up", "K");
 	cfg_set_var(list, "kbind.plist_move", "M");

@@ -36,10 +36,16 @@
 #include "timidi.h"
 
 /* Currently opened pipe descriptor */
-FILE *midi_pfd = NULL;
+static FILE *midi_pfd = NULL;
 
 /* Current song name */
-char midi_fname[MAX_FILE_NAME] = "";
+static char midi_fname[MAX_FILE_NAME] = "";
+
+/* Plugin description */
+static char *midi_desc = "TiMidity interface plugin";
+
+/* Plugin author */
+static char *midi_author = "Sergey E. Galanov <sgsoftware@mail.ru>";
 
 /* Start playing */
 bool_t midi_start( char *filename )
@@ -115,17 +121,19 @@ str_t *midi_set_song_title( char *filename )
 	return str_new(filename);
 } /* End of 'midi_set_song_title' function */
 
-/* Get functions list */
-void inp_get_func_list( inp_func_list_t *fl )
+/* Exchange data with main program */
+void plugin_exchange_data( plugin_data_t *pd )
 {
-	fl->m_start = midi_start;
-	fl->m_end = midi_end;
-	fl->m_get_stream = midi_get_stream;
-	fl->m_seek = midi_seek;
-	fl->m_get_audio_params = midi_get_audio_params;
-	fl->m_get_formats = midi_get_formats;
-	fl->m_get_cur_time = midi_get_cur_time;
-} /* End of 'inp_get_func_list' function */
+	pd->m_desc = midi_desc;
+	pd->m_author = midi_author;
+	INP_DATA(pd)->m_start = midi_start;
+	INP_DATA(pd)->m_end = midi_end;
+	INP_DATA(pd)->m_get_stream = midi_get_stream;
+	INP_DATA(pd)->m_seek = midi_seek;
+	INP_DATA(pd)->m_get_audio_params = midi_get_audio_params;
+	INP_DATA(pd)->m_get_formats = midi_get_formats;
+	INP_DATA(pd)->m_get_cur_time = midi_get_cur_time;
+} /* End of 'plugin_exchange_data' function */
 
 /* End of 'timidi.c' file */
 

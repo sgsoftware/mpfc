@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for input plugin management
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 19.09.2004
+ * LAST UPDATE : 9.10.2004
  * NOTE        : Module prefix 'inp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -33,6 +33,7 @@
 #include "file.h"
 #include "genre_list.h"
 #include "mystring.h"
+#include "plugin.h"
 #include "song_info.h"
 
 /* Input plugin flags */
@@ -61,11 +62,21 @@ typedef struct
 	void (*m_func)( char *filename );
 } inp_spec_func_t;
 
-/* Plugin functions list structure */
+/* Data for exchange with plugin */
 typedef struct
 {
+	/* Common plugin data */
+	plugin_data_t m_common_data;
+
+	/*
+	 * Functions
+	 */
+
 	/* Start playing function */
 	bool_t (*m_start)( char *filename );
+
+	/* Start playing with an opened file descriptor */
+	bool_t (*m_start_with_fd)( char *filename, file_t *fd );
 
 	/* End playing function */
 	void (*m_end)( void );
@@ -101,9 +112,6 @@ typedef struct
 	/* Update equalizer parameters */
 	void (*m_set_eq)( void );
 
-	/* Initialize songs array that respects to the object */
-	struct tag_song_t **(*m_init_obj_songs)( char *name, int *num_songs );
-
 	/* Set a title for song with empty song info */
 	str_t *(*m_set_song_title)( char *filename );
 
@@ -129,11 +137,9 @@ typedef struct
 	/* Reserved */
 	byte m_reserved[52];
 
-	/* Information about plugin */
-	char *m_about;
-
-	/* Plugins manager */
-	struct tag_pmng_t *m_pmng;
+	/*
+	 * Data
+	 */
 
 	/* Special functions list */
 	int m_num_spec_funcs;
@@ -142,31 +148,29 @@ typedef struct
 	/* Plugin flags */
 	dword m_flags;
 
-	/* Start playing with an opened file descriptor */
-	bool_t (*m_start_with_fd)( char *filename, file_t *fd );
-
 	/* Reserved data */
-	byte m_reserved1[104];
-} inp_func_list_t;
+	byte m_reserved1[52];
+} inp_data_t;
 
 /* Input plugin type */
 typedef struct tag_in_plugin_t
 {
-	/* Plugin library handler */
-	void *m_lib_handler;
+	/* Plugin object */
+	plugin_t m_plugin;
 
-	/* Plugin name */
-	char *m_name;
-
-	/* Functions list */
-	inp_func_list_t m_fl;
+	/* Data for exchange */
+	inp_data_t m_pd;
 } in_plugin_t;
 
+/* Helper macros */
+#define INPUT_PLUGIN(p) ((in_plugin_t *)p)
+#define INP_DATA(pd) ((inp_data_t *)pd)
+
 /* Initialize input plugin */
-in_plugin_t *inp_init( char *name, struct tag_pmng_t *pmng );
+plugin_t *inp_init( char *name, struct tag_pmng_t *pmng );
 
 /* Free input plugin object */
-void inp_free( in_plugin_t *plugin );
+void inp_free( plugin_t *plugin );
 
 /* Start playing function */
 bool_t inp_start( in_plugin_t *p, char *filename, file_t *fd );
@@ -214,12 +218,6 @@ str_t *inp_set_song_title( in_plugin_t *p, char *filename );
 
 /* Set next song name */
 void inp_set_next_song( in_plugin_t *p, char *name );
-
-/* Get information about plugin */
-char *inp_get_about( in_plugin_t *p );
-
-/* Get plugin flags */
-dword inp_get_flags( in_plugin_t *p );
 
 /* Get number of special functions */
 int inp_get_num_specs( in_plugin_t *p );

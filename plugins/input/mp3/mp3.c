@@ -109,6 +109,15 @@ static logger_t *mp3_log = NULL;
 /* Get song information */
 static song_info_t *mp3_read_info( char *filename, int *len, int *nf );
 
+/* Plugin description */
+static char *mp3_desc = "mp3 files playback plugin";
+
+/* Plugin author */
+static char *mp3_author = "Sergey E. Galanov <sgsoftware@mail.ru>";
+
+/* Configuration lists */
+static cfg_node_t *mp3_cfg, *mp3_root_cfg;
+
 /* Start play with an opened file descriptor */
 bool_t mp3_start_with_fd( char *filename, file_t *fd )
 {
@@ -544,7 +553,7 @@ static song_info_t *mp3_read_info( char *filename, int *len, int *nf )
 		tpf = mad_timer_count(head.duration, MAD_UNITS_MILLISECONDS);
 
 		/* Obtain length */
-		if (cfg_get_var_int(pmng_get_cfg(mp3_pmng), "mp3-quick-get-len"))
+		if (cfg_get_var_bool(mp3_cfg, "quick-get-len"))
 		{
 			/* Get number of frames from XING header and calculate 
 			 * song length */
@@ -907,8 +916,7 @@ int mp3_get_cur_time( void )
 /* Remove ID3 tags */
 static void mp3_remove_tag( char *filename )
 {
-	logger_message(mp3_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
-			 _("Removing tag from file %s"), filename);
+	logger_message(mp3_log, 1, _("Removing tag from file %s"), filename);
 	if (strcmp(filename, mp3_file_name))
 	{
 		id3_remove(filename);
@@ -929,34 +937,37 @@ static void mp3_remove_tag( char *filename )
 			mp3_cur_info = si;
 		}
 	}
-	logger_message(mp3_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
-			 _("OK"));
+	logger_message(mp3_log, 1, _("OK"));
 } /* End of 'mp3_remove_tag' function */
 
-/* Get functions list */
-void inp_get_func_list( inp_func_list_t *fl )
+/* Exchange data with main program */
+void plugin_exchange_data( plugin_data_t *pd )
 {
-	fl->m_start = mp3_start;
-	fl->m_start_with_fd = mp3_start_with_fd;
-	fl->m_end = mp3_end;
-	fl->m_get_stream = mp3_get_stream;
-	fl->m_get_info = mp3_get_info;
-	fl->m_save_info = mp3_save_info;
-	fl->m_seek = mp3_seek;
-	fl->m_get_audio_params = mp3_get_audio_params;
-	fl->m_get_formats = mp3_get_formats;
-	fl->m_set_eq = mp3_set_eq;
-	fl->m_get_cur_time = mp3_get_cur_time;
-	mp3_pmng = fl->m_pmng;
-	mp3_log = pmng_get_logger(mp3_pmng);
+	pd->m_desc = mp3_desc;
+	pd->m_author = mp3_author;
+	INP_DATA(pd)->m_start = mp3_start;
+	INP_DATA(pd)->m_start_with_fd = mp3_start_with_fd;
+	INP_DATA(pd)->m_end = mp3_end;
+	INP_DATA(pd)->m_get_stream = mp3_get_stream;
+	INP_DATA(pd)->m_get_info = mp3_get_info;
+	INP_DATA(pd)->m_save_info = mp3_save_info;
+	INP_DATA(pd)->m_seek = mp3_seek;
+	INP_DATA(pd)->m_get_audio_params = mp3_get_audio_params;
+	INP_DATA(pd)->m_get_formats = mp3_get_formats;
+	INP_DATA(pd)->m_set_eq = mp3_set_eq;
+	INP_DATA(pd)->m_get_cur_time = mp3_get_cur_time;
+	mp3_pmng = pd->m_pmng;
+	mp3_log = pd->m_logger;
+	mp3_cfg = pd->m_cfg;
+	mp3_root_cfg = pd->m_root_cfg;
 
-	fl->m_num_spec_funcs = 1;
-	fl->m_spec_funcs = (inp_spec_func_t *)malloc(sizeof(inp_spec_func_t) * 
-			fl->m_num_spec_funcs);
-	fl->m_spec_funcs[0].m_title = strdup(_("Remove ID3 tags"));
-	fl->m_spec_funcs[0].m_flags = 0;
-	fl->m_spec_funcs[0].m_func = mp3_remove_tag;
-} /* End of 'inp_get_func_list' function */
+	INP_DATA(pd)->m_num_spec_funcs = 1;
+	INP_DATA(pd)->m_spec_funcs =
+		(inp_spec_func_t *)malloc(sizeof(inp_spec_func_t));
+	INP_DATA(pd)->m_spec_funcs[0].m_title = strdup(_("Remove ID3 tags"));
+	INP_DATA(pd)->m_spec_funcs[0].m_flags = 0;
+	INP_DATA(pd)->m_spec_funcs[0].m_func = mp3_remove_tag;
+} /* End of 'plugin_exchange_data' function */
 
 /* This function is called when initializing module */
 void _init( void )
@@ -985,8 +996,8 @@ void mp3_set_eq( void )
 		float val;
 		
 		snprintf(name, sizeof(name), "equalizer.band%d", map[i] + 1);
-		val = cfg_get_var_float(pmng_get_cfg(mp3_pmng), "equalizer.preamp") + 
-			cfg_get_var_float(pmng_get_cfg(mp3_pmng), name);
+		val = cfg_get_var_float(mp3_root_cfg, "equalizer.preamp") + 
+			cfg_get_var_float(mp3_root_cfg, name);
 		if (val > 18.)
 			val = 18.;
 		val = pow(10., val / 20.);
@@ -1000,7 +1011,7 @@ static void mp3_apply_eq( void )
 	unsigned int nch, ch, ns, s, sb;
 
 	/* Do nothing if equalizer is disabled */
-	if (!cfg_get_var_bool(pmng_get_cfg(mp3_pmng), "equalizer.enabled"))
+	if (!cfg_get_var_bool(mp3_root_cfg, "equalizer.enabled"))
 		return;
 
 	nch = MAD_NCHANNELS(&mp3_frame.header);
@@ -1119,6 +1130,12 @@ static void mp3_read_header( char *filename, struct mad_header *head )
 	mad_stream_finish(&stream);
 	file_close(fd);
 } /* End of 'mp3_read_header' function */
+
+/* Set default configuration values */
+void plugin_set_cfg_default( cfg_node_t *list )
+{
+	cfg_set_var_bool(list, "quick-get-len", TRUE);
+} /* End of 'plugin_set_cfg_default' function */
 
 /* End of 'mp3.c' file */
 

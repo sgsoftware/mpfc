@@ -20,6 +20,7 @@
 #include <alsa/asoundlib.h>
 #include <sys/soundcard.h>
 #include "types.h"
+#include "cfg.h"
 #include "outp.h"
 #include "pmng.h"
 
@@ -33,6 +34,12 @@ static int alsa_channels = 2;
 static bool_t alsa_paused = FALSE;
 
 static char *alsa_default_dev = "plughw:0,0";
+
+static char *alsa_desc = "ALSA output plugin";
+static char *alsa_author = 
+		"Thadeu Lima de Souza Cascardo <cascardo@minaslivre.org>\n"
+		"Sergey E. Galanov <sgsoftware@mail.ru>";
+static cfg_node_t *alsa_cfg = NULL;
 
 void alsa_end ();
 bool_t alsa_open_dev( void );
@@ -203,7 +210,7 @@ bool_t alsa_open_dev( void )
 	char *dev;
 
 	/* Get device name */
-	dev = cfg_get_var(pmng_get_cfg(alsa_pmng), "alsa-device");
+	dev = cfg_get_var(alsa_cfg, "device");
 	if (dev == NULL)
 		dev = alsa_default_dev;
 
@@ -250,18 +257,21 @@ void alsa_resume( void )
 	alsa_paused = FALSE;
 }
 
-void outp_get_func_list (outp_func_list_t *fl)
+void plugin_exchange_data (plugin_data_t *pd)
 {
-  fl->m_start = alsa_start;
-  fl->m_end = alsa_end;
-  fl->m_play = alsa_play;
-  fl->m_set_channels = alsa_set_channels;
-  fl->m_set_freq = alsa_set_rate;
-  fl->m_set_fmt = alsa_set_fmt;
-  fl->m_flush = alsa_flush;
-  fl->m_pause = alsa_pause;
-  fl->m_resume = alsa_resume;
-  fl->m_set_volume = alsa_set_volume;
-  fl->m_get_volume = alsa_get_volume;
-  alsa_pmng = fl->m_pmng;
+  pd->m_desc = alsa_desc;
+  pd->m_author = alsa_author;
+  OUTP_DATA(pd)->m_start = alsa_start;
+  OUTP_DATA(pd)->m_end = alsa_end;
+  OUTP_DATA(pd)->m_play = alsa_play;
+  OUTP_DATA(pd)->m_set_channels = alsa_set_channels;
+  OUTP_DATA(pd)->m_set_freq = alsa_set_rate;
+  OUTP_DATA(pd)->m_set_fmt = alsa_set_fmt;
+  OUTP_DATA(pd)->m_flush = alsa_flush;
+  OUTP_DATA(pd)->m_pause = alsa_pause;
+  OUTP_DATA(pd)->m_resume = alsa_resume;
+  OUTP_DATA(pd)->m_set_volume = alsa_set_volume;
+  OUTP_DATA(pd)->m_get_volume = alsa_get_volume;
+  alsa_pmng = pd->m_pmng;
+  alsa_cfg = pd->m_cfg;
 }

@@ -63,6 +63,9 @@ wnd_msg_retcode_t radio_on_display( wnd_t *wnd );
 wnd_msg_retcode_t radio_on_mouse( wnd_t *wnd, int x, int y,
 		wnd_mouse_button_t mb, wnd_mouse_event_t type );
 
+/* 'quick_change_focus' message handler */
+wnd_msg_retcode_t radio_on_quick_change_focus( wnd_t *wnd );
+
 /* Set checked state */
 void radio_check( radio_t *r );
 

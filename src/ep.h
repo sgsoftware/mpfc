@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for effect plugin management
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.02.2004
+ * LAST UPDATE : 9.10.2004
  * NOTE        : Module prefix 'ep'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -29,53 +29,46 @@
 #define __SG_MPFC_EP_H__
 
 #include "types.h"
+#include "plugin.h"
 
 struct tag_pmng_t;
 
-/* Plugin functions list structure */
+/* Data for exchange */
 typedef struct
 {
+	/* Common plugin data */
+	plugin_data_t m_pd;
+
 	/* Apply plugin function */
 	int (*m_apply)( byte *data, int len, int fmt, int freq, int channels );
 
 	/* Reserved */
 	byte m_reserved[124];
 
-	/* Information about plugin */
-	char *m_about;
-
-	/* Plugins manager */
-	struct tag_pmng_t *m_pmng;
-
 	/* Reserved data */
-	byte m_reserved1[120];
-} ep_func_list_t;
+	byte m_reserved1[64];
+} ep_data_t;
 
 /* Effect plugin type */
 typedef struct tag_effect_plugin_t
 {
-	/* Plugin library handler */
-	void *m_lib_handler;
+	/* Common plugin data */
+	plugin_t m_plugin;
 
-	/* Plugin short name */
-	char *m_name;
-
-	/* Functions list */
-	ep_func_list_t m_fl;
+	/* Data for exchange */
+	ep_data_t m_pd;
 } effect_plugin_t;
 
-/* Initialize effect plugin */
-effect_plugin_t *ep_init( char *name, struct tag_pmng_t *pmng );
+/* Helper macros */
+#define EFFECT_PLUGIN(p) ((effect_plugin_t *)p)
+#define EP_DATA(p) ((ep_data_t *)p)
 
-/* Free effect plugin object */
-void ep_free( effect_plugin_t *plugin );
+/* Initialize effect plugin */
+plugin_t *ep_init( char *name, struct tag_pmng_t *pmng );
 
 /* Apply plugin to audio data */
 int ep_apply( effect_plugin_t *plugin, byte *data, int len, 
 	   			int fmt, int freq, int channels );
-
-/* Get information about plugin */
-char *ep_get_about( effect_plugin_t *p );
 
 #endif
 

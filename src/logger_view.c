@@ -88,8 +88,7 @@ wnd_msg_retcode_t logview_on_display( wnd_t *wnd )
 	for ( msg = lv->m_top_message; msg != NULL; msg = msg->m_next )
 	{
 		logger_msg_type_t type = msg->m_type;
-		int level = msg->m_level;
-		if (level == LOGGER_LEVEL_DEBUG)
+		if (type == LOGGER_MSG_DEBUG)
 			wnd_apply_style(wnd, "logger-debug-style");
 		else if (type == LOGGER_MSG_NORMAL)
 			wnd_apply_style(wnd, "logger-normal-style");

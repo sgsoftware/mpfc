@@ -69,6 +69,9 @@ wnd_msg_retcode_t button_on_action( wnd_t *wnd, char *action );
 wnd_msg_retcode_t button_on_mouse( wnd_t *wnd, int x, int y, 
 		wnd_mouse_button_t mb, wnd_mouse_event_t type );
 
+/* 'quick_change_focus' message handler */
+wnd_msg_retcode_t button_on_quick_change_focus( wnd_t *wnd );
+
 /* 
  * Class functions 
  */

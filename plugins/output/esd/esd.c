@@ -31,6 +31,10 @@ static esd_format_t esd_fmt = ESD_BITS16;
 static int esd_rate = 44100;
 static int esd_channels = ESD_STEREO;
 
+static char *esd_desc = "ESD output plugin";
+static char *esd_author = 
+		"Thadeu Lima de Souza Cascardo <cascardo@minaslivre.org>";
+
 void esd_end ();
 
 bool_t esd_start ()
@@ -113,13 +117,15 @@ void esd_set_fmt (dword fmt)
   esd_start ();
 }
 
-void outp_get_func_list (outp_func_list_t *fl)
+void plugin_exchange_data (plugin_data_t *pd)
 {
-  fl->m_start = esd_start;
-  fl->m_end = esd_end;
-  fl->m_play = esd_play;
-  fl->m_set_channels = esd_set_channels;
-  fl->m_set_freq = esd_set_rate;
-  fl->m_set_fmt = esd_set_fmt;
-  esd_pmng = fl->m_pmng;
+  pd->m_desc = esd_desc;
+  pd->m_author = esd_author;
+  OUTP_DATA(pd)->m_start = esd_start;
+  OUTP_DATA(pd)->m_end = esd_end;
+  OUTP_DATA(pd)->m_play = esd_play;
+  OUTP_DATA(pd)->m_set_channels = esd_set_channels;
+  OUTP_DATA(pd)->m_set_freq = esd_set_rate;
+  OUTP_DATA(pd)->m_set_fmt = esd_set_fmt;
+  esd_pmng = pd->m_pmng;
 }

@@ -29,12 +29,16 @@
 #define __SG_MPFC_OUTP_H__
 
 #include "types.h"
+#include "plugin.h"
 
 struct tag_pmng_t;
 
-/* Output plugin functions list */
+/* Data for exchange */
 typedef struct 
 {
+	/* Common plugin data */
+	plugin_data_t m_pd;
+
 	/* Plugin start function */
 	bool_t (*m_start)( void );
 
@@ -69,40 +73,32 @@ typedef struct
 	/* Reserved data */
 	byte m_reserved[80];
 
-	/* Information about plugin */
-	char *m_about;
-
-	/* Plugins manager */
-	struct tag_pmng_t *m_pmng;
-
 	/* Flags */
 	dword m_flags;
 
 	/* Reserved data */
-	byte m_reserved1[120];
-} outp_func_list_t;
+	byte m_reserved1[60];
+} outp_data_t;
 
 /* Output plugin type */
 typedef struct tag_out_plugin_t
 {
-	/* Plugin library handler */
-	void *m_lib_handler;
+	/* Plugin object */
+	plugin_t m_plugin;
 
-	/* Plugin short name */
-	char *m_name;
-
-	/* Functions list */
-	outp_func_list_t m_fl;
+	/* Data for exchange */
+	outp_data_t m_pd;
 } out_plugin_t;
+
+/* Helper macros */
+#define OUTPUT_PLUGIN(p) ((out_plugin_t *)p)
+#define OUTP_DATA(pd) ((outp_data_t *)pd)
 
 /* Output plugin flags */
 #define OUTP_NO_SOUND 0x00000001
 
 /* Initialize output plugin */
-out_plugin_t *outp_init( char *name, struct tag_pmng_t *pmng );
-
-/* Free output plugin object */
-void outp_free( out_plugin_t *p );
+plugin_t *outp_init( char *name, struct tag_pmng_t *pmng );
 
 /* Plugin start function */
 bool_t outp_start( out_plugin_t *p );
@@ -136,9 +132,6 @@ void outp_set_volume( out_plugin_t *p, int left, int right );
 
 /* Get volume */
 void outp_get_volume( out_plugin_t *p, int *left, int *right );
-
-/* Get information about plugin */
-char *outp_get_about( out_plugin_t *p );
 
 /* Get plugin flags */
 dword outp_get_flags( out_plugin_t *p );

@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Radio input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 20.09.2004
+ * LAST UPDATE : 10.10.2004
  * NOTE        : Module prefix 'rad'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -50,6 +50,12 @@ static pmng_t *rad_pmng = NULL;
 
 /* Audio device */
 static int audio_fd = -1;
+
+/* Plugin description */
+static char *rad_desc = "Radio playback through video4linux plugin";
+
+/* Plugin author */
+static char *rad_author = "Sergey E. Galanov <sgsoftware@mail.ru>";
 
 /* Start play function */
 bool_t rad_start( char *filename )
@@ -207,20 +213,21 @@ int rad_stat( char *name, struct stat *sb )
 	return ENOENT;
 } /* End of 'acd_stat' function */
 
-/* Get functions list */
-void inp_get_func_list( inp_func_list_t *fl )
+/* Exchange data with main program */
+void plugin_exchange_data( plugin_data_t *pd )
 {
-	fl->m_start = rad_start;
-	fl->m_end = rad_end;
-	fl->m_get_stream = rad_get_stream;
-	fl->m_get_audio_params = rad_get_audio_params;
-	fl->m_flags = INP_OWN_SOUND | INP_VFS | INP_VFS_NOT_FIXED;
-	fl->m_pause = rad_pause;
-	fl->m_resume = rad_resume;
-	fl->m_set_song_title = rad_set_song_title;
-	fl->m_vfs_stat = rad_stat;
-	rad_pmng = fl->m_pmng;
-} /* End of 'inp_get_func_list' function */
+	pd->m_desc = rad_desc;
+	pd->m_author = rad_author;
+	INP_DATA(pd)->m_start = rad_start;
+	INP_DATA(pd)->m_end = rad_end;
+	INP_DATA(pd)->m_get_stream = rad_get_stream;
+	INP_DATA(pd)->m_get_audio_params = rad_get_audio_params;
+	INP_DATA(pd)->m_flags = INP_OWN_SOUND | INP_VFS | INP_VFS_NOT_FIXED;
+	INP_DATA(pd)->m_pause = rad_pause;
+	INP_DATA(pd)->m_resume = rad_resume;
+	INP_DATA(pd)->m_set_song_title = rad_set_song_title;
+	INP_DATA(pd)->m_vfs_stat = rad_stat;
+} /* End of 'plugin_exchange_data' function */
 
 /* End of 'radio.c' file */
 

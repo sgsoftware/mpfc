@@ -75,14 +75,14 @@ typedef struct
 /* Logger */
 extern logger_t *acd_log;
 
+/* Configuration list */
+extern cfg_node_t *acd_cfg;
+
 /* Get song info */
 song_info_t *acd_get_info( char *filename, int *len );
 
 /* Set song title */
 str_t *acd_set_song_title( char *filename );
-
-/* Print message */
-void acd_print( char *format, ... );
 
 /* Load tracks information */
 void acd_load_tracks( int fd );

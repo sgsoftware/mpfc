@@ -31,7 +31,6 @@
 #include <string.h>
 #include <unistd.h>
 #include "types.h"
-#include "colors.h"
 #include "file.h"
 #include "inp.h"
 #include "player.h"
@@ -884,94 +883,6 @@ void plist_unlock( plist_t *pl )
 {
 	pthread_mutex_unlock(&pl->m_mutex);
 } /* End of 'plist_unlock' function */
-
-/* Add an object */
-int plist_add_obj( plist_t *pl, char *name, char *title, int where )
-{
-	char *plugin_name, *obj_name, *str;
-	in_plugin_t *inp;
-	int num_songs, was_len, i, j;
-	song_t **s;
-
-	if (pl == NULL)
-		return 0;
-
-	/* Get respective input plugin name */
-	str = strchr(name, ':');
-	if (str == NULL)
-	{
-		plugin_name = strdup(name);
-		obj_name = strdup("");
-	}
-	else
-	{
-		int pos = str - name;
-		plugin_name = (char *)malloc(pos + 1);
-		memcpy(plugin_name, name, pos);
-		plugin_name[pos] = 0;
-		obj_name = strdup(&name[pos + 1]);
-	}
-
-	/* Search for this plugin */
-	inp = pmng_search_inp_by_name(player_pmng, plugin_name);
-	if (inp == NULL)
-	{
-		if (plugin_name != NULL)
-			free(plugin_name);
-		if (obj_name != NULL)
-			free(obj_name);
-		return 0;
-	}
-
-	/* Initialize songs */
-	s = inp_init_obj_songs(inp, obj_name, &num_songs);
-	if (s == NULL || !num_songs)
-		return 0;
-
-	/* Add these songs to play list */
-	plist_lock(pl);
-	if (where < 0 || where >= pl->m_len)  
-		where = pl->m_len;
-	was_len = pl->m_len;
-	pl->m_len += num_songs;
-	pl->m_list = (song_t **)realloc(pl->m_list, sizeof(song_t *) * pl->m_len);
-	memmove(&pl->m_list[where + num_songs], &pl->m_list[where],
-			sizeof(song_t *) * (was_len - where));
-	memcpy(&pl->m_list[where], s, 
-			sizeof(song_t *) * num_songs);
-	plist_unlock(pl);
-	for ( i = where, j = 0; j < num_songs; i ++, j ++ )
-	{
-		pl->m_list[i]->m_inp = inp;
-		if (title == NULL)
-			sat_push(pl, i);
-		else
-			str_copy_cptr(pl->m_list[i]->m_title, title);
-	}
-
-	/* If list was empty - put cursor to the first song */
-	if (!was_len)
-	{
-		pl->m_sel_start = pl->m_sel_end = 0;
-		pl->m_visual = FALSE;
-	}
-
-	/* Store undo information */
-	if (player_store_undo && num_songs)
-	{
-		struct tag_undo_list_item_t *undo;
-		undo = (struct tag_undo_list_item_t *)malloc(sizeof(*undo));
-		undo->m_type = UNDO_ADD_OBJ;
-		undo->m_next = undo->m_prev = NULL;
-		undo->m_data.m_add_obj.m_num_songs = num_songs;
-		undo->m_data.m_add_obj.m_obj_name = strdup(name);
-		undo_add(player_ul, undo);
-	}
-
-	/* Update screen */
-	wnd_invalidate(player_wnd);
-	return num_songs;
-} /* End of 'plist_add_obj' function */
 
 /* Move selection in play list */
 void plist_move_sel( plist_t *pl, int y, bool_t relative )

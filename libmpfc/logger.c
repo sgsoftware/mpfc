@@ -87,14 +87,23 @@ void logger_free( logger_t *log )
 	free(log);
 } /* End of 'logger_free' function */
 
-/* Add message to the log */
-void logger_message( logger_t *log, logger_msg_type_t type, int level,
+/* Common message adding function */
+void logger_add_message( logger_t *log, logger_msg_type_t type, int level,
 		char *format, ... )
+{
+	va_list ap;
+	va_start(ap, format);
+	logger_add_message_vararg(log, type, level, format, ap);
+	va_end(ap);
+} /* End of 'logger_add_message' function */
+
+/* Version of 'logger_add_message' with vararg list specified */
+void logger_add_message_vararg( logger_t *log, logger_msg_type_t type, 
+		int level, char *format, va_list ap )
 {
 	struct logger_message_t *msg;
 	struct logger_handler_t *h;
 	int n, size = 100;
-	va_list ap;
 	char *text;
 
 	if (log == NULL)
@@ -102,7 +111,8 @@ void logger_message( logger_t *log, logger_msg_type_t type, int level,
 	assert(format);
 
 	/* Filter by log level */
-	if (level > log->m_level)
+	if (level > log->m_level || 
+			(type == LOGGER_MSG_DEBUG && log->m_level < 0x100))
 		return;
 
 	/* Build message text */
@@ -111,9 +121,7 @@ void logger_message( logger_t *log, logger_msg_type_t type, int level,
 		return;
 	for ( ;; )
 	{
-		va_start(ap, format);
 		n = vsnprintf(text, size, format, ap);
-		va_end(ap);
 		if (n > -1 && n < size)
 			break;
 		else if (n > -1)
@@ -163,7 +171,61 @@ void logger_message( logger_t *log, logger_msg_type_t type, int level,
 	for ( h = log->m_handlers; h != NULL; h = h->m_next )
 		(h->m_function)(log, h->m_data, msg);
 	logger_unlock(log);
+} /* End of 'logger_add_message' function */
+
+/* Add a status message */
+void logger_status_msg( logger_t *log, int level, char *format, ... )
+{
+	va_list ap;
+	va_start(ap, format);
+	logger_add_message_vararg(log, LOGGER_MSG_STATUS, level, format, ap);
+	va_end(ap);
+} /* End of 'logger_status_msg' function */
+
+/* Add a normal message */
+void logger_message( logger_t *log, int level, char *format, ... )
+{
+	va_list ap;
+	va_start(ap, format);
+	logger_add_message_vararg(log, LOGGER_MSG_NORMAL, level, format, ap);
+	va_end(ap);
 } /* End of 'logger_message' function */
+
+/* Add a warning message */
+void logger_warning( logger_t *log, int level, char *format, ... )
+{
+	va_list ap;
+	va_start(ap, format);
+	logger_add_message_vararg(log, LOGGER_MSG_WARNING, level, format, ap);
+	va_end(ap);
+} /* End of 'logger_warning' function */
+
+/* Add an error message */
+void logger_error( logger_t *log, int level, char *format, ... )
+{
+	va_list ap;
+	va_start(ap, format);
+	logger_add_message_vararg(log, LOGGER_MSG_ERROR, level, format, ap);
+	va_end(ap);
+} /* End of 'logger_error' function */
+
+/* Add a fatal message message */
+void logger_fatal( logger_t *log, int level, char *format, ... )
+{
+	va_list ap;
+	va_start(ap, format);
+	logger_add_message_vararg(log, LOGGER_MSG_FATAL, level, format, ap);
+	va_end(ap);
+} /* End of 'logger_fatal' function */
+
+/* Add a debug message */
+void logger_debug( logger_t *log, char *format, ... )
+{
+	va_list ap;
+	va_start(ap, format);
+	logger_add_message_vararg(log, LOGGER_MSG_DEBUG, -1, format, ap);
+	va_end(ap);
+} /* End of 'logger_debug' function */
 
 /* Attach a handler function */
 void logger_attach_handler( logger_t *log, 
@@ -198,10 +260,8 @@ char *logger_get_type_prefix( logger_msg_type_t type, int level )
 {
 	static char *prefixes[] = { "", "(==) ", "(WW) ", "(EE) ", "(FF) ", 
 		"(DD) " };
-	if (type < 0 || type >= (sizeof(prefixes) / sizeof(*prefixes) - 1))
+	if (type < 0 || type >= (sizeof(prefixes) / sizeof(*prefixes)))
 		return NULL;
-	if (level == LOGGER_LEVEL_DEBUG)
-		return prefixes[5];
 	return prefixes[type];
 } /* End of 'logger_get_type_prefix' function */
 
@@ -224,17 +284,17 @@ int logger_get_level( logger_t *log )
 {
 	char *s = cfg_get_var(log->m_cfg, "log-level");
 	if (s == NULL)
-		return LOGGER_LEVEL_DEFAULT;
+		return -1;
 	else if (!strcmp(s, "none"))
-		return LOGGER_LEVEL_NONE;
+		return -1;
 	else if (!strcmp(s, "low"))
-		return LOGGER_LEVEL_LOW;
+		return 0;
 	else if (!strcmp(s, "high"))
-		return LOGGER_LEVEL_HIGH;
+		return 2;
 	else if (!strcmp(s, "debug"))
-		return LOGGER_LEVEL_DEBUG;
+		return 0x100;
 	else 
-		return LOGGER_LEVEL_DEFAULT;
+		return 1;
 } /* End of 'logger_get_level' function */
 
 /* Handler for setting log level */

@@ -67,6 +67,12 @@ static int rec_fd = -1;
 /* Current recording source */
 static int rec_source = -1;
 
+/* Plugin description */
+static char *rec_desc = "Sound recording plugin";
+
+/* Plugin author */
+static char *rec_author = "Sergey E. Galanov <sgsoftware@mail.ru>";
+
 /* Convert file name to recording source */
 static int rec_name2src( char *filename )
 {
@@ -222,21 +228,23 @@ int rec_stat( char *name, struct stat *sb )
 	return ENOENT;
 } /* End of 'rec_stat' function */
 
-/* Get functions list */
-void inp_get_func_list( inp_func_list_t *fl )
+/* Exchange data with main program */
+void plugin_exchange_data( plugin_data_t *pd )
 {
-	fl->m_start = rec_start;
-	fl->m_end = rec_end;
-	fl->m_get_stream = rec_get_stream;
-	fl->m_get_audio_params = rec_get_audio_params;
-	fl->m_flags = INP_OWN_SOUND | INP_VFS;
-	fl->m_set_song_title = rec_set_song_title;
-	fl->m_vfs_opendir = rec_opendir;
-	fl->m_vfs_readdir = rec_readdir;
-	fl->m_vfs_closedir = rec_closedir;
-	fl->m_vfs_stat = rec_stat;
-	rec_pmng = fl->m_pmng;
-} /* End of 'inp_get_func_list' function */
+	pd->m_desc = rec_desc;
+	pd->m_author = rec_author;
+	INP_DATA(pd)->m_start = rec_start;
+	INP_DATA(pd)->m_end = rec_end;
+	INP_DATA(pd)->m_get_stream = rec_get_stream;
+	INP_DATA(pd)->m_get_audio_params = rec_get_audio_params;
+	INP_DATA(pd)->m_flags = INP_OWN_SOUND | INP_VFS;
+	INP_DATA(pd)->m_set_song_title = rec_set_song_title;
+	INP_DATA(pd)->m_vfs_opendir = rec_opendir;
+	INP_DATA(pd)->m_vfs_readdir = rec_readdir;
+	INP_DATA(pd)->m_vfs_closedir = rec_closedir;
+	INP_DATA(pd)->m_vfs_stat = rec_stat;
+	rec_pmng = pd->m_pmng;
+} /* End of 'plugin_exchange_data' function */
 
 /* End of 'recorder.c' file */
 

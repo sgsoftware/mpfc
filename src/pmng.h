@@ -35,32 +35,15 @@
 #include "inp.h"
 #include "logger.h"
 #include "outp.h"
+#include "plugin.h"
 #include "vfs.h"
-
-/* Plugin types */
-#define PMNG_IN		 0 
-#define PMNG_OUT	 1
-#define PMNG_EFFECT	 2
-#define PMNG_CHARSET 3
 
 /* Plugin manager type */
 typedef struct tag_pmng_t
 {
-	/* Input plugins list */
-	int m_num_inp;
-	in_plugin_t **m_inp;
-
-	/* Output plugins list */
-	int m_num_outp;
-	out_plugin_t **m_outp;
-
-	/* Effect plugins list */
-	int m_num_ep;
-	effect_plugin_t **m_ep;
-
-	/* Charset plugins list */
-	int m_num_csp;
-	cs_plugin_t **m_csp;
+	/* Plugin list */
+	int m_num_plugins;
+	plugin_t **m_plugins;
 
 	/* Current output plugin */
 	out_plugin_t *m_cur_out;
@@ -81,36 +64,28 @@ void pmng_free( pmng_t *pmng );
 /* Load plugins */
 bool_t pmng_load_plugins( pmng_t *pmng );
 
-/* Add an input plugin */
-void pmng_add_in( pmng_t *pmng, in_plugin_t *p );
-
-/* Add an output plugin */
-void pmng_add_out( pmng_t *pmng, out_plugin_t *p );
-
-/* Add an effect plugin */
-void pmng_add_effect( pmng_t *pmng, effect_plugin_t *p );
-
-/* Add a charset plugin */
-void pmng_add_charset( pmng_t *pmng, cs_plugin_t *p );
+/* Add a plugin */
+void pmng_add_plugin( pmng_t *pmng, plugin_t *p );
 
 /* Search for input plugin supporting given format */
 in_plugin_t *pmng_search_format( pmng_t *pmng, char *format );
+
+/* Search for input plugin supporting given content-type */
+in_plugin_t *pmng_search_content_type( pmng_t *pmng, char *content );
 
 /* Apply effect plugins */
 int pmng_apply_effects( pmng_t *pmng, byte *data, int len, int fmt, 
 		int freq, int channels );
 
-/* Search for input plugin with specified name */
-in_plugin_t *pmng_search_inp_by_name( pmng_t *pmng, char *name );
+/* Search for plugin with a specified name */
+plugin_t *pmng_search_by_name( pmng_t *pmng, char *name, 
+		plugin_type_t type_mask );
 
 /* Plugin glob handler */
 void pmng_glob_handler( struct tag_vfs_file_t *file, void *data );
 
 /* Check if specified plugin is already loaded */
-bool_t pmng_is_loaded( pmng_t *pmng, char *name, int type );
-
-/* Search plugin for content-type */
-in_plugin_t *pmng_search_content_type( pmng_t *pmng, char *content );
+bool_t pmng_is_loaded( pmng_t *pmng, char *name, plugin_type_t type_mask );
 
 /* Find charset plugin which supports specified set */
 cs_plugin_t *pmng_find_charset( pmng_t *pmng, char *name, int *index );
@@ -123,6 +98,29 @@ logger_t *pmng_get_logger( pmng_t *pmng );
 
 /* Create a plugin name */
 char *pmng_create_plugin_name( char *filename );
+
+/*
+ * Plugins iteration functions
+ */
+
+/* Iterator type */
+typedef struct
+{
+	/* Plugin manager object */
+	pmng_t *m_pmng;
+
+	/* Plugin types we are looking for */
+	plugin_type_t m_type_mask;
+
+	/* Current plugin index */
+	int m_index;
+} pmng_iterator_t;
+
+/* Start iteration */
+pmng_iterator_t pmng_start_iteration( pmng_t *pmng, plugin_type_t type_mask );
+
+/* Make an iteration */
+plugin_t *pmng_iterate( pmng_iterator_t *iter );
 
 #endif
 

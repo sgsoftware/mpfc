@@ -53,9 +53,6 @@ void mp3_set_eq( void );
 /* Get audio parameters */
 void mp3_get_audio_params( int *ch, int *freq, dword *fmt, int *bitrate );
 
-/* Get functions list */
-void inp_get_func_list( inp_func_list_t *fl );
-
 /* Decode a frame */
 static void mp3_decode_frame( void );
 

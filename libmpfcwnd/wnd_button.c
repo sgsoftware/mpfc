@@ -81,6 +81,8 @@ bool_t button_construct( button_t *btn, wnd_t *parent, char *title, char *id,
 	wnd_msg_add_handler(wnd, "display", button_on_display);
 	wnd_msg_add_handler(wnd, "action", button_on_action);
 	wnd_msg_add_handler(wnd, "mouse_ldown", button_on_mouse);
+	wnd_msg_add_handler(wnd, "quick_change_focus", 
+			button_on_quick_change_focus);
 	return TRUE;
 } /* End of 'button_construct' function */
 
@@ -118,6 +120,13 @@ wnd_msg_retcode_t button_on_mouse( wnd_t *wnd, int x, int y,
 	wnd_msg_send(wnd, "clicked", button_msg_clicked_new());
 	return WND_MSG_RETCODE_OK;
 } /* End of 'button_on_mouse' function */
+
+/* 'quick_change_focus' message handler */
+wnd_msg_retcode_t button_on_quick_change_focus( wnd_t *wnd )
+{
+	wnd_msg_send(wnd, "clicked", button_msg_clicked_new());
+	return WND_MSG_RETCODE_OK;
+} /* End of 'button_on_quick_change_focus' function */
 
 /* Initialize button class */
 wnd_class_t *button_class_init( wnd_global_data_t *global )

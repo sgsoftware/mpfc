@@ -28,6 +28,7 @@
 #define __SG_MPFC_LOGGER_H__
 
 #include <pthread.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include "types.h"
 #include "cfg.h"
@@ -40,17 +41,8 @@ typedef enum
 	LOGGER_MSG_WARNING,
 	LOGGER_MSG_ERROR,
 	LOGGER_MSG_FATAL,
+	LOGGER_MSG_DEBUG
 } logger_msg_type_t;
-
-/* Log level */
-enum
-{
-	LOGGER_LEVEL_NONE = 0,
-	LOGGER_LEVEL_LOW,
-	LOGGER_LEVEL_DEFAULT,
-	LOGGER_LEVEL_HIGH,
-	LOGGER_LEVEL_DEBUG,
-};
 
 /* Logger data type */
 typedef struct tag_logger_t
@@ -105,8 +97,30 @@ logger_t *logger_new( cfg_node_t *cfg_list, char *file_name );
 /* Free logger */
 void logger_free( logger_t *log );
 
-/* Add message to the log */
-void logger_message( logger_t *log, logger_msg_type_t type, int level,
+/* Add a status message */
+void logger_status_msg( logger_t *log, int level, char *format, ... );
+
+/* Add a normal message */
+void logger_message( logger_t *log, int level, char *format, ... );
+
+/* Add a warning message */
+void logger_warning( logger_t *log, int level, char *format, ... );
+
+/* Add an error message */
+void logger_error( logger_t *log, int level, char *format, ... );
+
+/* Add a fatal message message */
+void logger_fatal( logger_t *log, int level, char *format, ... );
+
+/* Add a debug message */
+void logger_debug( logger_t *log, char *format, ... );
+
+/* Version of 'logger_add_message' with vararg list specified */
+void logger_add_message_vararg( logger_t *log, logger_msg_type_t type, 
+		int level, char *format, va_list ap );
+
+/* Common message adding function */
+void logger_add_message( logger_t *log, logger_msg_type_t type, int level,
 		char *format, ... );
 
 /* Attach a handler function */

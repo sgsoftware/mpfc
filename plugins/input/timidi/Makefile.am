@@ -3,4 +3,4 @@ lib_LTLIBRARIES = libtimidi.la
 libdir = $(prefix)/lib/mpfc/input
 
 libtimidi_la_SOURCES = timidi.c timidi.h
-INCLUDES = -I$(top_builddir)/src
+INCLUDES = -I$(top_builddir)/src -I$(top_builddir)/libmpfcwnd

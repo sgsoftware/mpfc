@@ -34,69 +34,32 @@
 #include "util.h"
 
 /* Initialize effect plugin */
-effect_plugin_t *ep_init( char *name, pmng_t *pmng )
+plugin_t *ep_init( char *name, pmng_t *pmng )
 {
-	effect_plugin_t *p;
-	void (*fl)( ep_func_list_t * );
+	ep_data_t pd;
+	plugin_t *p;
 
-	/* Try to allocate memory for plugin object */
-	p = (effect_plugin_t *)malloc(sizeof(effect_plugin_t));
+	/* Create plugin */
+	memset(&pd, 0, sizeof(pd));
+	p = plugin_init(pmng, name, PLUGIN_TYPE_EFFECT, sizeof(effect_plugin_t), 
+			PLUGIN_DATA(&pd));
 	if (p == NULL)
-	{
 		return NULL;
-	}
 
-	/* Load respective library */
-	p->m_lib_handler = dlopen(name, RTLD_NOW);
-	if (p->m_lib_handler == NULL)
-	{
-		free(p);
-		return NULL;
-	}
-
-	/* Initialize plugin */
-	fl = dlsym(p->m_lib_handler, "ep_get_func_list");
-	if (fl == NULL)
-	{
-		ep_free(p);
-		return NULL;
-	}
-	p->m_name = pmng_create_plugin_name(name);
-	memset(&p->m_fl, 0, sizeof(p->m_fl));
-	p->m_fl.m_pmng = pmng;
-	fl(&p->m_fl);
+	/* Set other fields */
+	EFFECT_PLUGIN(p)->m_pd = pd;
+	p->m_pd = PLUGIN_DATA(&EFFECT_PLUGIN(p)->m_pd);
 	return p;
 } /* End of 'ep_init' function */
-
-/* Free effect plugin object */
-void ep_free( effect_plugin_t *p )
-{
-	if (p != NULL)
-	{
-		dlclose(p->m_lib_handler);
-		if (p->m_name != NULL)
-			free(p->m_name);
-		free(p);
-	}
-} /* End of 'ep_free' function */
 
 /* Apply plugin to audio data */
 int ep_apply( effect_plugin_t *p, byte *data, int len, 
 	   			int fmt, int freq, int channels )
 {
-	if (p != NULL && (p->m_fl.m_apply != NULL))
-		return p->m_fl.m_apply(data, len, fmt, freq, channels);
+	if (p != NULL && (p->m_pd.m_apply != NULL))
+		return p->m_pd.m_apply(data, len, fmt, freq, channels);
 	return len;
 } /* End of 'ep_apply' function */
-
-/* Get information about plugin */
-char *ep_get_about( effect_plugin_t *p )
-{
-	if (p != NULL && (p->m_fl.m_about != NULL))
-		return p->m_fl.m_about;
-	else
-		return NULL;
-} /* End of 'ep_get_about' function */
 
 /* End of 'ep.c' file */
 

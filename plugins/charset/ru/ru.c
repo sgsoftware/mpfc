@@ -79,7 +79,10 @@ static dword ru_table[RU_NUMBER][128] =
 static char *ru_names[RU_NUMBER] = { "koi8-r", "cp1251", "ru-auto" };
 
 /* About string */
-static char *ru_about = "Russian codepages support plugin\n";
+static char *ru_desc = "Russian codepages support plugin\n";
+
+/* Plugin author */
+static char *ru_author = "Sergey E. Galanov <sgsoftware@mail.ru>";
 
 /* Names of charset automatic charset may expand to */
 static char *ru_auto_koi8_r = "koi8-r", *ru_auto_cp1251 = "cp1251",
@@ -180,16 +183,17 @@ char *ru_expand_auto( char *sample_str, int index )
 		return ru_auto_cp1251;
 } /* End of 'ru_expand_auto' function */
 
-/* Get functions list */
-void csp_get_func_list( csp_func_list_t *fl )
+/* Exchange data with main program */
+void plugin_exchange_data( plugin_data_t *pd )
 {
-	fl->m_get_num_sets = ru_get_num_sets;
-	fl->m_get_cs_name = ru_get_cs_name;
-	fl->m_get_code = ru_get_code;
-	fl->m_get_flags = ru_get_flags;
-	fl->m_expand_auto = ru_expand_auto;
-	fl->m_about = ru_about;
-} /* End of 'inp_get_func_list' function */
+	pd->m_desc = ru_desc;
+	pd->m_author = ru_author;
+	CSP_DATA(pd)->m_get_num_sets = ru_get_num_sets;
+	CSP_DATA(pd)->m_get_cs_name = ru_get_cs_name;
+	CSP_DATA(pd)->m_get_code = ru_get_code;
+	CSP_DATA(pd)->m_get_flags = ru_get_flags;
+	CSP_DATA(pd)->m_expand_auto = ru_expand_auto;
+} /* End of 'plugin_exchange_data' function */
 
 /* End of 'ru.c' file */
 

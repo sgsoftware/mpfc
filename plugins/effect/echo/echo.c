@@ -47,6 +47,15 @@ static int w_ofs = 0;
 /* Plugins manager */
 static pmng_t *echo_pmng = NULL;
 
+/* Plugin description */
+static char *echo_desc = "Echo effect plugin";
+
+/* Plugin author */
+static char *echo_author = "Sergey E. Galanov <sgsoftware@mail.ru>";
+
+/* Configuration lists */
+static cfg_node_t *echo_root_cfg = NULL, *echo_cfg = NULL;
+
 /* Apply echo plugin function */
 int echo_apply( byte *d, int len, int fmt, int srate, int nch )
 {
@@ -59,11 +68,12 @@ int echo_apply( byte *d, int len, int fmt, int srate, int nch )
 	if (!(fmt == AFMT_S16_NE || fmt == AFMT_S16_LE || fmt == AFMT_S16_BE))
 		return len;
 
-	surround_enable = cfg_get_var_int(pmng_get_cfg(echo_pmng), 
-			"echo-surround-enable");
-	del = cfg_get_var_int(pmng_get_cfg(echo_pmng), "echo-delay");
-	volume = cfg_get_var_int(pmng_get_cfg(echo_pmng), "echo-volume");
-	feedback = cfg_get_var_int(pmng_get_cfg(echo_pmng), "echo-feedback");
+	surround_enable = cfg_get_var_bool(echo_cfg, "surround-enable");
+	del = cfg_get_var_int(echo_cfg, "delay");
+	volume = cfg_get_var_int(echo_cfg, "volume");
+	feedback = cfg_get_var_int(echo_cfg, "feedback");
+	util_log("delay = %d, volume = %d, feedback = %d\n", del, volume, 
+			feedback);
 
 	if (!buffer)
 		buffer = (short *)malloc(BUFFER_BYTES + 2);
@@ -111,12 +121,24 @@ int echo_apply( byte *d, int len, int fmt, int srate, int nch )
 	return len;
 } /* End of 'echo_apply' function */
 
-/* Get functions list */
-void ep_get_func_list( ep_func_list_t *fl )
+/* Set default configuration values */
+void plugin_set_cfg_default( cfg_node_t *list )
 {
-	fl->m_apply = echo_apply;
-	echo_pmng = fl->m_pmng;
-} /* End of 'inp_get_func_list' function */
+	cfg_set_var_int(list, "delay", 500);
+	cfg_set_var_int(list, "volume", 50);
+	cfg_set_var_int(list, "feedback", 50);
+} /* End of 'echo_set_cfg_default' function */
+
+/* Exchange data with main program */
+void plugin_exchange_data( plugin_data_t *pd )
+{
+	pd->m_desc = echo_desc;
+	pd->m_author = echo_author;
+	EP_DATA(pd)->m_apply = echo_apply;
+	echo_pmng = pd->m_pmng;
+	echo_cfg = pd->m_cfg;
+	echo_root_cfg = pd->m_root_cfg;
+} /* End of 'plugin_exchange_data' function */
 
 /* End of 'echo.c' file */
 

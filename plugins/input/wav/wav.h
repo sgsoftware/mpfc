@@ -70,9 +70,6 @@ void wav_seek( int seconds );
 /* Get audio parameters */
 void wav_get_audio_params( int *ch, int *freq, dword *fmt, int *bitrate );
 
-/* Get functions list */
-void inp_get_func_list( inp_func_list_t *fl );
-
 /* Read the next chunk. Returns TRUE when 'data' chunk is read */
 static bool_t wav_read_next_chunk( file_t *fd, void **fmt_buf, 
 										dword *data_size );

@@ -31,6 +31,7 @@
 #include <sys/soundcard.h>
 #include <sys/ioctl.h>
 #include "types.h"
+#include "cfg.h"
 #include "outp.h"
 #include "pmng.h"
 
@@ -42,6 +43,15 @@ static bool_t oss_get_dev( char *name );
 
 /* Plugins manager  */
 static pmng_t *oss_pmng = NULL;
+
+/* Plugin description */
+static char *oss_desc = "OSS output plugin";
+
+/* Plugin author */
+static char *oss_author = "Sergey E. Galanov <sgsoftware@mail.ru>";
+
+/* Configuration list */
+static cfg_node_t *oss_cfg = NULL;
 
 /* Start plugin */
 bool_t oss_start( void )
@@ -146,20 +156,23 @@ void oss_get_volume( int *left, int *right )
 	*right = (v & 0xFF);
 } /* End of 'oss_get_volume' function */
 
-/* Get function list */
-void outp_get_func_list( outp_func_list_t *fl )
+/* Exchange data with main program */
+void plugin_exchange_data( plugin_data_t *pd )
 {
-	fl->m_start = oss_start;
-	fl->m_end = oss_end;
-	fl->m_play = oss_play;
-	fl->m_set_channels = oss_set_channels;
-	fl->m_set_freq = oss_set_freq;
-	fl->m_set_fmt = oss_set_fmt;
-	fl->m_flush = oss_flush;
-	fl->m_set_volume = oss_set_volume;
-	fl->m_get_volume = oss_get_volume;
-	oss_pmng = fl->m_pmng;
-} /* End of 'outp_get_func_list' function */
+	pd->m_desc = oss_desc;
+	pd->m_author = oss_author;
+	OUTP_DATA(pd)->m_start = oss_start;
+	OUTP_DATA(pd)->m_end = oss_end;
+	OUTP_DATA(pd)->m_play = oss_play;
+	OUTP_DATA(pd)->m_set_channels = oss_set_channels;
+	OUTP_DATA(pd)->m_set_freq = oss_set_freq;
+	OUTP_DATA(pd)->m_set_fmt = oss_set_fmt;
+	OUTP_DATA(pd)->m_flush = oss_flush;
+	OUTP_DATA(pd)->m_set_volume = oss_set_volume;
+	OUTP_DATA(pd)->m_get_volume = oss_get_volume;
+	oss_pmng = pd->m_pmng;
+	oss_cfg = pd->m_cfg;
+} /* End of 'plugin_exchange_data' function */
 
 /* Some function declarations */
 bool_t oss_get_dev( char *name )
@@ -168,9 +181,9 @@ bool_t oss_get_dev( char *name )
 	int fd;
 	
 	/* Get respective variable value */
-	dev = cfg_get_var(pmng_get_cfg(oss_pmng), "oss-device");
+	dev = cfg_get_var(oss_cfg, "device");
 	if (dev == NULL)
-		dev = "/dev/dsp,/dev/dsp1";
+		dev = "/dev/dsp;/dev/dsp1";
 
 	/* Search specified devices */
 	for ( s = dev; *s; )
@@ -178,7 +191,7 @@ bool_t oss_get_dev( char *name )
 		int i = 0;
 
 		/* Get name */
-		while ((*s) && ((*s) != ','))
+		while ((*s) && ((*s) != ';'))
 		{
 			name[i ++] = *(s ++);
 		}

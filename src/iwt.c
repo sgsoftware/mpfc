@@ -169,7 +169,7 @@ void *iwt_thread( void *arg )
 					song->m_file_name, song->m_info);
 			song_update_info(song);
 			song_free(song);
-			logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
+			logger_message(player_log, 1,
 				_("Saved info to file %s"), song->m_file_name);
 		}
 

@@ -44,8 +44,15 @@ static long dw_freq = 44100;
 static dword dw_fmt = 0;
 static long dw_file_size = 0;
 
-/* Plugins manager */
+/* Plugin data */
 static pmng_t *dw_pmng = NULL;
+static cfg_node_t *dw_cfg, *dw_root_cfg;
+
+/* Plugin description */
+static char *dw_desc = "Disk Writer plugin";
+
+/* Plugin author */
+static char *dw_author = "Sergey E. Galanov <sgsoftware@mail.ru>";
 
 /* Start plugin */
 bool_t dw_start( void )
@@ -55,7 +62,7 @@ bool_t dw_start( void )
 	int i;
 
 	/* Get output file name */
-	str = cfg_get_var(pmng_get_cfg(dw_pmng), "cur-song-name");
+	str = cfg_get_var(dw_root_cfg, "cur-song-name");
 	if (str == NULL)
 		return FALSE;
 	util_strncpy(name, str, sizeof(name));
@@ -65,7 +72,7 @@ bool_t dw_start( void )
 	else
 		strcat(name, ".wav");
 	util_replace_char(name, ':', '_');
-	str = cfg_get_var(pmng_get_cfg(dw_pmng), "disk-writer-path");
+	str = cfg_get_var(dw_cfg, "path");
 	if (str != NULL)
 		snprintf(full_name, sizeof(full_name), "%s/%s", str, name);
 	else
@@ -157,18 +164,22 @@ void dw_set_fmt( dword fmt )
 	dw_fmt = fmt;
 } /* End of 'dw_set_bits' function */
 
-/* Get function list */
-void outp_get_func_list( outp_func_list_t *fl )
+/* Exchange data with main program */
+void plugin_exchange_data( plugin_data_t *pd )
 {
-	fl->m_start = dw_start;
-	fl->m_end = dw_end;
-	fl->m_play = dw_play;
-	fl->m_set_channels = dw_set_channels;
-	fl->m_set_freq = dw_set_freq;
-	fl->m_set_fmt = dw_set_fmt;
-	fl->m_flags = OUTP_NO_SOUND;
-	dw_pmng = fl->m_pmng;
-} /* End of 'outp_get_func_list' function */
+	pd->m_desc = dw_desc;
+	pd->m_author = dw_author;
+	OUTP_DATA(pd)->m_start = dw_start;
+	OUTP_DATA(pd)->m_end = dw_end;
+	OUTP_DATA(pd)->m_play = dw_play;
+	OUTP_DATA(pd)->m_set_channels = dw_set_channels;
+	OUTP_DATA(pd)->m_set_freq = dw_set_freq;
+	OUTP_DATA(pd)->m_set_fmt = dw_set_fmt;
+	OUTP_DATA(pd)->m_flags = OUTP_NO_SOUND;
+	dw_pmng = pd->m_pmng;
+	dw_cfg = pd->m_cfg;
+	dw_root_cfg = pd->m_root_cfg;
+} /* End of 'plugin_exchange_data' function */
 
 /* End of 'writer.c' file */
 

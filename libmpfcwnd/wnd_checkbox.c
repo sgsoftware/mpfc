@@ -68,6 +68,8 @@ bool_t checkbox_construct( checkbox_t *cb, wnd_t *parent, char *title,
 	wnd_msg_add_handler(WND_OBJ(cb), "action", checkbox_on_action);
 	wnd_msg_add_handler(WND_OBJ(cb), "display", checkbox_on_display);
 	wnd_msg_add_handler(WND_OBJ(cb), "mouse_ldown", checkbox_on_mouse);
+	wnd_msg_add_handler(WND_OBJ(cb), "quick_change_focus", 
+			checkbox_on_quick_change_focus);
 
 	/* Set check box fields */
 	cb->m_checked = checked;
@@ -109,6 +111,13 @@ wnd_msg_retcode_t checkbox_on_mouse( wnd_t *wnd, int x, int y,
 	checkbox_toggle(CHECKBOX_OBJ(wnd));
 	return WND_MSG_RETCODE_OK;
 } /* End of 'checkbox_on_mouse' function */
+
+/* 'quick_change_focus' message handler */
+wnd_msg_retcode_t checkbox_on_quick_change_focus( wnd_t *wnd )
+{
+	checkbox_toggle(CHECKBOX_OBJ(wnd));
+	return WND_MSG_RETCODE_OK;
+} /* End of 'checkbox_on_quick_change_focus' function */
 
 /* Toggle checked state */
 void checkbox_toggle( checkbox_t *cb )
