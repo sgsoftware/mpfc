@@ -1,1 +1,1 @@
-SUBDIRS = oss
+SUBDIRS = oss disk_writer

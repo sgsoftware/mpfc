@@ -92,7 +92,7 @@ void oss_set_freq( int freq )
 } /* End of 'oss_set_freq' function */
 
 /* Set playing format */
-void oss_set_fmt( int fmt )
+void oss_set_fmt( dword fmt )
 {
 	if (oss_fd == -1)
 		return;

@@ -28,6 +28,7 @@
 #include <dlfcn.h>
 #include <stdlib.h>
 #include "types.h"
+#include "cfg.h"
 #include "error.h"
 #include "inp.h"
 #include "outp.h"
@@ -38,6 +39,7 @@ out_plugin_t *outp_init( char *name )
 {
 	out_plugin_t *p;
 	void (*fl)( outp_func_list_t * );
+	void (*set_vars)( cfg_list_t * );
 
 	/* Try to allocate memory for plugin object */
 	p = (out_plugin_t *)malloc(sizeof(out_plugin_t));
@@ -68,6 +70,9 @@ out_plugin_t *outp_init( char *name )
 	memset(&p->m_fl, 0, sizeof(p->m_fl));
 	fl(&p->m_fl);
 
+	if ((set_vars = dlsym(p->m_lib_handler, "outp_set_vars")) != NULL)
+		set_vars(cfg_list);
+		
 	return p;
 } /* End of 'outp_init' function */
 

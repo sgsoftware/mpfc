@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for configuration handling
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 26.07.2003
+ * LAST UPDATE : 11.08.2003
  * NOTE        : Module prefix 'cfg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -30,6 +30,9 @@
 
 #include "types.h"
 
+/* Variable flags */
+#define CFG_RUNTIME 0x00
+
 /* Variable type */
 typedef struct tag_cfg_var_t
 {
@@ -38,6 +41,9 @@ typedef struct tag_cfg_var_t
 
 	/* Variable value */
 	char m_val[256];
+
+	/* Variable flags */
+	byte m_flags;
 } cfg_var_t;
 
 /* Variables list type */
@@ -70,19 +76,19 @@ void cfg_read_rcfile( cfg_list_t *list, char *name );
 void cfg_parse_line( cfg_list_t *list, char *str );
 
 /* Add variable */
-void cfg_new_var( cfg_list_t *list, char *name, char *val );
+void cfg_new_var( cfg_list_t *list, char *name, char *val, byte flags );
 
 /* Search for variable and return its index (or negative on failure) */
 int cfg_search_var( cfg_list_t *list, char *name );
 
 /* Set variable value */
-void cfg_set_var( cfg_list_t *list, char *name, char *val );
+void cfg_set_var( cfg_list_t *list, char *name, char *val, byte flags );
 
 /* Set variable integer value */
-void cfg_set_var_int( cfg_list_t *list, char *name, int val );
+void cfg_set_var_int( cfg_list_t *list, char *name, int val, byte flags );
 
 /* Set variable integer float */
-void cfg_set_var_float( cfg_list_t *list, char *name, float val );
+void cfg_set_var_float( cfg_list_t *list, char *name, float val, byte flags );
 
 /* Get variable value */
 char *cfg_get_var( cfg_list_t *list, char *name );
@@ -92,6 +98,9 @@ int cfg_get_var_int( cfg_list_t *list, char *name );
 
 /* Get variable float value */
 float cfg_get_var_float( cfg_list_t *list, char *name );
+
+/* Get variable flags */
+byte cfg_get_var_flags( cfg_list_t *list, char *name );
 
 #endif
 

@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG MPFC. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 8.08.2003
+ * LAST UPDATE : 11.08.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -264,7 +264,7 @@ bool player_parse_cmd_line( int argc, char *argv[] )
 		}
 		
 		/* Set respective variable */
-		cfg_set_var(cfg_list, name, val);
+		cfg_set_var(cfg_list, name, val, 0);
 	}
 
 	/* Get file names from command line */
@@ -429,6 +429,8 @@ void player_play( void )
 	player_end_play();
 
 	/* Start new playing thread */
+	cfg_set_var(cfg_list, "cur_song_name", 
+			util_get_file_short_name(s->m_file_name), CFG_RUNTIME);
 	player_status = PLAYER_STATUS_PLAYING;
 } /* End of 'player_play' function */
 
@@ -437,6 +439,7 @@ void player_end_play( void )
 {
 	player_end_track = TRUE;
 	player_status = PLAYER_STATUS_STOPPED;
+	cfg_set_var(cfg_list, "cur_song_name", "", CFG_RUNTIME);
 } /* End of 'player_end_play' function */
 
 /* Player thread function */
@@ -1000,7 +1003,10 @@ void player_var_manager( void )
 
 	/* Fill variables list box */
 	for ( i = 0; i < cfg_list->m_num_vars; i ++ )
-		lbox_add(var_lb, cfg_list->m_vars[i].m_name);
+	{
+		if (!(cfg_list->m_vars[i].m_flags & CFG_RUNTIME))
+			lbox_add(var_lb, cfg_list->m_vars[i].m_name);
+	}
 	lbox_move_cursor(var_lb, FALSE, 0, TRUE);
 
 	/* Display dialog */
@@ -1009,7 +1015,7 @@ void player_var_manager( void )
 	/* Save variables */
 	if (var_lb->m_cursor >= 0)
 		cfg_set_var(cfg_list, var_lb->m_list[var_lb->m_cursor].m_name, 
-				val_eb->m_text);
+				val_eb->m_text, 0);
 
 	/* Free memory */
 	wnd_destroy(dlg);
@@ -1216,13 +1222,13 @@ void player_handle_action( int action )
 	/* Set/unset shuffle mode */
 	case KBIND_SHUFFLE:
 		cfg_set_var_int(cfg_list, "shuffle_play",
-				!cfg_get_var_int(cfg_list, "shuffle_play"));
+				!cfg_get_var_int(cfg_list, "shuffle_play"), 0);
 		break;
 		
 	/* Set/unset loop mode */
 	case KBIND_LOOP:
 		cfg_set_var_int(cfg_list, "loop_play",
-				!cfg_get_var_int(cfg_list, "loop_play"));
+				!cfg_get_var_int(cfg_list, "loop_play"), 0);
 		break;
 
 	/* Variables manager */
@@ -1331,7 +1337,7 @@ void player_var_mini_mngr( void )
 	wnd_destroy(ebox);
 
 	/* Set variable value */
-	cfg_set_var(cfg_list, name, val);
+	cfg_set_var(cfg_list, name, val, 0);
 } /* End of 'player_var_mini_mngr' function */
 
 /* Variables manager dialog notify handler */
@@ -1360,7 +1366,7 @@ void player_var_mngr_notify( wnd_t *wnd, dword data )
 	{
 		/* Save current edit box value to the respective variable */
 		if (pos >= 0)
-			cfg_set_var(cfg_list, lb->m_list[pos].m_name, eb->m_text);
+			cfg_set_var(cfg_list, lb->m_list[pos].m_name, eb->m_text, 0);
 			
 		/* Read new variable */
 		pos = lb->m_cursor;
@@ -1397,7 +1403,7 @@ void player_var_mngr_notify( wnd_t *wnd, dword data )
 			int was_len = cfg_list->m_num_vars;
 
 			/* Set variable */
-			cfg_set_var(cfg_list, name->m_text, val->m_text);
+			cfg_set_var(cfg_list, name->m_text, val->m_text, 0);
 
 			/* Update main dialog items */
 			if (was_len != cfg_list->m_num_vars)
@@ -1442,7 +1448,7 @@ void player_save_cfg_vars( cfg_list_t *list, char *vars )
 		{
 			name[j] = 0;
 			j = 0;
-			cfg_set_var(tlist, name, cfg_get_var(list, name));
+			cfg_set_var(tlist, name, cfg_get_var(list, name), 0);
 			if (!vars[i])
 				break;
 		}
@@ -1473,7 +1479,11 @@ void player_save_cfg_list( cfg_list_t *list, char *fname )
 
 	/* Write variables */
 	for ( i = 0; i < list->m_num_vars; i ++ )
-		fprintf(fd, "%s=%s\n", list->m_vars[i].m_name, list->m_vars[i].m_val);
+	{
+		if (!(list->m_vars[i].m_flags & CFG_RUNTIME))
+			fprintf(fd, "%s=%s\n", list->m_vars[i].m_name, 
+					list->m_vars[i].m_val);
+	}
 
 	/* Close file */
 	fclose(fd);

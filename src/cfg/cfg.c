@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Configuration handling functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 9.08.2003
+ * LAST UPDATE : 11.08.2003
  * NOTE        : Module prefix 'cfg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -70,15 +70,15 @@ void cfg_free( void )
 void cfg_init_default( void )
 {
 	/* Set variables */
-	cfg_set_var_int(cfg_list, "silent_mode", 0);
-	cfg_set_var(cfg_list, "output_plugin", "oss");
-	cfg_set_var_int(cfg_list, "update_song_len_on_play", 0);
-	cfg_set_var_int(cfg_list, "mp3_quick_get_len", 1);
-	cfg_set_var_int(cfg_list, "save_playlist_on_exit", 1);
-	cfg_set_var(cfg_list, "lib_dir", LIBDIR"/mpfc");
-	cfg_set_var_int(cfg_list, "echo_delay", 500);
-	cfg_set_var_int(cfg_list, "echo_volume", 50);
-	cfg_set_var_int(cfg_list, "echo_feedback", 50);
+	cfg_set_var_int(cfg_list, "silent_mode", 0, 0);
+	cfg_set_var(cfg_list, "output_plugin", "oss", 0);
+	cfg_set_var_int(cfg_list, "update_song_len_on_play", 0, 0);
+	cfg_set_var_int(cfg_list, "mp3_quick_get_len", 1, 0);
+	cfg_set_var_int(cfg_list, "save_playlist_on_exit", 1, 0);
+	cfg_set_var(cfg_list, "lib_dir", LIBDIR"/mpfc", 0);
+	cfg_set_var_int(cfg_list, "echo_delay", 500, 0);
+	cfg_set_var_int(cfg_list, "echo_volume", 50, 0);
+	cfg_set_var_int(cfg_list, "echo_feedback", 50, 0);
 } /* End of 'cfg_init_default' function */
 
 /* Read configuration file */
@@ -142,7 +142,7 @@ void cfg_parse_line( cfg_list_t *list, char *str )
 	/* Variable has no value - let it be "1" */
 	if (j == len)
 	{
-		cfg_set_var(list, name, "1");
+		cfg_set_var(list, name, "1", 0);
 	}
 	/* Read value */
 	else
@@ -158,12 +158,12 @@ void cfg_parse_line( cfg_list_t *list, char *str )
 		/* Extract value and set it */
 		memcpy(val, &str[i], j - i + 1);
 		val[j - i + 1] = 0;
-		cfg_set_var(list, name, val);
+		cfg_set_var(list, name, val, 0);
 	}
 } /* End of 'cfg_parse_line' function */
 
 /* Add variable */
-void cfg_new_var( cfg_list_t *list, char *name, char *val )
+void cfg_new_var( cfg_list_t *list, char *name, char *val, byte flags )
 {
 	if (list == NULL)
 		return;
@@ -175,6 +175,7 @@ void cfg_new_var( cfg_list_t *list, char *name, char *val )
 				(list->m_num_vars + 1));
 	strcpy(list->m_vars[list->m_num_vars].m_name, name);
 	strcpy(list->m_vars[list->m_num_vars].m_val, val);
+	list->m_vars[list->m_num_vars].m_flags = flags;
 	list->m_num_vars ++;
 } /* End of 'cfg_new_var' function */
 
@@ -193,7 +194,7 @@ int cfg_search_var( cfg_list_t *list, char *name )
 } /* End of 'cfg_search_var' function */
 
 /* Set variable value */
-void cfg_set_var( cfg_list_t *list, char *name, char *val )
+void cfg_set_var( cfg_list_t *list, char *name, char *val, byte flags )
 {
 	int i;
 
@@ -205,14 +206,17 @@ void cfg_set_var( cfg_list_t *list, char *name, char *val )
 
 	/* Variable exists - modify its value */
 	if (i >= 0)
+	{
 		strcpy(list->m_vars[i].m_val, val);
+		list->m_vars[i].m_flags = flags;
+	}
 	/* Create new variable */
 	else
-		cfg_new_var(list, name, val);
+		cfg_new_var(list, name, val, flags);
 } /* End of 'cfg_set_var' function */
 
 /* Set variable integer value */
-void cfg_set_var_int( cfg_list_t *list, char *name, int val )
+void cfg_set_var_int( cfg_list_t *list, char *name, int val, byte flags )
 {
 	char str[20];
 
@@ -220,7 +224,7 @@ void cfg_set_var_int( cfg_list_t *list, char *name, int val )
 		return;
 
 	sprintf(str, "%i", val);
-	cfg_set_var(list, name, str);
+	cfg_set_var(list, name, str, flags);
 } /* End of 'cfg_set_var_int' function */
 
 /* Get variable value */
@@ -243,7 +247,7 @@ int cfg_get_var_int( cfg_list_t *list, char *name )
 } /* End of 'cfg_get_var_int' function */
 
 /* Set variable integer float */
-void cfg_set_var_float( cfg_list_t *list, char *name, float val )
+void cfg_set_var_float( cfg_list_t *list, char *name, float val, byte flags )
 {
 	char str[80];
 
@@ -251,7 +255,7 @@ void cfg_set_var_float( cfg_list_t *list, char *name, float val )
 		return;
 
 	sprintf(str, "%f", val);
-	cfg_set_var(list, name, str);
+	cfg_set_var(list, name, str, flags);
 } /* End of 'cfg_set_var_float' function */
 
 /* Get variable float value */
@@ -270,6 +274,20 @@ void cfg_free_list( cfg_list_t *list )
 		free(list);
 	}
 } /* End of 'cfg_free_list' function */
+
+/* Get variable flags */
+byte cfg_get_var_flags( cfg_list_t *list, char *name )
+{
+	int i;
+	
+	if (list == NULL)
+		return 0;
+
+	i = cfg_search_var(list, name);
+	if (i < 0)
+		return 0;
+	return list->m_vars[i].m_flags;
+} /* End of 'cfg_get_var_flags' function */
 
 /* End of 'cfg.c' file */
 
