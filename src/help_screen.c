@@ -269,11 +269,16 @@ void help_init_eqwnd( help_screen_t *help )
 wnd_class_t *help_class_init( wnd_global_data_t *global )
 {
 	wnd_class_t *klass = wnd_class_new(global, "help",
-			wnd_basic_class_init(global), NULL);
-	cfg_set_var(klass->m_cfg_list, "item-style", "white:black");
-	cfg_set_var(klass->m_cfg_list, "prompt-style", "red:black");
+			wnd_basic_class_init(global), NULL, help_class_set_default_styles);
 	return klass;
 } /* End of 'help_class_init' function */
+
+/* Set help screen class default styles */
+void help_class_set_default_styles( cfg_node_t *list )
+{
+	cfg_set_var(list, "item-style", "white:black");
+	cfg_set_var(list, "prompt-style", "red:black");
+} /* End of 'help_class_set_default_styles' function */
 
 /* End of 'help_screen.c' file */
 

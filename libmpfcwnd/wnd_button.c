@@ -125,11 +125,17 @@ wnd_msg_retcode_t button_on_mouse( wnd_t *wnd, int x, int y,
 wnd_class_t *button_class_init( wnd_global_data_t *global )
 {
 	wnd_class_t *klass = wnd_class_new(global, "button", 
-			dlgitem_class_init(global), button_get_msg_info);
-	cfg_set_var(klass->m_cfg_list, "text-style", "white:green:bold");
-	cfg_set_var(klass->m_cfg_list, "focus-text-style", "white:blue:bold");
+			dlgitem_class_init(global), button_get_msg_info, 
+			button_class_set_default_styles);
 	return klass;
 } /* End of 'button_class_init' function */
+
+/* Set button class default styles */
+void button_class_set_default_styles( cfg_node_t *node )
+{
+	cfg_set_var(node, "text-style", "white:green:bold");
+	cfg_set_var(node, "focus-text-style", "white:blue:bold");
+} /* End of 'button_class_set_default_styles' function */
 
 /* Get message information */
 wnd_msg_handler_t **button_get_msg_info( wnd_t *wnd, char *msg_name,

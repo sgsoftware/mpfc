@@ -106,6 +106,9 @@ int dlgitem_label_text_len( wnd_t *wnd, char *text );
 /* Initialize dialog item class */
 wnd_class_t *dlgitem_class_init( wnd_global_data_t *global );
 
+/* Set dialog item class default styles */
+void dlgitem_class_set_default_styles( cfg_node_t *list );
+
 #endif
 
 /* End of 'wnd_dlgitem.h' file */

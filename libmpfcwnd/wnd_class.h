@@ -63,7 +63,8 @@ struct tag_wnd_class_t
 
 /* Create a new window class */
 wnd_class_t *wnd_class_new( wnd_global_data_t *global, char *name,
-		wnd_class_t *parent, wnd_class_msg_get_info_t get_info_func );
+		wnd_class_t *parent, wnd_class_msg_get_info_t get_info_func,
+		cfg_set_default_values_t set_def_styles );
 
 /* Free window class */
 void wnd_class_free( wnd_class_t *klass );

@@ -287,11 +287,16 @@ void combo_unexpand( combo_t *combo )
 wnd_class_t *combo_class_init( wnd_global_data_t *global )
 {
 	wnd_class_t *klass = wnd_class_new(global, "combo", 
-			editbox_class_init(global), NULL);
-	cfg_set_var(klass->m_cfg_list, "list-color", "white:green");
-	cfg_set_var(klass->m_cfg_list, "focus-list-color", "white:blue");
+			editbox_class_init(global), NULL, combo_class_set_default_styles);
 	return klass;
 } /* End of 'combo_class_init' function */
+
+/* Set combo box class default styles */
+void combo_class_set_default_styles( cfg_node_t *list )
+{
+	cfg_set_var(list, "list-color", "white:green");
+	cfg_set_var(list, "focus-list-color", "white:blue");
+} /* End of 'combo_class_set_default_styles' function */
 
 /* End of 'wnd_combobox.c' file */
 

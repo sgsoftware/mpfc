@@ -365,13 +365,18 @@ void eqwnd_help( eq_wnd_t *eq )
 wnd_class_t *eqwnd_class_init( wnd_global_data_t *global )
 {
 	wnd_class_t *klass = wnd_class_new(global, "equalizer", 
-			wnd_basic_class_init(global), NULL);
-	cfg_set_var(klass->m_cfg_list, "band-style", "cyan:black");
-	cfg_set_var(klass->m_cfg_list, "focus-band-style", "cyan:black:bold");
-	cfg_set_var(klass->m_cfg_list, "label-style", "white:black");
-	cfg_set_var(klass->m_cfg_list, "focus-label-style", "white:black:bold");
+			wnd_basic_class_init(global), NULL, eqwnd_class_set_default_styles);
 	return klass;
 } /* End of 'eqwnd_class_init' function */
+
+/* Set equalizer window class default styles */
+void eqwnd_class_set_default_styles( cfg_node_t *list )
+{
+	cfg_set_var(list, "band-style", "cyan:black");
+	cfg_set_var(list, "focus-band-style", "cyan:black:bold");
+	cfg_set_var(list, "label-style", "white:black");
+	cfg_set_var(list, "focus-label-style", "white:black:bold");
+} /* End of 'eqwnd_class_set_default_styles' function */
 
 /* End of 'eqwnd.c' file */
 

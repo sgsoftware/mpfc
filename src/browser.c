@@ -887,19 +887,24 @@ void fb_replace_plist( browser_t *fb )
 wnd_class_t *fb_class_init( wnd_global_data_t *global )
 {
 	wnd_class_t *klass = wnd_class_new(global, "browser",
-			wnd_basic_class_init(global), NULL);
-	cfg_set_var(klass->m_cfg_list, "file-style", "white:black");
-	cfg_set_var(klass->m_cfg_list, "cur-file-style", "white:blue");
-	cfg_set_var(klass->m_cfg_list, "dir-style", "green:black");
-	cfg_set_var(klass->m_cfg_list, "cur-dir-style", "green:blue");
-	cfg_set_var(klass->m_cfg_list, "selection-style", "yellow:black:bold");
-	cfg_set_var(klass->m_cfg_list, "cur-selection-style", "yellow:blue:bold");
-	cfg_set_var(klass->m_cfg_list, "search-prompt-style", "white:black:bold");
-	cfg_set_var(klass->m_cfg_list, "search-string-style", "white:black");
-	cfg_set_var(klass->m_cfg_list, "title-style", "green:black:bold");
-	cfg_set_var(klass->m_cfg_list, "header-style", "green:black:bold");
+			wnd_basic_class_init(global), NULL, fb_class_set_default_styles);
 	return klass;
 } /* End of 'fb_class_init' function */
+
+/* Set browser class default styles */
+void fb_class_set_default_styles( cfg_node_t *list )
+{
+	cfg_set_var(list, "file-style", "white:black");
+	cfg_set_var(list, "cur-file-style", "white:blue");
+	cfg_set_var(list, "dir-style", "green:black");
+	cfg_set_var(list, "cur-dir-style", "green:blue");
+	cfg_set_var(list, "selection-style", "yellow:black:bold");
+	cfg_set_var(list, "cur-selection-style", "yellow:blue:bold");
+	cfg_set_var(list, "search-prompt-style", "white:black:bold");
+	cfg_set_var(list, "search-string-style", "white:black");
+	cfg_set_var(list, "title-style", "green:black:bold");
+	cfg_set_var(list, "header-style", "green:black:bold");
+} /* End of 'fb_class_set_default_styles' function */
 
 /* End of 'browser.c' file */
 

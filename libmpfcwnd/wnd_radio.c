@@ -146,12 +146,17 @@ void radio_get_desired_size( dlgitem_t *di, int *width, int *height )
 wnd_class_t *radio_class_init( wnd_global_data_t *global )
 {
 	wnd_class_t *klass = wnd_class_new(global, "radio", 
-			dlgitem_class_init(global), NULL);
-	cfg_set_var(klass->m_cfg_list, "focus-text-style", "white:blue:bold");
-	cfg_set_var(klass->m_cfg_list, "label-style", "white:black");
-	cfg_set_var(klass->m_cfg_list, "focus-label-style", "white:black");
+			dlgitem_class_init(global), NULL, radio_class_set_default_styles);
 	return klass;
 } /* End of 'radio_class_init' function */
+
+/* Set radio button class default styles */
+void radio_class_set_default_styles( cfg_node_t *list )
+{
+	cfg_set_var(list, "focus-text-style", "white:blue:bold");
+	cfg_set_var(list, "label-style", "white:black");
+	cfg_set_var(list, "focus-label-style", "white:black");
+} /* End of 'radio_class_set_default_styles' function */
 
 /* End of 'wnd_radio.c' file */
 

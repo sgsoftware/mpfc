@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for configuration handling
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 6.07.2004
+ * LAST UPDATE : 12.09.2004
  * NOTE        : Module prefix 'cfg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -47,7 +47,7 @@ typedef enum
 	CFG_NODE_RUNTIME				= 1 << 4,
 
 	/* Variable handler is called after changing the value */
-	CFG_NODE_HANDLE_AFTER_CHANGE	= 1 << 5
+	CFG_NODE_HANDLE_AFTER_CHANGE	= 1 << 5,
 } cfg_node_flags_t;
 
 /* Default values for list hash table size */
@@ -106,6 +106,9 @@ typedef struct tag_cfg_node_t
 /* Alias for compatibility with some old code */
 typedef cfg_node_t cfg_list_t;
 
+/* Set the list variables default values function */
+typedef void (*cfg_set_default_values_t)( cfg_node_t *list );
+
 /* Access node fields */
 #define CFG_NODE_IS_VAR(node)		((node)->m_flags & CFG_NODE_VAR)
 #define CFG_NODE_IS_LIST(node)		(!((node)->m_flags & CFG_NODE_VAR))
@@ -115,8 +118,8 @@ typedef cfg_node_t cfg_list_t;
 #define CFG_VAR_HANDLER(node)		(CFG_VAR(node)->m_handler)
 
 /* Create a new configuration list */
-cfg_node_t *cfg_new_list( cfg_node_t *parent, char *name, dword flags,
-		int hash_size );
+cfg_node_t *cfg_new_list( cfg_node_t *parent, char *name, 
+		cfg_set_default_values_t set_def, dword flags, int hash_size );
 
 /* Create a new variable */
 cfg_node_t *cfg_new_var( cfg_node_t *parent, char *name, dword flags, 
@@ -130,7 +133,7 @@ cfg_node_t *cfg_new_node( cfg_node_t *parent, char *name, dword flags );
 void cfg_insert_node( cfg_node_t *list, cfg_node_t *node );
 
 /* Free node */
-void cfg_free_node( cfg_node_t *node );
+void cfg_free_node( cfg_node_t *node, bool_t recursively );
 
 /* Search for the node */
 cfg_node_t *cfg_search_node( cfg_node_t *parent, char *name );

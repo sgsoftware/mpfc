@@ -96,6 +96,9 @@ void eqwnd_help( eq_wnd_t *eq );
 /* Initialize equalizer window class */
 wnd_class_t *eqwnd_class_init( wnd_global_data_t *global );
 
+/* Set equalizer window class default styles */
+void eqwnd_class_set_default_styles( cfg_node_t *list );
+
 #endif
 
 /* End of 'eqwnd.h' file */

@@ -80,6 +80,9 @@ wnd_class_t *button_class_init( wnd_global_data_t *global );
 wnd_msg_handler_t **button_get_msg_info( wnd_t *wnd, char *msg_name,
 		wnd_class_msg_callback_t *callback );
 
+/* Set button class default styles */
+void button_class_set_default_styles( cfg_node_t *node );
+
 /* Aliases for message data creating */
 #define button_msg_clicked_new	wnd_msg_noargs_new
 

@@ -390,10 +390,16 @@ void editbox_hist_move( editbox_t *eb, bool_t up )
 wnd_class_t *editbox_class_init( wnd_global_data_t *global )
 {
 	wnd_class_t *klass = wnd_class_new(global, "editbox", 
-			dlgitem_class_init(global), editbox_get_msg_info);
-	cfg_set_var(klass->m_cfg_list, "gray-style", "black:black:bold");
+			dlgitem_class_init(global), editbox_get_msg_info,
+			editbox_class_set_default_styles);
 	return klass;
 } /* End of 'editbox_class_init' function */
+
+/* Set edit box class default styles */
+void editbox_class_set_default_styles( cfg_node_t *list )
+{
+	cfg_set_var(list, "gray-style", "black:black:bold");
+} /* End of 'editbox_class_set_default_styles' function */
 
 /* Get message information */
 wnd_msg_handler_t **editbox_get_msg_info( wnd_t *wnd, char *msg_name,

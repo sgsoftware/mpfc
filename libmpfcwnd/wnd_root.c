@@ -35,7 +35,7 @@
 wnd_class_t *wnd_root_class_init( wnd_global_data_t *global )
 {
 	return wnd_class_new(global, "root", wnd_basic_class_init(global),
-			wnd_root_get_msg_info);
+			wnd_root_get_msg_info, NULL);
 } /* End of 'wnd_root_class_init' function */
 
 /* Get message information for root window class */

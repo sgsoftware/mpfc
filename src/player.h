@@ -352,6 +352,9 @@ bool_t player_handle_kbind_scheme( cfg_node_t *var, char *value );
 /* Initialize class */
 wnd_class_t *player_wnd_class_init( wnd_global_data_t *global );
 
+/* Set player class default styles */
+void player_class_set_default_styles( cfg_node_t *list );
+
 /***
  * Miscellaneous functions
  ***/

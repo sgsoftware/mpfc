@@ -87,22 +87,13 @@ wnd_t *wnd_init( cfg_node_t *cfg_list )
 	pthread_mutex_init(&global->m_display_buf.m_mutex, NULL);
 
 	/* Initialize configuration */
-	cfg_wnd = cfg_new_list(cfg_list, "windows", CFG_NODE_MEDIUM_LIST |
-			CFG_NODE_RUNTIME, 0);
+	cfg_wnd = cfg_new_list(cfg_list, "windows", wnd_set_default_styles,
+			CFG_NODE_MEDIUM_LIST | CFG_NODE_RUNTIME, 0);
 	if (cfg_wnd == NULL)
 		goto failed;
 	global->m_root_cfg = cfg_wnd;
 	global->m_classes_cfg = cfg_new_list(cfg_wnd, "classes", 
-			CFG_NODE_MEDIUM_LIST, 0);
-	cfg_set_var(cfg_wnd, "caption-style", "green:black:bold");
-	cfg_set_var(cfg_wnd, "border-style", "white:black:bold");
-	cfg_set_var(cfg_wnd, "repos-border-style", "green:black:bold");
-	cfg_set_var(cfg_wnd, "maximize-box-style", "red:black:bold");
-	cfg_set_var(cfg_wnd, "close-box-style", "red:black:bold");
-	cfg_set_var(cfg_wnd, "wndbar-style", "black:white");
-	cfg_set_var(cfg_wnd, "wndbar-focus-style", "black:green");
-	cfg_set_var(cfg_wnd, "text-style", "white:black");
-	cfg_set_var(cfg_wnd, "focus-text-style", "white:black");
+			NULL, CFG_NODE_MEDIUM_LIST, 0);
 
 	/* Initialize needed window classes */
 	klass = wnd_root_class_init(global);
@@ -163,7 +154,7 @@ failed:
 	if (msg_queue != NULL)
 		wnd_msg_queue_free(msg_queue);
 	if (cfg_wnd != NULL)
-		cfg_free_node(cfg_wnd);
+		cfg_free_node(cfg_wnd, TRUE);
 	if (wnd_root != NULL)
 		free(wnd_root);
 	if (klass != NULL)
@@ -339,7 +330,7 @@ bool_t wnd_construct( wnd_t *wnd, wnd_t *parent, char *title, int x, int y,
 	/* Initialize configuration list */
 	snprintf(cfg_name, sizeof(cfg_name), "%d", wnd->m_id);
 	wnd->m_cfg_list = cfg_new_list(WND_ROOT_CFG(wnd),
-			cfg_name, CFG_NODE_MEDIUM_LIST | CFG_NODE_RUNTIME, 0);
+			cfg_name, NULL, CFG_NODE_MEDIUM_LIST | CFG_NODE_RUNTIME, 0);
 	if (wnd->m_cfg_list == NULL)
 		goto failed;
 	return TRUE;
@@ -347,7 +338,7 @@ bool_t wnd_construct( wnd_t *wnd, wnd_t *parent, char *title, int x, int y,
 	/* Failing management code */
 failed:
 	if (wnd->m_cfg_list != NULL)
-		cfg_free_node(wnd->m_cfg_list);
+		cfg_free_node(wnd->m_cfg_list, TRUE);
 	if (wnd->m_title != NULL)
 		free(wnd->m_title);
 	return FALSE;
@@ -1450,6 +1441,20 @@ void wnd_regen_zvalue_list( wnd_t *wnd )
 		}
 	}
 } /* End of 'wnd_regen_zvalue_list' function */
+
+/* Set the default styles */
+void wnd_set_default_styles( cfg_node_t *list )
+{
+	cfg_set_var(list, "caption-style", "green:black:bold");
+	cfg_set_var(list, "border-style", "white:black:bold");
+	cfg_set_var(list, "repos-border-style", "green:black:bold");
+	cfg_set_var(list, "maximize-box-style", "red:black:bold");
+	cfg_set_var(list, "close-box-style", "red:black:bold");
+	cfg_set_var(list, "wndbar-style", "black:white");
+	cfg_set_var(list, "wndbar-focus-style", "black:green");
+	cfg_set_var(list, "text-style", "white:black");
+	cfg_set_var(list, "focus-text-style", "white:black");
+} /* End of 'wnd_set_default_styles' function */
 
 /* End of 'wnd.c' file */
 

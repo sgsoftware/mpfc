@@ -399,7 +399,7 @@ void player_deinit( void )
 	player_ul = NULL;
 
 	/* Uninitialize configuration manager */
-	cfg_free_node(cfg_list);
+	cfg_free_node(cfg_list, TRUE);
 	cfg_list = NULL;
 } /* End of 'player_deinit' function */
 
@@ -479,7 +479,7 @@ bool_t player_parse_cmd_line( int argc, char *argv[] )
 bool_t player_init_cfg( void )
 {
 	/* Initialize root configuration list and variables handlers */
-	cfg_list = cfg_new_list(NULL, "", CFG_NODE_BIG_LIST, 0);
+	cfg_list = cfg_new_list(NULL, "", NULL, CFG_NODE_BIG_LIST, 0);
 	cfg_new_var(cfg_list, "cur-song", CFG_NODE_RUNTIME, NULL, NULL);
 	cfg_new_var(cfg_list, "cur-song-name", CFG_NODE_RUNTIME, NULL, NULL);
 	cfg_new_var(cfg_list, "cur-time", CFG_NODE_RUNTIME, NULL, NULL);
@@ -621,7 +621,7 @@ void player_save_cfg_vars( cfg_list_t *list, char *vars )
 		return;
 
 	/* Initialize variables with initial values */
-	tlist = cfg_new_list(NULL, "root", 0, 0);
+	tlist = cfg_new_list(NULL, "root", NULL, 0, 0);
 
 	/* Read rc file */
 	player_read_rcfile(tlist, player_cfg_file);
@@ -645,7 +645,7 @@ void player_save_cfg_vars( cfg_list_t *list, char *vars )
 	player_save_cfg_list(tlist, player_cfg_file);
 
 	/* Free temporary list */
-	cfg_free_node(tlist);
+	cfg_free_node(tlist, TRUE);
 } /* End of 'player_save_cfg_vars' function */
 
 /* Save configuration list */
@@ -2650,23 +2650,27 @@ bool_t player_handle_kbind_scheme( cfg_node_t *node, char *value )
 wnd_class_t *player_wnd_class_init( wnd_global_data_t *global )
 {
 	wnd_class_t *klass = wnd_class_new(global, "player", 
-			wnd_basic_class_init(global), NULL);
-
-	/* Set styles */
-	cfg_set_var(klass->m_cfg_list, "plist-style", "white:black");
-	cfg_set_var(klass->m_cfg_list, "plist-playing-style", "red:black:bold");
-	cfg_set_var(klass->m_cfg_list, "plist-selected-style", "white:blue:bold");
-	cfg_set_var(klass->m_cfg_list, "plist-sel-and-play-style", "red:blue:bold");
-	cfg_set_var(klass->m_cfg_list, "plist-time-style", "green:black:bold");
-	cfg_set_var(klass->m_cfg_list, "title-style", "yellow:black:bold");
-	cfg_set_var(klass->m_cfg_list, "time-style", "green:black:bold");
-	cfg_set_var(klass->m_cfg_list, "audio-params-style", "green:black:bold");
-	cfg_set_var(klass->m_cfg_list, "about-style", "green:black:bold");
-	cfg_set_var(klass->m_cfg_list, "slider-style", "cyan:black:bold");
-	cfg_set_var(klass->m_cfg_list, "play-modes-style", "green:black:bold");
-	cfg_set_var(klass->m_cfg_list, "status-style", "red:black");
+			wnd_basic_class_init(global), NULL, 
+			player_class_set_default_styles);
 	return klass;
 } /* End of 'player_wnd_class_init' function */
+
+/* Set player class default styles */
+void player_class_set_default_styles( cfg_node_t *list )
+{
+	cfg_set_var(list, "plist-style", "white:black");
+	cfg_set_var(list, "plist-playing-style", "red:black:bold");
+	cfg_set_var(list, "plist-selected-style", "white:blue:bold");
+	cfg_set_var(list, "plist-sel-and-play-style", "red:blue:bold");
+	cfg_set_var(list, "plist-time-style", "green:black:bold");
+	cfg_set_var(list, "title-style", "yellow:black:bold");
+	cfg_set_var(list, "time-style", "green:black:bold");
+	cfg_set_var(list, "audio-params-style", "green:black:bold");
+	cfg_set_var(list, "about-style", "green:black:bold");
+	cfg_set_var(list, "slider-style", "cyan:black:bold");
+	cfg_set_var(list, "play-modes-style", "green:black:bold");
+	cfg_set_var(list, "status-style", "red:black");
+} /* End of 'player_class_set_default_styles' function */
 
 /*****
  *

@@ -76,6 +76,9 @@ void radio_get_desired_size( dlgitem_t *di, int *width, int *height );
 /* Initialize radio button class */
 wnd_class_t *radio_class_init( wnd_global_data_t *global );
 
+/* Set radio button class default styles */
+void radio_class_set_default_styles( cfg_node_t *list );
+
 #endif
 
 /* End of 'wnd_radio.h' file */

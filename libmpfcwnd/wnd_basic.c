@@ -31,7 +31,7 @@
 /* Initialize basic window class */
 wnd_class_t *wnd_basic_class_init( wnd_global_data_t *global )
 {
-	return wnd_class_new(global, "basic", NULL, wnd_basic_get_msg_info);
+	return wnd_class_new(global, "basic", NULL, wnd_basic_get_msg_info, NULL);
 } /* End of 'wnd_basic_class_init' function */
 
 /* Get message handler and callback */

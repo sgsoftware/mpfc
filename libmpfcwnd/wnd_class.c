@@ -28,11 +28,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include "types.h"
+#include "cfg.h"
 #include "wnd.h"
 
 /* Create a new window class */
 wnd_class_t *wnd_class_new( wnd_global_data_t *global, char *name,
-		wnd_class_t *parent, wnd_class_msg_get_info_t get_info_func )
+		wnd_class_t *parent, wnd_class_msg_get_info_t get_info_func,
+		cfg_set_default_values_t set_def_styles )
 {
 	wnd_class_t *klass, *prev_klass = NULL;
 	int i;
@@ -57,7 +59,7 @@ wnd_class_t *wnd_class_new( wnd_global_data_t *global, char *name,
 	klass->m_parent = parent;
 	klass->m_get_info = get_info_func;
 	klass->m_cfg_list = cfg_new_list(global->m_classes_cfg, name, 
-			CFG_NODE_RUNTIME | CFG_NODE_MEDIUM_LIST, 0);
+			set_def_styles, CFG_NODE_RUNTIME | CFG_NODE_MEDIUM_LIST, 0);
 	klass->m_next = NULL;
 
 	/* Insert class to the classes table */

@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Configuration handling functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 6.07.2004
+ * LAST UPDATE : 12.09.2004
  * NOTE        : Module prefix 'cfg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -33,8 +33,8 @@
 #include "cfg.h"
 
 /* Create a new configuration list */
-cfg_node_t *cfg_new_list( cfg_node_t *parent, char *name, dword flags,
-		int hash_size )
+cfg_node_t *cfg_new_list( cfg_node_t *parent, char *name, 
+		cfg_set_default_values_t set_def, dword flags, int hash_size )
 {
 	cfg_node_t *node;
 
@@ -60,6 +60,12 @@ cfg_node_t *cfg_new_list( cfg_node_t *parent, char *name, dword flags,
 		malloc(hash_size * sizeof(struct cfg_list_hash_item_t *));
 	memset(CFG_LIST(node)->m_children, 0, 
 			hash_size * sizeof(struct cfg_list_hash_item_t *));
+
+	/* Fill list with default values */
+	if (set_def != NULL)
+		set_def(node);
+
+	/* Insert node into the parent */
 	if (node->m_parent != NULL)
 		cfg_insert_node(node->m_parent, node);
 	return node;
@@ -84,7 +90,7 @@ cfg_node_t *cfg_new_var( cfg_node_t *parent, char *name, dword flags,
 	/* Call handler */
 	if (!cfg_call_var_handler(TRUE, node, value))
 	{
-		cfg_free_node(node);
+		cfg_free_node(node, TRUE);
 		return NULL;
 	}
 	cfg_insert_node(node->m_parent, node);
@@ -127,7 +133,7 @@ cfg_node_t *cfg_new_node( cfg_node_t *parent, char *name, dword flags )
 } /* End of 'cfg_new_node' function */
 
 /* Free node */
-void cfg_free_node( cfg_node_t *node )
+void cfg_free_node( cfg_node_t *node, bool_t recursively )
 {
 	assert(node);
 
@@ -151,7 +157,8 @@ void cfg_free_node( cfg_node_t *node )
 			for ( item = CFG_LIST(node)->m_children[i]; item != NULL; )
 			{
 				next = item->m_next;
-				cfg_free_node(item->m_node);
+				if (recursively)
+					cfg_free_node(item->m_node, recursively);
 				item = next;
 			}
 		}
@@ -175,6 +182,29 @@ void cfg_insert_node( cfg_node_t *list, cfg_node_t *node )
 	
 	/* Calculate hash for this node */
 	hash = cfg_calc_hash(node->m_name, CFG_LIST(list)->m_hash_size);
+
+	/* Check whether this node is also created */
+	for ( item = CFG_LIST(list)->m_children[hash]; item != NULL; 
+			item = item->m_next )
+	{
+		/* Replace node */
+		if (!strcmp(item->m_node->m_name, node->m_name))
+		{
+			struct cfg_list_data_t *l = CFG_LIST(item->m_node);
+			struct cfg_list_hash_item_t *i;
+			int h;
+
+			/* Copy nodes */
+			for ( h = 0; h < l->m_hash_size; h ++ )
+			{
+				for ( i = l->m_children[h]; i != NULL; i = i->m_next )
+					cfg_insert_node(node, i->m_node);
+			}
+			cfg_free_node(item->m_node, FALSE);
+			item->m_node = node;
+			return;
+		}
+	}
 
 	/* Create item and append to the list */
 	item = (struct cfg_list_hash_item_t *)malloc(
@@ -203,7 +233,6 @@ cfg_node_t *cfg_search_node( cfg_node_t *parent, char *name )
 
 	/* Search for node */
 	node = cfg_search_list(real_parent, real_name);
-	free(real_name);
 	return node;
 } /* End of 'cfg_search_node' function */
 
@@ -285,6 +314,7 @@ cfg_node_t *cfg_find_real_parent( cfg_node_t *parent, char *name,
 	for ( real_parent = parent;; )
 	{
 		char *next_name = strchr(name, '.');
+		cfg_node_t *was_real = real_parent;
 
 		/* If no '.' found - stop (we've found last parent in hierarchy) */
 		if (next_name == NULL)
@@ -293,15 +323,19 @@ cfg_node_t *cfg_find_real_parent( cfg_node_t *parent, char *name,
 		/* Extract child list name */
 		*next_name = 0;
 		real_parent = cfg_search_list(real_parent, name);
-		*next_name = '.';
+
+		/* Create temporary list if it does not exist */
 		if (real_parent == NULL)
-			return NULL;
+			real_parent = cfg_new_list(was_real, name, NULL, 0, 0);
+
+		/* Move to next child name */
+		*next_name = '.';
 		name = next_name + 1;
 	}
 
 	/* Set real name */
 	if (real_name != NULL)
-		(*real_name) = strdup(name);
+		(*real_name) = name;
 	return real_parent;
 } /* End of 'cfg_find_real_parent' function */
 

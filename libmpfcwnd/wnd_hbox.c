@@ -148,7 +148,8 @@ void hbox_set_pos( dlgitem_t *di, int x, int y, int width, int height )
 /* Initialize hbox class */
 wnd_class_t *hbox_class_init( wnd_global_data_t *global )
 {
-	return wnd_class_new(global, "hbox", dlgitem_class_init(global), NULL);
+	return wnd_class_new(global, "hbox", dlgitem_class_init(global), NULL,
+			NULL);
 } /* End of 'hbox_class_init' function */
 
 /* End of 'wnd_hbox.c' file */

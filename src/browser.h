@@ -165,6 +165,9 @@ void fb_help( browser_t *fb );
 /* Initialize browser class */
 wnd_class_t *fb_class_init( wnd_global_data_t *global );
 
+/* Set browser class default styles */
+void fb_class_set_default_styles( cfg_node_t *list );
+
 #endif
 
 /* End of 'browser.h' file */

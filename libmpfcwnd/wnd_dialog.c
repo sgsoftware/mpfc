@@ -270,7 +270,7 @@ wnd_msg_retcode_t dialog_cancel_on_clicked( wnd_t *wnd )
 wnd_class_t *dialog_class_init( wnd_global_data_t *global )
 {
 	return wnd_class_new(global, "dialog", wnd_basic_class_init(global),
-			dialog_get_msg_info);
+			dialog_get_msg_info, NULL);
 } /* End of 'dialog_class_init' function */
 
 /* Get message information */

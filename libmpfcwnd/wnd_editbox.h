@@ -148,6 +148,9 @@ wnd_class_t *editbox_class_init( wnd_global_data_t *global );
 wnd_msg_handler_t **editbox_get_msg_info( wnd_t *wnd, char *msg_name,
 		wnd_class_msg_callback_t *callback );
 
+/* Set edit box class default styles */
+void editbox_class_set_default_styles( cfg_node_t *list );
+
 /* Aliases for creating message data */
 #define editbox_changed_new		wnd_msg_noargs_new
 

@@ -296,7 +296,8 @@ void filebox_free_names( filebox_t *fb )
 /* Initialize file box class */
 wnd_class_t *filebox_class_init( wnd_global_data_t *global )
 {
-	return wnd_class_new(global, "filebox", editbox_class_init(global), NULL);
+	return wnd_class_new(global, "filebox", editbox_class_init(global), NULL,
+			NULL);
 } /* End of 'filebox_class_init' function */
 
 /* End of 'filebox.c' file */

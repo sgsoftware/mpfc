@@ -148,12 +148,16 @@ int dlgitem_label_text_len( wnd_t *wnd, char *text )
 wnd_class_t *dlgitem_class_init( wnd_global_data_t *global )
 {
 	wnd_class_t *klass = wnd_class_new(global, "dlgitem", 
-			wnd_basic_class_init(global), NULL);
-
-	/* Set default styles for dialog items */
-	cfg_set_var(klass->m_cfg_list, "letter-color", "red");
+			wnd_basic_class_init(global), NULL, 
+			dlgitem_class_set_default_styles);
 	return klass;
 } /* End of 'dlgitem_class_init' function */
+
+/* Set dialog item class default styles */
+void dlgitem_class_set_default_styles( cfg_node_t *list )
+{
+	cfg_set_var(list, "letter-color", "red");
+} /* End of 'dlgitem_class_set_default_styles' function */
 
 /* End of 'wnd_dlgitem.c' file */
 

@@ -148,7 +148,8 @@ void vbox_set_pos( dlgitem_t *di, int x, int y, int width, int height )
 /* Initialize vbox class */
 wnd_class_t *vbox_class_init( wnd_global_data_t *global )
 {
-	return wnd_class_new(global, "vbox", dlgitem_class_init(global), NULL);
+	return wnd_class_new(global, "vbox", dlgitem_class_init(global), NULL, 
+			NULL);
 } /* End of 'vbox_class_init' function */
 
 /* End of 'wnd_vbox.c' file */

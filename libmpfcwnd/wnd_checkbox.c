@@ -131,12 +131,18 @@ void checkbox_get_desired_size( dlgitem_t *di, int *width, int *height )
 wnd_class_t *checkbox_class_init( wnd_global_data_t *global )
 {
 	wnd_class_t *klass = wnd_class_new(global, "checkbox", 
-			dlgitem_class_init(global), checkbox_get_msg_info);
-	cfg_set_var(klass->m_cfg_list, "focus-text-style", "white:blue:bold");
-	cfg_set_var(klass->m_cfg_list, "label-style", "white:black");
-	cfg_set_var(klass->m_cfg_list, "focus-label-style", "white:black");
+			dlgitem_class_init(global), checkbox_get_msg_info,
+			checkbox_class_set_default_styles);
 	return klass;
 } /* End of 'checkbox_class_init' function */
+
+/* Set check box class default styles */
+void checkbox_class_set_default_styles( cfg_node_t *list )
+{
+	cfg_set_var(list, "focus-text-style", "white:blue:bold");
+	cfg_set_var(list, "label-style", "white:black");
+	cfg_set_var(list, "focus-label-style", "white:black");
+} /* End of 'checkbox_class_set_default_styles' function */
 
 /* Get message information */
 wnd_msg_handler_t **checkbox_get_msg_info( wnd_t *wnd, char *msg_name,

@@ -451,6 +451,9 @@ void wnd_display_buf_unlock( struct wnd_display_buf_t *db );
 /* Regenerate the window's children list sorted by zvalue */
 void wnd_regen_zvalue_list( wnd_t *wnd );
 
+/* Set the default styles */
+void wnd_set_default_styles( cfg_node_t *list );
+
 #endif
 
 /* End of 'wnd.h' file */

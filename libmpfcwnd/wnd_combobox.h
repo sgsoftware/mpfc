@@ -110,6 +110,9 @@ wnd_msg_retcode_t combo_on_loose_focus( wnd_t *wnd );
 /* Initialize combo box class */
 wnd_class_t *combo_class_init( wnd_global_data_t *global );
 
+/* Set combo box class default styles */
+void combo_class_set_default_styles( cfg_node_t *list );
+
 #endif
 
 /* End of 'wnd_combobox.h' file */
