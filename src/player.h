@@ -28,6 +28,7 @@
 #define __SG_KONSAMP_PLAYER_H__
 
 #include "types.h"
+#include "cfg.h"
 #include "window.h"
 
 /* User messages for root window types */
@@ -165,6 +166,12 @@ void player_add_obj_dialog( void );
 
 /* Handle action */
 void player_handle_action( int action );
+
+/* Save variables to main configuration file */
+void player_save_cfg_vars( cfg_list_t *list, char *vars );
+
+/* Save configuration list */
+void player_save_cfg_list( cfg_list_t *list, char *fname );
 
 #endif
 

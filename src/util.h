@@ -55,6 +55,46 @@ char *util_get_plugin_short_name( char *dest, char *src );
 /* Open a file expanding home directories */
 FILE *util_fopen( char *filename, char *flags );
 
+/****** Buffered file input management ******/
+
+/* Buffer type */
+typedef struct tag_util_buf_t
+{
+	/* File descriptor */
+	FILE *m_fd;
+
+	/* Buffer */
+	byte *m_buf;
+	int m_size;
+
+	/* Real buffer size */
+	int m_real_size;
+
+	/* Buffer position */
+	int m_pos;
+
+	/* Offset of the buffer start */
+	int m_offset;
+
+	/* File size */
+	int m_file_size;
+} util_buf_t;
+
+/* Open file for buffered input */
+util_buf_t *util_buf_open( char *filename, int buf_size );
+
+/* Close file */
+void util_buf_close( util_buf_t *buf );
+
+/* Buffered read */
+int util_buf_read( void *ptr, int size, util_buf_t *buf );
+
+/* Seek file opened for buffered input */
+void util_buf_seek( util_buf_t *buf, int offset, int whence );
+
+/* Tell file position */
+int util_buf_tell( util_buf_t *buf );
+
 #endif
 
 /* End of 'util.h' file */

@@ -103,7 +103,7 @@ void util_delay( long s, long ns )
 	struct timespec tv;
 
 	tv.tv_sec = 0;
-	tv.tv_nsec = 100000L;
+	tv.tv_nsec = ns;
 	nanosleep(&tv, NULL);
 } /* End of 'util_delay' function */
 

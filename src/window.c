@@ -552,7 +552,7 @@ void *wnd_kbd_thread( void *arg )
 			/* Send message about this key to current focus window */
 			else
 			{
-				if (key == KEY_REFRESH)
+				if (key == 12)
 				{
 					wnd_redisplay(wnd_root);
 				}

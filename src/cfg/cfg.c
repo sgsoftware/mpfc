@@ -260,48 +260,6 @@ float cfg_get_var_float( cfg_list_t *list, char *name )
 	return atof(cfg_get_var(list, name));
 } /* End of 'cfg_get_var_float' function */
 
-/* Save variables to main configuration file */
-void cfg_save_vars( cfg_list_t *list, char *vars )
-{
-	char fname[256], name[80];
-	cfg_list_t *tlist;
-	int i, j;
-	
-	if (list == NULL)
-		return;
-
-	/* Initialize variables with initial values */
-	tlist = (cfg_list_t *)malloc(sizeof(cfg_list_t));
-	tlist->m_vars = NULL;
-	tlist->m_num_vars = 0;
-
-	/* Read rc file */
-	sprintf(fname, "%s/.mpfcrc", getenv("HOME"));
-	cfg_read_rcfile(tlist, fname);
-
-	/* Update variables */
-	for ( i = 0, j = 0;; i ++ )
-	{
-		/* End of variable name */
-		if (vars[i] == ';' || vars[i] == '\0')
-		{
-			name[j] = 0;
-			j = 0;
-			cfg_set_var(tlist, name, cfg_get_var(list, name));
-			if (!vars[i])
-				break;
-		}
-		else
-			name[j ++] = vars[i];
-	}
-
-	/* Save temporary list to configuration file */
-	cfg_save_list(tlist, fname);
-
-	/* Free temporary list */
-	cfg_free_list(tlist);
-} /* End of 'cfg_save_vars' function */
-
 /* Free configuration list */
 void cfg_free_list( cfg_list_t *list )
 {
@@ -312,28 +270,6 @@ void cfg_free_list( cfg_list_t *list )
 		free(list);
 	}
 } /* End of 'cfg_free_list' function */
-
-/* Save list */
-void cfg_save_list( cfg_list_t *list, char *fname )
-{
-	FILE *fd;
-	int i;
-
-	if (list == NULL)
-		return;
-
-	/* Open file */
-	fd = util_fopen(fname, "wt");
-	if (fd == NULL)
-		return;
-
-	/* Write variables */
-	for ( i = 0; i < list->m_num_vars; i ++ )
-		fprintf(fd, "%s=%s\n", list->m_vars[i].m_name, list->m_vars[i].m_val);
-
-	/* Close file */
-	fclose(fd);
-} /* End of 'cfg_save_list' function */
 
 /* End of 'cfg.c' file */
 

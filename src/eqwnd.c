@@ -232,7 +232,7 @@ void eqwnd_save_params( void )
 {
 	char *str = "eq_preamp;eq_band1;eq_band2;eq_band3;eq_band4;eq_band5;"
 				"eq_band6;eq_band7;eq_band8;eq_band9;eq_band10";
-	cfg_save_vars(cfg_list, str);
+	player_save_cfg_vars(cfg_list, str);
 } /* End of 'eqwnd_save_params' function */
 
 /* Process load preset from EQF file dialog */

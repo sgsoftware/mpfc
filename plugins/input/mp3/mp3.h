@@ -66,5 +66,8 @@ void mp3_set_eq( void );
 /* Apply equalizer to frame */
 void mp3_apply_eq( void );
 
+/* Buffering read from file */
+int mp3_read( void *ptr, int size, FILE *fd );
+
 /* End of 'mp3.h' file */
 

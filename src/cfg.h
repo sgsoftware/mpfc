@@ -60,9 +60,6 @@ void cfg_free( void );
 /* Free configuration list */
 void cfg_free_list( cfg_list_t *list );
 
-/* Save list */
-void cfg_save_list( cfg_list_t *list, char *fname );
-
 /* Initialize variables with default values */
 void cfg_init_default( void );
 
@@ -95,9 +92,6 @@ int cfg_get_var_int( cfg_list_t *list, char *name );
 
 /* Get variable float value */
 float cfg_get_var_float( cfg_list_t *list, char *name );
-
-/* Save variables to main configuration file */
-void cfg_save_vars( cfg_list_t *list, char *vars );
 
 #endif
 

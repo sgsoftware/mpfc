@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Play list manipulation
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.08.2003
+ * LAST UPDATE : 11.08.2003
  * NOTE        : Module prefix 'plist'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -698,6 +698,7 @@ void plist_add_obj( plist_t *pl, char *name )
 void plist_move_sel( plist_t *pl, int y, bool relative )
 {
 	int start, end, i, j;
+	song_t *cur_song;
 	
 	if (pl == NULL)
 		return;
@@ -716,6 +717,10 @@ void plist_move_sel( plist_t *pl, int y, bool relative )
 		y = 0;
 	else if (y >= pl->m_len - (end - start))
 		y = pl->m_len - (end - start) - 1;
+	if (pl->m_cur_song >= 0)
+		cur_song = pl->m_list[pl->m_cur_song];
+	else
+		cur_song = NULL;
 
 	/* Move */
 	if (y - start < 0)
@@ -740,8 +745,12 @@ void plist_move_sel( plist_t *pl, int y, bool relative )
 	/* Update selection indecies and current song */
 	pl->m_sel_start += (y - start);
 	pl->m_sel_end += (y - start);
-	if (pl->m_cur_song >= start && pl->m_cur_song <= end)
-		pl->m_cur_song += (y - start);
+	for ( i = 0; i < pl->m_len; i ++ )
+		if (pl->m_list[i] == cur_song)
+		{
+			pl->m_cur_song = i;
+			break;
+		}
 
 	/* Unlock play list */
 	plist_unlock(pl);

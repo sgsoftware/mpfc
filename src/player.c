@@ -564,9 +564,10 @@ void *player_thread( void *arg )
 					break;
 				}
 			}
-		
-			/* Sleep a little */
-			util_delay(0, 100000L);
+			else if (player_status == PLAYER_STATUS_PAUSED)
+			{
+				util_delay(0, 100000000);
+			}
 		}
 
 		/* Wait until we really stop playing */
@@ -1368,7 +1369,7 @@ void player_var_mngr_notify( wnd_t *wnd, dword data )
 	/* Save list */
 	else if (id == PLAYER_VAR_MNGR_SAVE && act == BTN_CLICKED)
 	{
-		cfg_save_list(cfg_list, "~/.mpfcrc");
+		player_save_cfg_list(cfg_list, "~/.mpfcrc");
 	}
 	/* Restore value */
 	else if (id == PLAYER_VAR_MNGR_RESTORE && act == BTN_CLICKED)
@@ -1413,6 +1414,70 @@ void player_var_mngr_notify( wnd_t *wnd, dword data )
 		wnd_destroy(d);
 	}
 } /* End of 'player_var_mngr_notify' function */
+
+/* Save variables to main configuration file */
+void player_save_cfg_vars( cfg_list_t *list, char *vars )
+{
+	char fname[256], name[80];
+	cfg_list_t *tlist;
+	int i, j;
+	
+	if (list == NULL)
+		return;
+
+	/* Initialize variables with initial values */
+	tlist = (cfg_list_t *)malloc(sizeof(cfg_list_t));
+	tlist->m_vars = NULL;
+	tlist->m_num_vars = 0;
+
+	/* Read rc file */
+	sprintf(fname, "%s/.mpfcrc", getenv("HOME"));
+	cfg_read_rcfile(tlist, fname);
+
+	/* Update variables */
+	for ( i = 0, j = 0;; i ++ )
+	{
+		/* End of variable name */
+		if (vars[i] == ';' || vars[i] == '\0')
+		{
+			name[j] = 0;
+			j = 0;
+			cfg_set_var(tlist, name, cfg_get_var(list, name));
+			if (!vars[i])
+				break;
+		}
+		else
+			name[j ++] = vars[i];
+	}
+
+	/* Save temporary list to configuration file */
+	player_save_cfg_list(tlist, fname);
+
+	/* Free temporary list */
+	cfg_free_list(tlist);
+} /* End of 'player_save_cfg_vars' function */
+
+/* Save configuration list */
+void player_save_cfg_list( cfg_list_t *list, char *fname )
+{
+	FILE *fd;
+	int i;
+
+	if (list == NULL)
+		return;
+
+	/* Open file */
+	fd = fopen(fname, "wt");
+	if (fd == NULL)
+		return;
+
+	/* Write variables */
+	for ( i = 0; i < list->m_num_vars; i ++ )
+		fprintf(fd, "%s=%s\n", list->m_vars[i].m_name, list->m_vars[i].m_val);
+
+	/* Close file */
+	fclose(fd);
+} /* End of 'player_save_cfg_list' function */
 
 /* End of 'player.c' file */
 

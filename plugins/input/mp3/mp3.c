@@ -1,12 +1,9 @@
-/******************************************************************
- * Copyright (C) 2003 by SG Software.
- ******************************************************************/
 
 /* FILE NAME   : mp3.c
  * PURPOSE     : SG Konsamp. MP3 input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 26.07.2003
+ * LAST UPDATE : 11.08.2003
  * NOTE        : Module prefix 'mp3'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -30,6 +27,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include <sys/soundcard.h>
 #include "types.h"
 #include "cfg.h"
@@ -52,9 +50,6 @@ mad_timer_t mp3_timer;
 
 /* Input buffer */
 byte mp3_in_buf[MP3_IN_BUF_SIZE];
-
-/* Currently opened file */
-FILE *mp3_fd = NULL;
 
 /* Decoded frames counter */
 dword mp3_frame_count = 0;
@@ -97,6 +92,9 @@ bool mp3_tag_present = FALSE;
 /* Current time */
 int mp3_time = 0;
 
+/* File descriptor */
+FILE *mp3_fd = NULL;
+
 /* Start play function */
 bool mp3_start( char *filename )
 {
@@ -138,6 +136,7 @@ void mp3_end( void )
 		mad_frame_finish(&mp3_frame);
 		mad_stream_finish(&mp3_stream);
 		fclose(mp3_fd);
+		mp3_fd = NULL;
 
 		/* Save tag */
 		if (mp3_tag != NULL)
@@ -607,6 +606,9 @@ int mp3_get_stream( void *buf, int size )
 		if (mp3_seek_val != -1)
 		{
 			fseek(mp3_fd, mp3_seek_val * mp3_bitrate / 8, SEEK_SET);
+			mp3_time = mp3_seek_val;
+			mp3_timer.seconds = mp3_time;
+			mp3_timer.fraction = 0;//mp3_time * MAD_TIMER_RESOLUTION;
 			mp3_seek_val = -1;
 		}
 
@@ -634,7 +636,9 @@ int mp3_get_stream( void *buf, int size )
 			/* Fill buffer */
 			read_size = fread(read_start, 1, read_size, mp3_fd);
 			if (read_size <= 0)
+			{
 				return 0;
+			}
 	
 			/* Pipe new buffer to libmad's stream decoder facility */
 			mad_stream_buffer(&mp3_stream, mp3_in_buf, read_size + remaining);

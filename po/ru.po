@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: konsamp 0.1\n"
-"POT-Creation-Date: 2003-08-05 13:31+0400\n"
+"POT-Creation-Date: 2003-08-10 18:58+0400\n"
 "PO-Revision-Date: 2003-02-13 09:15+0300\n"
 "Last-Translator: Sergey E. Galanov <sgsoftware@mail.ru>\n"
 "Language-Team: Russian <sgsoftware@mail.ru>\n"
@@ -19,97 +19,101 @@ msgstr ""
 msgid "Initialization error : %s\n"
 msgstr "Ошибка инициализии : %s\n"
 
-#: src/player.c:471
+#: src/player.c:489
 msgid "Unable to initialize output plugin"
 msgstr "Не могу инициализировать выходной плагин"
 
-#: src/player.c:633
+#: src/player.c:668
 msgid "Enter file (or directory) name: "
 msgstr "Введите имя файла (или каталога): "
 
-#: src/player.c:655
+#: src/player.c:693
 msgid "Enter file name: "
 msgstr "Введите имя файла: "
 
-#: src/player.c:665
+#: src/player.c:706
 msgid "Play list saved"
 msgstr "Плей-лист сохранен"
 
-#: src/player.c:666
+#: src/player.c:707
 msgid "Unable to save play list"
 msgstr "Не могу сохранить плей-лист"
 
-#: src/player.c:680
+#: src/player.c:721
 #, c-format
 msgid "Removed %i songs"
 msgstr "Удалено %i песен"
 
-#: src/player.c:693
+#: src/player.c:734
 msgid "Sort globally? (Yes/No)"
 msgstr "Сортировать глобально? (Yes/No)"
 
-#: src/player.c:705
+#: src/player.c:746
 msgid "Sort by: (T)itle, (F)ile name, (P)ath and file name"
 msgstr "Сортировать по: Заголовку(T), Имени файла(F), Пути и имени(P)"
 
-#: src/player.c:737
+#: src/player.c:778
 msgid "Enter search string: "
 msgstr "Введите строку для поиска: "
 
-#: src/player.c:747 src/player.c:1162
+#: src/player.c:790 src/player.c:1205
 msgid "String not found"
 msgstr "Строка не найдена"
 
-#: src/player.c:749 src/player.c:1164
+#: src/player.c:792 src/player.c:1207
 msgid "String found"
 msgstr "Строка найдена"
 
-#: src/player.c:783
+#: src/player.c:826
 msgid "Song name: "
 msgstr "Название песни: "
 
-#: src/player.c:785
+#: src/player.c:828
 msgid "Artist name: "
 msgstr "Исполнитель: "
 
-#: src/player.c:787
+#: src/player.c:830
 msgid "Album name: "
 msgstr "Альбом: "
 
-#: src/player.c:789
+#: src/player.c:832
 msgid "Year: "
 msgstr "Год: "
 
-#: src/player.c:791
+#: src/player.c:834
 msgid "Track No: "
 msgstr ""
 
-#: src/player.c:793
+#: src/player.c:836
 msgid "Comments: "
 msgstr "Комментарии: "
 
-#: src/player.c:795
+#: src/player.c:838
 msgid "Genre: "
 msgstr "Жанр: "
 
-#: src/player.c:935
-#, fuzzy
-msgid "Enter variable name: "
-msgstr "Введите имя файла: "
+#: src/player.c:981
+msgid "Variables manager"
+msgstr ""
 
-#: src/player.c:953
-#, fuzzy
-msgid "Enter variable value: "
-msgstr "Введите имя файла: "
-
-#: src/player.c:977
+#: src/player.c:1024
 #, fuzzy
 msgid "Enter object name: "
 msgstr "Введите имя файла: "
 
-#: src/player.c:1219
+#: src/player.c:1265
 msgid "Enter repeat value for the next command: "
 msgstr "Введите число повторений для следующей команды: "
+
+#: src/player.c:1300
+#, fuzzy
+msgid "Enter variable name: "
+msgstr "Введите имя файла: "
+
+#: src/player.c:1319
+#, fuzzy
+msgid "Enter variable value: "
+msgstr "Введите имя файла: "
 
 #: src/help_screen.c:79
 msgid "q:\t\t Quit program"
@@ -251,14 +255,23 @@ msgid "L:\t\t Set/unset loop play mode"
 msgstr ""
 
 #: src/help_screen.c:114
-msgid "o:\t\t Variables manager"
+msgid "o:\t\t Variables mini-manager"
 msgstr ""
 
 #: src/help_screen.c:115
+msgid "O:\t\t Variables manager"
+msgstr ""
+
+#: src/help_screen.c:116
+#, fuzzy
+msgid "^l:\t\t Redisplay screen"
+msgstr "?:\t\t Этот экран помощи"
+
+#: src/help_screen.c:117
 msgid "?:\t\t This help screen"
 msgstr "?:\t\t Этот экран помощи"
 
-#: src/help_screen.c:135
+#: src/help_screen.c:137
 msgid "MPFC Help Screen"
 msgstr "Экран помощи MPFC"
 
