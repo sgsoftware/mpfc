@@ -2263,11 +2263,11 @@ void player_handle_var_title_format( char *name )
 /* Handle 'output_plugin' variable setting */
 void player_handle_var_outp( char *name )
 {
+	int i;
 	if (player_pmng == NULL)
 		return;
 
 	/* Choose new output plugin */
-	int i;
 	for ( i = 0; i < player_pmng->m_num_outp; i ++ )
 		if (!strcmp(player_pmng->m_outp[i]->m_name, 
 					cfg_get_var(cfg_list, "output-plugin")))

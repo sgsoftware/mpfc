@@ -25,6 +25,7 @@
  */
 
 #include <stdio.h>
+#include <locale.h>
 #include "error.h"
 #include "player.h"
 

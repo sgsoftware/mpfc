@@ -190,8 +190,8 @@ int plist_add_song( plist_t *pl, char *filename, char *title, int len,
 /* Add a play list file to play list */
 int plist_add_list( plist_t *pl, char *filename )
 {
-	PLIST_ASSERT_RET(pl, FALSE);
 	char *ext = util_extension(filename);
+	PLIST_ASSERT_RET(pl, FALSE);
 
 	/* Choose play list format */
 	if (!strcasecmp(ext, "m3u"))
@@ -389,8 +389,8 @@ bool_t __plist_add_song( plist_t *pl, char *filename, char *title, int len,
 /* Save play list */
 bool_t plist_save( plist_t *pl, char *filename )
 {
-	PLIST_ASSERT_RET(pl, FALSE);
 	char *ext = util_extension(filename);
+	PLIST_ASSERT_RET(pl, FALSE);
 
 	if (!strcasecmp(ext, "m3u"))
 		return plist_save_m3u(pl, filename);

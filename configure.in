@@ -1,5 +1,5 @@
 AC_INIT(src/main.c)
-AM_INIT_AUTOMAKE(mpfc, 1.2-2)
+AM_INIT_AUTOMAKE(mpfc, 1.2-4)
 AC_PROG_CC
 AC_PROG_LIBTOOL
 
@@ -29,7 +29,7 @@ LIBS=$LIBS_save
 # Check for gpm library
 LIBS_save=$LIBS
 AC_CHECK_LIB(gpm, Gpm_Open,,[AC_MSG_ERROR(*** Can't find gpm library ***)])
-RESOLV_LIBS="-lgpm"
+GPM_LIBS="-lgpm"
 AC_SUBST(GPM_LIBS)
 LIBS=$LIBS_save
 

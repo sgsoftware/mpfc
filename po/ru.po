@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: mpfc 1.2\n"
-"POT-Creation-Date: 2004-02-21 19:28+0300\n"
+"POT-Creation-Date: 2004-02-29 17:21+0300\n"
 "PO-Revision-Date: 2003-02-13 09:15+0300\n"
 "Last-Translator: Sergey E. Galanov <sgsoftware@mail.ru>\n"
 "Language-Team: Russian <sgsoftware@mail.ru>\n"
@@ -19,43 +19,43 @@ msgstr ""
 msgid "Current directory is %s\n"
 msgstr "Текущий каталог %s\n"
 
-#: src/browser.c:537
+#: src/browser.c:538
 msgid "Select files matching pattern: "
 msgstr "Выбрать файлы, удовлетворяющие шаблону: "
 
-#: src/browser.c:538
+#: src/browser.c:539
 msgid "Deselect files matching pattern: "
 msgstr "Снять выделение с файлов, удовлетворяющих шаблону: "
 
-#: src/browser.c:702
+#: src/browser.c:703
 msgid "File name"
 msgstr "Имя файла"
 
-#: src/browser.c:709
+#: src/browser.c:710
 msgid "Title"
 msgstr "Название"
 
-#: src/browser.c:716
+#: src/browser.c:717
 msgid "Artist"
 msgstr "Исполнитель"
 
-#: src/browser.c:723
+#: src/browser.c:724
 msgid "Album"
 msgstr "Альбом"
 
-#: src/browser.c:730
+#: src/browser.c:731
 msgid "Year"
 msgstr "Год"
 
-#: src/browser.c:737
+#: src/browser.c:738
 msgid "Genre"
 msgstr "Жанр"
 
-#: src/browser.c:744
+#: src/browser.c:745
 msgid "Track"
 msgstr "Трек"
 
-#: src/browser.c:751
+#: src/browser.c:752
 msgid "Time"
 msgstr "Время"
 
@@ -399,147 +399,147 @@ msgstr "k или <Вверх>:\t Поднять курсор"
 msgid "p:\t\t Load Winamp EQF preset"
 msgstr "p:\t\t Загрузить пресет Winamp EQF"
 
-#: src/main.c:42
+#: src/main.c:43
 #, c-format
 msgid "Initialization error : %s\n"
 msgstr "Ошибка инициализии : %s\n"
 
-#: src/player.c:496
+#: src/player.c:497
 msgid "SG Software Media Player For Console"
 msgstr "Плейер для консоли от SG Software"
 
-#: src/player.c:511
+#: src/player.c:512
 #, c-format
 msgid "version %s"
 msgstr "версия %s"
 
-#: src/player.c:757
+#: src/player.c:758
 msgid "Unable to initialize output plugin"
 msgstr "Не могу инициализировать выходной плагин"
 
-#: src/player.c:962
+#: src/player.c:963
 msgid "Enter file (or directory) name: "
 msgstr "Введите имя файла (или каталога): "
 
-#: src/player.c:987
+#: src/player.c:988
 msgid "Enter file name: "
 msgstr "Введите имя файла: "
 
-#: src/player.c:1000
+#: src/player.c:1001
 msgid "Play list saved"
 msgstr "Плей-лист сохранен"
 
-#: src/player.c:1001
+#: src/player.c:1002
 msgid "Unable to save play list"
 msgstr "Не могу сохранить плей-лист"
 
-#: src/player.c:1015
+#: src/player.c:1016
 #, c-format
 msgid "Removed %i songs"
 msgstr "Удалено %i песен"
 
-#: src/player.c:1028
+#: src/player.c:1029
 msgid "Sort globally? (Yes/No)"
 msgstr "Сортировать глобально? (Yes/No)"
 
-#: src/player.c:1040
+#: src/player.c:1041
 #, fuzzy
 msgid "Sort by: (T)itle, (F)ile name, (P)ath and file name, T(r)ack"
 msgstr "Сортировать по: Заголовку(T), Имени файла(F), Пути и имени(P)"
 
-#: src/player.c:1076
+#: src/player.c:1077
 msgid "Enter search string: "
 msgstr "Введите строку для поиска: "
 
-#: src/player.c:1090 src/player.c:1710
+#: src/player.c:1091 src/player.c:1711
 msgid "String not found"
 msgstr "Строка не найдена"
 
-#: src/player.c:1092 src/player.c:1712
+#: src/player.c:1093 src/player.c:1713
 msgid "String found"
 msgstr "Строка найдена"
 
-#: src/player.c:1130
+#: src/player.c:1131
 msgid "Info edit locally? (Yes/No)"
 msgstr "Редактировать информацию локально? (Yes/No)"
 
-#: src/player.c:1202
+#: src/player.c:1203
 msgid "Song name: "
 msgstr "Название песни: "
 
-#: src/player.c:1204
+#: src/player.c:1205
 msgid "Artist name: "
 msgstr "Исполнитель: "
 
-#: src/player.c:1206
+#: src/player.c:1207
 msgid "Album name: "
 msgstr "Альбом: "
 
-#: src/player.c:1208
+#: src/player.c:1209
 msgid "Year: "
 msgstr "Год: "
 
-#: src/player.c:1210
+#: src/player.c:1211
 msgid "Track No: "
 msgstr "Номер трека: "
 
-#: src/player.c:1212
+#: src/player.c:1213
 msgid "Comments: "
 msgstr "Комментарии: "
 
-#: src/player.c:1214
+#: src/player.c:1215
 msgid "Genre: "
 msgstr "Жанр: "
 
-#: src/player.c:1461
+#: src/player.c:1462
 msgid "Variables manager"
 msgstr "Менеджер переменных"
 
-#: src/player.c:1468 src/player.c:2032
+#: src/player.c:1469 src/player.c:2033
 msgid "Value: "
 msgstr "Значение: "
 
-#: src/player.c:1471 src/player.c:2028
+#: src/player.c:1472 src/player.c:2029
 msgid "New variable"
 msgstr "Новая переменная"
 
-#: src/player.c:1474
+#: src/player.c:1475
 msgid "Save"
 msgstr "Сохранить"
 
-#: src/player.c:1477
+#: src/player.c:1478
 msgid "Restore value"
 msgstr "Восстановить переменную"
 
-#: src/player.c:1511
+#: src/player.c:1512
 msgid "Enter object name: "
 msgstr "Введите имя объекта: "
 
-#: src/player.c:1887
+#: src/player.c:1888
 msgid "Enter repeat value for the next command: "
 msgstr "Введите число повторений для следующей команды: "
 
-#: src/player.c:1933
+#: src/player.c:1934
 msgid "Enter variable name: "
 msgstr "Введите имя переменной: "
 
-#: src/player.c:1952
+#: src/player.c:1953
 msgid "Enter variable value: "
 msgstr "Введите значение переменной: "
 
-#: src/player.c:2030
+#: src/player.c:2031
 msgid "Name: "
 msgstr "Имя: "
 
-#: src/player.c:2161
+#: src/player.c:2162
 msgid "Enter command: "
 msgstr "Введите команду: "
 
-#: src/player.c:2216
+#: src/player.c:2217
 msgid "Search for: (T)itle, (N)ame, (A)rtist, A(l)bum, (Y)ear, (G)enre"
 msgstr "Поиск по: заголовку(T), исполнителю(A), альбому(L), году(Y), жанру(G)"
 
-#: src/player.c:2340
+#: src/player.c:2343
 msgid "Reload info in the whole list? (Yes/No)"
 msgstr "Загрузить информацию во всем списке? (Yes/No)"
 
@@ -563,13 +563,13 @@ msgstr "Сохранено"
 msgid "Getting address of host %s"
 msgstr "Получаю адрес %s"
 
-#: libmpfc/file_http.c:91 libmpfc/file_http.c:105 libmpfc/file_http.c:160
+#: libmpfc/file_http.c:91 libmpfc/file_http.c:105 libmpfc/file_http.c:161
 #: plugins/input/mp3/mp3.c:921
 msgid "OK"
 msgstr "OK"
 
 #: libmpfc/file_http.c:101 plugins/input/audiocd/cddb.c:219
-#: plugins/input/audiocd/cddb.c:576
+#: plugins/input/audiocd/cddb.c:583
 #, c-format
 msgid "Connecting to %s"
 msgstr "Подключаюсь к %s"
@@ -580,21 +580,21 @@ msgstr "Подключаюсь к %s"
 msgid "Sending request for file %s"
 msgstr "Отправляю запрос на файл %s"
 
-#: libmpfc/file_http.c:115
+#: libmpfc/file_http.c:116
 msgid "Getting HTTP header"
 msgstr "Получаю заголовок HTTP"
 
 # c-format
-#: libmpfc/file_http.c:176
+#: libmpfc/file_http.c:177
 #, c-format
 msgid "Redirect to %s"
 msgstr "Перенаправление к %s"
 
-#: libmpfc/file_http.c:185 plugins/input/audiocd/cddb.c:608
+#: libmpfc/file_http.c:186 plugins/input/audiocd/cddb.c:615
 msgid "Failure!"
 msgstr "Облом!"
 
-#: libmpfc/file_http.c:253 libmpfc/file_http.c:258
+#: libmpfc/file_http.c:254 libmpfc/file_http.c:259
 #, c-format
 msgid "Filling buffer: %d%% done"
 msgstr "Заполняю буфер: %d%%"
@@ -682,7 +682,7 @@ msgstr "Загрузить информацию из CDDB"
 msgid "Submit info to CDDB"
 msgstr "Отправить информацию в CDDB"
 
-#: plugins/input/audiocd/cddb.c:213 plugins/input/audiocd/cddb.c:570
+#: plugins/input/audiocd/cddb.c:213 plugins/input/audiocd/cddb.c:577
 #, c-format
 msgid "Getting address of %s"
 msgstr "Получаю адрес %s"
@@ -691,35 +691,35 @@ msgstr "Получаю адрес %s"
 msgid "Sending query to server"
 msgstr "Отправляю запрос серверу"
 
-#: plugins/input/audiocd/cddb.c:264
+#: plugins/input/audiocd/cddb.c:266
 msgid "Saving data"
 msgstr "Сохраняю данные"
 
-#: plugins/input/audiocd/cddb.c:266
+#: plugins/input/audiocd/cddb.c:268
 msgid "Success"
 msgstr "Успех"
 
-#: plugins/input/audiocd/cddb.c:269
+#: plugins/input/audiocd/cddb.c:271
 msgid "Failed!"
 msgstr "Облом!"
 
-#: plugins/input/audiocd/cddb.c:547
+#: plugins/input/audiocd/cddb.c:554
 msgid "CDDB submit error: no existing info found"
 msgstr "Ошибка отправки CDDB: не найдено существующей информации"
 
-#: plugins/input/audiocd/cddb.c:555
+#: plugins/input/audiocd/cddb.c:562
 msgid "CDDB submit error: you must specify your email address"
 msgstr "Ошибка отправки CDDB: вы должны указать свой адрес email"
 
-#: plugins/input/audiocd/cddb.c:562
+#: plugins/input/audiocd/cddb.c:569
 msgid "CDDB submit error: you must specify your category"
 msgstr "Ошибка отправки CDDB: вы должны указать категорию"
 
-#: plugins/input/audiocd/cddb.c:589
+#: plugins/input/audiocd/cddb.c:596
 msgid "Posting data to server"
 msgstr "Отправляю данные к серверу"
 
-#: plugins/input/audiocd/cddb.c:600
+#: plugins/input/audiocd/cddb.c:607
 msgid "Getting response"
 msgstr "Получаю ответ"
 

@@ -24,6 +24,7 @@
  * MA 02111-1307, USA.
  */
 
+#include <stdio.h>
 #include "types.h"
 #include "csp.h"
 
