@@ -86,6 +86,10 @@ int player_volume = 0;
 /* Has equalizer value changed */
 bool player_eq_changed = FALSE;
 
+/* Objects to load */
+char player_objects[10][256];
+int player_num_obj = 0;
+
 /* Initialize player */
 bool player_init( int argc, char *argv[] )
 {
@@ -122,6 +126,8 @@ bool player_init( int argc, char *argv[] )
 	{
 		return FALSE;
 	}
+	for ( i = 0; i < player_num_obj; i ++ )
+		plist_add_obj(player_plist, player_objects[i]);
 	for ( i = 0; i < player_num_files; i ++ )
 		plist_add(player_plist, player_files[i]);
 
@@ -200,13 +206,22 @@ bool player_parse_cmd_line( int argc, char *argv[] )
 			continue;
 
 		/* Get variable name end */
-		for ( name_end = name_start; str[name_end] && str[name_end] != '='; 
+		for ( name_end = name_start; 
+				str[name_end] && str[name_end] != '=' && str[name_end] != ' '; 
 				name_end ++ );
 		name_end --;
 
 		/* Extract variable name */
 		memcpy(name, &str[name_start], name_end - name_start + 1);
 		name[name_end - name_start + 1] = 0;
+
+		/* Load object */
+		if (!strcmp(name, "obj"))
+		{
+			if (i < argc - 1 && player_num_obj < 10)
+				strcpy(player_objects[player_num_obj ++], argv[++i]);
+			continue;
+		}
 
 		/* We have no value - assume it "1" */
 		if (name_end == strlen(str) - 1)
