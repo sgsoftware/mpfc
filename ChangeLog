@@ -1,3 +1,16 @@
+2004-10-25	Sergey E. Galanov	<sgsoftware@mail.ru>
+
+	* Released MPFC 1.3.4.
+
+2004-10-24	Sergey E. Galanov	<sgsoftware@mail.ru>
+
+	* mpfc.pc.in, configure.in, Makefile.am, libmpfc/Makefile.am,
+	* libmpfcwnd/Makefile.am, src/types.h:	implemeted pkg-config stuff.
+
+2004-10-17	Sergey E. Galanov	<sgsoftware@mail.ru>
+
+	* libmpfcwnd/wnd.c:	Added force-terminal-bg option.
+
 2004-09-15  gettextize  <bug-gnu-gettext@gnu.org>
 
 	* Makefile.am (SUBDIRS): Add intl,
