@@ -69,15 +69,16 @@ typedef struct
 #define EDITBOX_LEN(wnd)	(STR_LEN(EDITBOX_OBJ(wnd)->m_text))
 
 /* Create a new edit box */
-editbox_t *editbox_new( wnd_t *parent, char *id, char *text, int width );
+editbox_t *editbox_new( wnd_t *parent, char *id, char *text, char letter,
+		int width );
 
 /* Edit box constructor */
 bool_t editbox_construct( editbox_t *eb, wnd_t *parent, char *id, char *text,
-		int width );
+		char letter, int width );
 
 /* Create an edit box with label */
 editbox_t *editbox_new_with_label( wnd_t *parent, char *title, char *id,
-		char *text, int width );
+		char *text, char letter, int width );
 
 /* Destructor */
 void editbox_destructor( wnd_t *wnd );

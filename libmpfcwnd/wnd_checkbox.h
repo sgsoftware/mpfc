@@ -50,11 +50,11 @@ typedef struct
 
 /* Create a new check box */
 checkbox_t *checkbox_new( wnd_t *parent, char *title, char *id, 
-		bool_t checked );
+		char letter, bool_t checked );
 
 /* Check box constructor */
 bool_t checkbox_construct( checkbox_t *cb, wnd_t *parent, char *title, 
-		char *id, bool_t checked );
+		char *id, char letter, bool_t checked );
 
 /* 'keydown' message handler */
 wnd_msg_retcode_t checkbox_on_keydown( wnd_t *wnd, wnd_key_t key );

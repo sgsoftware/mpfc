@@ -245,12 +245,10 @@ void eqwnd_save_params( void )
 void eqwnd_load_eqf_dlg( void )
 {
 	dialog_t *dlg;
-	hbox_t *hbox;
 
 	dlg = dialog_new(wnd_root, "Load preset froma Winamp EQF file");
-	hbox = hbox_new(WND_OBJ(dlg->m_vbox), NULL, 0);
-	label_new(WND_OBJ(hbox), "Name: ", NULL, TRUE);
-	filebox_new(WND_OBJ(hbox), "name", "", 50);
+	filebox_new_with_label(WND_OBJ(dlg->m_vbox), "&Name: ", "name", "", 
+			'n', 50);
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", eqwnd_on_load);
 	dialog_arrange_children(dlg);
 } /* End of 'eqwnd_load_eqf_dlg' function */

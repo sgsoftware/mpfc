@@ -32,6 +32,13 @@
 #include "wnd.h"
 #include "wnd_dlgitem.h"
 
+/* Label flags */
+typedef enum
+{
+	/* Text is not bold */
+	LABEL_NOBOLD = 1 << 0,
+} label_flags_t;
+
 /* Label type */
 typedef struct 
 {
@@ -41,19 +48,19 @@ typedef struct
 	/* Label text */
 	char *m_text;
 
-	/* Text boldness flag */
-	bool_t m_bold;
+	/* Label flags */
+	label_flags_t m_flags;
 } label_t;
 
 /* Convert window object to label type */
 #define LABEL_OBJ(wnd)	((label_t *)wnd)
 
 /* Create a new label */
-label_t *label_new( wnd_t *parent, char *text, char *id, bool_t bold );
+label_t *label_new( wnd_t *parent, char *text, char *id, label_flags_t flags );
 
 /* Label constructor */
-bool_t label_construct( label_t *l, wnd_t *parent, char *text, char *id, 
-		bool_t bold );
+bool_t label_construct( label_t *l, wnd_t *parent, char *text, char *id,
+		label_flags_t flags );
 
 /* Set label text */
 void label_set_text( label_t *l, char *text );
@@ -63,6 +70,13 @@ void label_get_desired_size( dlgitem_t *di, int *width, int *height );
 
 /* 'display' message handler */
 wnd_msg_retcode_t label_on_display( wnd_t *wnd );
+
+/* Display label-like text */
+void label_display_text( wnd_t *wnd, char *text, wnd_color_t fg, 
+		wnd_color_t bg, int attr );
+
+/* Get label-like text length */
+int label_text_len( wnd_t *wnd );
 
 #endif
 

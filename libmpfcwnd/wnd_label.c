@@ -33,7 +33,7 @@
 #include "wnd_label.h"
 
 /* Create a new label */
-label_t *label_new( wnd_t *parent, char *text, char *id, bool_t bold )
+label_t *label_new( wnd_t *parent, char *text, char *id, label_flags_t flags )
 {
 	label_t *l;
 
@@ -45,7 +45,7 @@ label_t *label_new( wnd_t *parent, char *text, char *id, bool_t bold )
 	WND_OBJ(l)->m_class = wnd_basic_class_init(WND_GLOBAL(parent));
 
 	/* Initialize label */
-	if (!label_construct(l, parent, text, id, bold))
+	if (!label_construct(l, parent, text, id, flags))
 	{
 		free(l);
 		return NULL;
@@ -55,18 +55,18 @@ label_t *label_new( wnd_t *parent, char *text, char *id, bool_t bold )
 } /* End of 'label_new' function */
 
 /* Label constructor */
-bool_t label_construct( label_t *l, wnd_t *parent, char *text, char *id, 
-		bool_t bold )
+bool_t label_construct( label_t *l, wnd_t *parent, char *text, char *id,
+		label_flags_t flags )
 {
 	/* Initialize dialog item part */
 	if (!dlgitem_construct(DLGITEM_OBJ(l), parent, text, id, 
-				label_get_desired_size, NULL, DLGITEM_NOTABSTOP))
+				label_get_desired_size, NULL, 0, DLGITEM_NOTABSTOP))
 		return FALSE;
 
 	/* Set message map */
 	wnd_msg_add_handler(WND_OBJ(l), "display", label_on_display);
 	l->m_text = WND_OBJ(l)->m_title;
-	l->m_bold = bold;
+	l->m_flags = flags;
 	return TRUE;
 } /* End of 'label_construct' function */
 
@@ -85,6 +85,8 @@ void label_get_desired_size( dlgitem_t *di, int *width, int *height )
 
 	for ( i = 0; i <= strlen(l->m_text); i ++ )
 	{
+		if (l->m_text[i] == '&')
+			continue;
 		if (l->m_text[i] == '\n' || l->m_text[i] == 0)
 		{
 			lines ++;
@@ -102,14 +104,46 @@ void label_get_desired_size( dlgitem_t *di, int *width, int *height )
 /* 'display' message handler */
 wnd_msg_retcode_t label_on_display( wnd_t *wnd )
 {
-	label_t *l = LABEL_OBJ(wnd);
 	wnd_move(wnd, 0, 0, 0);
-	wnd_set_fg_color(wnd, WND_COLOR_WHITE);
-	wnd_set_bg_color(wnd, WND_COLOR_BLACK);
-	if (l->m_bold)
-		wnd_set_attrib(wnd, WND_ATTRIB_BOLD);
-	wnd_putstring(wnd, 0, 0, l->m_text);
+	label_display_text(wnd, wnd->m_title, WND_COLOR_WHITE, WND_COLOR_BLACK,
+			(LABEL_OBJ(wnd)->m_flags & LABEL_NOBOLD) ? 0 : WND_ATTRIB_BOLD);
 } /* End of 'label_on_display' function */
+
+/* Display label-like text */
+void label_display_text( wnd_t *wnd, char *text, wnd_color_t fg, 
+		wnd_color_t bg, int attr )
+{
+	bool_t mark_next = FALSE;
+
+	wnd_set_attrib(wnd, attr);
+	wnd_set_bg_color(wnd, bg);
+	for ( ; (*text) != 0; text ++ )
+	{
+		if ((*text) == '&')
+			mark_next = TRUE;
+		else
+		{
+			wnd_set_fg_color(wnd, mark_next ? WND_COLOR_RED : fg);
+			wnd_putchar(wnd, 0, *text);
+			mark_next = FALSE;
+		}
+	}
+} /* End of 'label_display_text' function */
+
+/* Get label-like text length */
+int label_text_len( wnd_t *wnd )
+{
+	int len;
+	char *s = wnd->m_title;
+	if (s == NULL)
+		return 0;
+	for ( len = 0; (*s) != 0; s ++ )
+	{
+		if ((*s) != '&')
+			len ++;
+	}
+	return len;
+} /* End of 'label_text_len' function */
 
 /* End of 'wnd_label.c' file */
 

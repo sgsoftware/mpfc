@@ -82,6 +82,7 @@ typedef struct tag_wnd_kbd_data_t
 /* Key identification type */
 typedef word wnd_key_t;
 #define WND_KEY_WITH_ALT(ch)	((ch) | 0x8000)
+#define WND_KEY_IS_WITH_ALT(ch)	(((ch) & 0x8000) ? ((ch) & 0x7FFF) : 0)
 
 /* Initialize keyboard management system */
 wnd_kbd_data_t *wnd_kbd_init( struct tag_wnd_t *wnd_root );

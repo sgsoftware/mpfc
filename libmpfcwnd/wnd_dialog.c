@@ -92,9 +92,9 @@ bool_t dialog_construct( dialog_t *dlg, wnd_t *parent, char *title )
 	DLGITEM_FLAGS(dlg->m_hbox) |= DLGITEM_PACK_END;
 
 	/* Create OK and Cancel buttons */
-	ok_btn = button_new(WND_OBJ(dlg->m_hbox), "OK", NULL);
+	ok_btn = button_new(WND_OBJ(dlg->m_hbox), "OK", "", 0);
 	wnd_msg_add_handler(WND_OBJ(ok_btn), "clicked", dialog_ok_on_clicked);
-	cancel_btn = button_new(WND_OBJ(dlg->m_hbox), "Cancel", NULL);
+	cancel_btn = button_new(WND_OBJ(dlg->m_hbox), "Cancel", "", 0);
 	wnd_msg_add_handler(WND_OBJ(cancel_btn), "clicked", 
 			dialog_cancel_on_clicked);
 	return TRUE;
@@ -192,6 +192,27 @@ dlgitem_t *dialog_iterate_items( dialog_t *dlg, dlgitem_t *di, bool_t cycle )
 /* Handle 'keydown' message */
 wnd_msg_retcode_t dialog_on_keydown( wnd_t *wnd, wnd_key_t key )
 {
+	int without_alt = WND_KEY_IS_WITH_ALT(key);
+
+	/* Jumping to child */
+	if (without_alt != 0)
+	{
+		dlgitem_t *child;
+		for ( child = DLGITEM_OBJ(WND_OBJ(wnd)->m_child);
+				child != NULL; child = dialog_iterate_items(DIALOG_OBJ(wnd),
+					child, FALSE) )
+		{
+			if (!(child->m_flags & DLGITEM_NOTABSTOP) &&
+					(child->m_letter == without_alt))
+				break;
+		}
+		if (child != NULL)
+		{
+			wnd_set_focus(WND_OBJ(child));
+			return WND_MSG_RETCODE_OK;
+		}
+	}
+	
 	/* Tab jumps to the next window */
 	if (key == '\t')
 	{

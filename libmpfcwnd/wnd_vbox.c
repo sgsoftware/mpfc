@@ -59,7 +59,7 @@ bool_t vbox_construct( vbox_t *vbox, wnd_t *parent, char *title, int dist )
 {
 	/* Initialize dialog item part */
 	if (!dlgitem_construct(DLGITEM_OBJ(vbox), parent, title, "", 
-				vbox_get_desired_size, vbox_set_pos, 
+				vbox_get_desired_size, vbox_set_pos, 0,
 				DLGITEM_NOTABSTOP | (title != NULL ? DLGITEM_BORDER : 0)))
 		return FALSE;
 

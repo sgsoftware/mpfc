@@ -33,7 +33,7 @@
 /* Construct dialog item */
 bool_t dlgitem_construct( dlgitem_t *di, wnd_t *parent, char *title, char *id, 
 		dlgitem_get_size_t get_size, dlgitem_set_pos_t set_pos,
-		dlgitem_flags_t flags )
+		char letter, dlgitem_flags_t flags )
 {
 	wnd_t *wnd = WND_OBJ(di);
 	assert(di);
@@ -52,6 +52,7 @@ bool_t dlgitem_construct( dlgitem_t *di, wnd_t *parent, char *title, char *id,
 	di->m_id = (id == NULL ? NULL : strdup(id));
 	di->m_get_size = get_size;
 	di->m_set_pos = set_pos;
+	di->m_letter = letter;
 	di->m_flags = flags;
 	di->m_dialog = (!strcmp(parent->m_class->m_name, "dialog")) ? parent : 
 			DLGITEM_OBJ(parent)->m_dialog;

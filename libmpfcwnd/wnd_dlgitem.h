@@ -53,6 +53,9 @@ typedef struct tag_dlgitem_t
 	/* Window part */
 	wnd_t m_wnd;
 
+	/* Item letter */
+	char m_letter;
+
 	/* Item ID string */
 	char *m_id;
 
@@ -76,7 +79,7 @@ typedef struct tag_dlgitem_t
 /* Construct dialog item */
 bool_t dlgitem_construct( dlgitem_t *di, wnd_t *parent, char *title, char *id, 
 		dlgitem_get_size_t get_size, dlgitem_set_pos_t set_pos, 
-		dlgitem_flags_t flags );
+		char letter, dlgitem_flags_t flags );
 
 /* Destructor */
 void dlgitem_destructor( wnd_t *wnd );

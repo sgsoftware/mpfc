@@ -46,10 +46,11 @@ typedef struct
 #define BUTTON_OBJ(wnd)	((button_t *)wnd)
 
 /* Create a new button */
-button_t *button_new( wnd_t *parent, char *title, char *id );
+button_t *button_new( wnd_t *parent, char *title, char *id, char letter );
 
 /* Button initialization function */
-bool_t button_construct( button_t *btn, wnd_t *parent, char *title, char *id );
+bool_t button_construct( button_t *btn, wnd_t *parent, char *title, char *id,
+		char letter );
 
 /* Get button desired size */
 void button_get_desired_size( dlgitem_t *di, int *width, int *height );

@@ -58,16 +58,16 @@ typedef struct
 #define COMBO_OBJ(wnd)	((combo_t *)wnd)
 
 /* Create a new combo box */
-combo_t *combo_new( wnd_t *parent, char *id, char *text, int width,
-		int height );
+combo_t *combo_new( wnd_t *parent, char *id, char *text, char letter, 
+		int width, int height );
 
 /* Create a new combo box with a label */
 combo_t *combo_new_with_label( wnd_t *parent, char *title, 
-		char *id, char *text, int width, int height );
+		char *id, char *text, char letter, int width, int height );
 
 /* Combo box constructor */
 bool_t combo_construct( combo_t *combo, wnd_t *parent, char *id, 
-		char *text, int width, int height );
+		char *text, char letter, int width, int height );
 
 /* Destructor */
 void combo_destructor( wnd_t *wnd );

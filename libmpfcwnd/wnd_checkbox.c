@@ -34,7 +34,7 @@
 
 /* Create a new check box */
 checkbox_t *checkbox_new( wnd_t *parent, char *title, char *id, 
-		bool_t checked )
+		char letter, bool_t checked )
 {
 	checkbox_t *cb;
 
@@ -46,7 +46,7 @@ checkbox_t *checkbox_new( wnd_t *parent, char *title, char *id,
 	WND_OBJ(cb)->m_class = checkbox_class_init(WND_GLOBAL(parent));
 
 	/* Initialize check box */
-	if (!checkbox_construct(cb, parent, title, id, checked))
+	if (!checkbox_construct(cb, parent, title, id, letter, checked))
 	{
 		free(cb);
 		return NULL;
@@ -57,11 +57,11 @@ checkbox_t *checkbox_new( wnd_t *parent, char *title, char *id,
 
 /* Check box constructor */
 bool_t checkbox_construct( checkbox_t *cb, wnd_t *parent, char *title, 
-		char *id, bool_t checked )
+		char *id, char letter, bool_t checked )
 {
 	/* Initialize dialog item part */
 	if (!dlgitem_construct(DLGITEM_OBJ(cb), parent, title, id, 
-				checkbox_get_desired_size, NULL, 0))
+				checkbox_get_desired_size, NULL, letter, 0))
 		return FALSE;
 
 	/* Set message map */
@@ -105,7 +105,8 @@ wnd_msg_retcode_t checkbox_on_display( wnd_t *wnd )
 	}
 	wnd_printf(wnd, 0, 0, "[%c]", cb->m_checked ? 'X' : ' ');
 	wnd_pop_state(wnd);
-	wnd_printf(wnd, 0, 0, " %s", wnd->m_title);
+	wnd_putchar(wnd, 0, ' ');
+	label_display_text(wnd, wnd->m_title, WND_COLOR_WHITE, WND_COLOR_BLACK, 0);
 	wnd_move(wnd, 0, 1, 0);
 } /* End of 'checkbox_on_display' function */
 
@@ -128,7 +129,7 @@ void checkbox_toggle( checkbox_t *cb )
 /* Get size desired by check box */
 void checkbox_get_desired_size( dlgitem_t *di, int *width, int *height )
 {
-	*width = strlen(WND_OBJ(di)->m_title) + 5;
+	*width = label_text_len(WND_OBJ(di)) + 5;
 	*height = 1;
 } /* End of 'checkbox_get_desired_size' function */
 

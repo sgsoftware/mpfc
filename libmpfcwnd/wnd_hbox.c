@@ -59,7 +59,7 @@ bool_t hbox_construct( hbox_t *hbox, wnd_t *parent, char *title, int dist )
 {
 	/* Initialize dialog item part */
 	if (!dlgitem_construct(DLGITEM_OBJ(hbox), parent, title, "", 
-				hbox_get_desired_size, hbox_set_pos, 
+				hbox_get_desired_size, hbox_set_pos, 0,
 				DLGITEM_NOTABSTOP | (title != NULL ? DLGITEM_BORDER : 0)))
 		return FALSE;
 

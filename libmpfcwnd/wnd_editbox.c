@@ -35,7 +35,8 @@
 #include "wnd_hbox.h"
 
 /* Create a new edit box */
-editbox_t *editbox_new( wnd_t *parent, char *id, char *text, int width )
+editbox_t *editbox_new( wnd_t *parent, char *id, char *text, char letter,
+		int width )
 {
 	editbox_t *eb;
 	wnd_class_t *klass;
@@ -56,7 +57,7 @@ editbox_t *editbox_new( wnd_t *parent, char *id, char *text, int width )
 	WND_OBJ(eb)->m_class = klass;
 
 	/* Initialize edit box */
-	if (!editbox_construct(eb, parent, id, text, width))
+	if (!editbox_construct(eb, parent, id, text, letter, width))
 	{
 		free(eb);
 		return NULL;
@@ -67,13 +68,13 @@ editbox_t *editbox_new( wnd_t *parent, char *id, char *text, int width )
 
 /* Edit box constructor */
 bool_t editbox_construct( editbox_t *eb, wnd_t *parent, char *id, char *text,
-		int width )
+		char letter, int width )
 {
 	wnd_t *wnd = WND_OBJ(eb);
 
 	/* Initialize window part */
 	if (!dlgitem_construct(DLGITEM_OBJ(eb), parent, "", id, 
-				editbox_get_desired_size, NULL, 0))
+				editbox_get_desired_size, NULL, letter, 0))
 		return FALSE;
 
 	/* Initialize message map */
@@ -91,12 +92,12 @@ bool_t editbox_construct( editbox_t *eb, wnd_t *parent, char *id, char *text,
 
 /* Create an edit box with label */
 editbox_t *editbox_new_with_label( wnd_t *parent, char *title, char *id,
-		char *text, int width )
+		char *text, char letter, int width )
 {
 	hbox_t *hbox;
 	hbox = hbox_new(parent, NULL, 0);
-	label_new(WND_OBJ(hbox), title, "", TRUE);
-	return editbox_new(WND_OBJ(hbox), id, text, width);
+	label_new(WND_OBJ(hbox), title, "", 0);
+	return editbox_new(WND_OBJ(hbox), id, text, letter, width);
 } /* End of 'editbox_new_with_label' function */
 
 /* Destructor */

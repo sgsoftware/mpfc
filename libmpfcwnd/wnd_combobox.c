@@ -35,8 +35,8 @@
 #include "wnd_hbox.h"
 
 /* Create a new combo box */
-combo_t *combo_new( wnd_t *parent, char *id, char *text, int width, 
-		int height )
+combo_t *combo_new( wnd_t *parent, char *id, char *text, char letter, 
+		int width, int height )
 {
 	combo_t *combo;
 	wnd_class_t *klass;
@@ -57,7 +57,7 @@ combo_t *combo_new( wnd_t *parent, char *id, char *text, int width,
 	WND_OBJ(combo)->m_class = klass;
 
 	/* Initialize combo box */
-	if (!combo_construct(combo, parent, id, text, width, height))
+	if (!combo_construct(combo, parent, id, text, letter, width, height))
 	{
 		free(combo);
 		return NULL;
@@ -68,19 +68,19 @@ combo_t *combo_new( wnd_t *parent, char *id, char *text, int width,
 
 /* Create a new combo box with a label */
 combo_t *combo_new_with_label( wnd_t *parent, char *title, 
-		char *id, char *text, int width, int height )
+		char *id, char *text, char letter, int width, int height )
 {
 	hbox_t *hbox = hbox_new(parent, NULL, 0);
-	label_new(WND_OBJ(hbox), title, "", TRUE);
-	return combo_new(WND_OBJ(hbox), id, text, width, height);
+	label_new(WND_OBJ(hbox), title, "", 0);
+	return combo_new(WND_OBJ(hbox), id, text, letter, width, height);
 } /* End of 'combo_new_with_label' function */
 
 /* Combo box constructor */
 bool_t combo_construct( combo_t *combo, wnd_t *parent, char *id, 
-		char *text, int width, int height )
+		char *text, char letter, int width, int height )
 {
 	/* Initialize edit box part */
-	if (!editbox_construct(EDITBOX_OBJ(combo), parent, id, text, width))
+	if (!editbox_construct(EDITBOX_OBJ(combo), parent, id, text, letter, width))
 		return FALSE;
 
 	/* Set message map */

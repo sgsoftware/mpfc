@@ -1738,7 +1738,8 @@ void player_add_dialog( void )
 	dialog_t *dlg;
 
 	dlg = dialog_new(wnd_root, "Add songs");
-	filebox_new_with_label(WND_OBJ(dlg->m_vbox), "File name: ", "name", "", 50);
+	filebox_new_with_label(WND_OBJ(dlg->m_vbox), "File &name: ", "name", "", 
+			'n', 50);
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_add);
 	dialog_arrange_children(dlg);
 } /* End of 'player_add_dialog' function */
@@ -1749,8 +1750,8 @@ void player_add_obj_dialog( void )
 	dialog_t *dlg;
 
 	dlg = dialog_new(wnd_root, "Add object");
-	editbox_new_with_label(WND_OBJ(dlg->m_vbox), "Object name: ",
-			"name", "", 50);
+	editbox_new_with_label(WND_OBJ(dlg->m_vbox), "Object &name: ",
+			"name", "", 'n', 50);
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_add_obj);
 	dialog_arrange_children(dlg);
 } /* End of 'player_add_obj_dialog' function */
@@ -1761,8 +1762,8 @@ void player_save_dialog( void )
 	dialog_t *dlg;
 
 	dlg = dialog_new(wnd_root, "Save play list");
-	filebox_new_with_label(WND_OBJ(dlg->m_vbox), "File name: ", 
-			"name", "", 50);
+	filebox_new_with_label(WND_OBJ(dlg->m_vbox), "File &name: ", 
+			"name", "", 'n', 50);
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_save);
 	dialog_arrange_children(dlg);
 } /* End of 'player_save_dialog' function */
@@ -1773,8 +1774,8 @@ void player_exec_dialog( void )
 	dialog_t *dlg;
 
 	dlg = dialog_new(wnd_root, "Execute external command");
-	filebox_new_with_label(WND_OBJ(dlg->m_vbox), "Command: ", 
-			"command", "", 50);
+	filebox_new_with_label(WND_OBJ(dlg->m_vbox), "C&ommand: ", 
+			"command", "", 'o', 50);
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_exec);
 	dialog_arrange_children(dlg);
 } /* End of 'player_exec_dialog' function */
@@ -1787,12 +1788,12 @@ void player_sort_dialog( void )
 
 	dlg = dialog_new(wnd_root, "Sort play list");
 	vbox = vbox_new(WND_OBJ(dlg->m_vbox), "Sort by", 0);
-	radio_new(WND_OBJ(vbox), "Title", "title", TRUE);
-	radio_new(WND_OBJ(vbox), "File name", "file", FALSE);
-	radio_new(WND_OBJ(vbox), "Path and file name", "path", FALSE);
-	radio_new(WND_OBJ(vbox), "Track", "track", FALSE);
-	checkbox_new(WND_OBJ(dlg->m_vbox), "Only selected area", "only_sel",
-			FALSE);
+	radio_new(WND_OBJ(vbox), "&Title", "title", 't', TRUE);
+	radio_new(WND_OBJ(vbox), "&File name", "file", 'f', FALSE);
+	radio_new(WND_OBJ(vbox), "P&ath and file name", "path", 'a', FALSE);
+	radio_new(WND_OBJ(vbox), "T&rack", "track", 'r', FALSE);
+	checkbox_new(WND_OBJ(dlg->m_vbox), "&Only selected area", 
+			"only_sel", 'o', FALSE);
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_sort);
 	dialog_arrange_children(dlg);
 } /* End of 'player_sort_dialog' function */
@@ -1820,15 +1821,22 @@ void player_info_dialog( void )
 	dlg = dialog_new(wnd_root, "");
 	hbox = hbox_new(WND_OBJ(dlg->m_vbox), NULL, 1);
 	vbox = WND_OBJ(vbox_new(WND_OBJ(hbox), NULL, 0));
-	editbox_new_with_label(vbox, "Name: ", "name", "", PLAYER_EB_WIDTH);
-	editbox_new_with_label(vbox, "Artist: ", "artist", "", PLAYER_EB_WIDTH);
-	editbox_new_with_label(vbox, "Album: ", "album", "", PLAYER_EB_WIDTH);
-	editbox_new_with_label(vbox, "Year: ", "year", "", PLAYER_EB_WIDTH);
-	editbox_new_with_label(vbox, "Track No: ", "track", "", PLAYER_EB_WIDTH);
-	editbox_new_with_label(vbox, "Comments: ", "comments", "", PLAYER_EB_WIDTH);
-	combo_new_with_label(vbox, "Genre: ", "genre", "", PLAYER_EB_WIDTH, 10);
-	label_new(WND_OBJ(hbox), "", "own_data", FALSE);
-	reload = button_new(WND_OBJ(dlg->m_hbox), "Reload info", "reload");
+	editbox_new_with_label(vbox, "&Name: ", "name", "", 'n', 
+			PLAYER_EB_WIDTH);
+	editbox_new_with_label(vbox, "&Artist: ", "artist", "", 'a', 
+			PLAYER_EB_WIDTH);
+	editbox_new_with_label(vbox, "A&lbum: ", "album", "", 'l',
+			PLAYER_EB_WIDTH);
+	editbox_new_with_label(vbox, "&Year: ", "year", "", 'y',
+			PLAYER_EB_WIDTH);
+	editbox_new_with_label(vbox, "&Track No: ", "track", "", 't',
+			PLAYER_EB_WIDTH);
+	editbox_new_with_label(vbox, "C&omments: ", "comments", "", 'o',
+			PLAYER_EB_WIDTH);
+	combo_new_with_label(vbox, "&Genre: ", "genre", "", 'g',
+			PLAYER_EB_WIDTH, 10);
+	label_new(WND_OBJ(hbox), "", "own_data", LABEL_NOBOLD);
+	reload = button_new(WND_OBJ(dlg->m_hbox), "&Reload info", "reload", 'r');
 
 	/* Fill items with values */
 	if (!player_info_dialog_fill(dlg, TRUE))
@@ -1891,8 +1899,8 @@ bool_t player_info_dialog_fill( dialog_t *dlg, bool_t first_call )
 		if (start != end)
 		{
 			checkbox_t *cb = checkbox_new(WND_OBJ(dlg->m_vbox), 
-					"Write info in all the selected songs",
-					"write_in_all", TRUE);
+					"Write info in &all the selected songs",
+					"write_in_all", 'a', TRUE);
 			wnd_msg_add_handler(WND_OBJ(cb), "clicked", 
 					player_on_info_cb_clicked);
 		}
@@ -2018,7 +2026,8 @@ bool_t player_info_dialog_fill( dialog_t *dlg, bool_t first_call )
 		for ( i = 0; i < num; i ++ )
 		{
 			char *title = inp_get_spec_title(main_song->m_inp, i);
-			button_t *btn = button_new(WND_OBJ(dlg->m_hbox), title, NULL);
+			button_t *btn = button_new(WND_OBJ(dlg->m_hbox), title, "",
+					0);
 			cfg_set_var_int(WND_OBJ(btn)->m_cfg_list, "fn_index", i);
 			wnd_msg_add_handler(WND_OBJ(btn), "clicked", player_on_info_spec);
 		}
@@ -2041,8 +2050,8 @@ void player_search_dialog( void )
 	dialog_t *dlg;
 
 	dlg = dialog_new(wnd_root, "Search");
-	editbox_new_with_label(WND_OBJ(dlg->m_vbox), "String: ", 
-			"string", "", 50);
+	editbox_new_with_label(WND_OBJ(dlg->m_vbox), "S&tring: ", 
+			"string", "", 't', PLAYER_EB_WIDTH);
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_search);
 	dialog_arrange_children(dlg);
 } /* End of 'player_search_dialog' function */
@@ -2053,10 +2062,10 @@ void player_var_mini_manager( void )
 	dialog_t *dlg;
 
 	dlg = dialog_new(wnd_root, "Mini variables manager");
-	editbox_new_with_label(WND_OBJ(dlg->m_vbox), "Name: ",
-			"name", "", 50);
-	editbox_new_with_label(WND_OBJ(dlg->m_vbox), "Value: ",
-			"value", "", 50);
+	editbox_new_with_label(WND_OBJ(dlg->m_vbox), "&Name: ",
+			"name", "", 'n', PLAYER_EB_WIDTH);
+	editbox_new_with_label(WND_OBJ(dlg->m_vbox), "&Value: ",
+			"value", "", 'v', PLAYER_EB_WIDTH);
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_mini_var);
 	dialog_arrange_children(dlg);
 } /* End of 'player_var_mini_manager' function */
@@ -2068,17 +2077,17 @@ void player_advanced_search_dialog( void )
 	vbox_t *vbox;
 
 	dlg = dialog_new(wnd_root, "Advanced search");
-	editbox_new_with_label(WND_OBJ(dlg->m_vbox), "String: ",
-			"string", "", 50);
+	editbox_new_with_label(WND_OBJ(dlg->m_vbox), "S&tring: ",
+			"string", "", 't', PLAYER_EB_WIDTH);
 	vbox = vbox_new(WND_OBJ(dlg->m_vbox), "Search in", 0);
-	radio_new(WND_OBJ(vbox), "Title", "title", TRUE);
-	radio_new(WND_OBJ(vbox), "Name", "name", FALSE);
-	radio_new(WND_OBJ(vbox), "Artist", "artist", FALSE);
-	radio_new(WND_OBJ(vbox), "Album", "album", FALSE);
-	radio_new(WND_OBJ(vbox), "Year", "year", FALSE);
-	radio_new(WND_OBJ(vbox), "Genre", "genre", FALSE);
-	radio_new(WND_OBJ(vbox), "Track", "track", FALSE);
-	radio_new(WND_OBJ(vbox), "Comment", "comment", FALSE);
+	radio_new(WND_OBJ(vbox), "&Title", "title", 't', TRUE);
+	radio_new(WND_OBJ(vbox), "&Name", "name", 'n', FALSE);
+	radio_new(WND_OBJ(vbox), "&Artist", "artist", 'a', FALSE);
+	radio_new(WND_OBJ(vbox), "A&lbum", "album", 'l', FALSE);
+	radio_new(WND_OBJ(vbox), "&Year", "year", 'y', FALSE);
+	radio_new(WND_OBJ(vbox), "&Genre", "genre", 'g', FALSE);
+	radio_new(WND_OBJ(vbox), "T&rack", "track", 'r', FALSE);
+	radio_new(WND_OBJ(vbox), "C&omment", "comment", 'o', FALSE);
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_adv_search);
 	dialog_arrange_children(dlg);
 } /* End of 'player_advanced_search_dialog' function */
@@ -2098,8 +2107,8 @@ void player_info_reload_dialog( void )
 	dialog_t *dlg;
 
 	dlg = dialog_new(wnd_root, "Reload info");
-	checkbox_new(WND_OBJ(dlg->m_vbox), "Only in selected area", "only_sel",
-			FALSE);
+	checkbox_new(WND_OBJ(dlg->m_vbox), "&Only in selected area", 
+			"only_sel", 'o', FALSE);
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_info_reload);
 	dialog_arrange_children(dlg);
 } /* End of 'player_info_reload_dialog' function */
@@ -2115,12 +2124,12 @@ void player_repval_dialog( int dig )
 
 	dlg = dialog_new(wnd_root, "Repeat value");
 	hbox = hbox_new(WND_OBJ(dlg->m_vbox), NULL, 0);
-	label_new(WND_OBJ(hbox), "Enter count value for the next command: ",
-			NULL, TRUE);
+	label_new(WND_OBJ(hbox), "Enter count &value for the next command: ",
+			NULL, 0);
 	text[0] = dig + '0';
 	text[1] = 0;
 	player_repval_last_key = 0;
-	eb = editbox_new(WND_OBJ(hbox), "count", text, 10);
+	eb = editbox_new(WND_OBJ(hbox), "count", text, 'v', 10);
 	wnd_msg_add_handler(WND_OBJ(eb), "keydown", player_repval_on_keydown);
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_repval_on_ok);
 	dialog_arrange_children(dlg);

@@ -41,7 +41,8 @@
 #include "wnd_hbox.h"
 
 /* Create a new file box */
-filebox_t *filebox_new( wnd_t *parent, char *id, char *text, int width )
+filebox_t *filebox_new( wnd_t *parent, char *id, char *text, char letter,
+		int width )
 {
 	filebox_t *fb;
 	wnd_class_t *klass;
@@ -62,7 +63,7 @@ filebox_t *filebox_new( wnd_t *parent, char *id, char *text, int width )
 	WND_OBJ(fb)->m_class = klass;
 
 	/* Initialize file box */
-	if (!filebox_construct(fb, parent, id, text, width ))
+	if (!filebox_construct(fb, parent, id, text, letter, width))
 	{
 		free(fb);
 		return NULL;
@@ -73,12 +74,12 @@ filebox_t *filebox_new( wnd_t *parent, char *id, char *text, int width )
 
 /* File box constructor */
 bool_t filebox_construct( filebox_t *fb, wnd_t *parent, char *id, char *text, 
-		int width )
+		char letter, int width )
 {
 	wnd_t *wnd = WND_OBJ(fb);
 
 	/* Initialize edit box part */
-	if (!editbox_construct(EDITBOX_OBJ(fb), parent, id, text, width))
+	if (!editbox_construct(EDITBOX_OBJ(fb), parent, id, text, letter, width))
 		return FALSE;
 
 	/* Set message map */
@@ -89,12 +90,12 @@ bool_t filebox_construct( filebox_t *fb, wnd_t *parent, char *id, char *text,
 
 /* Create an edit box with label */
 filebox_t *filebox_new_with_label( wnd_t *parent, char *title, char *id,
-		char *text, int width )
+		char *text, char letter, int width )
 {
 	hbox_t *hbox;
 	hbox = hbox_new(parent, NULL, 0);
-	label_new(WND_OBJ(hbox), title, "", TRUE);
-	return filebox_new(WND_OBJ(hbox), id, text, width);
+	label_new(WND_OBJ(hbox), title, "", 0);
+	return filebox_new(WND_OBJ(hbox), id, text, letter, width);
 } /* End of 'filebox_new_with_label' function */
 
 /* Destructor */

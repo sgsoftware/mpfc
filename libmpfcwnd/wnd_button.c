@@ -31,9 +31,10 @@
 #include "wnd.h"
 #include "wnd_button.h"
 #include "wnd_dlgitem.h"
+#include "wnd_label.h"
 
 /* Create a new button */
-button_t *button_new( wnd_t *parent, char *title, char *id )
+button_t *button_new( wnd_t *parent, char *title, char *id, char letter )
 {
 	button_t *btn;
 	wnd_class_t *klass;
@@ -54,7 +55,7 @@ button_t *button_new( wnd_t *parent, char *title, char *id )
 	WND_OBJ(btn)->m_class = klass;
 
 	/* Initialize button */
-	if (!button_construct(btn, parent, title, id))
+	if (!button_construct(btn, parent, title, id, letter))
 	{
 		free(btn);
 		return NULL;
@@ -64,7 +65,8 @@ button_t *button_new( wnd_t *parent, char *title, char *id )
 } /* End of 'button_new' function */
 
 /* Button initialization function */
-bool_t button_construct( button_t *btn, wnd_t *parent, char *title, char *id )
+bool_t button_construct( button_t *btn, wnd_t *parent, char *title, char *id,
+		char letter )
 {
 	wnd_t *wnd = WND_OBJ(btn);
 
@@ -72,7 +74,7 @@ bool_t button_construct( button_t *btn, wnd_t *parent, char *title, char *id )
 
 	/* Initialize window part */
 	if (!dlgitem_construct(DLGITEM_OBJ(btn), parent, title, id, 
-				button_get_desired_size, NULL, 0))
+				button_get_desired_size, NULL, letter, 0))
 		return FALSE;
 
 	/* Set message handlers */
@@ -85,19 +87,19 @@ bool_t button_construct( button_t *btn, wnd_t *parent, char *title, char *id )
 /* Get button desired size */
 void button_get_desired_size( dlgitem_t *di, int *width, int *height )
 {
-	*width = strlen(WND_OBJ(di)->m_title) + 2;
+	*width = 2 + label_text_len(WND_OBJ(di));
 	*height = 1;
 } /* End of 'button_get_desired_size' function */
 
 /* 'display' message handler */
 wnd_msg_retcode_t button_on_display( wnd_t *wnd )
 {
+	wnd_color_t bg = (WND_FOCUS(wnd) == wnd) ? WND_COLOR_BLUE : WND_COLOR_GREEN;
 	wnd_move(wnd, 0, 0, 0);
-	wnd_set_fg_color(wnd, WND_COLOR_WHITE);
-	wnd_set_bg_color(wnd, WND_FOCUS(wnd) == wnd ?
-			WND_COLOR_BLUE : WND_COLOR_GREEN);
-	wnd_set_attrib(wnd, WND_ATTRIB_BOLD);
-	wnd_printf(wnd, 0, 0, " %s\n", wnd->m_title);
+	wnd_set_bg_color(wnd, bg);
+	wnd_putchar(wnd, 0, ' ');
+	label_display_text(wnd, wnd->m_title, WND_COLOR_WHITE, bg, WND_ATTRIB_BOLD);
+	wnd_putchar(wnd, 0, ' ');
 	return WND_MSG_RETCODE_OK;
 } /* End of 'button_on_display' function */
 

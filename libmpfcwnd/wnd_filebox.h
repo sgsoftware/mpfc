@@ -54,15 +54,16 @@ typedef struct
 #define FILEBOX_OBJ(wnd)	((filebox_t *)wnd)
 
 /* Create a new file box */
-filebox_t *filebox_new( wnd_t *parent, char *id, char *text, int width );
+filebox_t *filebox_new( wnd_t *parent, char *id, char *text, char letter,
+		int width );
 
 /* File box constructor */
 bool_t filebox_construct( filebox_t *fb, wnd_t *parent, char *id, char *text, 
-		int width );
+		char letter, int width );
 
 /* Create an edit box with label */
 filebox_t *filebox_new_with_label( wnd_t *parent, char *title, char *id,
-		char *text, int width );
+		char *text, char letter, int width );
 
 /* Destructor */
 void filebox_destructor( wnd_t *wnd );

@@ -32,7 +32,8 @@
 #include "wnd_radio.h"
 
 /* Create a new radio button */
-radio_t *radio_new( wnd_t *parent, char *title, char *id, bool_t checked )
+radio_t *radio_new( wnd_t *parent, char *title, char *id, 
+		char letter, bool_t checked )
 {
 	radio_t *r;
 
@@ -44,7 +45,7 @@ radio_t *radio_new( wnd_t *parent, char *title, char *id, bool_t checked )
 	WND_OBJ(r)->m_class = wnd_basic_class_init(WND_GLOBAL(parent));
 
 	/* Initialize radio button */
-	if (!radio_construct(r, parent, title, id, checked))
+	if (!radio_construct(r, parent, title, id, letter, checked))
 	{
 		free(r);
 		return NULL;
@@ -55,11 +56,11 @@ radio_t *radio_new( wnd_t *parent, char *title, char *id, bool_t checked )
 
 /* Radio button constructor */
 bool_t radio_construct( radio_t *r, wnd_t *parent, char *title, char *id, 
-		bool_t checked )
+		char letter, bool_t checked )
 {
 	/* Initialize dialog item part */
 	if (!dlgitem_construct(DLGITEM_OBJ(r), parent, title, id, 
-				radio_get_desired_size, NULL, 0))
+				radio_get_desired_size, NULL, letter, 0))
 		return FALSE;
 
 	/* Set message map */
@@ -111,7 +112,8 @@ wnd_msg_retcode_t radio_on_display( wnd_t *wnd )
 	}
 	wnd_printf(wnd, 0, 0, "(%c)", r->m_checked ? 'X' : ' ');
 	wnd_pop_state(wnd);
-	wnd_printf(wnd, 0, 0, " %s", wnd->m_title);
+	wnd_putchar(wnd, 0, ' ');
+	label_display_text(wnd, wnd->m_title, WND_COLOR_WHITE, WND_COLOR_BLACK, 0);
 	wnd_move(wnd, 0, 1, 0);
 } /* End of 'radio_on_display' function */
 
@@ -142,7 +144,7 @@ void radio_check( radio_t *r )
 /* Get size desired by check box */
 void radio_get_desired_size( dlgitem_t *di, int *width, int *height )
 {
-	*width = strlen(WND_OBJ(di)->m_title) + 5;
+	*width = label_text_len(WND_OBJ(di)) + 5;
 	*height = 1;
 } /* End of 'radio_get_desired_size' function */
 

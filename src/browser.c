@@ -632,9 +632,8 @@ void fb_select_pattern_dialog( browser_t *fb, bool_t sel )
 	dlg = dialog_new(WND_OBJ(fb), sel ? "Select files matching pattern" :
 			"Deselect files matching pattern");
 	cfg_set_var_int(WND_OBJ(dlg)->m_cfg_list, "select", sel);
-	hbox = hbox_new(WND_OBJ(dlg->m_vbox), NULL, 0);
-	label_new(WND_OBJ(hbox), "Pattern: ");
-	editbox_new(WND_OBJ(hbox), "pattern", "*", 50);
+	editbox_new_with_label(WND_OBJ(dlg->m_vbox), "P&attern: ", 
+			"pattern", "*", 'a', 50);
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", fb_on_sel_pattern);
 	dialog_arrange_children(dlg);
 } /* End of 'fb_select_pattern' function */
