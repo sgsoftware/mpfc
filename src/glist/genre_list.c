@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Genres list management functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 26.04.2003
+ * LAST UPDATE : 12.08.2003
  * NOTE        : Module prefix 'glist'. 
  *
  * This program is free software; you can redistribute it and/or 
@@ -88,6 +88,20 @@ byte glist_get_id( genre_list_t *l, byte data )
 			return i;
 	return GENRE_ID_UNKNOWN;
 } /* End of 'glist_get_id' function */
+
+/* Get genre if by its textual data */
+byte glist_get_id_by_text( genre_list_t *l, char *text )
+{
+	int i;
+
+	if (l == NULL)
+		return 0xFF;
+
+	for ( i = 0; i < l->m_size; i ++ )
+		if (!strcmp(l->m_list[i].m_name, text))
+			return i;
+	return GENRE_ID_UNKNOWN;
+} /* End of 'glist_get_id_by_text' function */
 
 /* End of 'genre_list.c' file */
 

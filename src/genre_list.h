@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for genres list management 
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 26.04.2003
+ * LAST UPDATE : 12.08.2003
  * NOTE        : Module prefix 'glist'. 
  *
  * This program is free software; you can redistribute it and/or 
@@ -55,6 +55,9 @@ void glist_add( genre_list_t *l, char *name, byte data );
 
 /* Get genre id by its inner data */
 byte glist_get_id( genre_list_t *l, byte data );
+
+/* Get genre if by its textual data */
+byte glist_get_id_by_text( genre_list_t *l, char *text );
 
 #endif
 

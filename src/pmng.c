@@ -200,7 +200,9 @@ in_plugin_t *pmng_search_format( char *format )
 			{
 				ext[k] = 0;
 				if (!strcasecmp(ext, format))
+				{
 					return pmng_inp[i];
+				}
 				k = 0;
 			}
 			if (!formats[j])

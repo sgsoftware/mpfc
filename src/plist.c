@@ -124,8 +124,7 @@ bool plist_add( plist_t *pl, char *filename )
 	util_escape_fname(fname, fname);
 
 	/* Find */
-	sprintf(str, "find %s 2>/dev/null | grep -i \"\\.[{mp3}{m3u}{wav}]\"", 
-			fname);
+	sprintf(str, "find %s 2>/dev/null", fname);
 	fd = popen(str, "r");
 	while (fd != NULL)
 	{

@@ -11,6 +11,8 @@ AC_CHECK_LIB(m, pow)
 AC_CHECK_LIB(id3tag, id3_file_open)
 AC_CHECK_LIB(mad, mad_stream_init)
 AC_CHECK_LIB(dl, dlopen)
+AC_CHECK_LIB(vorbis, vorbis_dsp_clear)
+AC_CHECK_LIB(vorbisfile, ov_open)
 
 AM_GNU_GETTEXT
 
@@ -22,4 +24,4 @@ AC_OUTPUT(Makefile src/Makefile src/util/Makefile src/glist/Makefile \
 			plugins/output/oss/Makefile plugins/effect/Makefile \
 			plugins/effect/echo/Makefile plugins/input/audiocd/Makefile \
 			plugins/input/radio/Makefile plugins/output/disk_writer/Makefile \
-			doc/Makefile)
+			plugins/input/ogg/Makefile doc/Makefile)
