@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. OSS output plugin functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 4.09.2003
+ * LAST UPDATE : 21.12.2003
  * NOTE        : Module prefix 'oss'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -29,41 +29,34 @@
 #include <sys/soundcard.h>
 #include <sys/ioctl.h>
 #include "types.h"
+#include "cfg.h"
 #include "outp.h"
 
 /* Audio device file handle */
 int oss_fd = -1;
 
+/* Some function declarations */
+bool_t oss_get_dev( char *name );
+
+/* This is pointer to global variables list */
+cfg_list_t *oss_var_list = NULL;
+
 /* Start plugin */
 bool_t oss_start( void )
 {
-	int fmt;
-	int i;
 	char name[256];
 
 	/* Check if we have access to sound card */
-	strcpy(name, "/dev/dsp");
-	oss_fd = open(name, O_WRONLY | O_NONBLOCK);
-	if (oss_fd < 0)
+	if (!oss_get_dev(name))
 	{
-		for ( i = 1; i < 256; i ++ )
-		{
-			sprintf(name, "/dev/dsp%i", i);
-			oss_fd = open(name, O_WRONLY | O_NONBLOCK);
-			if (oss_fd >= 0)
-				break;
-		}
-		if (oss_fd < 0)
-			return FALSE;
+		oss_fd = -1;
+		return FALSE;
 	}
-	close(oss_fd);
-	oss_fd = -1;
 
 	/* Open device */
 	oss_fd = open(name, O_WRONLY);
 	if (oss_fd < 0)
 		return FALSE;
-	
 	return TRUE;
 } /* End of 'oss_start' function */
 
@@ -164,6 +157,50 @@ void outp_get_func_list( outp_func_list_t *fl )
 	fl->m_set_volume = oss_set_volume;
 	fl->m_get_volume = oss_get_volume;
 } /* End of 'outp_get_func_list' function */
+
+/* Some function declarations */
+bool_t oss_get_dev( char *name )
+{
+	char str[256], *s;
+	int fd;
+	
+	/* Get respective variable value */
+	strcpy(str, cfg_get_var(oss_var_list, "oss-device"));
+	if (!strcmp(str, "0"))
+		strcpy(str, "/dev/dsp,/dev/dsp1");
+
+	/* Search specified devices */
+	for ( s = str; *s; )
+	{
+		int i = 0;
+
+		/* Get name */
+		while ((*s) && ((*s) != ','))
+		{
+			name[i ++] = *(s ++);
+		}
+		name[i] = 0;
+
+		/* Check this device */
+		fd = open(name, O_WRONLY | O_NONBLOCK);
+		if (fd >= 0)
+		{
+			close(fd);
+			return TRUE;
+		}
+
+		/* Skip symbols until slash */
+		while ((*s) != '/' && (*s))
+			s ++;
+	}
+	return FALSE;
+} /* End of 'oss_get_dev' function */
+
+/* Save variables list */
+void outp_set_vars( cfg_list_t *list )
+{
+	oss_var_list = list;
+} /* End of 'oss_set_vars' function */
 
 /* End of 'oss.c' file */
 
