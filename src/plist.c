@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Play list manipulation
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 9.11.2003
+ * LAST UPDATE : 14.11.2003
  * NOTE        : Module prefix 'plist'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -291,8 +291,12 @@ int plist_add_m3u( plist_t *pl, char *filename )
 		file_gets(str, sizeof(str), fd);
 		util_del_nl(str, str);
 
+		/* Check if this is an object */
+		if (plist_is_obj(str))
+			num += plist_add_obj(pl, str, title);
 		/* Add this song to list */
-		num += plist_add_song(pl, str, title, song_len, -1);
+		else
+			num += plist_add_song(pl, str, title, song_len, -1);
 	}
 
 	/* Close file */
@@ -343,7 +347,13 @@ int plist_add_pls( plist_t *pl, char *filename )
 			s = str;
 		else
 			s ++;
-		num += plist_add_song(pl, s, NULL, 0, -1);
+
+		/* Check if this is an object */
+		if (plist_is_obj(str))
+			num += plist_add_obj(pl, s, NULL);
+		/* Add song */
+		else
+			num += plist_add_song(pl, s, NULL, 0, -1);
 	}
 
 	/* Close file */
@@ -623,6 +633,10 @@ void plist_rem( plist_t *pl )
 		start = pl->m_len - 1;
 	if (end >= pl->m_len)
 		end = pl->m_len - 1;
+	if (start < 0)
+		start = 0;
+	if (end < 0)
+		end = 0;
 
 	/* Check if we have anything to delete */
 	if (!pl->m_len)
@@ -899,7 +913,7 @@ void plist_unlock( plist_t *pl )
 } /* End of 'plist_unlock' function */
 
 /* Add an object */
-void plist_add_obj( plist_t *pl, char *name )
+int plist_add_obj( plist_t *pl, char *name, char *title )
 {
 	char plugin_name[256], obj_name[256];
 	in_plugin_t *inp;
@@ -907,7 +921,7 @@ void plist_add_obj( plist_t *pl, char *name )
 	song_t **s;
 	
 	if (pl == NULL)
-		return;
+		return 0;
 
 	/* Get respective input plugin name */
 	for ( i = 0; name[i] && name[i] != ':'; i ++ );
@@ -917,7 +931,7 @@ void plist_add_obj( plist_t *pl, char *name )
 	/* Search for this plugin */
 	inp = pmng_search_inp_by_name(plugin_name);
 	if (inp == NULL)
-		return;
+		return 0;
 
 	/* Initialize songs */
 	if (name[i])
@@ -926,7 +940,7 @@ void plist_add_obj( plist_t *pl, char *name )
 		strcpy(obj_name, "");
 	s = inp_init_obj_songs(inp, obj_name, &num_songs);
 	if (s == NULL || !num_songs)
-		return;
+		return 0;
 
 	/* Add these songs to play list */
 	plist_lock(pl);
@@ -943,7 +957,10 @@ void plist_add_obj( plist_t *pl, char *name )
 	for ( i = was_len; i < pl->m_len; i ++ )
 	{
 		pl->m_list[i]->m_inp = inp;
-		sat_push(pl, i);
+		if (title == NULL)
+			sat_push(pl, i);
+		else
+			strcpy(pl->m_list[i]->m_title, title);
 	}
 
 	/* If list was empty - put cursor to the first song */
@@ -967,6 +984,7 @@ void plist_add_obj( plist_t *pl, char *name )
 
 	/* Update screen */
 	wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
+	return num_songs;
 } /* End of 'plist_add_obj' function */
 
 /* Move selection in play list */
@@ -1100,6 +1118,17 @@ int plist_find_handler( char *name, void *data )
 {
 	return plist_add_one_file((plist_t *)data, name);
 } /* End of 'plist_find_handler' function */
+
+/* Check if specified file name belongs to an object */
+bool_t plist_is_obj( char *filename )
+{
+	char *s = strchr(filename, ':');
+	
+	if (s != NULL && *(s + 1) != '/')
+		return TRUE;
+	else
+		return FALSE;
+} /* End of 'plist_is_obj' function */
 
 /* End of 'plist.c' file */
 

@@ -70,6 +70,12 @@ void cddb_save_data( dword id );
 /* Add a string to data */
 void cddb_data_add( char *str, int index );
 
+/* Reload info */
+void cddb_reload( char *filename );
+
+/* Submit info to server */
+void cddb_submit( char *filename );
+
 #endif
 
 /* End of 'cddb.h' file */

@@ -205,11 +205,13 @@ bool_t cddb_read_server( dword id )
 		return FALSE;
 
 	/* Get host address */
+	acd_print("Getting address of %s", host);
 	he = gethostbyname(host);
 	if (he == NULL)
 		goto close;
 
 	/* Initialize socket and connect */
+	acd_print("Connecting to %s", host);
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (sockfd < 0)
 		goto close;
@@ -222,9 +224,10 @@ bool_t cddb_read_server( dword id )
 		goto close;
 
 	/* Communicate with server */
+	acd_print("Sending query to server");
 	if (!cddb_server_recv(sockfd, buf, CDDB_BUF_SIZE - 1))
 		goto close;
-	sprintf(buf, "cddb hello %s %s mpfc 0.1\n", getenv("USER"), 
+	sprintf(buf, "cddb hello %s %s mpfc 1.1\n", getenv("USER"), 
 			getenv("HOSTNAME"));
 	if (!cddb_server_send(sockfd, buf, CDDB_BUF_SIZE - 1))
 		goto close;
@@ -253,9 +256,12 @@ bool_t cddb_read_server( dword id )
 	cddb_server2data(buf);
 
 	/* Save data */
+	acd_print("Saving data");
 	cddb_save_data(id);
+	acd_print("Success");
 	return TRUE;
 close:
+	acd_print("Failed!");
 	cddb_server_found = FALSE;
 	if (sockfd >= 0)
 		close(sockfd);
@@ -508,6 +514,28 @@ void cddb_data_add( char *str, int index )
 	/* Add string */
 	cddb_data[cddb_data_len ++] = strdup(str);
 } /* End of 'cddb_data_add' function */
+
+/* Reload info */
+void cddb_reload( char *filename )
+{
+	dword id;
+	
+	/* Free existing info */
+	cddb_server_found = TRUE;
+	free(cddb_data);
+	cddb_data = NULL;
+
+	/* Calculate disc ID */
+	id = cddb_id();
+
+	/* Read data from server */
+	cddb_read_server(id);
+} /* End of 'cddb_reload' function */
+
+/* Submit info to server */
+void cddb_submit( char *filename )
+{
+} /* End of 'cddb_submit' function */
 
 /* End of 'cddb.c' file */
 

@@ -182,7 +182,7 @@ bool_t player_init( int argc, char *argv[] )
 		return FALSE;
 	}
 	for ( i = 0; i < player_num_obj; i ++ )
-		plist_add_obj(player_plist, player_objects[i]);
+		plist_add_obj(player_plist, player_objects[i], NULL);
 	for ( i = 0; i < player_num_files; i ++ )
 		plist_add(player_plist, player_files[i]);
 
@@ -1082,7 +1082,7 @@ void player_info_dialog( void )
 		button_t *btn;
 
 		btn = btn_new(WND_OBJ(dlg), WND_WIDTH(dlg) - max_len - 5, 
-				y + 1, max_len + 2, inp_get_spec_title(s->m_inp, i));
+				y + 1 + i * 2, max_len + 2, inp_get_spec_title(s->m_inp, i));
 		WND_OBJ(btn)->m_id = i;
 	}
 
@@ -1342,7 +1342,7 @@ void player_add_obj_dialog( void )
 
 		/* Add object if enter was pressed */
 		if (ebox->m_last_key == '\n')
-			plist_add_obj(player_plist, ebox->m_text);
+			plist_add_obj(player_plist, ebox->m_text, NULL);
 
 		/* Destroy edit box */
 		wnd_destroy(ebox);

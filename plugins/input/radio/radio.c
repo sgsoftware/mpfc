@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Radio input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 1.08.2003
+ * LAST UPDATE : 14.11.2003
  * NOTE        : Module prefix 'rad'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -94,6 +94,13 @@ int rad_get_stream( void *buf, int size )
 	return size;
 } /* End of 'rad_get_stream' function */
 
+/* Set song title */
+void rad_set_song_title( char *title, char *filename )
+{
+	strcpy(title, filename);
+	title[0] = 'R';
+} /* End of 'rad_set_song_title' function */
+
 /* Initialize songs that respect to object */
 song_t **rad_init_obj_songs( char *name, int *num_songs )
 {
@@ -103,6 +110,7 @@ song_t **rad_init_obj_songs( char *name, int *num_songs )
 	struct video_tuner vt;
 	int fd;
 
+	(*num_songs) = NULL;
 	if (!strlen(name))
 		return;
 
@@ -133,8 +141,8 @@ song_t **rad_init_obj_songs( char *name, int *num_songs )
 	(*num_songs) = 1;
 	s = (song_t **)malloc(sizeof(song_t *));
 	s[0] = (song_t *)malloc(sizeof(song_t));
-	sprintf(s[0]->m_file_name, "Radio:%f", freq);
-	strcpy(s[0]->m_title, s[0]->m_file_name);
+	sprintf(s[0]->m_file_name, "radio:%f", freq);
+	rad_set_song_title(s[0]->m_title, s[0]->m_file_name);
 	s[0]->m_len = 0;
 	s[0]->m_info = NULL;
 	s[0]->m_inp = NULL;
@@ -193,6 +201,7 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_flags = INP_NO_OUTP;
 	fl->m_pause = rad_pause;
 	fl->m_resume = rad_resume;
+	fl->m_set_song_title = rad_set_song_title;
 } /* End of 'inp_get_func_list' function */
 
 /* Save variables list */

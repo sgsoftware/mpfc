@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC AudioCD input plugin. Interface for main
  *               stuff.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 11.09.2003
+ * LAST UPDATE : 11.11.2003
  * NOTE        : Module prefix 'acd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -47,6 +47,9 @@ extern int acd_num_tracks;
 extern int acd_cur_track;
 extern bool_t acd_info_read;
 
+/* Message printer */
+extern void (*acd_print_msg)( char *msg );
+
 /* Get track start frame offset */
 #define acd_get_trk_offset(t) \
 	((acd_tracks_info[t].m_start_min * 60 + \
@@ -61,6 +64,12 @@ extern bool_t acd_info_read;
 
 /* Get song info */
 bool_t acd_get_info( char *filename, song_info_t *info );
+
+/* Set song title */
+void acd_set_song_title( char *buf, char *filename );
+
+/* Print message */
+void acd_print( char *format, ... );
 
 #endif
 

@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Audio CD input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 11.09.2003
+ * LAST UPDATE : 11.11.2003
  * NOTE        : Module prefix 'acd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -28,6 +28,7 @@
 #include <linux/cdrom.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 #include <sys/ioctl.h>
 #include <sys/fcntl.h>
 #include <sys/soundcard.h>
@@ -41,7 +42,8 @@
 #include "util.h"
 
 /* Get track number from filename */
-#define acd_fname2trk(name) (atoi(&name[6]) - 1)
+#define acd_fname2trk(name) (strncmp(name, "audiocd:track", 13) ? -1 : \
+		atoi(&(name)[13]) - 1)
 
 /* Calculate track length */
 #define acd_get_trk_len(trk) \
@@ -60,6 +62,12 @@ bool_t acd_info_read = FALSE;
 
 /* Current time */
 int acd_time = 0;
+
+/* Whether running first time? */
+bool_t acd_first_time = TRUE;
+
+/* Message printer */
+void (*acd_print_msg)( char *msg );
 
 /* Prepare cdrom for ioctls */
 int acd_prepare_cd( void )
@@ -174,60 +182,87 @@ song_t **acd_init_obj_songs( char *name, int *num_songs )
 	int fd, i, j;
 	struct cdrom_tochdr toc;
 	struct cdrom_tocentry entry;
+	int track;
 
-	/* Free CDDB data */
-	cddb_free();
+	/* Get track number that we want to add */
+	if (!*name)
+		track = 0;
+	else if (strncmp(name, "track", 5))
+	{
+		*num_songs = 0;
+		return NULL;
+	}
+	else
+		track = atoi(&name[5]);
 
 	/* Open cdrom device */
 	(*num_songs) = 0;
 	if ((fd = acd_prepare_cd()) < 0)
 		return NULL;
-	
+
+	/* Free CDDB data */
+	cddb_free();
+
 	/* Read tracks information */
-	ioctl(fd, CDROMREADTOCHDR, &toc);
-	acd_num_tracks = toc.cdth_trk1 - toc.cdth_trk0 + 1;
-	entry.cdte_format = CDROM_MSF;
-	for ( i = 0; i < acd_num_tracks; i ++ )
+	if (acd_first_time || ioctl(fd, CDROM_MEDIA_CHANGED, 0))
 	{
-		entry.cdte_track = i + toc.cdth_trk0;
+		ioctl(fd, CDROMREADTOCHDR, &toc);
+		acd_num_tracks = toc.cdth_trk1 - toc.cdth_trk0 + 1;
+		entry.cdte_format = CDROM_MSF;
+		for ( i = 0; i < acd_num_tracks; i ++ )
+		{
+			entry.cdte_track = i + toc.cdth_trk0;
+			ioctl(fd, CDROMREADTOCENTRY, &entry);
+			acd_tracks_info[i].m_start_min = entry.cdte_addr.msf.minute;
+			acd_tracks_info[i].m_start_sec = entry.cdte_addr.msf.second;
+			acd_tracks_info[i].m_start_frm = entry.cdte_addr.msf.frame;
+			acd_tracks_info[i].m_data = entry.cdte_ctrl & CDROM_DATA_TRACK;
+			acd_tracks_info[i].m_number = i + toc.cdth_trk0;
+		}
+		for ( i = 0; i < acd_num_tracks - 1; i ++ )
+		{
+			acd_tracks_info[i].m_end_min = acd_tracks_info[i + 1].m_start_min;
+			acd_tracks_info[i].m_end_sec = acd_tracks_info[i + 1].m_start_sec;
+			acd_tracks_info[i].m_end_frm = acd_tracks_info[i + 1].m_start_frm;
+			acd_tracks_info[i].m_len = acd_get_trk_len(i);
+		}
+		entry.cdte_track = CDROM_LEADOUT;
 		ioctl(fd, CDROMREADTOCENTRY, &entry);
-		acd_tracks_info[i].m_start_min = entry.cdte_addr.msf.minute;
-		acd_tracks_info[i].m_start_sec = entry.cdte_addr.msf.second;
-		acd_tracks_info[i].m_start_frm = entry.cdte_addr.msf.frame;
-		acd_tracks_info[i].m_data = entry.cdte_ctrl & CDROM_DATA_TRACK;
-		acd_tracks_info[i].m_number = i + toc.cdth_trk0;
-		if (!acd_tracks_info[i].m_data)
-			(*num_songs) ++;
-	}
-	for ( i = 0; i < acd_num_tracks - 1; i ++ )
-	{
-		acd_tracks_info[i].m_end_min = acd_tracks_info[i + 1].m_start_min;
-		acd_tracks_info[i].m_end_sec = acd_tracks_info[i + 1].m_start_sec;
-		acd_tracks_info[i].m_end_frm = acd_tracks_info[i + 1].m_start_frm;
+		acd_tracks_info[i].m_end_min = entry.cdte_addr.msf.minute;
+		acd_tracks_info[i].m_end_sec = entry.cdte_addr.msf.second;
+		acd_tracks_info[i].m_end_frm = entry.cdte_addr.msf.frame;
+		acd_tracks_info[i].m_end_min = entry.cdte_addr.msf.minute;
 		acd_tracks_info[i].m_len = acd_get_trk_len(i);
+		acd_first_time = FALSE;
 	}
-	entry.cdte_track = CDROM_LEADOUT;
-	ioctl(fd, CDROMREADTOCENTRY, &entry);
-	acd_tracks_info[i].m_end_min = entry.cdte_addr.msf.minute;
-	acd_tracks_info[i].m_end_sec = entry.cdte_addr.msf.second;
-	acd_tracks_info[i].m_end_frm = entry.cdte_addr.msf.frame;
-	acd_tracks_info[i].m_end_min = entry.cdte_addr.msf.minute;
-	acd_tracks_info[i].m_len = acd_get_trk_len(i);
+
+	/* Determine number of songs */
+	for ( i = 0; i < acd_num_tracks; i ++ )
+		if (!acd_tracks_info[i].m_data && (!track || i == track - 1))
+			(*num_songs) ++;
+			
+	/* Return nothing if no tracks are about to be added */
+	if (!(*num_songs) || (track && (track < 0 || track > acd_num_tracks)))
+		return NULL;
 
 	/* Initialize songs */
 	s = (song_t **)malloc((*num_songs) * sizeof(song_t *));
-	for ( i = 0, j = 0; i < acd_num_tracks; i ++ )
+	for ( i = !track ? 0 : track - 1, j = 0; i < acd_num_tracks; i ++ )
 	{
 		song_t *song;
 			
 		if (acd_tracks_info[i].m_data)
 			continue;
 		s[j ++] = song = (song_t *)malloc(sizeof(song_t));
-		sprintf(song->m_file_name, "Track %02i", acd_tracks_info[i].m_number);
-		strcpy(song->m_title, song->m_file_name);
+		sprintf(song->m_file_name, "audiocd:track%02d", 
+				acd_tracks_info[i].m_number);
+		acd_set_song_title(song->m_title, song->m_file_name);
 		song->m_len = acd_tracks_info[i].m_len;
 		song->m_inp = NULL;
 		song->m_info = NULL;
+
+		if (track)
+			break;
 	}
 
 	/* Close device */
@@ -373,6 +408,16 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_get_cur_time = acd_get_cur_time;
 	fl->m_get_info = acd_get_info;
 	fl->m_save_info = acd_save_info;
+	fl->m_set_song_title = acd_set_song_title;
+	acd_print_msg = fl->m_print_msg;
+
+	fl->m_num_spec_funcs = 2;
+	fl->m_spec_funcs = (inp_spec_func_t *)malloc(sizeof(inp_spec_func_t) * 
+			fl->m_num_spec_funcs);
+	fl->m_spec_funcs[0].m_title = strdup("Reload info from CDDB");
+	fl->m_spec_funcs[0].m_func = cddb_reload;
+	fl->m_spec_funcs[1].m_title = strdup("Submit info to CDDB");
+	fl->m_spec_funcs[1].m_func = cddb_submit;
 } /* End of 'inp_get_func_list' function */
 
 /* Save variables list */
@@ -380,6 +425,27 @@ void inp_set_vars( cfg_list_t *list )
 {
 	acd_var_list = list;
 } /* End of 'inp_set_vars' function */
+
+/* Print message */
+void acd_print( char *format, ... )
+{
+	char msg[1024];
+	va_list ap;
+
+	va_start(ap, format);
+	vsprintf(msg, format, ap);
+	va_end(ap);
+	
+	if (acd_print_msg != NULL)
+		acd_print_msg(msg);
+} /* End of 'acd_print' function */
+
+/* Set song title */
+void acd_set_song_title( char *buf, char *filename )
+{
+	int track = acd_fname2trk(filename);
+	sprintf(buf, "Track %02d", track + 1);
+} /* End of 'acd_set_song_title' function */
 
 /* End of 'audiocd.c' file */
 

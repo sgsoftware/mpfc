@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Songs manipulation functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 17.10.2003
+ * LAST UPDATE : 14.11.2003
  * NOTE        : Module prefix 'song'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -164,10 +164,7 @@ void song_get_title_from_info( song_t *song )
 	info = song->m_info;
 	if (info == NULL || !info->m_not_own_present || info->m_only_own)
 	{
-		int i;
-		for ( i = strlen(song->m_file_name) - 1; 
-				(i >= 0) && (song->m_file_name[i] != '/'); i -- );
-		strcpy(song->m_title, &song->m_file_name[i + 1]);
+		inp_set_song_title(song->m_inp, song->m_title, song->m_file_name);
 		if (cfg_get_var_int(cfg_list, "convert-underscores2spaces"))
 			util_under2spaces(song->m_title);
 		return;
