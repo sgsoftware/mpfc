@@ -5,7 +5,7 @@
 /* FILE NAME   : combobox.h
  * PURPOSE     : SG MPFC. Interface for combo box functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 13.08.2003
+ * LAST UPDATE : 9.11.2003
  * NOTE        : Module prefix 'cbox'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -54,6 +54,12 @@ typedef struct
 
 	/* Is list expanded? */
 	bool_t m_expanded;
+
+	/* Whether current item is changed? */
+	bool_t m_changed;
+
+	/* Whether item is grayed when not changed */
+	bool_t m_grayed;
 } combobox_t;
 
 /* Create a new combo box */

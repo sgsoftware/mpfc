@@ -5,7 +5,7 @@
 /* FILE NAME   : editbox.h
  * PURPOSE     : SG MPFC. Interface for edit box functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 1.11.2003
+ * LAST UPDATE : 9.11.2003
  * NOTE        : Module prefix 'ebox'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -52,6 +52,9 @@ typedef struct
 
 	/* Whether text was changed after using history */
 	bool_t m_changed;
+
+	/* Whether text must be grayed when not changed */
+	bool_t m_grayed;
 	
 	/* Last pressed key */
 	int m_last_key;

@@ -370,7 +370,7 @@ void id3_v1_next_frame( id3_tag_data_t *tag, id3_frame_t *frame )
 /* Read next frame in ID3V2 */
 void id3_v2_next_frame( id3_tag_data_t *tag, id3_frame_t *frame )
 {
-	dword size;
+	long size;
 	word flags;
 
 	/* Check if any frames are left in stream */
@@ -412,6 +412,15 @@ void id3_v2_next_frame( id3_tag_data_t *tag, id3_frame_t *frame )
 	/* Alias frame name */
 	if (!strcmp(frame->m_name, "TDRC"))
 		strcpy(frame->m_name, ID3_FRAME_YEAR);
+
+	/* Check bounds */
+	if (tag->m_cur_frame + size > tag->m_stream + tag->m_stream_len ||
+			tag->m_cur_frame < tag->m_stream || size < 0)
+	{
+		strcpy(frame->m_name, ID3_FRAME_FINISHED);
+		frame->m_val = NULL;
+		return;
+	}
 
 	/* Save frame value */
 	if (size)
@@ -499,8 +508,9 @@ void id3_v2_set_frame( id3_tag_data_t *tag, char *name, char *val )
 		}
 		
 		/* Write */
+		memset(p, 0, new_size + 10);
+		memcpy(p, name, 4);
 		*(dword *)(p + 4) = ID3_CONVERT_TO_SYNCHSAFE(new_size);
-		memset(p + 10, 0, new_size);
 		memcpy(p + 11, val, len);
 		*(dword *)(tag->m_stream + 6) = ID3_CONVERT_TO_SYNCHSAFE(
 				tag->m_stream_len - 

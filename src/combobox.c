@@ -5,7 +5,7 @@
 /* FILE NAME   : combobox.c
  * PURPOSE     : SG MPFC. Combo box functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 13.08.2003
+ * LAST UPDATE : 9.11.2003
  * NOTE        : Module prefix 'cbox'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -84,6 +84,8 @@ bool_t cbox_init( combobox_t *wnd, wnd_t *parent, int x, int y, int width,
 	wnd->m_list_height = height - 1;
 	wnd->m_scrolled = 0;
 	wnd->m_expanded = FALSE;
+	wnd->m_changed = FALSE;
+	wnd->m_grayed = FALSE;
 	WND_OBJ(wnd)->m_flags |= (WND_ITEM | WND_INITIALIZED);
 	return TRUE;
 } /* End of 'cbox_init' function */
@@ -121,7 +123,8 @@ void cbox_display( wnd_t *wnd, dword data )
 	wnd_printf(wnd, "%s", cb->m_label);
 
 	/* Display edit box */
-	col_set_color(wnd, COL_EL_DLG_ITEM_CONTENT);
+	col_set_color(wnd, (!cb->m_changed && cb->m_grayed) ?
+			COL_EL_DLG_ITEM_GRAYED : COL_EL_DLG_ITEM_CONTENT);
 	wnd_printf(wnd, "%s", cb->m_text);
 	col_set_color(wnd, COL_EL_DEFAULT);
 
@@ -256,6 +259,7 @@ void cbox_add_ch( combobox_t *cb, char ch )
 	cb->m_text[cb->m_edit_cursor] = ch;
 	cb->m_edit_cursor ++;
 	cb->m_text_len ++;
+	cb->m_changed = TRUE;
 
 	/* Update list box */
 	cbox_edit2list(cb);
@@ -275,6 +279,7 @@ void cbox_del_ch( combobox_t *cb, bool_t before_cursor )
 		return;
 	memmove(&cb->m_text[i], &cb->m_text[i + 1], cb->m_text_len - i);
 	cb->m_text_len --;
+	cb->m_changed = TRUE;
 
 	/* Move cursor */
 	if (before_cursor)
@@ -333,6 +338,7 @@ void cbox_move_list_cursor( combobox_t *cb, bool_t rel, int pos, bool_t expand,
 	else if (cb->m_list_cursor >= cb->m_scrolled + cb->m_list_height)
 		cb->m_scrolled = (rel) ? cb->m_list_cursor - cb->m_list_height + 1:
 			cb->m_list_cursor;
+	cb->m_changed = TRUE;
 
 	/* Update edit box */
 	if (change_edit)

@@ -5,7 +5,7 @@
 /* FILE NAME   : editbox.c
  * PURPOSE     : SG MPFC. Edit box functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 1.11.2003
+ * LAST UPDATE : 9.11.2003
  * NOTE        : Module prefix 'ebox'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -82,6 +82,7 @@ bool_t ebox_init( editbox_t *wnd, wnd_t *parent, int x, int y, int width,
 	wnd->m_scrolled = 0;
 	wnd->m_hist_list = NULL;
 	wnd->m_changed = FALSE;
+	wnd->m_grayed = FALSE;
 	strcpy(wnd->m_text_before_hist, wnd->m_text);
 	((wnd_t *)wnd)->m_wnd_destroy = ebox_destroy;
 	WND_OBJ(wnd)->m_flags |= (WND_ITEM | WND_INITIALIZED);
@@ -106,7 +107,8 @@ void ebox_display( wnd_t *wnd, dword data )
 	wnd_printf(wnd, "%s", box->m_label);
 
 	/* Print edit box text */
-	col_set_color(wnd, COL_EL_DLG_ITEM_CONTENT);
+	col_set_color(wnd, (!box->m_changed && box->m_grayed) ?
+			COL_EL_DLG_ITEM_GRAYED : COL_EL_DLG_ITEM_CONTENT);
 	wnd_printf(wnd, "%s\n", &box->m_text[box->m_scrolled]);
 	col_set_color(wnd, COL_EL_DEFAULT);
 

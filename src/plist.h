@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for play list manipulation
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 2.10.2003
+ * LAST UPDATE : 8.11.2003
  * NOTE        : Module prefix 'plist'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -82,6 +82,11 @@ typedef struct
 	(((pl)->m_sel_start < (pl)->m_sel_end) ? ((start) = (pl)->m_sel_start, \
 	 	(end) = (pl)->m_sel_end) : ((end) = (pl)->m_sel_start, \
 	 	(start) = (pl)->m_sel_end))
+
+/* Check if there exists song information */
+#define PLIST_HAS_INFO(s) (!((s)->m_info == NULL || \
+			(!(s)->m_info->m_not_own_present && \
+			 !(*((s)->m_info->m_own_data)))))
 
 /* Create a new play list */
 plist_t *plist_new( int start_pos, int height );

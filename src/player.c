@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG MPFC. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 9.10.2003
+ * LAST UPDATE : 9.11.2003
  * NOTE        : Module prefix 'player'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -910,7 +910,12 @@ void player_info_dialog( void )
 	editbox_t *name, *album, *artist, *year, *comments, *track;
 	combobox_t *genre;
 	genre_list_t *glist;
-	int i, y = 1;
+	int i, j, y = 1;
+	int start, end;
+	bool_t name_common = TRUE, album_common = TRUE, artist_common = TRUE, 
+			year_common = TRUE,	comments_common = TRUE, track_common = TRUE, 
+			genre_common = TRUE;
+	bool_t local = FALSE;
 
 	/* Get song object */
 	if (player_plist->m_sel_end < 0 || !player_plist->m_len)
@@ -918,12 +923,82 @@ void player_info_dialog( void )
 	else
 		s = player_plist->m_list[player_plist->m_sel_end];
 
-	/* Update song information */
-	song_update_info(s);
+	/* Ask whether to edit info locally in case of multi selection */
+	if (player_plist->m_sel_end != player_plist->m_sel_start)
+	{
+		choice_ctrl_t *ch;
+		int choice;
+		
+		ch = choice_new(wnd_root, 0, wnd_root->m_height - 1, wnd_root->m_width,
+			1, _("Info edit locally? (Yes/No)"), "yn");
+		if (ch == NULL)
+			return;
+		wnd_run(ch);
+		choice = ch->m_choice;
+		wnd_destroy(ch);
+		if (!CHOICE_VALID(choice))
+			return;
+		local = (choice == 'y');
+	}
+	
+	/* Update songs information */
+	PLIST_GET_SEL(player_plist, start, end);
+	if (local)
+	{
+		song_update_info(s);
+		if (!PLIST_HAS_INFO(s))
+			return;
+	}
+	else
+	{
+		if (!PLIST_HAS_INFO(s))
+			s = NULL;
+		
+		for ( i = start; i <= end; i ++ )
+		{
+			song_t *song = player_plist->m_list[i];
+			
+			song_update_info(song);
+			if (!PLIST_HAS_INFO(song))
+				continue;
+			if (s == NULL)
+				s = song;
 
-	/* Check if there exists song information */
-	if (s->m_info == NULL || 
-			(!s->m_info->m_not_own_present && !(*(s->m_info->m_own_data))))
+			/* Check for differences */
+			for ( j = start; j < i; j ++ )
+			{
+				song_info_t *i1 = song->m_info, 
+							*i2 = player_plist->m_list[j]->m_info;
+
+				if (!PLIST_HAS_INFO(player_plist->m_list[j]))
+					continue;
+
+				if (name_common && strcmp(i1->m_name, i2->m_name))
+					name_common = FALSE;
+				if (artist_common && strcmp(i1->m_artist, i2->m_artist))
+					artist_common = FALSE;
+				if (album_common && strcmp(i1->m_album, i2->m_album))
+					album_common = FALSE;
+				if (year_common && strcmp(i1->m_year, i2->m_year))
+					year_common = FALSE;
+				if (genre_common && (i1->m_genre != i2->m_genre ||
+							(i1->m_genre == GENRE_ID_UNKNOWN &&
+							 i1->m_genre_data.m_data != 
+							 	i2->m_genre_data.m_data) ||
+							i1->m_genre == GENRE_ID_OWN_STRING &&
+							strcmp(i1->m_genre_data.m_text,
+								i2->m_genre_data.m_text)))
+					genre_common = FALSE;
+				if (track_common && strcmp(i1->m_track, i2->m_track))
+					track_common = FALSE;
+				if (comments_common && strcmp(i1->m_comments, i2->m_comments))
+					comments_common = FALSE;
+			}
+		}
+	}
+
+	/* If there are no songs to edit info - exit */
+	if (s == NULL)
 		return;
 
 	/* Create info dialog */
@@ -955,6 +1030,15 @@ void player_info_dialog( void )
 				s->m_info->m_genre, FALSE, TRUE);
 		if (s->m_info->m_genre == GENRE_ID_OWN_STRING)
 			cbox_set_text(genre, s->m_info->m_genre_data.m_text);
+
+		/* Set commonness flags */
+		name->m_grayed = !name_common;
+		artist->m_grayed = !artist_common;
+		album->m_grayed = !album_common;
+		year->m_grayed = !year_common;
+		track->m_grayed = !track_common;
+		comments->m_grayed = !comments_common;
+		genre->m_grayed = !genre_common;
 	}
 
 	/* Display own data */
@@ -967,27 +1051,55 @@ void player_info_dialog( void )
 	/* Save */
 	if (dlg->m_ok)
 	{
-		/* Remember information */
-		strcpy(s->m_info->m_name, name->m_text);
-		strcpy(s->m_info->m_artist, artist->m_text);
-		strcpy(s->m_info->m_album, album->m_text);
-		strcpy(s->m_info->m_year, year->m_text);
-		strcpy(s->m_info->m_comments, comments->m_text);
-		strcpy(s->m_info->m_track, track->m_text);
-		if (genre->m_list_cursor < 0)
-		{
-			s->m_info->m_genre = GENRE_ID_OWN_STRING;
-			strcpy(s->m_info->m_genre_data.m_text, genre->m_text);
-		}
-		else
-			s->m_info->m_genre = genre->m_list_cursor;
-		s->m_info->m_not_own_present = TRUE;
-	
-		/* Get song length and information at first */
-		inp_save_info(song_get_inp(s), s->m_file_name, s->m_info);
+		char msg[512];
 
-		/* Update */
-		song_update_info(s);
+		/* Remember information */
+		for ( i = start; i <= end; i ++ )
+		{
+			if (!local)
+			{
+				s = player_plist->m_list[i];
+				if (!PLIST_HAS_INFO(s))
+					continue;
+			}
+			if (name->m_changed)
+				strcpy(s->m_info->m_name, name->m_text);
+			if (artist->m_changed)
+				strcpy(s->m_info->m_artist, artist->m_text);
+			if (album->m_changed)
+				strcpy(s->m_info->m_album, album->m_text);
+			if (year->m_changed)
+				strcpy(s->m_info->m_year, year->m_text);
+			if (comments->m_changed)
+				strcpy(s->m_info->m_comments, comments->m_text);
+			if (track->m_changed)
+				strcpy(s->m_info->m_track, track->m_text);
+			if (genre->m_changed)
+			{
+				if (genre->m_list_cursor < 0)
+				{
+					s->m_info->m_genre = GENRE_ID_OWN_STRING;
+					strcpy(s->m_info->m_genre_data.m_text, genre->m_text);
+				}
+				else
+					s->m_info->m_genre = genre->m_list_cursor;
+			}
+			s->m_info->m_not_own_present = TRUE;
+		
+			/* Save info */
+			sprintf(msg, _("Saving info to file %s"), 
+					util_get_file_short_name(s->m_file_name));
+			player_print_msg(msg);
+			inp_save_info(song_get_inp(s), s->m_file_name, s->m_info);
+			player_print_msg(_("Saved"));
+
+			/* Update */
+			song_update_info(s);
+
+			/* Break if local */
+			if (local)
+				break;
+		}
 	}
 	
 	wnd_destroy(dlg);
