@@ -54,6 +54,7 @@ typedef enum
 	WND_FLAG_MAXIMIZED		= 1 << 6,
 	WND_FLAG_NORESIZE		= 1 << 7,
 	WND_FLAG_INITIALIZED	= 1 << 8,
+	WND_FLAG_NOPARENTCLIP	= 1 << 9,
 } wnd_flags_t;
 
 /* States for pushing/popping */
@@ -189,7 +190,9 @@ struct tag_wnd_t
 					  *m_on_mouse_rdown,
 					  *m_on_mouse_ldouble,
 					  *m_on_mouse_mdouble,
-					  *m_on_mouse_rdouble;
+					  *m_on_mouse_rdouble,
+					  *m_on_loose_focus,
+					  *m_on_get_focus;
 
 	/* Window destructors chain. It is implemented like message handlers,
 	 * though it is not called by dispatcher. */
@@ -286,7 +289,9 @@ struct tag_wnd_t
 /* Do post-initialization code */
 #define wnd_postinit(wnd) \
 	WND_FLAGS(wnd) |= WND_FLAG_INITIALIZED;	\
-	wnd_invalidate(WND_OBJ(wnd)->m_parent);
+	wnd_set_global_focus(WND_GLOBAL(wnd)); \
+	wnd_global_update_visibility(WND_ROOT(wnd)); \
+	wnd_invalidate(WND_OBJ(wnd));
 
 /* Initialize window system */
 wnd_t *wnd_init( cfg_node_t *cfg_list );

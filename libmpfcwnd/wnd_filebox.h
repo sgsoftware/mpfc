@@ -60,6 +60,10 @@ filebox_t *filebox_new( wnd_t *parent, char *id, char *text, int width );
 bool_t filebox_construct( filebox_t *fb, wnd_t *parent, char *id, char *text, 
 		int width );
 
+/* Create an edit box with label */
+filebox_t *filebox_new_with_label( wnd_t *parent, char *title, char *id,
+		char *text, int width );
+
 /* Destructor */
 void filebox_destructor( wnd_t *wnd );
 

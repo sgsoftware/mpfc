@@ -89,8 +89,11 @@ void wnd_putc( wnd_t *wnd, dword ch )
 	/* Print character */
 	if (wnd_pos_visible(wnd, wnd->m_cursor_x, wnd->m_cursor_y, &pos))
 	{
+		short fg = wnd->m_fg_color, bg = wnd->m_bg_color - 1;
+		if (bg < 0)
+			bg += WND_COLOR_NUMBER;
 		pos->m_attr = wnd->m_attrib | 
-			COLOR_PAIR(wnd->m_fg_color * WND_COLOR_NUMBER + wnd->m_bg_color);
+			COLOR_PAIR(fg * WND_COLOR_NUMBER + bg);
 		pos->m_char = ch;
 	}
 

@@ -144,8 +144,7 @@ wnd_t *wnd_init( cfg_node_t *cfg_list )
 	global->m_mouse_data = mouse_data;
 	
 	/* Send display message to this window */
-	WND_FLAGS(wnd_root) |= WND_FLAG_INITIALIZED;
-	wnd_invalidate(wnd_root);
+	wnd_postinit(wnd_root);
 	return wnd_root;
 
 	/* Code for handling some step failing */
@@ -305,7 +304,6 @@ bool_t wnd_construct( wnd_t *wnd, wnd_t *parent, char *title, int x, int y,
 		wnd->m_zval = 0;
 		wnd->m_lower_sibling = NULL;
 	}
-	WND_FOCUS(wnd) = wnd;
 
 	/* Write information of us into the windows hierarchy */
 	if (parent != NULL)
@@ -321,9 +319,6 @@ bool_t wnd_construct( wnd_t *wnd, wnd_t *parent, char *title, int x, int y,
 		}
 		parent->m_num_children ++;
 	}
-
-	/* Update the visibility information */
-	wnd_global_update_visibility(WND_ROOT(wnd));
 
 	/* Initialize message map */
 	wnd_msg_add_handler(wnd, "display", wnd_default_on_display);
@@ -432,6 +427,8 @@ void wnd_init_pairs( void )
 		short cfg, cbg;
 		wnd_color_t fg = i / WND_COLOR_NUMBER;
 		wnd_color_t bg = i % WND_COLOR_NUMBER;
+		bg ++;
+		bg %= WND_COLOR_NUMBER;
 
 		/* Convert our colors to NCURSES */
 		cfg = wnd_color_our2curses(fg);
@@ -1113,10 +1110,18 @@ void wnd_repos_internal( wnd_t *wnd, int x, int y, int w, int h )
 	wnd->m_y = y;
 	wnd->m_width = w;
 	wnd->m_height = h;
-	wnd->m_screen_x = wnd->m_parent->m_screen_x + 
-		wnd->m_parent->m_client_x + x;
-	wnd->m_screen_y = wnd->m_parent->m_screen_y + 
-		wnd->m_parent->m_client_y + y;
+	if (wnd->m_parent != NULL)
+	{
+		wnd->m_screen_x = wnd->m_parent->m_screen_x + 
+			wnd->m_parent->m_client_x + x;
+		wnd->m_screen_y = wnd->m_parent->m_screen_y + 
+			wnd->m_parent->m_client_y + y;
+	}
+	else
+	{
+		wnd->m_screen_x = x;
+		wnd->m_screen_y = y;
+	}
 	wnd->m_client_w += dw;
 	wnd->m_client_h += dh;
 	wnd_calc_real_pos(wnd);
@@ -1175,12 +1180,20 @@ void wnd_toggle_maximize( wnd_t *wnd )
 /* Reset the global focus */
 void wnd_set_global_focus( wnd_global_data_t *global )
 {
-	wnd_t *wnd;
+	wnd_t *wnd, *was_focus = global->m_focus;
 
 	assert(global);
 	for ( wnd = global->m_root; wnd->m_child != NULL; 
 			wnd = wnd->m_focus_child );
 	global->m_focus = wnd;
+
+	/* Send respective messages */
+	if (wnd != was_focus)
+	{
+		if (was_focus != NULL)
+			wnd_msg_send(was_focus, "loose_focus", wnd_msg_loose_focus_new());
+		wnd_msg_send(wnd, "get_focus", wnd_msg_get_focus_new());
+	}
 } /* End of 'wnd_set_global_focus' function */
 
 /* Redisplay the screen (discarding all the optimization stuff) */
@@ -1266,6 +1279,21 @@ void wnd_calc_real_pos( wnd_t *wnd )
 	wnd->m_real_right = wnd->m_screen_x + wnd->m_width;
 	wnd->m_real_top = wnd->m_screen_y;
 	wnd->m_real_bottom = wnd->m_screen_y + wnd->m_height;
+
+	/* Clip only with screen boundaries when no-clip-by-parent flag
+	 * is set */
+	if (WND_FLAGS(wnd) & WND_FLAG_NOPARENTCLIP)
+	{
+		if (wnd->m_real_left < 0)
+			wnd->m_real_left = 0;
+		if (wnd->m_real_right >= WND_ROOT(wnd)->m_width)
+			wnd->m_real_right = WND_ROOT(wnd)->m_width - 1;
+		if (wnd->m_real_top < 0)
+			wnd->m_real_top = 0;
+		if (wnd->m_real_bottom >= WND_ROOT(wnd)->m_height)
+			wnd->m_real_bottom = WND_ROOT(wnd)->m_height - 1;
+		return;
+	}
 
 	/* Clip with ancestors boundaries */
 	if (parent != NULL)

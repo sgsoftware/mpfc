@@ -39,6 +39,9 @@ typedef struct
 	/* Dialog item part */
 	dlgitem_t m_wnd;
 
+	/* Message handlers */
+	wnd_msg_handler_t *m_on_changed;
+
 	/* Edit box text */
 	str_t *m_text;
 
@@ -50,6 +53,10 @@ typedef struct
 
 	/* The desired width */
 	int m_width;
+
+	/* Grayed flag (this flag is used when edit box represents multiple
+	 * different texts; it is reset with the first text modification) */
+	bool_t m_grayed;
 } editbox_t;
 
 /* Convert window object to edit box type */
@@ -65,6 +72,10 @@ editbox_t *editbox_new( wnd_t *parent, char *id, char *text, int width );
 /* Edit box constructor */
 bool_t editbox_construct( editbox_t *eb, wnd_t *parent, char *id, char *text,
 		int width );
+
+/* Create an edit box with label */
+editbox_t *editbox_new_with_label( wnd_t *parent, char *title, char *id,
+		char *text, int width );
 
 /* Destructor */
 void editbox_destructor( wnd_t *wnd );
@@ -93,6 +104,20 @@ wnd_msg_retcode_t editbox_on_keydown( wnd_t *wnd, wnd_key_t key );
 /* 'mouse_ldown' message handler */
 wnd_msg_retcode_t editbox_on_mouse( wnd_t *wnd, int x, int y,
 		wnd_mouse_button_t mb, wnd_mouse_event_t type );
+
+/*
+ * Class functions
+ */
+
+/* Create edit box class */
+wnd_class_t *editbox_class_init( wnd_global_data_t *global );
+
+/* Get message information */
+wnd_msg_handler_t **editbox_get_msg_info( wnd_t *wnd, char *msg_name,
+		wnd_class_msg_callback_t *callback );
+
+/* Aliases for creating message data */
+#define editbox_changed_new		wnd_msg_noargs_new
 
 #endif
 

@@ -53,6 +53,8 @@ wnd_msg_data_t wnd_msg_noargs_new( void );
 #define wnd_msg_display_new 	wnd_msg_noargs_new 
 #define wnd_msg_close_new		wnd_msg_noargs_new 
 #define wnd_msg_erase_back_new	wnd_msg_noargs_new 
+#define wnd_msg_loose_focus_new	wnd_msg_noargs_new
+#define wnd_msg_get_focus_new	wnd_msg_noargs_new
 
 /* Callback function for no-arguments messages */
 wnd_msg_retcode_t wnd_basic_callback_noargs( wnd_t *wnd,

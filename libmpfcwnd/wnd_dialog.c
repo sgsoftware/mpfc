@@ -63,6 +63,7 @@ dialog_t *dialog_new( wnd_t *parent, char *title )
 		return NULL;
 	}
 	WND_OBJ(dlg)->m_flags |= WND_FLAG_INITIALIZED;
+	wnd_postinit(dlg);
 	return dlg;
 } /* End of 'dialog_new' function */
 
@@ -142,6 +143,17 @@ void dialog_arrange_children( dialog_t *dlg )
 
 	/* Set child position */
 	dlgitem_set_pos(child, 0, 0, width, height);
+
+	/* Set focus to the first child */
+	for ( child = DLGITEM_OBJ(WND_OBJ(dlg->m_vbox)->m_child); child != NULL; 
+			child = DLGITEM_OBJ(WND_OBJ(child)->m_next) )
+	{
+		if (!(DLGITEM_FLAGS(child) & DLGITEM_PACK_END))
+			break;
+	}
+	while (DLGITEM_FLAGS(child) & DLGITEM_NOTABSTOP)
+		child = dialog_iterate_items(dlg, child, FALSE);
+	wnd_set_focus(WND_OBJ(child));
 
 	/* Repaint dialog */
 	wnd_global_update_visibility(WND_ROOT(wnd));

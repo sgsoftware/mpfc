@@ -38,18 +38,28 @@
 #include "wnd.h"
 #include "wnd_editbox.h"
 #include "wnd_filebox.h"
+#include "wnd_hbox.h"
 
 /* Create a new file box */
 filebox_t *filebox_new( wnd_t *parent, char *id, char *text, int width )
 {
 	filebox_t *fb;
+	wnd_class_t *klass;
 
 	/* Allocate memory */
 	fb = (filebox_t *)malloc(sizeof(*fb));
 	if (fb == NULL)
 		return NULL;
 	memset(fb, 0, sizeof(*fb));
-	WND_OBJ(fb)->m_class = wnd_basic_class_init(WND_GLOBAL(parent));
+
+	/* Initialize class */
+	klass = editbox_class_init(WND_GLOBAL(parent));
+	if (klass == NULL)
+	{
+		free(fb);
+		return NULL;
+	}
+	WND_OBJ(fb)->m_class = klass;
 
 	/* Initialize file box */
 	if (!filebox_construct(fb, parent, id, text, width ))
@@ -77,6 +87,16 @@ bool_t filebox_construct( filebox_t *fb, wnd_t *parent, char *id, char *text,
 	return TRUE;
 } /* End of 'filebox_construct' function */
 
+/* Create an edit box with label */
+filebox_t *filebox_new_with_label( wnd_t *parent, char *title, char *id,
+		char *text, int width )
+{
+	hbox_t *hbox;
+	hbox = hbox_new(parent, NULL, 0);
+	label_new(WND_OBJ(hbox), title);
+	return filebox_new(WND_OBJ(hbox), id, text, width);
+} /* End of 'filebox_new_with_label' function */
+
 /* Destructor */
 void filebox_destructor( wnd_t *wnd )
 {
@@ -97,6 +117,7 @@ wnd_msg_retcode_t filebox_on_keydown( wnd_t *wnd, wnd_key_t key )
 
 	/* Insert the next name */
 	filebox_insert_next(fb);
+	wnd_msg_send(wnd, "changed", editbox_changed_new());
 	wnd_invalidate(wnd);
 	return WND_MSG_RETCODE_STOP;
 } /* End of 'filebox_on_keydown' function */

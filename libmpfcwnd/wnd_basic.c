@@ -114,6 +114,18 @@ wnd_msg_handler_t **wnd_basic_get_msg_info( wnd_t *wnd, char *name,
 			(*callback) = wnd_basic_callback_mouse;
 		return &wnd->m_on_mouse_rdouble;
 	}
+	else if (!strcmp(name, "loose_focus"))
+	{
+		if (callback != NULL)
+			(*callback) = wnd_basic_callback_noargs;
+		return &wnd->m_on_loose_focus;
+	}
+	else if (!strcmp(name, "get_focus"))
+	{
+		if (callback != NULL)
+			(*callback) = wnd_basic_callback_noargs;
+		return &wnd->m_on_get_focus;
+	}
 	return NULL;
 } /* End of 'wnd_basic_get_msg_info' function */
 
