@@ -164,18 +164,6 @@ int wav_get_len( char *filename )
 	return len;
 } /* End of 'wav_get_len' function */
 
-/* Get song information */
-bool wav_get_info( char *filename, song_info_t *info )
-{
-	/* WAV files have no song information */
-	return FALSE;
-} /* End of 'wav_get_info' function */
-
-/* Save song information */
-void wav_save_info( char *filename, song_info_t *info )
-{
-} /* End of 'wav_save_info' function */
-
 /* Get stream function */
 int wav_get_stream( void *buf, int size )
 {
@@ -213,11 +201,6 @@ void wav_get_audio_params( int *ch, int *freq, dword *fmt )
 	*fmt = wav_fmt;
 } /* End of 'wav_get_audio_params' function */
 
-/* Set equalizer parameters */
-void wav_set_eq( float preamp, float bands[10] )
-{
-} /* End of 'wav_set_eq' function */
-
 /* Get functions list */
 void inp_get_func_list( inp_func_list_t *fl )
 {
@@ -225,13 +208,9 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_end = wav_end;
 	fl->m_get_stream = wav_get_stream;
 	fl->m_get_len = wav_get_len;
-	fl->m_get_info = wav_get_info;
 	fl->m_seek = wav_seek;
 	fl->m_get_audio_params = wav_get_audio_params;
 	fl->m_get_formats = wav_get_formats;
-	fl->m_save_info = wav_save_info;
-	fl->m_set_eq = wav_set_eq;
-	fl->m_glist = NULL;
 } /* End of 'inp_get_func_list' function */
 
 /* Read the next chunk. Returns TRUE when 'data' chunk is read */

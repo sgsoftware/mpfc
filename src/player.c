@@ -131,10 +131,7 @@ bool player_init( int argc, char *argv[] )
 	pthread_create(&player_tid, NULL, player_thread, NULL);
 
 	/* Get volume */
-	if (pmng_cur_out != NULL && pmng_cur_out->m_fl.m_get_volume != NULL)
-		player_volume = pmng_cur_out->m_fl.m_get_volume();
-	else
-		player_volume = 0;
+	player_volume = outp_get_volume(pmng_cur_out);
 
 	/* Initialize equalizer */
 	player_eq_preamp = 0.;
@@ -559,7 +556,7 @@ void player_seek( int sec, bool rel )
 	else if (new_time > s->m_len)
 		new_time = s->m_len;
 
-	s->m_inp->m_fl.m_seek(new_time);
+	inp_seek(s->m_inp, new_time);
 	player_cur_time = new_time;
 	wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
 } /* End of 'player_seek' function */
@@ -597,8 +594,6 @@ void *player_thread( void *arg )
 		song_t *s;
 		int ch, freq;
 		dword fmt;
-		inp_func_list_t ifl;
-		outp_func_list_t ofl;
 		song_info_t si;
 
 		/* Skip to next iteration if there is nothing to play */
@@ -615,13 +610,12 @@ void *player_thread( void *arg )
 		player_end_track = FALSE;
 	
 		/* Get song length and information at first */
-		ifl = s->m_inp->m_fl;
 		if (cfg_get_var_int(cfg_list, "update_song_len_on_play"))
-			s->m_len = ifl.m_get_len(s->m_file_name);
+			s->m_len = inp_get_len(s->m_inp, s->m_file_name);
 		song_update_info(s);
 
 		/* Start playing */
-		if (!ifl.m_start(s->m_file_name))
+		if (!inp_start(s->m_inp, s->m_file_name))
 		{
 			player_next_track();
 			error_set_code(ERROR_UNKNOWN_FILE_TYPE);
@@ -633,25 +627,24 @@ void *player_thread( void *arg )
 		/* Start output plugin */
 		if (pmng_cur_out == NULL || 
 				(!cfg_get_var_int(cfg_list, "silent_mode") && 
-					!pmng_cur_out->m_fl.m_start()))
+					!outp_start(pmng_cur_out)))
 		{
 			strcpy(player_msg, _("Unable to initialize output plugin"));
 //			wnd_send_msg(wnd_root, WND_MSG_USER, PLAYER_MSG_END_TRACK);
-			ifl.m_end();
+			inp_end(s->m_inp);
 			player_status = PLAYER_STATUS_STOPPED;
 			wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
 			continue;
 		}
-		ofl = pmng_cur_out->m_fl;
 
 		/* Set audio parameters */
-		ifl.m_get_audio_params(&ch, &freq, &fmt);
-		ofl.m_set_channels(2);
-		ofl.m_set_freq(freq);
-		ofl.m_set_fmt(fmt);
+		inp_get_audio_params(s->m_inp, &ch, &freq, &fmt);
+		outp_set_channels(pmng_cur_out, 2);
+		outp_set_freq(pmng_cur_out, freq);
+		outp_set_fmt(pmng_cur_out, fmt);
 
 		/* Set equalizer */
-		ifl.m_set_eq(player_eq_preamp, player_eq_bands);
+		inp_set_eq(s->m_inp, player_eq_preamp, player_eq_bands);
 
 		/* Start timer thread */
 		pthread_create(&player_timer_tid, NULL, player_timer_func, 0);
@@ -670,30 +663,31 @@ void *player_thread( void *arg )
 				if (player_eq_changed)
 				{
 					player_eq_changed = FALSE;
-					ifl.m_set_eq(player_eq_preamp, player_eq_bands);
+					inp_set_eq(s->m_inp, player_eq_preamp, player_eq_bands);
 				}
 				
 				/* Get stream from input plugin */
-				if (size = ifl.m_get_stream(buf, size))
+				if (size = inp_get_stream(s->m_inp, buf, size))
 				{
 					int new_ch, new_freq;
 					dword new_fmt;
 					
 					/* Update audio parameters if they have changed */
-					ifl.m_get_audio_params(&new_ch, &new_freq, &new_fmt);
+					inp_get_audio_params(s->m_inp, &new_ch, &new_freq, 
+							&new_fmt);
 					if (ch != new_ch || freq != new_freq || fmt != new_fmt)
 					{
 						ch = new_ch;
 						freq = new_freq;
 						fmt = new_fmt;
 						
-						ofl.m_flush();
-						ofl.m_set_channels(2);
-						ofl.m_set_freq(freq);
-						ofl.m_set_fmt(fmt);
+						outp_flush(pmng_cur_out);
+						outp_set_channels(pmng_cur_out, 2);
+						outp_set_freq(pmng_cur_out, freq);
+						outp_set_fmt(pmng_cur_out, fmt);
 					}
 					
-					ofl.m_play(buf, size);
+					outp_play(pmng_cur_out, buf, size);
 				}
 				else
 				{
@@ -706,16 +700,16 @@ void *player_thread( void *arg )
 		}
 
 		/* Wait until we really stop playing */
-		ofl.m_flush();
+		outp_flush(pmng_cur_out);
 
 		/* Stop timer thread */
 		player_stop_timer();
 
 		/* End playing */
-		ifl.m_end();
+		inp_end(s->m_inp);
 
 		/* End output plugin */
-		ofl.m_end();
+		outp_end(pmng_cur_out);
 
 		/* Send message about track end */
 		if (!player_end_track)
@@ -948,7 +942,7 @@ void player_info_dialog( void )
 			256, _("Comments: "), s->m_info->m_comments);
 	genre = lbox_new((wnd_t *)dlg, 2, 7, wnd_root->m_width - 10, 12,
 			_("Genre: "));
-	glist = s->m_inp->m_fl.m_glist;
+	glist = inp_get_glist(s->m_inp);
 	for ( i = 0; glist != NULL && i < glist->m_size; i ++ )
 		lbox_add(genre, glist->m_list[i].m_name);
 	lbox_move_cursor(genre, FALSE, 
@@ -959,8 +953,6 @@ void player_info_dialog( void )
 	/* Save */
 	if (dlg->m_ok)
 	{
-		inp_func_list_t ifl;
-
 		/* Remember information */
 		strcpy(s->m_info->m_name, name->m_text);
 		strcpy(s->m_info->m_artist, artist->m_text);
@@ -971,8 +963,7 @@ void player_info_dialog( void )
 		s->m_info->m_genre = genre->m_cursor;
 	
 		/* Get song length and information at first */
-		ifl = s->m_inp->m_fl;
-		ifl.m_save_info(s->m_file_name, s->m_info);
+		inp_save_info(s->m_inp, s->m_file_name, s->m_info);
 
 		/* Update */
 		song_update_info(s);
@@ -1019,8 +1010,7 @@ void player_set_vol( int vol, bool rel )
 		player_volume = 0;
 	else if (player_volume > 100)
 		player_volume = 100;
-	if (pmng_cur_out != NULL && pmng_cur_out->m_fl.m_set_volume != NULL)
-		pmng_cur_out->m_fl.m_set_volume(player_volume);
+	outp_set_volume(pmng_cur_out, player_volume);
 } /* End of 'player_set_vol' function */
 
 /* Display slider */

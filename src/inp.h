@@ -86,6 +86,40 @@ in_plugin_t *inp_init( char *name );
 /* Free input plugin object */
 void inp_free( in_plugin_t *plugin );
 
+/* Start playing function */
+bool inp_start( in_plugin_t *p, char *filename );
+
+/* End playing function */
+void inp_end( in_plugin_t *p );
+
+/* Get song length function */
+int inp_get_len( in_plugin_t *p, char *filename );
+
+/* Get song information function */
+bool inp_get_info( in_plugin_t *p, char *file_name, song_info_t *info );
+	
+/* Save song information function */
+void inp_save_info( in_plugin_t *p, char *file_name, song_info_t *info );
+	
+/* Get supported file formats */
+void inp_get_formats( in_plugin_t *p, char *buf );
+	
+/* Get stream function */
+int inp_get_stream( in_plugin_t *p, void *buf, int size );
+
+/* Seek song */
+void inp_seek( in_plugin_t *p, int shift );
+
+/* Get song audio parameters */
+void inp_get_audio_params( in_plugin_t *p, int *channels, 
+							int *frequency, dword *fmt );
+
+/* Set equalizer parameters */
+void inp_set_eq( in_plugin_t *p, float preamp, float bands[10] );
+
+/* Get genre list */
+genre_list_t *inp_get_glist( in_plugin_t *p );
+
 #endif
 
 /* End of 'inp.h' file */

@@ -549,6 +549,7 @@ bool mp3_get_info( char *filename, song_info_t *info )
 	strcpy(info->m_album, "");
 	strcpy(info->m_year, "");
 	strcpy(info->m_comments, "");
+	strcpy(info->m_track, "");
 	info->m_genre = GENRE_ID_UNKNOWN;
 	info->m_genre_data = 0;
 

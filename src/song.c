@@ -80,7 +80,7 @@ song_t *song_new( char *filename, char *title, int len )
 
 	/* Get song length and information */
 	if (!len)
-		song->m_len = song->m_inp->m_fl.m_get_len(song->m_file_name);
+		song->m_len = inp_get_len(song->m_inp, song->m_file_name);
 		
 	return song;
 } /* End of 'song_new' function */
@@ -140,7 +140,7 @@ void song_update_info( song_t *song )
 {
 	song_info_t si;
 
-	if (song->m_inp->m_fl.m_get_info(song->m_file_name, &si))
+	if (inp_get_info(song->m_inp, song->m_file_name, &si))
 	{
 		/* Convert codepages */
 		cp_to_out(si.m_artist, si.m_artist);

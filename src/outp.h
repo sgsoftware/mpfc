@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Interface for output plugin management
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 25.05.2003
+ * LAST UPDATE : 12.07.2003
  * NOTE        : Module prefix 'outp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -74,6 +74,33 @@ out_plugin_t *outp_init( char *name );
 
 /* Free output plugin object */
 void outp_free( out_plugin_t *p );
+
+/* Plugin start function */
+bool outp_start( out_plugin_t *p );
+
+/* Plugin end function */
+void outp_end( out_plugin_t *p );
+
+/* Set channels number function */
+void outp_set_channels( out_plugin_t *p, int ch );
+
+/* Set frequency function */
+void outp_set_freq( out_plugin_t *p, int freq );
+
+/* Set format function */
+void outp_set_fmt( out_plugin_t *p, dword fmt );
+	
+/* Play stream function */
+void outp_play( out_plugin_t *p, void *buf, int size );
+
+/* Flush function */
+void outp_flush( out_plugin_t *p );
+
+/* Set volume */
+void outp_set_volume( out_plugin_t *p, int vol );
+
+/* Get volume */
+int outp_get_volume( out_plugin_t *p );
 
 #endif
 

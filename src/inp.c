@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Input plugin management functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 27.04.2003
+ * LAST UPDATE : 12.07.2003
  * NOTE        : Module prefix 'inp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -65,6 +65,7 @@ in_plugin_t *inp_init( char *name )
 		inp_free(p);
 		return NULL;
 	}
+	memset(&p->m_fl, 0, sizeof(p->m_fl));
 	fl(&p->m_fl);
 
 	if ((set_vars = dlsym(p->m_lib_handler, "inp_set_vars")) != NULL)
@@ -82,6 +83,89 @@ void inp_free( in_plugin_t *p )
 		free(p);
 	}
 } /* End of 'inp_free' function */
+
+/* Start playing function */
+bool inp_start( in_plugin_t *p, char *filename )
+{
+	if (p != NULL && (p->m_fl.m_start != NULL))
+		return p->m_fl.m_start(filename);
+	return FALSE;
+} /* End of 'inp_start' function */
+
+/* End playing function */
+void inp_end( in_plugin_t *p )
+{
+	if (p != NULL && (p->m_fl.m_end != NULL))
+		p->m_fl.m_end();
+} /* End of 'inp_end' function */
+
+/* Get song length function */
+int inp_get_len( in_plugin_t *p, char *filename )
+{
+	if (p != NULL && (p->m_fl.m_get_len != NULL))
+		return p->m_fl.m_get_len(filename);
+	return 0;
+} /* End of 'inp_get_len' function */
+
+/* Get song information function */
+bool inp_get_info( in_plugin_t *p, char *file_name, song_info_t *info )
+{
+	if (p != NULL && (p->m_fl.m_get_info != NULL))
+		return p->m_fl.m_get_info(file_name, info);
+	return FALSE;
+} /* End of 'inp_get_info' function */
+	
+/* Save song information function */
+void inp_save_info( in_plugin_t *p, char *file_name, song_info_t *info )
+{
+	if (p != NULL && (p->m_fl.m_save_info != NULL))
+		p->m_fl.m_save_info(file_name, info);
+} /* End of 'inp_save_info' function */
+	
+/* Get supported file formats */
+void inp_get_formats( in_plugin_t *p, char *buf )
+{
+	if (p != NULL && (p->m_fl.m_get_formats != NULL))
+		p->m_fl.m_get_formats(buf);
+} /* End of 'inp_get_formats' function */
+	
+/* Get stream function */
+int inp_get_stream( in_plugin_t *p, void *buf, int size )
+{
+	if (p != NULL && (p->m_fl.m_get_stream != NULL))
+		return p->m_fl.m_get_stream(buf, size);
+	return 0;
+} /* End of 'inp_get_stream' function */
+
+/* Seek song */
+void inp_seek( in_plugin_t *p, int shift )
+{
+	if (p != NULL && (p->m_fl.m_seek != NULL))
+		p->m_fl.m_seek(shift);
+} /* End of 'inp_seek' function */
+
+/* Get song audio parameters */
+void inp_get_audio_params( in_plugin_t *p, int *channels, 
+							int *frequency, dword *fmt )
+{
+	if (p != NULL && (p->m_fl.m_get_audio_params != NULL))
+		p->m_fl.m_get_audio_params(channels, frequency, fmt);
+} /* End of 'inp_get_audio_params' function */
+
+/* Set equalizer parameters */
+void inp_set_eq( in_plugin_t *p, float preamp, float bands[10] )
+{
+	if (p != NULL && (p->m_fl.m_set_eq != NULL))
+		p->m_fl.m_set_eq(preamp, bands);
+} /* End of 'inp_set_eq' function */
+
+/* Get genre list */
+genre_list_t *inp_get_glist( in_plugin_t *p )
+{
+	if (p != NULL && (p->m_fl.m_glist != NULL))
+		return p->m_fl.m_glist;
+	return NULL;
+} /* End of 'inp_get_glist' function */
 
 /* End of 'inp.c' file */
 

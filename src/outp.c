@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Output plugin management functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.03.2003
+ * LAST UPDATE : 12.07.2003
  * NOTE        : Module prefix 'outp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -64,6 +64,7 @@ out_plugin_t *outp_init( char *name )
 		outp_free(p);
 		return NULL;
 	}
+	memset(&p->m_fl, 0, sizeof(p->m_fl));
 	fl(&p->m_fl);
 
 	return p;
@@ -78,6 +79,71 @@ void outp_free( out_plugin_t *p )
 		free(p);
 	}
 } /* End of 'outp_free' function */
+
+/* Plugin start function */
+bool outp_start( out_plugin_t *p )
+{
+	if (p != NULL && (p->m_fl.m_start != NULL))
+		return p->m_fl.m_start();
+	return FALSE;
+} /* End of 'outp_start' function */
+
+/* Plugin end function */
+void outp_end( out_plugin_t *p )
+{
+	if (p != NULL && (p->m_fl.m_end != NULL))
+		p->m_fl.m_end();
+} /* End of 'outp_end' function */
+
+/* Set channels number function */
+void outp_set_channels( out_plugin_t *p, int ch )
+{
+	if (p != NULL && (p->m_fl.m_set_channels != NULL))
+		p->m_fl.m_set_channels(ch);
+} /* End of 'outp_set_channels' function */
+
+/* Set frequency function */
+void outp_set_freq( out_plugin_t *p, int freq )
+{
+	if (p != NULL && (p->m_fl.m_set_freq != NULL))
+		p->m_fl.m_set_freq(freq);
+} /* End of 'outp_set_freq' function */
+
+/* Set format function */
+void outp_set_fmt( out_plugin_t *p, dword fmt )
+{
+	if (p != NULL && (p->m_fl.m_set_fmt != NULL))
+		p->m_fl.m_set_fmt(fmt);
+} /* End of 'outp_set_fmt' function */
+	
+/* Play stream function */
+void outp_play( out_plugin_t *p, void *buf, int size )
+{
+	if (p != NULL && (p->m_fl.m_play != NULL))
+		p->m_fl.m_play(buf, size);
+} /* End of 'outp_play' function */
+
+/* Flush function */
+void outp_flush( out_plugin_t *p )
+{
+	if (p != NULL && (p->m_fl.m_flush != NULL))
+		p->m_fl.m_flush();
+} /* End of 'outp_flush' function */
+
+/* Set volume */
+void outp_set_volume( out_plugin_t *p, int vol )
+{
+	if (p != NULL && (p->m_fl.m_set_volume != NULL))
+		p->m_fl.m_set_volume(vol);
+} /* End of 'outp_set_volume' function */
+
+/* Get volume */
+int outp_get_volume( out_plugin_t *p )
+{
+	if (p != NULL && (p->m_fl.m_get_volume != NULL))
+		return p->m_fl.m_get_volume();
+	return 0;
+} /* End of 'outp_get_volume' function */
 
 /* End of 'outp.c' file */
 
