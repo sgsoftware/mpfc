@@ -223,6 +223,7 @@ void wnd_kbd_init_seq( wnd_kbd_data_t *data )
 	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "&7"), KEY_SUSPEND);
 	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "&8"), KEY_UNDO);
 	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "ku"), KEY_UP);
+	wnd_kbd_add_seq(data, /*wnd_kbd_ti_val(list, "kM")*/"\033[M", KEY_MOUSE);
 } /* End of 'wnd_kbd_init_seq' function */
 
 /* Add a sequence to the list */
@@ -286,6 +287,53 @@ void *wnd_kbd_thread( void *arg )
 		/* Extract keycode */
 		if (wnd_kbd_extract_code(data, &keycode, buf, &buf_ptr))
 		{
+			/* Handle mouse events */
+			if (keycode == KEY_MOUSE)
+			{
+				util_log("in mouse\n");
+				//if (WND_MOUSE_DATA(wnd_root)->m_driver == WND_MOUSE_XTERM)
+				//{
+					int x, y;
+					wnd_mouse_event_t type;
+					wnd_mouse_button_t btn;
+
+					/* Get event parameters */
+					btn = getch() - 040;
+					x = getch() - 040 - 1;
+					y = getch() - 040 - 1;
+					type = WND_MOUSE_DOWN;
+					switch (btn)
+					{
+					case 0:
+						btn = WND_MOUSE_LEFT;
+						break;
+					case 1:
+						btn = WND_MOUSE_MIDDLE;
+						break;
+					case 2:
+						btn = WND_MOUSE_RIGHT;
+						break;
+					}
+
+					/* Check for double click */
+					gettimeofday(&now_tv, NULL);
+					if (((now_tv.tv_sec == was_tv.tv_sec && 
+							now_tv.tv_usec - was_tv.tv_usec <= 200000) ||
+							(now_tv.tv_sec == was_tv.tv_sec + 1 &&
+							 now_tv.tv_usec + 1000000 - 
+								 was_tv.tv_usec <= 200000)) && 
+							btn == was_btn)
+						type = WND_MOUSE_DOUBLE;
+					memcpy(&was_tv, &now_tv, sizeof(was_tv));
+					was_btn = btn;
+					
+					/* Handle mouse */
+					wnd_mouse_handle_event(WND_MOUSE_DATA(wnd_root), 
+							x, y, btn, type, NULL);
+					continue;
+				//}
+			}
+
 			/* Send message */
 			wnd_t *focus = WND_FOCUS(wnd_root);
 			if (focus != NULL)
@@ -300,50 +348,6 @@ void *wnd_kbd_thread( void *arg )
 		{
 			util_wait();
 			continue;
-		}
-		/* Handle mouse events */
-		else if (key == KEY_MOUSE)
-		{
-			if (WND_MOUSE_DATA(wnd_root)->m_driver == WND_MOUSE_XTERM)
-			{
-				int x, y;
-				wnd_mouse_event_t type;
-				wnd_mouse_button_t btn;
-
-				/* Get event parameters */
-				btn = getch() - 040;
-				x = getch() - 040 - 1;
-				y = getch() - 040 - 1;
-				type = WND_MOUSE_DOWN;
-				switch (btn)
-				{
-				case 0:
-					btn = WND_MOUSE_LEFT;
-					break;
-				case 1:
-					btn = WND_MOUSE_MIDDLE;
-					break;
-				case 2:
-					btn = WND_MOUSE_RIGHT;
-					break;
-				}
-
-				/* Check for double click */
-				gettimeofday(&now_tv, NULL);
-				if (((now_tv.tv_sec == was_tv.tv_sec && 
-						now_tv.tv_usec - was_tv.tv_usec <= 200000) ||
-						(now_tv.tv_sec == was_tv.tv_sec + 1 &&
-						 now_tv.tv_usec + 1000000 - 
-							 was_tv.tv_usec <= 200000)) && 
-						btn == was_btn)
-					type = WND_MOUSE_DOUBLE;
-				memcpy(&was_tv, &now_tv, sizeof(was_tv));
-				was_btn = btn;
-				
-				/* Handle mouse */
-				wnd_mouse_handle_event(WND_MOUSE_DATA(wnd_root), 
-						x, y, btn, type, NULL);
-			}
 		}
 		else
 		{

@@ -363,7 +363,7 @@ void wnd_prev_focus( wnd_t *wnd );
 void wnd_set_title( wnd_t *wnd, char *title );
 
 /* Initialize color pairs array */
-void wnd_init_pairs( void );
+void wnd_init_pairs( bool_t force_terminal_bg );
 
 /* Convert color is our format to color is NCURSES format */
 int wnd_color_our2curses( wnd_color_t col );
