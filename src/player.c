@@ -33,6 +33,7 @@
 #include "cfg.h"
 #include "choice_ctrl.h"
 #include "colors.h"
+#include "combobox.h"
 #include "dlgbox.h"
 #include "editbox.h"
 #include "eqwnd.h"
@@ -300,7 +301,7 @@ void player_display( wnd_t *wnd, dword data )
 	{
 		col_set_color(wnd, COL_EL_ABOUT);
 		wnd_printf(wnd, "SG Software Media Player For Console\n"
-				"version 0.3\n");
+				"version 1.0alpha\n");
 		col_set_color(wnd, COL_EL_DEFAULT);
 	}
 	else
@@ -561,6 +562,8 @@ void *player_thread( void *arg )
 						/* Send to output plugin */
 						outp_play(pmng_cur_out, buf, size);
 					}
+					else
+						util_delay(0, 100000000);
 				}
 				else
 				{
@@ -805,7 +808,7 @@ void player_info_dialog( void )
 	dlgbox_t *dlg;
 	song_t *s;
 	editbox_t *name, *album, *artist, *year, *comments, *track;
-	listbox_t *genre;
+	combobox_t *genre;
 	genre_list_t *glist;
 	int i;
 
@@ -838,14 +841,17 @@ void player_info_dialog( void )
 			4, _("Track No: "), s->m_info->m_track);
 	comments = ebox_new((wnd_t *)dlg, 2, 6, wnd_root->m_width - 10, 1, 
 			256, _("Comments: "), s->m_info->m_comments);
-	genre = lbox_new((wnd_t *)dlg, 2, 7, wnd_root->m_width - 10, 12,
+	genre = cbox_new((wnd_t *)dlg, 2, 7, wnd_root->m_width - 10, 12,
 			_("Genre: "));
 	glist = inp_get_glist(s->m_inp);
 	for ( i = 0; glist != NULL && i < glist->m_size; i ++ )
-		lbox_add(genre, glist->m_list[i].m_name);
-	lbox_move_cursor(genre, FALSE, 
-			(s->m_info->m_genre == GENRE_ID_UNKNOWN) ? -1 : 
-			s->m_info->m_genre, FALSE);
+		cbox_list_add(genre, glist->m_list[i].m_name);
+	cbox_move_list_cursor(genre, FALSE, 
+			(s->m_info->m_genre == GENRE_ID_UNKNOWN ||
+			 s->m_info->m_genre == GENRE_ID_OWN_STRING) ? -1 : 
+			s->m_info->m_genre, FALSE, TRUE);
+	if (s->m_info->m_genre == GENRE_ID_OWN_STRING)
+		cbox_set_text(genre, s->m_info->m_genre_data.m_text);
 	wnd_run(dlg);
 
 	/* Save */
@@ -858,7 +864,13 @@ void player_info_dialog( void )
 		strcpy(s->m_info->m_year, year->m_text);
 		strcpy(s->m_info->m_comments, comments->m_text);
 		strcpy(s->m_info->m_track, track->m_text);
-		s->m_info->m_genre = genre->m_cursor;
+		if (genre->m_list_cursor < 0)
+		{
+			s->m_info->m_genre = GENRE_ID_OWN_STRING;
+			strcpy(s->m_info->m_genre_data.m_text, genre->m_text);
+		}
+		else
+			s->m_info->m_genre = genre->m_list_cursor;
 	
 		/* Get song length and information at first */
 		inp_save_info(s->m_inp, s->m_file_name, s->m_info);

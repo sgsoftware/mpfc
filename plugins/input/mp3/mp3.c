@@ -3,7 +3,7 @@
  * PURPOSE     : SG Konsamp. MP3 input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 11.08.2003
+ * LAST UPDATE : 13.08.2003
  * NOTE        : Module prefix 'mp3'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -22,6 +22,7 @@
  * MA 02111-1307, USA.
  */
 
+#include <errno.h>
 #include <id3tag.h>
 #include <mad.h>
 #include <math.h>
@@ -428,8 +429,12 @@ void mp3_save_info( char *filename, song_info_t *info )
 	mp3_set_tag_frame(tag, ID3_FRAME_COMMENT, info->m_comments);
 	mp3_set_tag_frame(tag, ID3_FRAME_YEAR, info->m_year);
 	mp3_set_tag_frame(tag, ID3_FRAME_TRACK, info->m_track);
-	sprintf(str, "%i", (info->m_genre == GENRE_ID_UNKNOWN) ? 
-			info->m_genre_data : mp3_glist->m_list[info->m_genre].m_data);
+	if (info->m_genre == GENRE_ID_OWN_STRING)
+		strcpy(str, info->m_genre_data.m_text);
+	else
+		sprintf(str, "%i", (info->m_genre == GENRE_ID_UNKNOWN) ? 
+				info->m_genre_data.m_data : 
+				mp3_glist->m_list[info->m_genre].m_data);
 	mp3_set_tag_frame(tag, ID3_FRAME_GENRE, str);
 
 	/* Get tag raw data */
@@ -549,14 +554,8 @@ bool mp3_get_info( char *filename, song_info_t *info )
 	}
 
 	/* Initialize info fields with empty values first */
-	strcpy(info->m_name, "");
-	strcpy(info->m_artist, "");
-	strcpy(info->m_album, "");
-	strcpy(info->m_year, "");
-	strcpy(info->m_comments, "");
-	strcpy(info->m_track, "");
+	memset(info, 0, sizeof(*info));
 	info->m_genre = GENRE_ID_UNKNOWN;
-	info->m_genre_data = 0;
 
 	/* Scan tag frames */
 	for ( i = 0; i < tag->nframes; i ++ )
@@ -577,9 +576,17 @@ bool mp3_get_info( char *filename, song_info_t *info )
 		else if (!strcmp(f->id, ID3_FRAME_GENRE))
 		{
 			char str[80];
+			char *s;
 			mp3_extract_str_from_frame(str, f);
-			info->m_genre_data = atoi(str);
-			info->m_genre = glist_get_id(mp3_glist, info->m_genre_data);
+			info->m_genre_data.m_data = strtol(str, &s, 10);
+			if (!(*str) || *s)
+			{
+				info->m_genre = GENRE_ID_OWN_STRING;
+				strcpy(info->m_genre_data.m_text, str);
+			}
+			else
+				info->m_genre = 
+					glist_get_id(mp3_glist, info->m_genre_data.m_data);
 		}
 	}
 

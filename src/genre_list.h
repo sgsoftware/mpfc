@@ -44,6 +44,9 @@ typedef struct tag_genre_list_t
 /* Unknown genre ID */
 #define GENRE_ID_UNKNOWN 0xFF
 
+/* Own string ID */
+#define GENRE_ID_OWN_STRING 0xFE
+
 /* Create a new genre list */
 genre_list_t *glist_new( void );
 

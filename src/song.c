@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Songs manipulation functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 6.07.2003
+ * LAST UPDATE : 12.08.2003
  * NOTE        : Module prefix 'song'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -112,14 +112,8 @@ void song_set_info( song_t *song, song_info_t *info )
 		}*/
 
 		song->m_info = (song_info_t *)malloc(sizeof(song_info_t));
-		strcpy(song->m_info->m_artist, "");
-		strcpy(song->m_info->m_name, "");
-		strcpy(song->m_info->m_album, "");
-		strcpy(song->m_info->m_year, "");
-		strcpy(song->m_info->m_comments, "");
-		strcpy(song->m_info->m_track, "");
+		memset(song->m_info, 0, sizeof(song_info_t));
 		song->m_info->m_genre = GENRE_ID_UNKNOWN;
-		song->m_info->m_genre_data = 0xFF;
 
 		for ( i = strlen(song->m_file_name) - 1; 
 				(i >= 0) && (song->m_file_name[i] != '/'); i -- );

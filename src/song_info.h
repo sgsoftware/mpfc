@@ -5,7 +5,7 @@
 /* FILE NAME   : song_info.h
  * PURPOSE     : SG Konsamp. Song information type declaration.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 6.07.2003
+ * LAST UPDATE : 12.08.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -39,7 +39,11 @@ typedef struct
 	char m_comments[256];
 	char m_track[5];
 	byte m_genre;
-	byte m_genre_data;
+	union
+	{
+		byte m_data;
+		char m_text[80];
+	} m_genre_data;
 } song_info_t;
 
 #endif

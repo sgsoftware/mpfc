@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Ogg Vorbis input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 11.08.2003
+ * LAST UPDATE : 13.08.2003
  * NOTE        : Module prefix 'ogg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -180,6 +180,11 @@ bool ogg_get_info( char *filename, song_info_t *info )
 	strcpy(info->m_year, str);
 	str = vorbis_comment_query(comment, "genre", 0);
 	info->m_genre = glist_get_id_by_text(ogg_glist, str);
+	if (info->m_genre == GENRE_ID_UNKNOWN)
+	{
+		info->m_genre = GENRE_ID_OWN_STRING;
+		strcpy(info->m_genre_data.m_text, str);
+	}
 
 	/* Close file */
 	ov_clear(&vf);
