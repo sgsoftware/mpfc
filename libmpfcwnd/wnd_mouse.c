@@ -59,10 +59,14 @@ wnd_mouse_data_t *wnd_mouse_init( wnd_global_data_t *global )
 		ret = wnd_mouse_init_xterm(data);
 		break;
 	}
+
+	/* Start with no mouse */
 	if (!ret)
 	{
-		free(data);
-		return NULL;
+		logger_error(global->m_log, 0, "%s mouse initialization failed\n"
+				"Turning mouse off", (data->m_driver == WND_MOUSE_GPM) ?
+				"GPM" : "XTerm");
+		data->m_driver = WND_MOUSE_NONE;
 	}
 	return data;
 } /* End of 'wnd_mouse_init' function */
