@@ -5,7 +5,7 @@
 /* FILE NAME   : menu.c
  * PURPOSE     : SG Konsamp. Menu functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 15.02.2003
+ * LAST UPDATE : 23.04.2003
  * NOTE        : Module prefix 'menu'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -121,12 +121,12 @@ bool menu_add_item( menu_t *menu, char *name, int id, menu_handler handler )
 } /* End of 'menu_add_item' function */
 
 /* Menu display function */
-int menu_display( wnd_t *wnd, dword data )
+void menu_display( wnd_t *wnd, dword data )
 {
 	menu_t *menu = (menu_t *)wnd;
 	int i;
 
-	MENU_ASSERT_RET(menu, 0);
+	MENU_ASSERT(menu);
 
 	wnd_move(wnd, 0, 0);
 	for ( i = 0; i < menu->m_num_items; i ++ )
@@ -145,17 +145,15 @@ int menu_display( wnd_t *wnd, dword data )
 		wnd_move(wnd, 0, menu->m_cursor);
 	else
 		wnd_move(wnd_root, wnd_root->m_width - 1, wnd_root->m_height - 1);
-
-	return 0;
 } /* End of 'menu_display' function */
 
 /* Menu key handler function */
-int menu_handle_key( wnd_t *wnd, dword data )
+void menu_handle_key( wnd_t *wnd, dword data )
 {
 	menu_t *menu = (menu_t *)wnd;
 	int key = (int)data;
 
-	MENU_ASSERT_RET(menu, 0);
+	MENU_ASSERT(menu);
 
 	switch (key)
 	{
@@ -182,9 +180,9 @@ int menu_handle_key( wnd_t *wnd, dword data )
 		
 	/* Exit */
 	case 27:
-		return WND_KEY_ACTION_EXIT;
+		wnd_send_msg(wnd, WND_MSG_CLOSE, 0);
+		break;
 	}
-	return WND_KEY_ACTION_NONE;
 } /* End of 'menu_handle_key' function */
 
 /* End of 'menu.c' file */

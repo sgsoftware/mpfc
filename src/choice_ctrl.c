@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Choice control functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 31.01.2003
+ * LAST UPDATE : 23.04.2003
  * NOTE        : Module prefix 'choice'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -83,27 +83,24 @@ void choice_destroy( wnd_t *wnd )
 } /* End of 'choice_destroy' function */
 
 /* Choice control display function */
-int choice_display( wnd_t *wnd, dword data )
+void choice_display( wnd_t *wnd, dword data )
 {
 	choice_ctrl_t *ch = (choice_ctrl_t *)wnd;
 
 	/* Print prompt */
 	wnd_move(wnd, 0, 0);
 	wnd_printf(wnd, "%s\n", ch->m_prompt);
-	return 0;
 } /* End of 'choice_display' function */
 
 /* Choice control key handler */
-int choice_handle_key( wnd_t *wnd, dword data )
+void choice_handle_key( wnd_t *wnd, dword data )
 {
 	choice_ctrl_t *ch = (choice_ctrl_t *)wnd;
 	int key = (int)data;
 	
 	/* Escape - exit */
 	if (key == 27)
-	{
-		return WND_KEY_ACTION_EXIT;
-	}
+		wnd_send_msg(wnd, WND_MSG_CLOSE, 0);
 	/* If we have key from choices list - save it and exit */
 	else
 	{
@@ -113,10 +110,9 @@ int choice_handle_key( wnd_t *wnd, dword data )
 			if (key == ch->m_choices[i])
 			{
 				ch->m_choice = key;
-				return WND_KEY_ACTION_EXIT;
+				wnd_send_msg(wnd, WND_MSG_CLOSE, 0);
 			}
 	}
-	return WND_KEY_ACTION_NONE;
 } /* End of 'choice_handle_key' function */
 
 /* End of 'choice_ctrl.c' file */

@@ -5,7 +5,7 @@
 /* FILE NAME   : window.h
  * PURPOSE     : SG Konsamp. Interface for window functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 14.02.2003
+ * LAST UPDATE : 23.04.2003
  * NOTE        : Module prefix 'wnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -31,10 +31,6 @@
 #include <pthread.h>
 #include "types.h"
 
-#define WND_KEY_ACTION_NONE 0
-#define WND_KEY_ACTION_EXIT 1
-#define WND_KEY_ACTION_NEXT 2
-
 /* Declare window type at first */
 struct tag_wnd_t;
 
@@ -44,7 +40,8 @@ struct tag_wnd_t;
 #define WND_MSG_USER					2
 #define WND_MSG_MOUSE_LEFT_CLICK		3
 #define WND_MSG_CLOSE					4
-#define WND_MSG_NUMBER					5
+#define WND_MSG_CHANGE_FOCUS			5
+#define WND_MSG_NUMBER					6
 
 /* Window flags */
 #define WND_DIALOG						0x00000001
@@ -54,7 +51,7 @@ struct tag_wnd_t;
 #define WND_FLAGS(wnd)		(((wnd_t *)(wnd))->m_flags)
 
 /* Window message handler function */
-typedef int (*wnd_msg_handler)( struct tag_wnd_t *wnd, dword data );
+typedef void (*wnd_msg_handler)( struct tag_wnd_t *wnd, dword data );
 
 /* Window type */
 typedef struct tag_wnd_t
@@ -80,17 +77,16 @@ typedef struct tag_wnd_t
 	/* Virtual destructor */
 	void (*m_wnd_destroy)( struct tag_wnd_t *wnd );
 
-/* Window messages queue */
-struct tag_msg_queue
-{
-	dword m_id;
-	dword m_data;
-	struct tag_msg_queue *m_next;
-} *m_msg_queue_head, *m_msg_queue_tail;
+	/* Window messages queue */
+	struct tag_msg_queue
+	{
+		dword m_id;
+		dword m_data;
+		struct tag_msg_queue *m_next;
+	} *m_msg_queue_head, *m_msg_queue_tail;
 
-/* Mutex for queue access synchronization */
-pthread_mutex_t m_mutex;
-
+	/* Mutex for queue access synchronization */
+	pthread_mutex_t m_mutex;
 } wnd_t;
 
 /* Root window */
@@ -144,14 +140,17 @@ void wnd_print_char( wnd_t *wnd, int ch );
 /* System display window */
 void wnd_display( wnd_t *wnd );
 
-/* Handle WND_MSG_CLOSE message */
-int wnd_handle_close( wnd_t *wnd, dword data );
-
 /* Find window child that contains focus window */
 wnd_t *wnd_find_focus_branch( wnd_t *wnd );
 
 /* Keyboard thread function */
 void *wnd_kbd_thread( void *arg );
+
+/* Generic WND_MSG_CLOSE message handler */
+void wnd_handle_close( wnd_t *wnd, dword data );
+
+/* Generic WND_MSG_CHANGE_FOCUS message handler */
+void wnd_handle_ch_focus( wnd_t *wnd, dword data );
 
 #endif
 

@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. File input edit box functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 31.01.2003
+ * LAST UPDATE : 23.04.2003
  * NOTE        : Module prexix 'fin'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -89,7 +89,7 @@ void fin_destroy( wnd_t *wnd )
 } /* End of 'fin_destroy' function */
  
 /* File input box key handler function */
-int fin_handle_key( wnd_t *wnd, dword data )
+void fin_handle_key( wnd_t *wnd, dword data )
 {
 	file_input_box_t *box = (file_input_box_t *)wnd;
 	int key = (int)data;
@@ -118,8 +118,8 @@ int fin_handle_key( wnd_t *wnd, dword data )
 	else if (key == KEY_DC)
 		ebox_del(&box->m_box, box->m_box.m_cursor);
 	/* Exit */
-	else
-		return WND_KEY_ACTION_EXIT;
+	else if (key == '\n' || key == 27)
+		wnd_send_msg(wnd, WND_MSG_CLOSE, 0);
 
 	/* Break expansion cycle if we have pressed anything except TAB */
 	if (key != '\t')
@@ -128,9 +128,6 @@ int fin_handle_key( wnd_t *wnd, dword data )
 		box->m_cur_list = NULL;
 		box->m_paste_len = 0;
 	}
-
-	/* No action should be performed */
-	return WND_KEY_ACTION_NONE;
 } /* End of 'fin_handle_key' function */
 
 /* Expand file name */

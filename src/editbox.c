@@ -5,7 +5,7 @@
 /* FILE NAME   : editbox.c
  * PURPOSE     : SG Konsamp. Edit box functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 7.03.2003
+ * LAST UPDATE : 24.04.2003
  * NOTE        : Module prefix 'ebox'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "types.h"
+#include "dlgbox.h"
 #include "editbox.h"
 #include "error.h"
 #include "window.h"
@@ -89,7 +90,7 @@ void ebox_destroy( wnd_t *wnd )
 } /* End of 'ebox_destroy' function */
 
 /* Edit box display function */
-int ebox_display( wnd_t *wnd, dword data )
+void ebox_display( wnd_t *wnd, dword data )
 {
 	editbox_t *box = (editbox_t *)wnd;
 
@@ -102,11 +103,10 @@ int ebox_display( wnd_t *wnd, dword data )
 
 	/* Move cursor to respective place */
 	wnd_move(wnd, strlen(box->m_label) + box->m_cursor - box->m_scrolled, 0);
-	return 0;
 } /* End of 'ebox_display' function */
 
 /* Edit box key handler function */
-int ebox_handle_key( wnd_t *wnd, dword data )
+void ebox_handle_key( wnd_t *wnd, dword data )
 {
 	editbox_t *box = (editbox_t *)wnd;
 	int key = (int)data;
@@ -131,16 +131,8 @@ int ebox_handle_key( wnd_t *wnd, dword data )
 		ebox_del(box, box->m_cursor - 1);
 	else if (key == KEY_DC)
 		ebox_del(box, box->m_cursor);
-	/* Set focus to next control */
-	else if (key == '\t')
-		return WND_KEY_ACTION_NEXT;
-	/* Exit */
-	else
-	{
-		return WND_KEY_ACTION_EXIT;
-	}
-
-	return WND_KEY_ACTION_NONE;
+	/* Common dialog box item actions */
+	else DLG_ITEM_HANDLE_COMMON(wnd, key)
 } /* End of 'ebox_handle_key' function */
 
 /* Add a character to edit box */

@@ -5,7 +5,7 @@
 /* FILE NAME   : player.h
  * PURPOSE     : SG Konsamp. Interface for main player functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 21.02.2003
+ * LAST UPDATE : 23.04.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -51,19 +51,19 @@ bool player_run( void );
 bool player_parse_cmd_line( int argc, char *argv[] );
 
 /* Handle key function */
-int player_handle_key( wnd_t *wnd, dword data );
+void player_handle_key( wnd_t *wnd, dword data );
 
 /* Handle mouse left button click */
-int player_handle_mouse_click( wnd_t *wnd, dword data );
+void player_handle_mouse_click( wnd_t *wnd, dword data );
 
 /* Display player function */
-int player_display( wnd_t *wnd, dword data );
+void player_display( wnd_t *wnd, dword data );
 
 /* User message handling function */
-int player_handle_user( wnd_t *wnd, dword data );
+void player_handle_user( wnd_t *wnd, dword data );
 
 /* Key handler function for command repeat value edit box */
-int player_repval_handle_key( wnd_t *wnd, dword data );
+void player_repval_handle_key( wnd_t *wnd, dword data );
 
 /* Seek song */
 void player_seek( int sec, bool rel );

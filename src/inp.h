@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Interface for input plugin management
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.03.2003
+ * LAST UPDATE : 26.04.2003
  * NOTE        : Module prefix 'inp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -29,6 +29,7 @@
 #define __SG_KONSAMP_INP_H__
 
 #include "types.h"
+#include "genre_list.h"
 #include "song.h"
 #include "song_info.h"
 
@@ -47,6 +48,9 @@ typedef struct
 	/* Get song information function */
 	bool (*m_get_info)( char *file_name, song_info_t *info );
 	
+	/* Save song information function */
+	void (*m_save_info)( char *file_name, song_info_t *info );
+	
 	/* Get supported file formats */
 	void (*m_get_formats)( char *buf );
 	
@@ -58,6 +62,9 @@ typedef struct
 
 	/* Get song audio parameters */
 	void (*m_get_audio_params)( int *channels, int *frequency, int *bits );
+
+	/* Genres list */
+	genre_list_t *m_glist;
 } inp_func_list_t;
 
 /* Input plugin type */

@@ -5,7 +5,7 @@
 /* FILE NAME   : window.c
  * PURPOSE     : SG Konsamp. Window functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 15.02.2003
+ * LAST UPDATE : 24.04.2003
  * NOTE        : Module prefix 'wnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -29,6 +29,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "types.h"
+#include "dlgbox.h"
+#include "editbox.h"
 #include "error.h"
 #include "window.h"
 
@@ -170,6 +172,7 @@ bool wnd_init( wnd_t *wnd, wnd_t *parent, int x, int y, int w, int h )
 	for ( i = 0; i < WND_MSG_NUMBER; i ++ )
 		wnd->m_msg_handlers[i] = NULL;
 	wnd->m_msg_handlers[WND_MSG_CLOSE] = wnd_handle_close;
+	wnd->m_msg_handlers[WND_MSG_CHANGE_FOCUS] = wnd_handle_ch_focus;
 	wnd->m_wnd_destroy = wnd_destroy_func;
 	wnd->m_msg_queue_head = wnd->m_msg_queue_tail = NULL;
 
@@ -274,13 +277,12 @@ int wnd_run( void *obj )
 	bool done = FALSE;
 	wnd_t *wnd = (wnd_t *)obj;
 	bool need_redraw = TRUE;
-	int action;
 
 	WND_ASSERT_RET(wnd, 0);
 
 	/* If it is dialog box - set focus to child */
 	if (wnd->m_flags & WND_DIALOG && wnd->m_child != NULL)
-		wnd_run(wnd->m_child);
+		wnd_send_msg(wnd, WND_MSG_CHANGE_FOCUS, 0);
 
 	/* Message loop */
 	while (!done)
@@ -307,21 +309,16 @@ int wnd_run( void *obj )
 			{
 				/* Handle message */
 				if (wnd->m_msg_handlers[id] != NULL)
-				{
 					if (id != WND_MSG_DISPLAY)
-					{
-						action = (wnd->m_msg_handlers[id])(wnd, data);
-						if (action == WND_KEY_ACTION_EXIT)
-						{
-							/* Close parent window if it is dialog box */
-							if (wnd->m_parent != NULL && 
-									(wnd->m_parent->m_flags & WND_DIALOG))
-								wnd_send_msg(wnd->m_parent, WND_MSG_CLOSE, 0);
-						
-							done = TRUE;
-							break;
-						}
-					}
+						(wnd->m_msg_handlers[id])(wnd, data);
+
+				/* Close window */
+				if ((id == WND_MSG_CLOSE) || ((id == WND_MSG_CHANGE_FOCUS) &&
+							(wnd->m_parent != NULL) && 
+							(wnd->m_parent->m_flags & WND_DIALOG)))
+				{
+					done = TRUE;
+					break;
 				}
 
 				/* Extract next message */
@@ -339,7 +336,6 @@ int wnd_run( void *obj )
 	}
 
 	wnd_focus = NULL;
-	return action;
 } /* End of 'wnd_run' function */
 
 /* Send message to window */
@@ -547,11 +543,42 @@ void *wnd_kbd_thread( void *arg )
 	return NULL;
 } /* End of 'wnd_kbd_thread' function */
 
-/* Handle WND_MSG_CLOSE message */
-int wnd_handle_close( wnd_t *wnd, dword data )
+/* Generic WND_MSG_CLOSE message handler */
+void wnd_handle_close( wnd_t *wnd, dword data )
 {
-	return WND_KEY_ACTION_EXIT;
+	WND_ASSERT(wnd);
+
+	/* Close parent window if it is dialog box */
+	if (wnd->m_parent != NULL && 
+			(wnd->m_parent->m_flags & WND_DIALOG))
+		wnd_send_msg(wnd->m_parent, WND_MSG_CLOSE, 0);
 } /* End of 'wnd_handle_close' function */
+
+/* Generic WND_MSG_CHANGE_FOCUS message handler */
+void wnd_handle_ch_focus( wnd_t *wnd, dword data )
+{
+	/* If we are dialog - run next window */
+	if (wnd->m_flags & WND_DIALOG)
+	{
+		dlgbox_t *dlg = (dlgbox_t *)wnd;
+		
+		if (wnd->m_child != NULL)
+		{
+			if (dlg->m_cur_focus == NULL)
+				dlg->m_cur_focus = wnd->m_child;
+			else
+				dlg->m_cur_focus = 
+					((dlg->m_cur_focus->m_next != NULL) ? 
+					 	dlg->m_cur_focus->m_next : wnd->m_child);
+			wnd_run(dlg->m_cur_focus);
+		}
+	}
+	/* If we are item - close ourselves and inform parent to change focus */
+	else if ((wnd->m_parent != NULL) && (wnd->m_parent->m_flags & WND_DIALOG))
+	{
+		wnd_send_msg(wnd->m_parent, WND_MSG_CHANGE_FOCUS, 0);
+	}
+} /* End of 'wnd_handle_ch_focus' function */
 
 /* End of 'window.c' file */
 

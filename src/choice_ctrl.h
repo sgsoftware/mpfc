@@ -5,7 +5,7 @@
 /* FILE NAME   : choice_ctrl.h
  * PURPOSE     : SG Konsamp. Interface for choice control functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 31.01.2003
+ * LAST UPDATE : 23.04.2003
  * NOTE        : Module prefix 'choice'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -61,10 +61,10 @@ bool choice_init( choice_ctrl_t *ch, wnd_t *parent, int x, int y, int w,
 void choice_destroy( wnd_t *ch );
 
 /* Choice control display function */
-int choice_display( wnd_t *obj, dword data );
+void choice_display( wnd_t *obj, dword data );
 
 /* Choice control key handler */
-int choice_handle_key( wnd_t *obj, dword data );
+void choice_handle_key( wnd_t *obj, dword data );
 
 #endif
 

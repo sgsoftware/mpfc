@@ -2,11 +2,12 @@
  * Copyright (C) 2003 by SG Software.
  ******************************************************************/
 
-/* FILE NAME   : song_info.h
- * PURPOSE     : SG Konsamp. Song information type declaration.
+/* FILE NAME   : genre_list.h
+ * PURPOSE     : SG MPFC. Interface for genres list management 
+ *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 27.04.2003
- * NOTE        : None.
+ * LAST UPDATE : 26.04.2003
+ * NOTE        : Module prefix 'glist'. 
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 
@@ -24,24 +25,38 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef __SG_KONSAMP_SONG_INFO_H__
-#define __SG_KONSAMP_SONG_INFO_H__
+#ifndef __SG_MPFC_GENRE_LIST_H__
+#define __SG_MPFC_GENRE_LIST_H__
 
 #include "types.h"
 
-/* Song information type */
-typedef struct
+/* Genre list type */
+typedef struct tag_genre_list_t
 {
-	char m_artist[50];
-	char m_name[50];
-	char m_album[50];
-	char m_year[5];
-	char m_comments[50];
-	byte m_genre;
-	byte m_genre_data;
-} song_info_t;
+	struct tag_glist_item_t
+	{
+		char m_name[80];
+		byte m_data;
+	} *m_list;
+	int m_size;
+} genre_list_t;
+
+/* Unknown genre ID */
+#define GENRE_ID_UNKNOWN 0xFF
+
+/* Create a new genre list */
+genre_list_t *glist_new( void );
+
+/* Free genre list */
+void glist_free( genre_list_t *l );
+
+/* Add genre to list */
+void glist_add( genre_list_t *l, char *name, byte data );
+
+/* Get genre id by its inner data */
+byte glist_get_id( genre_list_t *l, byte data );
 
 #endif
 
-/* End of 'song_info.h' file */
+/* End of 'genre_list.h' file */
 

@@ -106,11 +106,20 @@ void song_set_info( song_t *song, song_info_t *info )
 	{
 		int i;
 		
-		if (song->m_info != NULL)
+		/*if (song->m_info != NULL)
 		{
 			free(song->m_info);
 			song->m_info = NULL;
-		}
+		}*/
+
+		song->m_info = (song_info_t *)malloc(sizeof(song_info_t));
+		strcpy(song->m_info->m_artist, "");
+		strcpy(song->m_info->m_name, "");
+		strcpy(song->m_info->m_album, "");
+		strcpy(song->m_info->m_year, "");
+		strcpy(song->m_info->m_comments, "");
+		song->m_info->m_genre = GENRE_ID_UNKNOWN;
+		song->m_info->m_genre_data = 0xFF;
 
 		for ( i = strlen(song->m_file_name) - 1; 
 				(i >= 0) && (song->m_file_name[i] != '/'); i -- );

@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG Konsamp. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 6.03.2003
+ * LAST UPDATE : 23.04.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -34,6 +34,7 @@
 #include "editbox.h"
 #include "error.h"
 #include "file_input.h"
+#include "listbox.h"
 #include "menu.h"
 #include "options.h"
 #include "player.h"
@@ -182,11 +183,10 @@ bool player_parse_cmd_line( int argc, char *argv[] )
 } /* End of 'player_parse_cmd_line' function */
 
 /* Handle key function */
-int player_handle_key( wnd_t *wnd, dword data )
+void player_handle_key( wnd_t *wnd, dword data )
 {
 	char str[10];
 	editbox_t *ebox;
-	int ret = WND_KEY_ACTION_NONE;
 	bool dont_change_repval = FALSE;
 	int key = (int)data;
 
@@ -198,7 +198,7 @@ int player_handle_key( wnd_t *wnd, dword data )
 	/* Exit Konsamp */
 	case 'q':
 	case 'Q':
-		ret = WND_KEY_ACTION_EXIT;
+		wnd_send_msg(wnd, WND_MSG_CLOSE, 0);
 		break;
 
 	/* Move cursor */
@@ -359,7 +359,7 @@ int player_handle_key( wnd_t *wnd, dword data )
 				dont_change_repval = TRUE;
 				
 				if (ebox->m_last_key >= 'A' && ebox->m_last_key <= 'z')
-					ret = player_handle_key(wnd, ebox->m_last_key);
+					player_handle_key(wnd, ebox->m_last_key);
 			}
 			
 			/* Destroy edit box */
@@ -371,21 +371,16 @@ int player_handle_key( wnd_t *wnd, dword data )
 	/* Flush repeat value */
 	if (!dont_change_repval)
 		player_repval = 0;
-
-	/* Do nothing */
-	return ret;
 } /* End of 'player_handle_key' function */
 
 /* Handle mouse left button click */
-int player_handle_mouse_click( wnd_t *wnd, dword data )
+void player_handle_mouse_click( wnd_t *wnd, dword data )
 {
 	strcpy(player_msg, "Mouse button clicked");
-	
-	return WND_KEY_ACTION_NONE;
 } /* End of 'player_handle_mouse_click' function */
 
 /* Display player function */
-int player_display( wnd_t *wnd, dword data )
+void player_display( wnd_t *wnd, dword data )
 {
 	int i, song_time_len = wnd_root->m_width - 15, slider_pos;
 	song_t *s = NULL;
@@ -429,11 +424,10 @@ int player_display( wnd_t *wnd, dword data )
 
 	/* Hide cursor */
 	wnd_move(wnd, wnd->m_width - 1, wnd->m_height - 1);
-	return 0;
 } /* End of 'player_display' function */
 
 /* Key handler function for command repeat value edit box */
-int player_repval_handle_key( wnd_t *wnd, dword data )
+void player_repval_handle_key( wnd_t *wnd, dword data )
 {
 	editbox_t *box = (editbox_t *)wnd;
 	int key = (int)data;
@@ -459,15 +453,13 @@ int player_repval_handle_key( wnd_t *wnd, dword data )
 		if (box->m_cursor)
 			ebox_del(box, box->m_cursor - 1);
 		else
-			return WND_KEY_ACTION_EXIT;
+			wnd_send_msg(wnd, WND_MSG_CLOSE, 0);
 	}
 	else if (key == KEY_DC)
 		ebox_del(box, box->m_cursor);
 	/* Exit */
-	else
-		return WND_KEY_ACTION_EXIT;
-
-	return WND_KEY_ACTION_NONE;
+	else 
+		wnd_send_msg(wnd, WND_MSG_CLOSE, 0);
 } /* End of 'player_repval_handle_key' function */
 
 /* Seek song */
@@ -813,6 +805,10 @@ void player_info_dialog( void )
 {
 	dlgbox_t *dlg;
 	song_t *s;
+	editbox_t *name, *album, *artist, *year, *comments;
+	listbox_t *genre;
+	genre_list_t *glist;
+	int i;
 
 	/* Get song object */
 	if (player_plist->m_sel_end < 0)
@@ -828,21 +824,52 @@ void player_info_dialog( void )
 		return;
 
 	/* Create info dialog */
-	dlg = dlg_new(wnd_root, 2, 2, wnd_root->m_width - 4, 15, s->m_file_name);
-	ebox_new((wnd_t *)dlg, 2, 1, wnd_root->m_width - 10, 1, 
+	dlg = dlg_new(wnd_root, 2, 2, wnd_root->m_width - 4, 20, s->m_file_name);
+	name = ebox_new((wnd_t *)dlg, 2, 1, wnd_root->m_width - 10, 1, 
 			30, "Song name: ", s->m_info->m_name);
-	ebox_new((wnd_t *)dlg, 2, 2, wnd_root->m_width - 10, 1, 
+	artist = ebox_new((wnd_t *)dlg, 2, 2, wnd_root->m_width - 10, 1, 
 			30, "Artist name: ", s->m_info->m_artist);
-	ebox_new((wnd_t *)dlg, 2, 3, wnd_root->m_width - 10, 1, 
+	album = ebox_new((wnd_t *)dlg, 2, 3, wnd_root->m_width - 10, 1, 
 			30, "Album name: ", s->m_info->m_album);
-	ebox_new((wnd_t *)dlg, 2, 4, wnd_root->m_width - 10, 1, 
+	year = ebox_new((wnd_t *)dlg, 2, 4, wnd_root->m_width - 10, 1, 
 			4, "Year: ", s->m_info->m_year);
+	comments = ebox_new((wnd_t *)dlg, 2, 5, wnd_root->m_width - 10, 1, 
+			4, "Comments: ", s->m_info->m_comments);
+	genre = lbox_new((wnd_t *)dlg, 2, 6, wnd_root->m_width - 10, 13,
+			"Genre: ");
+	glist = s->m_inp->m_fl.m_glist;
+	for ( i = 0; i < glist->m_size; i ++ )
+		lbox_add(genre, glist->m_list[i].m_name);
+	lbox_move_cursor(genre, FALSE, 
+			(s->m_info->m_genre == GENRE_ID_UNKNOWN) ? -1 : 
+			s->m_info->m_genre, FALSE);
 	wnd_run(dlg);
+
+	/* Save */
+	if (dlg->m_ok)
+	{
+		inp_func_list_t ifl;
+
+		/* Remember information */
+		strcpy(s->m_info->m_name, name->m_text);
+		strcpy(s->m_info->m_artist, artist->m_text);
+		strcpy(s->m_info->m_album, album->m_text);
+		strcpy(s->m_info->m_year, year->m_text);
+		s->m_info->m_genre = genre->m_cursor;
+	
+		/* Get song length and information at first */
+		ifl = s->m_inp->m_fl;
+		ifl.m_save_info(s->m_file_name, s->m_info);
+
+		/* Update */
+		song_set_info(s, s->m_info);
+	}
+	
 	wnd_destroy(dlg);
 } /* End of 'player_info_dialog' function */
 
 /* User message handling function */
-int player_handle_user( wnd_t *wnd, dword data )
+void player_handle_user( wnd_t *wnd, dword data )
 {
 	switch (data)
 	{

@@ -5,7 +5,7 @@
 /* FILE NAME   : menu.h
  * PURPOSE     : SG Konsamp. Interface for menu functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 14.02.2003
+ * LAST UPDATE : 23.04.2003
  * NOTE        : Module prefix 'menu'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -66,10 +66,10 @@ void menu_destroy( wnd_t *wnd );
 bool menu_add_item( menu_t *menu, char *name, int id, menu_handler handler );
 
 /* Menu display function */
-int menu_display( wnd_t *wnd, dword data );
+void menu_display( wnd_t *wnd, dword data );
 
 /* Menu key handler function */
-int menu_handle_key( wnd_t *wnd, dword data );
+void menu_handle_key( wnd_t *wnd, dword data );
 
 #endif
 

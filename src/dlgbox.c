@@ -5,7 +5,7 @@
 /* FILE NAME   : dlgbox.c
  * PURPOSE     : SG Konsamp. Dialog box functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 7.03.2003
+ * LAST UPDATE : 23.04.2003
  * NOTE        : Module prefix 'dlg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -71,6 +71,8 @@ bool dlg_init( dlgbox_t *dlg, wnd_t *parent, int x, int y, int w, int h,
 	/* Save dialog box parameters */
 	strcpy(dlg->m_caption, caption);
 	dlg->m_caption[dlg->m_wnd.m_width - 5] = 0;
+	dlg->m_cur_focus = NULL;
+	dlg->m_ok = FALSE;
 	WND_FLAGS(dlg) |= WND_DIALOG;
 	return TRUE;
 } /* End of 'dlg_init' function */
@@ -83,7 +85,7 @@ void dlg_destroy( wnd_t *wnd )
 } /* End of 'dlg_destroy' function */
 
 /* Dialog box display function */
-int dlg_display( wnd_t *wnd, dword data )
+void dlg_display( wnd_t *wnd, dword data )
 {
 	dlgbox_t *dlg = (dlgbox_t *)wnd;
 	int i, j, len = strlen(dlg->m_caption);
@@ -118,11 +120,10 @@ int dlg_display( wnd_t *wnd, dword data )
 		wnd_print_char(wnd, ACS_HLINE);
 	wnd_print_char(wnd, ACS_LRCORNER);
 	wnd_print_char(wnd, '\n');
-	return 0;
 } /* End of 'dlg_display' function */
 
 /* Dialog box key handler function  */
-int dlg_handle_key( wnd_t *wnd, dword data )
+void dlg_handle_key( wnd_t *wnd, dword data )
 {
 	dlgbox_t *dlg = (dlgbox_t *)wnd;
 	int key = (int)data;
@@ -131,9 +132,9 @@ int dlg_handle_key( wnd_t *wnd, dword data )
 	{
 	case '\n':
 	case 27:
-		return WND_KEY_ACTION_EXIT;
+		wnd_send_msg(wnd, WND_MSG_CLOSE, 0);
+		break;
 	}
-	return WND_KEY_ACTION_NONE;
 } /* End of 'dlg_handle_key' function */
 
 /* End of 'dlgbox.c' file */

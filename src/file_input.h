@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Interface for file input edit box
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 31.01.2003
+ * LAST UPDATE : 23.04.2003
  * NOTE        : Module prexix 'fin'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -70,7 +70,7 @@ bool fin_init( file_input_box_t *fin, wnd_t *parent, int x, int y,
 void fin_destroy( wnd_t *wnd );
 
 /* File input box key handler function */
-int fin_handle_key( wnd_t *wnd, dword data );
+void fin_handle_key( wnd_t *wnd, dword data );
 
 /* Expand file name */
 void fin_expand( file_input_box_t *box );

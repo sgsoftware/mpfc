@@ -5,7 +5,7 @@
 /* FILE NAME   : dlgbox.h
  * PURPOSE     : SG Konsamp. Interface for dialog box functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 7.03.2003
+ * LAST UPDATE : 24.04.2003
  * NOTE        : Module prefix 'dlg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -30,6 +30,25 @@
 #include "types.h"
 #include "window.h"
 
+/* Common dialog box items key handling routine */
+#define DLG_ITEM_HANDLE_COMMON(wnd, key) 								\
+	if (((wnd)->m_parent != NULL) && 									\
+			((wnd)->m_parent->m_flags & WND_DIALOG)						\
+			&& ((key) == '\n' || (key) == '\t' || (key) == 27))			\
+	{																	\
+		switch (key) 													\
+		{																\
+		case '\n':														\
+			((dlgbox_t *)((wnd)->m_parent))->m_ok = TRUE;				\
+		case 27:														\
+			wnd_send_msg(wnd, WND_MSG_CLOSE, 0);						\
+			break;														\
+		case '\t':														\
+			wnd_send_msg(wnd, WND_MSG_CHANGE_FOCUS, 0);					\
+			break;														\
+		}																\
+	}
+
 /* Dialog box type */
 typedef struct
 {
@@ -38,6 +57,12 @@ typedef struct
 
 	/* Dialog box caption */
 	char m_caption[256];
+
+	/* Current focused item */
+	wnd_t *m_cur_focus;
+
+	/* Flag of OK button pressing */
+	bool m_ok;
 } dlgbox_t;
 
 /* Create a new dialog box */
@@ -52,10 +77,10 @@ bool dlg_init( dlgbox_t *dlg, wnd_t *parent, int x, int y, int w, int h,
 void dlg_destroy( wnd_t *wnd );
 
 /* Dialog box display function */
-int dlg_display( wnd_t *wnd, dword data );
+void dlg_display( wnd_t *wnd, dword data );
 
 /* Dialog box key handler function  */
-int dlg_handle_key( wnd_t *wnd, dword data );
+void dlg_handle_key( wnd_t *wnd, dword data );
 
 #endif
 

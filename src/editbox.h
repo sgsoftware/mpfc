@@ -5,7 +5,7 @@
 /* FILE NAME   : editbox.h
  * PURPOSE     : SG Konsamp. Interface for edit box functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 31.01.2003
+ * LAST UPDATE : 23.04.2003
  * NOTE        : Module prefix 'ebox'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -68,10 +68,10 @@ bool ebox_init( editbox_t *ebox, wnd_t *parent, int x, int y, int width,
 void ebox_destroy( wnd_t *wnd );
 
 /* Edit box display function */
-int ebox_display( wnd_t *wnd, dword data );
+void ebox_display( wnd_t *wnd, dword data );
 
 /* Edit box key handler function */
-int ebox_handle_key( wnd_t *wnd, dword data );
+void ebox_handle_key( wnd_t *wnd, dword data );
 
 /* Add a character to edit box */
 void ebox_add( editbox_t *box, char c );

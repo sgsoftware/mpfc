@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Input plugin management functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.03.2003
+ * LAST UPDATE : 27.04.2003
  * NOTE        : Module prefix 'inp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -47,7 +47,7 @@ in_plugin_t *inp_init( char *name )
 	}
 
 	/* Load respective library */
-	p->m_lib_handler = dlopen(name, RTLD_LAZY);
+	p->m_lib_handler = dlopen(name, RTLD_NOW);
 	if (p->m_lib_handler == NULL)
 	{
 		error_set_code(ERROR_IN_PLUGIN_ERROR);
@@ -64,7 +64,6 @@ in_plugin_t *inp_init( char *name )
 		return NULL;
 	}
 	fl(&p->m_fl);
-
 	return p;
 } /* End of 'inp_init' function */
 
