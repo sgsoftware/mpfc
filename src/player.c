@@ -858,14 +858,14 @@ void *player_thread( void *arg )
 							fmt = new_fmt;
 						
 							outp_flush(player_pmng->m_cur_out);
-							outp_set_channels(player_pmng->m_cur_out, 2);
+							outp_set_channels(player_pmng->m_cur_out, ch);
 							outp_set_freq(player_pmng->m_cur_out, freq);
 							outp_set_fmt(player_pmng->m_cur_out, fmt);
 						}
 
 						/* Apply effects */
 						size = pmng_apply_effects(player_pmng, buf, size, 
-								fmt, freq, 2);
+								fmt, freq, ch);
 					
 						/* Send to output plugin */
 						outp_play(player_pmng->m_cur_out, buf, size);

@@ -689,11 +689,13 @@ int mp3_get_stream( void *buf, int size )
 
 		/* Right channel */
 		if (MAD_NCHANNELS(&mp3_frame.header) == 2)
+		{
 			sample = mp3_mad_fixed_to_short(
 					mp3_synth.pcm.samples[1][mp3_samples]);
-		*(out_ptr ++) = sample & 0xFF;
-		*(out_ptr ++) = sample >> 8;
-		len += 2;
+			*(out_ptr ++) = sample & 0xFF;
+			*(out_ptr ++) = sample >> 8;
+			len += 2;
+		}
 	}
 
 	if (mp3_samples >= mp3_synth.pcm.length)

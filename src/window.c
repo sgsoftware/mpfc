@@ -35,6 +35,9 @@
 #include "editbox.h"
 #include "error.h"
 #include "window.h"
+#ifdef HAVE_GPM_H
+#include <gpm.h>
+#endif
 
 /* Check that window object is valid */
 #define WND_ASSERT(wnd) \
@@ -70,6 +73,13 @@ pthread_mutex_t wnd_display_mutex;
 #define WND_MOUSE_XTERM 2
 int wnd_mouse_type = WND_MOUSE_NONE;
 
+/* Mouse event constants */
+#define WND_MOUSE_EVENT_DOWN	1
+#define WND_MOUSE_EVENT_DOUBLE	2
+#define WND_MOUSE_EVENT_BTN_LEFT	0
+#define WND_MOUSE_EVENT_BTN_MIDDLE	1
+#define WND_MOUSE_EVENT_BTN_RIGHT	2
+
 /* Create a new root window */
 wnd_t *wnd_new_root( void )
 {
@@ -99,6 +109,7 @@ wnd_t *wnd_new_root( void )
 	/* Initialize mouse */
 	switch (wnd_mouse_type)
 	{
+#ifdef HAVE_LIBGPM
 	case WND_MOUSE_GPM:
 		memset(&conn, 0, sizeof(conn));
 		conn.eventMask = GPM_DOWN | GPM_DOUBLE | GPM_DRAG | GPM_UP;
@@ -113,6 +124,7 @@ wnd_t *wnd_new_root( void )
 		gpm_zerobased = TRUE;
 		pthread_create(&wnd_mouse_tid, NULL, wnd_mouse_thread, NULL);
 		break;
+#endif
 	case WND_MOUSE_XTERM:
 		printf("\033[?9h");
 		break;
@@ -286,8 +298,10 @@ void wnd_destroy_func( wnd_t *wnd )
 		}
 
 		/* Uninitialize mouse */
+#ifdef HAVE_LIBGPM
 		if (wnd_mouse_type == WND_MOUSE_GPM)
 			Gpm_Close();
+#endif
 		
 		endwin();
 	}
@@ -655,30 +669,26 @@ void *wnd_kbd_thread( void *arg )
 				wnd_redisplay(wnd_root);
 			else if (key == KEY_MOUSE && wnd_mouse_type == WND_MOUSE_XTERM)
 			{
-				Gpm_Event event;
 				int btn, x, y;
+				dword flags;
 
 				/* Get event parameters */
 				btn = getch() - 040;
 				x = getch() - 040 - 1;
 				y = getch() - 040 - 1;
-				
-				memset(&event, 0, sizeof(event));
-				event.type = GPM_DOWN;
+				flags = WND_MOUSE_EVENT_DOWN;
 				switch (btn)
 				{
 				case 0:
-					event.buttons = GPM_B_LEFT;
+					btn = WND_MOUSE_EVENT_BTN_LEFT;
 					break;
 				case 1:
-					event.buttons = GPM_B_MIDDLE;
+					btn = WND_MOUSE_EVENT_BTN_MIDDLE;
 					break;
 				case 2:
-					event.buttons = GPM_B_RIGHT;
+					btn = WND_MOUSE_EVENT_BTN_RIGHT;
 					break;
 				}
-				event.x = x;
-				event.y = y;
 
 				/* Check for double click */
 				gettimeofday(&now_tv, NULL);
@@ -688,11 +698,11 @@ void *wnd_kbd_thread( void *arg )
 						 now_tv.tv_usec + 1000000 - 
 							 was_tv.tv_usec <= 200000)) && 
 						btn == was_btn)
-					event.type = GPM_DOUBLE;
+					flags |= WND_MOUSE_EVENT_DOUBLE;
 				memcpy(&was_tv, &now_tv, sizeof(was_tv));
 				was_btn = btn;
 				
-				wnd_mouse_handler(&event, NULL);
+				wnd_mouse_handler(x, y, btn, flags, NULL);
 			}
 /*			else if (key == 14)
 				wnd_reinit_mouse();*/
@@ -840,34 +850,39 @@ wnd_t *wnd_find_child_by_id( wnd_t *parent, short id )
 } /* End of 'wnd_find_child_by_id' function */
 
 /* Gpm mouse handler */
-int wnd_mouse_handler( Gpm_Event *event, void *data )
+int wnd_mouse_handler( int x, int y, int btn, dword flags, void *data )
 {
 	wnd_t *wnd;
-	int msg = -1, x, y;
+	int msg = -1;
 
 	/* Determine window to which this event is addressed */
-	x = event->x, y = event->y;
 	wnd = wnd_get_wnd_under_cursor(x, y);
 	if (wnd != NULL)
 		x -= wnd->m_sx, y -= wnd->m_sy;
 
 	/* Send respective message to it */
-	if ((event->type & GPM_DOUBLE) && (event->buttons & GPM_B_LEFT))
+	if ((flags & WND_MOUSE_EVENT_DOUBLE) && 
+			(btn == WND_MOUSE_EVENT_BTN_LEFT))
 		msg = WND_MSG_MOUSE_LEFT_DOUBLE;
-	if ((event->type & GPM_DOWN) && (event->buttons & GPM_B_LEFT))
-		msg = WND_MSG_MOUSE_LEFT_CLICK;
-	if ((event->type & GPM_DOWN) && (event->buttons & GPM_B_MIDDLE))
-		msg = WND_MSG_MOUSE_MIDDLE_CLICK;
-	if ((event->type & GPM_DOWN) && (event->buttons & GPM_B_RIGHT))
-		msg = WND_MSG_MOUSE_RIGHT_CLICK;
+	else if (flags & WND_MOUSE_EVENT_DOWN) 
+	{
+		if (btn == WND_MOUSE_EVENT_BTN_LEFT)
+			msg = WND_MSG_MOUSE_LEFT_CLICK;
+		else if (btn == WND_MOUSE_EVENT_BTN_RIGHT)
+			msg = WND_MSG_MOUSE_RIGHT_CLICK;
+		else if (btn == WND_MOUSE_EVENT_BTN_MIDDLE)
+			msg = WND_MSG_MOUSE_MIDDLE_CLICK;
+	}		
 	if (msg >= 0)
 		wnd_send_msg(wnd, msg, WND_MOUSE_DATA(x, y));
 	if (wnd != wnd_focus && msg >= 0)
 		wnd_send_msg(wnd_focus, WND_MSG_MOUSE_OUTSIDE_FOCUS, 0);
 
 	/* Display cursor */
+#ifdef HAVE_GPM_H
 	if (wnd_mouse_type == WND_MOUSE_GPM)
-		GPM_DRAWPOINTER(event);
+		GPM_DRAWPOINTER((Gpm_Event *)data);
+#endif
 } /* End of 'wnd_mouse_handler' function */
 
 /* Get window under which mouse cursor is */
@@ -903,6 +918,7 @@ wnd_t *wnd_get_wnd_under_cursor( int x, int y )
 	return wnd;
 } /* End of 'wnd_get_wnd_under_cursor' function */
 
+#ifdef HAVE_LIBGPM
 /* Mouse thread function */
 void *wnd_mouse_thread( void *arg )
 {
@@ -926,7 +942,20 @@ void *wnd_mouse_thread( void *arg )
 			if ((ret = select(gpm_fd + 1, &readset, NULL, NULL, &tv)) > 0)
 			{
 				if (Gpm_GetEvent(&event) > 0)
-					wnd_mouse_handler(&event, NULL);
+				{
+					int btn, flags = 0;
+					if (event.buttons & GPM_B_LEFT)
+						btn = WND_MOUSE_EVENT_BTN_LEFT;
+					else if (event.buttons & GPM_B_RIGHT)
+						btn = WND_MOUSE_EVENT_BTN_RIGHT;
+					else if (event.buttons & GPM_B_MIDDLE)
+						btn = WND_MOUSE_EVENT_BTN_MIDDLE;
+					if (event.type & GPM_DOWN)
+						flags |= WND_MOUSE_EVENT_DOWN;
+					if (event.type & GPM_DOUBLE)
+						flags |= WND_MOUSE_EVENT_DOUBLE;
+					wnd_mouse_handler(event.x, event.y, btn, flags, &event);
+				}
 			}
 		}
 
@@ -935,6 +964,7 @@ void *wnd_mouse_thread( void *arg )
 	}
 	return NULL;
 } /* End of 'wnd_mouse_thread' function */
+#endif
 
 /* Check if a point belongs to the window */
 bool_t wnd_pt_belongs( wnd_t *wnd, int x, int y )
@@ -1095,8 +1125,10 @@ void wnd_get_mouse_type( void )
 	{
 		if (!strcmp(driver, "xterm"))
 			wnd_mouse_type = WND_MOUSE_XTERM;
+#ifdef HAVE_LIBGPM
 		else if (!strcmp(driver, "gpm"))
 			wnd_mouse_type = WND_MOUSE_GPM;
+#endif
 		else
 			wnd_mouse_type = WND_MOUSE_NONE;
 		return;
@@ -1104,13 +1136,16 @@ void wnd_get_mouse_type( void )
 
 	/* Check TERM variable */
 	term = getenv("TERM");
+	wnd_mouse_type = WND_MOUSE_NONE;
 	if (term == NULL || !strcmp(term, ""))
 		wnd_mouse_type = WND_MOUSE_NONE;
 	else if (!strcmp(term, "xterm") || !strcmp(term, "rxvt") || 
 				!strcmp(term, "Eterm"))
 		wnd_mouse_type = WND_MOUSE_XTERM;
+#ifdef HAVE_LIBGPM
 	else
 		wnd_mouse_type = WND_MOUSE_GPM;
+#endif
 } /* End of 'wnd_get_mouse_type' function */
 
 /* Get window width */

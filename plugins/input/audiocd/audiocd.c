@@ -25,6 +25,9 @@
  * MA 02111-1307, USA.
  */
 
+#ifndef __attribute_const__
+#define __attribute_const__ __const__  // A strange bug with Linux 2.6.4 headers
+#endif
 #include <linux/cdrom.h>
 #include <stdio.h>
 #include <errno.h>

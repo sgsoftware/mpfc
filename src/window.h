@@ -244,7 +244,7 @@ void wnd_restore_curses( void );
 wnd_t *wnd_find_child_by_id( wnd_t *parent, short id );
 
 /* Gpm mouse handler */
-int wnd_mouse_handler( Gpm_Event *event, void *data );
+int wnd_mouse_handler( int x, int y, int btn, dword flags, void *data );
 
 /* Get window under which mouse cursor is */
 wnd_t *wnd_get_wnd_under_cursor( int x, int y );
