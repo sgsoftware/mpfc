@@ -59,6 +59,9 @@ typedef struct
 
 	/* Value */
 	char *m_val;
+
+	/* Tag version */
+	byte m_version;
 } id3_frame_t;
 
 /* ID3V1 fields offsets and sizes */
@@ -72,6 +75,8 @@ typedef struct
 #define ID3_V1_YEAR_SIZE 4
 #define ID3_V1_COMMENT_OFFSET (ID3_V1_YEAR_OFFSET+ID3_V1_YEAR_SIZE)
 #define ID3_V1_COMMENT_SIZE 30
+#define ID3_V1_TRACK_OFFSET (ID3_V1_COMMENT_OFFSET+ID3_V1_COMMENT_SIZE - 1)
+#define ID3_V1_TRACK_SIZE 1
 #define ID3_V1_GENRE_OFFSET (ID3_V1_COMMENT_OFFSET+ID3_V1_COMMENT_SIZE)
 #define ID3_V1_GENRE_SIZE 1
 #define ID3_V1_TOTAL_SIZE 128

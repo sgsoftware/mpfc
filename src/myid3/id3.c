@@ -332,6 +332,7 @@ void id3_v2_write( id3_tag_data_t *tag, char *filename )
 /* Read next frame in ID3V1 */
 void id3_v1_next_frame( id3_tag_data_t *tag, id3_frame_t *frame )
 {
+	frame->m_version = 1;
 	switch (tag->m_cur_frame - tag->m_stream)
 	{
 	case ID3_V1_TITLE_OFFSET:
@@ -354,6 +355,12 @@ void id3_v1_next_frame( id3_tag_data_t *tag, id3_frame_t *frame )
 		strcpy(frame->m_name, ID3_FRAME_COMMENT);
 		id3_copy2frame(frame, &tag->m_cur_frame, ID3_V1_COMMENT_SIZE);
 		break;
+	case ID3_V1_TRACK_OFFSET:
+		strcpy(frame->m_name, ID3_FRAME_TRACK);
+		frame->m_val = (char *)malloc(4);
+		sprintf(frame->m_val, "%d", (int)*(tag->m_cur_frame));
+		tag->m_cur_frame += ID3_V1_TRACK_SIZE;
+		break;
 	case ID3_V1_GENRE_OFFSET:
 		strcpy(frame->m_name, ID3_FRAME_GENRE);
 		frame->m_val = (char *)malloc(4);
@@ -374,6 +381,7 @@ void id3_v2_next_frame( id3_tag_data_t *tag, id3_frame_t *frame )
 	word flags;
 
 	/* Check if any frames are left in stream */
+	frame->m_version = 2;
 	if (!ID3_IS_VALID_FRAME_NAME(tag->m_cur_frame) || 
 			(tag->m_cur_frame - tag->m_stream >= tag->m_stream_len))
 	{
@@ -552,18 +560,29 @@ void id3_rem_end_spaces( char *str, int len )
 /* Copy string to frame */
 void id3_copy2frame( id3_frame_t *f, byte **ptr, int size )
 {	
-	byte *p = *ptr, pos = 0;
+	byte pos = 0;
 	int i;
+	bool_t zeros_block = FALSE;
 	
 	if (f == NULL)
 		return;
 
+	/* Check for track in v1 frame */
+	if (f->m_version == 1 && !strcmp(f->m_name, ID3_FRAME_COMMENT) &&
+			(*ptr)[28] == 0 && (*ptr)[29] != 0)
+		size --;
+	
 	/* Seek to the last string in frame */
-	for ( i = 0; i < size; i ++, p ++ )
-		if (!(*p))
+	for ( i = 0; i < size; i ++ )
+	{
+		if (!(*ptr)[i])
+			zeros_block = TRUE;
+		else if (zeros_block)
+		{
 			pos = i;
-	if (pos > 0)
-		pos ++;
+			zeros_block = FALSE;
+		}
+	}
 	size -= pos;
 	(*ptr) += pos;
 
