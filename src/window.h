@@ -1,11 +1,11 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : window.h
  * PURPOSE     : SG MPFC. Interface for window functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 18.11.2003
+ * LAST UPDATE : 1.01.2004
  * NOTE        : Module prefix 'wnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -46,8 +46,9 @@ struct tag_wnd_t;
 #define WND_MSG_MOUSE_LEFT_CLICK		7
 #define WND_MSG_MOUSE_LEFT_DOUBLE		8
 #define WND_MSG_MOUSE_MIDDLE_CLICK		9
-#define WND_MSG_MOUSE_OUTSIDE_FOCUS		10
-#define WND_MSG_NUMBER					11
+#define WND_MSG_MOUSE_RIGHT_CLICK		10
+#define WND_MSG_MOUSE_OUTSIDE_FOCUS		11
+#define WND_MSG_NUMBER					12
 
 /* Check if specified message is a mouse message */
 #define WND_IS_MOUSE_MSG(id) ((id) >= WND_MSG_MOUSE_LEFT_CLICK && \

@@ -4,6 +4,7 @@ src/plist.c
 src/help_screen.c
 src/error.c
 src/eqwnd.c
+src/browser.c
 src/file/http.c
 plugins/input/mp3/mp3.c
 plugins/input/ogg/ogg.c

@@ -1,11 +1,11 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : player.c
  * PURPOSE     : SG MPFC. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 28.12.2003
+ * LAST UPDATE : 1.01.2004
  * NOTE        : Module prefix 'player'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "types.h"
+#include "browser.h"
 #include "button.h"
 #include "cfg.h"
 #include "choice_ctrl.h"
@@ -1774,6 +1775,11 @@ void player_handle_action( int action )
 		pmng_load_plugins();
 		break;
 
+	/* Launch file browser */
+	case KBIND_FILE_BROWSER:
+		player_file_browser();
+		break;
+
 	/* Digit means command repeation value edit */
 	case KBIND_DIG_1:
 	case KBIND_DIG_2:
@@ -2393,6 +2399,21 @@ void player_save_info_dlg( wnd_t *wnd )
 			break;
 	}
 } /* End of 'player_save_info_dlg' function */
+
+/* Launch file browser */
+void player_file_browser( void )
+{
+	browser_t *fb;
+	char dir[256];
+
+	/* Create browser and run it */
+	getcwd(dir, sizeof(dir));
+	strcat(dir, "/");
+	fb = fb_new(wnd_root, 0, 0, wnd_root->m_width, wnd_root->m_height - 2,
+			dir);
+	wnd_run(fb);
+	wnd_destroy(fb);
+} /* End of 'player_file_browser' function */
 
 /* End of 'player.c' file */
 

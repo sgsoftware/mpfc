@@ -231,7 +231,6 @@ bool_t wav_get_info( char *filename, song_info_t *info )
 		bits = (wav_fmt == AFMT_U8 || wav_fmt == AFMT_S8) ? 8 : 16;
 		size = wav_file_size;
 		len = wav_len;
-		return TRUE;
 	}
 	else
 	{

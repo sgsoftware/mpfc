@@ -1,11 +1,11 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : player.h
  * PURPOSE     : SG MPFC. Interface for main player functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 28.12.2003
+ * LAST UPDATE : 1.01.2004
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -29,6 +29,7 @@
 
 #include "types.h"
 #include "cfg.h"
+#include "history.h"
 #include "plist.h"
 #include "undo.h"
 #include "window.h"
@@ -49,7 +50,8 @@
 #define PLAYER_HIST_LIST_VAR_VAL	4
 #define PLAYER_HIST_LIST_SEARCH		5
 #define PLAYER_HIST_LIST_EXEC		6
-#define PLAYER_NUM_HIST_LISTS 		7
+#define PLAYER_HIST_FB_PATTERN		7
+#define PLAYER_NUM_HIST_LISTS 		8
 
 /* Variables manager dialog items IDs */
 #define PLAYER_VAR_MNGR_VARS	0
@@ -90,6 +92,9 @@ extern plist_t *player_plist;
 
 /* Do we story undo information now? */
 extern bool_t player_store_undo;
+
+/* Edit boxes history lists */
+extern hist_list_t *player_hist_lists[PLAYER_NUM_HIST_LISTS];
 
 /* Initialize player */
 bool_t player_init( int argc, char *argv[] );
@@ -265,6 +270,9 @@ void player_update_info_dlg( wnd_t *wnd );
 
 /* Save currently opened info editor dialog */
 void player_save_info_dlg( wnd_t *wnd );
+
+/* Launch file browser */
+void player_file_browser( void );
 
 #endif
 

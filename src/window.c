@@ -1,11 +1,11 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : window.c
  * PURPOSE     : SG MPFC. Window functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 21.12.2003
+ * LAST UPDATE : 1.01.2004
  * NOTE        : Module prefix 'wnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -796,6 +796,8 @@ int wnd_mouse_handler( Gpm_Event *event, void *data )
 		msg = WND_MSG_MOUSE_LEFT_CLICK;
 	if ((event->type & GPM_DOWN) && (event->buttons & GPM_B_MIDDLE))
 		msg = WND_MSG_MOUSE_MIDDLE_CLICK;
+	if ((event->type & GPM_DOWN) && (event->buttons & GPM_B_RIGHT))
+		msg = WND_MSG_MOUSE_RIGHT_CLICK;
 	if (msg >= 0)
 		wnd_send_msg(wnd, msg, WND_MOUSE_DATA(x, y));
 	if (wnd != wnd_focus && msg >= 0)

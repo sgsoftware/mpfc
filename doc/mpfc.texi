@@ -265,6 +265,7 @@ Note that equalizer may be disabled by setting ``equalizer-off'' variable.
 @menu
 * Visual mode::
 * Add/remove::
+* File browser::
 * Save::
 * Sort::
 * Move::
@@ -281,7 +282,7 @@ switch to the visual mode (by @kbd{V} command) and move cursor to another bound.
 You can use any of the cursor movement commands. After the selection is made 
 you can switch back to normal mode (by entering this command one more time).
 
-@node Add/remove, Save, Visual mode, Playlist management
+@node Add/remove, File browser, Visual mode, Playlist management
 @subsection Add/remove
 There are three commands for add/remove purposes. To add song use @kbd{a} or 
 @kbd{A} command. The difference between them is that @kbd{a} adds a file (or
@@ -293,7 +294,17 @@ in the beginning of file name.
 
 Remove command (@kbd{r}) removes the currently selected group of files.
 
-@node Save, Sort, Add/remove, Playlist management
+@node File browser, Save, Add/remove, Playlist management
+@subsection File browser
+File browser is a special tool created to help you adding files to the play
+list. Launch it using @kbd{B} command. To select/deselect file press
+@kbd{@key{INSERT}} key. Also you may select or deselect a group of files
+matching a specified pattern. To do this press @kbd{+} (for select) or
+@kbd{-} (for deselect) key and enter the pattern. After you have selected
+the files you can add them to play list by pressing @kbd{a} key. To exit
+press @kbd{q} or @kbd{@key{ESC}}
+
+@node Save, Sort, File browser, Playlist management
 @subsection Save
 To save playlist use @kbd{s} command. You will be prompted for file name.
 It must end with ``.m3u'' or ``.pls'' extension, so you can save playlist
@@ -513,6 +524,20 @@ col-el-lbox-cur: unfocused list box current selection;
 col-el-btn-focused: focused button;
 @item
 col-el-btn: unfocused button;
+@item
+col-el-fb-title: file browser title;
+@item
+col-el-fb-file: a normal file in file browser;
+@item
+col-el-fb-file-hl: a highlighted file in file browser;
+@item
+col-el-fb-dir: a directory in file browser;
+@item
+col-el-fb-dir-hl: a highlighted directory in file browser;
+@item
+col-el-fb-sel: a selected file in file browser;
+@item
+col-el-fb-sel-hl: a highlighted selected file in file browser;
 @item
 col-el-default: default
 @end itemize

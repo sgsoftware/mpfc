@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Key bindings management functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 2.10.2003
+ * LAST UPDATE : 31.12.2003
  * NOTE        : Module prefix 'kbind'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -178,6 +178,7 @@ void kbind_init( void )
 	kbind_add(KBIND_GOBACK, 2, '`', '`');
 	kbind_add(KBIND_TIME_BACK, 1, KEY_BACKSPACE);
 	kbind_add(KBIND_RELOAD_PLUGINS, 1, 'P');
+	kbind_add(KBIND_FILE_BROWSER, 1, 'B');
 
 	/* Read bindings from configuration */
 	kbind_read_from_cfg();
@@ -487,6 +488,8 @@ int kbind_var2act( char *name )
 		return KBIND_TIME_BACK;
 	else if (!strcmp(name, "kbind-reload-plugins"))
 		return KBIND_RELOAD_PLUGINS;
+	else if (!strcmp(name, "kbind-file-browser"))
+		return KBIND_FILE_BROWSER;
 	return -1;
 } /* End of 'kbind_var2act' function */
 

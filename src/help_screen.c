@@ -1,11 +1,11 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
 /* FILE NAME   : help_screen.c
  * PURPOSE     : SG MPFC. Help screen functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 2.10.2003
+ * LAST UPDATE : 1.01.2004
  * NOTE        : Module prefix 'help'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -103,6 +103,7 @@ bool_t help_init( help_screen_t *help, wnd_t *parent, int x, int y,
 	help_add(help, _("i:\t\t Song info editor"));
 	help_add(help, _("a:\t\t Add songs"));
 	help_add(help, _("A:\t\t Add object"));
+	help_add(help, _("B:\t\t Launch file browser"));
 	help_add(help, _("r:\t\t Remove songs"));
 	help_add(help, _("s:\t\t Save play list"));
 	help_add(help, _("S:\t\t Sort play list"));
