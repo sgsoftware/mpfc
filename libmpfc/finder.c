@@ -63,7 +63,7 @@ int find_add_file( char *name, char *pattern,
 		int (*find_handler)( char *, void * ), void *data )
 {
 	struct stat stat_info;
-	
+
 	/* Determine file type (directory or regular) and if it is a directory
 	 * call directory adding routine */
 	stat(name, &stat_info);

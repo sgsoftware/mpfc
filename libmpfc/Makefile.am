@@ -10,5 +10,6 @@ libmpfc_la_SOURCES = cfg.c ../src/cfg.h charset.c ../src/charset.h file.c \
 					 ../src/inp.h plugin_output.c ../src/outp.h plugin_mng.c \
 					 ../src/pmng.h util.c ../src/util.h ../src/song_info.h \
 					 song_info.c ../src/mystring.h string.c
+libmpfc_la_LIBADD = @RESOLV_LIBS@
 INCLUDES = -I$(top_builddir)/src
 localedir = $(datadir)/locale

@@ -124,6 +124,7 @@ dword ru_get_flags( int index )
 char *ru_expand_auto( char *sample_str, int index )
 {
 	int len, i, big, small, rus, proper_len;
+	bool_t failed = FALSE;
 	
 	if (index != RU_AUTO)
 		return NULL;
@@ -143,7 +144,10 @@ char *ru_expand_auto( char *sample_str, int index )
 			break;
 		bytes = cs_utf8_get_num_bytes(first);
 		if (bytes <= 0)
+		{
+			failed = TRUE;
 			break;
+		}
 
 		proper_len ++;
 		if ((first == 0xD0 || first == 0xD1) && (sample_str[i + 1] & 0x80) &&
@@ -153,7 +157,7 @@ char *ru_expand_auto( char *sample_str, int index )
 			i ++;
 		}
 	}
-	if (rus >= proper_len / 2)
+	if (!failed && rus >= proper_len / 2)
 		return ru_auto_utf8;
 
 	/* Try to guess charset (between "koi8-r" and "cp1251") by looking at 

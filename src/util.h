@@ -58,8 +58,8 @@ FILE *util_fopen( char *filename, char *flags );
 /* Get file size */
 int util_get_file_size( char *filename );
 
-/* Convert underscores in a string to spaces */
-void util_under2spaces( char *str );
+/* Replace characters */
+void util_replace_char( char *str, char from, char to );
 
 /* Search for regexp */
 bool_t util_search_regexp( char *ptext, char *text, bool_t nocase );

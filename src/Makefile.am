@@ -15,4 +15,5 @@ EXTRA_DIST = .mpfcrc
 
 localedir = $(datadir)/locale
 DEFS = -DLOCALEDIR=\"$(localedir)\" -DLIBDIR=\"$(libdir)\" @DEFS@
-mpfc_LDADD = $(top_builddir)/libmpfc/libmpfc.la
+mpfc_LDADD = @CURSES_LIBS@ @PTHREAD_LIBS@ @DL_LIBS@ @GPM_LIBS@ \
+			 $(top_builddir)/libmpfc/libmpfc.la

@@ -235,5 +235,15 @@ void util_rem_slashes( char *name )
 	}
 } /* End of 'util_rem_slashes' function */
 
+/* Replace characters */
+void util_replace_char( char *str, char from, char to )
+{
+	for ( ; *str; str ++ )
+	{
+		if (*str == from)
+			*str = to;
+	}
+} /* End of 'util_replace_char' function */
+
 /* End of 'util.c' file */
 

@@ -64,6 +64,7 @@ bool_t dw_start( void )
 		strcpy(str, ".wav");
 	else
 		strcat(name, ".wav");
+	util_replace_char(name, ':', '_');
 	str = cfg_get_var(pmng_get_cfg(dw_pmng), "disk-writer-path");
 	if (str != NULL)
 		sprintf(full_name, "%s/%s", str, name);

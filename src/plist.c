@@ -106,7 +106,6 @@ bool_t plist_add( plist_t *pl, char *filename )
 	if (pl == NULL || !filename[0])
 		return FALSE;
 
-	/* Get full path of filename */
 	strcpy(fname, filename);
 	if (file_get_type(filename) == FILE_TYPE_REGULAR && 
 			filename[0] != '/' && filename[0] != '~')

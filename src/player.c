@@ -200,8 +200,6 @@ bool_t player_init( int argc, char *argv[] )
 
 	/* Create a play list and add files to it */
 	player_plist = plist_new(3, wnd_root->m_height - 5);
-
-
 	if (player_plist == NULL)
 	{
 		return FALSE;
@@ -695,7 +693,7 @@ void *player_thread( void *arg )
 		{
 			player_next_track();
 			error_set_code(ERROR_UNKNOWN_FILE_TYPE);
-			strcpy(player_msg, error_text);
+			player_print_msg("%s", error_text);
 			wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
 			continue;
 		}
@@ -714,7 +712,7 @@ void *player_thread( void *arg )
 				(!cfg_get_var_int(cfg_list, "silent-mode") && 
 					!outp_start(player_pmng->m_cur_out))))
 		{
-			strcpy(player_msg, _("Unable to initialize output plugin"));
+			player_print_msg(_("Unable to initialize output plugin"));
 //			wnd_send_msg(wnd_root, WND_MSG_USER, PLAYER_MSG_END_TRACK);
 			inp_end(inp);
 			player_status = PLAYER_STATUS_STOPPED;
@@ -1662,9 +1660,9 @@ void player_handle_action( int action )
 		if (!plist_search(player_plist, player_search_string, 
 					(action == KBIND_NEXT_MATCH) ? 1 : -1, 
 					player_search_criteria))
-			strcpy(player_msg, _("String not found"));
+			player_print_msg(_("String not found"));
 		else
-			strcpy(player_msg, _("String found"));
+			player_print_msg(_("String found"));
 		break;
 
 	/* Show equalizer dialog */

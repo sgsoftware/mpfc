@@ -77,7 +77,7 @@ bool_t lbox_init( listbox_t *wnd, wnd_t *parent, int x, int y, int width,
 			lbox_handle_middle_click);
 
 	/* Set listbox-specific fields */
-	strcpy(wnd->m_label, label);
+	wnd->m_label = strdup(label);
 	wnd->m_list = NULL;
 	wnd->m_size = 0;
 	wnd->m_last_key = 0;
@@ -97,6 +97,8 @@ void lbox_destroy( wnd_t *wnd )
 	
 	if (lbox != NULL)
 	{
+		if (lbox->m_label != NULL)
+			free(lbox->m_label);
 		if (lbox->m_list != NULL)
 			free(lbox->m_list);
 	}

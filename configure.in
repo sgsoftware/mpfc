@@ -4,20 +4,97 @@ AC_PROG_CC
 AC_PROG_LIBTOOL
 
 AM_CONFIG_HEADER(config.h)
-AC_CHECK_LIB(ncurses, initscr)
-AC_CHECK_LIB(pthread, pthread_create)
-AC_CHECK_LIB(z, compress)
-AC_CHECK_LIB(m, pow)
-AC_CHECK_LIB(mad, mad_stream_init)
-AC_CHECK_LIB(dl, dlopen)
-AC_CHECK_LIB(vorbis, vorbis_dsp_clear)
-AC_CHECK_LIB(vorbisfile, ov_open)
-AC_CHECK_LIB(ogg, ogg_stream_init)
-AC_CHECK_LIB(socket, socket)
-AC_CHECK_LIB(resolv, gethostbyname)
-AC_CHECK_LIB(gpm, Gpm_Open)
+
+# Check for ncurses
+LIBS_save=$LIBS
+AC_CHECK_LIB(ncurses, initscr,,[AC_MSG_ERROR(*** Can't find ncurses library ***)])
+CURSES_LIBS="-lncurses"
+AC_SUBST(CURSES_LIBS)
+LIBS=$LIBS_save
+
+# Check for pthread
+LIBS_save=$LIBS
+AC_CHECK_LIB(pthread, pthread_create,,[AC_MSG_ERROR(*** Can't find posix threads library ***)])
+PTHREAD_LIBS="-lpthread"
+AC_SUBST(PTHREAD_LIBS)
+LIBS=$LIBS_save
+
+# Check for libdl
+LIBS_save=$LIBS
+AC_CHECK_LIB(dl, dlopen,,[AC_MSG_ERROR(*** Can't find libdl ***)])
+DL_LIBS="-ldl"
+AC_SUBST(DL_LIBS)
+LIBS=$LIBS_save
+
+# Check for gpm library
+LIBS_save=$LIBS
+AC_CHECK_LIB(gpm, Gpm_Open,,[AC_MSG_ERROR(*** Can't find gpm library ***)])
+RESOLV_LIBS="-lgpm"
+AC_SUBST(GPM_LIBS)
+LIBS=$LIBS_save
+
+# Check for resolver library
+LIBS_save=$LIBS
+AC_CHECK_LIB(resolv, gethostbyname,,[AC_MSG_ERROR(*** Can't find libresolv ***)])
+RESOLV_LIBS="-lresolv"
+AC_SUBST(RESOLV_LIBS)
+LIBS=$LIBS_save
+
+# Stuff for mp3 plugin
+AC_ARG_ENABLE(mp3, 
+[	--disable-mp3		Disable mp3 input plugin [default=enabled]],,
+		enable_mp3="yes")
+if test "x$enable_mp3" = xyes; then
+	# Check for math lib
+	LIBS_save=$LIBS
+	AC_CHECK_LIB(m, pow,,[AC_MSG_ERROR(*** Can't find libm ***)])
+	MATH_LIBS="-lm"
+	AC_SUBST(MATH_LIBS)
+	LIBS=$LIBS_save
+
+	# Check for libmad
+	LIBS_save=$LIBS
+	AC_CHECK_LIB(m, pow,,[AC_MSG_ERROR(*** Can't find libmad ***)])
+	MAD_LIBS="-lmad"
+	AC_SUBST(MAD_LIBS)
+	LIBS=$LIBS_save
+else
+	AC_MSG_RESULT([*** mp3 plugin disabled per user request ***])
+fi
+
+# Stuff for ogg plugin
+AC_ARG_ENABLE(ogg, 
+[	--disable-ogg		Disable ogg input plugin [default=enabled]],,
+		enable_ogg="yes")
+if test "x$enable_ogg" = xyes; then
+	# Check for libvorbis
+	LIBS_save=$LIBS
+	AC_CHECK_LIB(vorbis, vorbis_dsp_clear,,[AC_MSG_ERROR(*** Can't find libvorbis ***)])
+	AC_CHECK_LIB(vorbisfile, ov_open,,[AC_MSG_ERROR(*** Can't find libvorbisfile ***)])
+	AC_CHECK_LIB(ogg, ogg_stream_init,,[AC_MSG_ERROR(*** Can't find libogg ***)])
+	OGG_LIBS="-lvorbis -lvorbisfile -logg"
+	AC_SUBST(OGG_LIBS)
+	LIBS=$LIBS_save
+else
+	AC_MSG_RESULT([*** ogg plugin disabled per user request ***])
+fi
 
 AM_GNU_GETTEXT
+
+# Handle specific plugins choosing
+for class in CHARSET EFFECT INPUT OUTPUT; do
+    value=`eval echo "\\$${class}_PLUGINS"`
+    if test "x${value}" = x; then
+       eval ${class}_PLUGINS="\$\(ALL_PLUGINS\)"
+    else
+       value=`echo ${value} | sed -e 's/,/ /g'`
+       eval ${class}_PLUGINS="\${value}"
+    fi
+done
+AC_SUBST(CHARSET_PLUGINS)
+AC_SUBST(EFFECT_PLUGINS)
+AC_SUBST(INPUT_PLUGINS)
+AC_SUBST(OUTPUT_PLUGINS)
 
 AC_OUTPUT(Makefile src/Makefile libmpfc/Makefile \
 		    intl/Makefile po/Makefile.in m4/Makefile po/Makefile \

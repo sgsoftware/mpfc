@@ -262,6 +262,13 @@ void ogg_save_info( char *filename, song_info_t *info )
 	/* Supported only for regular files */
 	if (file_get_type(filename) != FILE_TYPE_REGULAR)
 		return;
+
+	/* Convert to UTF-8 if need */
+	if (cfg_get_var_int(pmng_get_cfg(ogg_pmng), "ogg-always-use-utf8") &&
+			(info->m_charset == NULL || strcasecmp(info->m_charset, "utf-8")))
+	{
+		si_convert_cs(info, "utf-8", ogg_pmng);
+	}
 	
 	/* Schedule info for saving if we are playing this file now */
 	if (!strcmp(filename, ogg_filename))
