@@ -39,7 +39,9 @@ bool_t dlgitem_construct( dlgitem_t *di, wnd_t *parent, char *title, char *id,
 	assert(di);
 
 	/* Initialize window part */
-	if (!wnd_construct(wnd, parent, title, 0, 0, 0, 0, WND_FLAG_OWN_DECOR))
+	if (!wnd_construct(wnd, parent, title, 0, 0, 0, 0, 
+				(flags & DLGITEM_BORDER) ? 
+				(WND_FLAG_BORDER | WND_FLAG_CAPTION) : 0))
 		return FALSE;
 
 	/* Initialize message map */

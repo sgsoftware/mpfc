@@ -29,11 +29,15 @@
 #include "cfg.h"
 #include "error.h"
 #include "eqwnd.h"
-//#include "file_input.h"
 #include "help_screen.h"
 #include "player.h"
 #include "wnd.h"
 #include "util.h"
+#include "wnd.h"
+#include "wnd_dialog.h"
+#include "wnd_hbox.h"
+#include "wnd_label.h"
+#include "wnd_filebox.h"
 
 /* Create a new equalizer window */
 eq_wnd_t *eqwnd_new( wnd_t *parent )
@@ -156,7 +160,7 @@ wnd_msg_retcode_t eqwnd_on_keydown( wnd_t *wnd, wnd_key_t key )
 		wnd_invalidate(wnd);
 		break;
 	case 'p':
-		//eqwnd_load_eqf_dlg();
+		eqwnd_load_eqf_dlg();
 		break;
 	case '?':
 		eqwnd_help(eq);
@@ -237,29 +241,28 @@ void eqwnd_save_params( void )
 	player_save_cfg_vars(cfg_list, str);
 } /* End of 'eqwnd_save_params' function */
 
-#if 0
-/* Process load preset from EQF file dialog */
+/* Launch load preset from EQF file dialog */
 void eqwnd_load_eqf_dlg( void )
 {
-	file_input_box_t *fin;
+	dialog_t *dlg;
+	hbox_t *hbox;
 
-	/* Create edit box for path input */
-	fin = fin_new(wnd_root, 0, WND_HEIGHT(wnd_root) - 1, 
-			WND_WIDTH(wnd_root), _("Load preset from a Winamp EQF file: "));
-	if (fin != NULL)
-	{
-		/* Run message loop */
-		wnd_run(fin);
-
-		/* Add file if enter was pressed */
-		if (fin->m_box.m_last_key == '\n')
-			eqwnd_load_eqf(EBOX_TEXT(fin));
-
-		/* Destroy edit box */
-		wnd_destroy(fin);
-	}
+	dlg = dialog_new(wnd_root, "Load preset froma Winamp EQF file");
+	hbox = hbox_new(WND_OBJ(dlg->m_vbox), NULL, 0);
+	label_new(WND_OBJ(hbox), "Name: ");
+	filebox_new(WND_OBJ(hbox), "name", "", 50);
+	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", eqwnd_on_load);
+	dialog_arrange_children(dlg);
 } /* End of 'eqwnd_load_eqf_dlg' function */
-#endif
+
+/* Handle 'ok_clicked' for EQF loading dialog */
+wnd_msg_retcode_t eqwnd_on_load( wnd_t *wnd )
+{
+	editbox_t *eb = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "name"));
+	assert(eb);
+	eqwnd_load_eqf(EDITBOX_TEXT(eb));
+	return WND_MSG_RETCODE_OK;
+} /* End of 'eqwnd_on_load' function */
 
 /* Load a Winamp EQF file */
 void eqwnd_load_eqf( char *filename )

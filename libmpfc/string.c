@@ -173,7 +173,7 @@ str_t *str_insert_cptr( str_t *dest, char *src, int index )
 	str_allocate(dest, dest->m_len + len);
 	memmove(&dest->m_data[index + len], &dest->m_data[index],
 			dest->m_len - index + 1);
-	strcpy(&dest->m_data[index], src);
+	memcpy(&dest->m_data[index], src, len);
 	dest->m_len += len;
 	return dest;
 } /* End of 'str_insert_cptr' function */
@@ -218,6 +218,30 @@ static void str_allocate( str_t *str, int new_len )
 			str->m_allocated % str->m_portion_size; str->m_allocated ++ );
 	str->m_data = (char *)realloc(str->m_data, str->m_allocated);
 } /* End of 'str_allocate' function */
+
+/* Extract a substring */
+str_t *str_substring( str_t *str, int start, int end )
+{
+	str_t *new_str;
+
+	if (str == NULL)
+		return NULL;
+
+	/* Allocate memory */
+	new_str = (str_t *)malloc(sizeof(str_t));
+	if (new_str == NULL)
+		return NULL;
+
+	/* Initialize fields */
+	new_str->m_len = end - start + 1;
+	new_str->m_data = NULL;
+	new_str->m_allocated = 0;
+	new_str->m_portion_size = STR_PORTION_SIZE;
+	str_allocate(new_str, new_str->m_len);
+	memcpy(new_str->m_data, &str->m_data[start], new_str->m_len);
+	new_str->m_data[new_str->m_len] = 0;
+	return new_str;
+} /* End of 'str_substring' function */
 
 /* End of 'string.c' file */
 

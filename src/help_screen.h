@@ -5,7 +5,7 @@
 /* FILE NAME   : help_screen.h
  * PURPOSE     : SG MPFC. Interface for help screen functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.08.2004
+ * LAST UPDATE : 18.08.2004
  * NOTE        : Module prefix 'help'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -38,12 +38,6 @@ typedef struct
 
 	/* Current screen number */
 	int m_screen;
-
-	/* Number of screens */
-	int m_num_screens;
-
-	/* Screen height */
-	int m_screen_size;
 
 	/* Items */
 	char **m_items;

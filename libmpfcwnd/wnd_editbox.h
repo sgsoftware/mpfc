@@ -29,6 +29,7 @@
 #define __SG_MPFC_WND_EDITBOX_H__
 
 #include "types.h"
+#include "mystring.h"
 #include "wnd.h"
 #include "wnd_dlgitem.h"
 
@@ -39,11 +40,13 @@ typedef struct
 	dlgitem_t m_wnd;
 
 	/* Edit box text */
-	char *m_text;
-	int m_len;
+	str_t *m_text;
 
 	/* Cursor position */
 	int m_cursor;
+
+	/* Scroll value */
+	int m_scrolled;
 
 	/* The desired width */
 	int m_width;
@@ -52,11 +55,16 @@ typedef struct
 /* Convert window object to edit box type */
 #define EDITBOX_OBJ(wnd)	((editbox_t *)wnd)
 
+/* Access edit box data */
+#define EDITBOX_TEXT(wnd)	(STR_TO_CPTR(EDITBOX_OBJ(wnd)->m_text))
+#define EDITBOX_LEN(wnd)	(STR_LEN(EDITBOX_OBJ(wnd)->m_text))
+
 /* Create a new edit box */
-editbox_t *editbox_new( wnd_t *parent, char *id, int width );
+editbox_t *editbox_new( wnd_t *parent, char *id, char *text, int width );
 
 /* Edit box constructor */
-bool_t editbox_construct( editbox_t *eb, wnd_t *parent, char *id, int width );
+bool_t editbox_construct( editbox_t *eb, wnd_t *parent, char *id, char *text,
+		int width );
 
 /* Destructor */
 void editbox_destructor( wnd_t *wnd );
@@ -67,11 +75,24 @@ void editbox_get_desired_size( dlgitem_t *di, int *width, int *height );
 /* Set edit box text */
 void editbox_set_text( editbox_t *eb, char *text );
 
+/* Add character into the current cursor position */
+void editbox_addch( editbox_t *eb, char ch );
+
+/* Delete character from the current or previous cursor position */
+void editbox_delch( editbox_t *eb, int pos );
+
+/* Move cursor */
+void editbox_move( editbox_t *eb, int new_pos );
+
 /* 'display' message handler */
 wnd_msg_retcode_t editbox_on_display( wnd_t *wnd );
 
 /* 'keydown' message handler */
 wnd_msg_retcode_t editbox_on_keydown( wnd_t *wnd, wnd_key_t key );
+
+/* 'mouse_ldown' message handler */
+wnd_msg_retcode_t editbox_on_mouse( wnd_t *wnd, int x, int y,
+		wnd_mouse_button_t mb, wnd_mouse_event_t type );
 
 #endif
 

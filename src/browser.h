@@ -132,8 +132,11 @@ void fb_add2plist( browser_t *fb );
 /* Replace files in playlist with selected files  */
 void fb_replace_plist( browser_t *fb );
 
-/* Select/deselect files matching a pattern */
-void fb_select_pattern( browser_t *fb, bool_t sel );
+/* Launch select/deselect files matching a pattern dialog */
+void fb_select_pattern_dialog( browser_t *fb, bool_t sel );
+
+/* Handle 'ok_clicked' for pattern dialog */
+wnd_msg_retcode_t fb_on_sel_pattern( wnd_t *wnd );
 
 /* Find a browser item by the mouse coordinates */
 int fb_find_item_by_mouse( browser_t *fb, int x, int y );

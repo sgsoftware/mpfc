@@ -143,6 +143,9 @@ struct tag_wnd_global_data_t
 
 	/* Window classes data */
 	wnd_class_t *m_wnd_classes;
+
+	/* Is library active now? */
+	bool_t m_lib_active;
 };
 
 /* Window type */
@@ -264,6 +267,7 @@ struct tag_wnd_t
 #define WND_STATES_POS(wnd)		(WND_GLOBAL(wnd)->m_states_stack_pos)
 #define WND_ROOT_CFG(wnd)		(WND_GLOBAL(wnd)->m_root_cfg)
 #define WND_CLASSES(wnd)		(WND_GLOBAL(wnd)->m_wnd_classes)
+#define WND_LIB_ACTIVE(wnd)		(WND_GLOBAL(wnd)->m_lib_active)
 
 /* Convert client coordinates to absolute window or screen */
 #define WND_CLIENT2ABS_X(wnd, x) (WND_OBJ(wnd)->m_client_x + (x))
@@ -349,6 +353,12 @@ wnd_color_t wnd_string2color( char *str );
 
 /* Get attribute from its textual representation */
 int wnd_string2attrib( char *str );
+
+/* Close curses */
+void wnd_close_curses( wnd_t *wnd_root );
+
+/* Restore curses after closing */
+void wnd_restore_curses( wnd_t *wnd_root );
 
 /* Synchronize screen contents with the display buffer */
 void wnd_sync_screen( wnd_t *wnd );

@@ -86,8 +86,8 @@ bool_t dialog_construct( dialog_t *dlg, wnd_t *parent, char *title )
 	wnd_msg_add_handler(wnd, "cancel_clicked", dialog_on_cancel);
 
 	/* Create boxes for items */
-	dlg->m_vbox = vbox_new(wnd, 0);
-	dlg->m_hbox = hbox_new(WND_OBJ(dlg->m_vbox), 1);
+	dlg->m_vbox = vbox_new(wnd, NULL, 0);
+	dlg->m_hbox = hbox_new(WND_OBJ(dlg->m_vbox), NULL, 1);
 	DLGITEM_FLAGS(dlg->m_hbox) |= DLGITEM_PACK_END;
 
 	/* Create OK and Cancel buttons */
@@ -197,7 +197,7 @@ wnd_msg_retcode_t dialog_on_keydown( wnd_t *wnd, wnd_key_t key )
 		wnd_msg_send(wnd, "ok_clicked", dialog_msg_ok_new());
 	}
 	/* Escape initiates 'cancel_clicked' message sending */
-	else if (key == KEY_ESCAPE)
+	else if (key == KEY_ESCAPE || key == KEY_CTRL_G)
 	{
 		wnd_msg_send(wnd, "cancel_clicked", dialog_msg_cancel_new());
 	}

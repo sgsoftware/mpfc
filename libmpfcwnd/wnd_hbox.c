@@ -32,7 +32,7 @@
 #include "wnd_hbox.h"
 
 /* Create a new horizontal box */
-hbox_t *hbox_new( wnd_t *parent, int dist )
+hbox_t *hbox_new( wnd_t *parent, char *title, int dist )
 {
 	hbox_t *hbox;
 	wnd_class_t *klass;
@@ -42,18 +42,10 @@ hbox_t *hbox_new( wnd_t *parent, int dist )
 	if (hbox == NULL)
 		return NULL;
 	memset(hbox, 0, sizeof(*hbox));
-
-	/* Initialize window class */
-	klass = wnd_basic_class_init(WND_GLOBAL(parent));
-	if (klass == NULL)
-	{
-		free(hbox);
-		return NULL;
-	}
-	WND_OBJ(hbox)->m_class = klass;
+	WND_OBJ(hbox)->m_class = wnd_basic_class_init(WND_GLOBAL(parent));
 
 	/* Initialize box */
-	if (!hbox_construct(hbox, parent, dist))
+	if (!hbox_construct(hbox, parent, title, dist))
 	{
 		free(hbox);
 		return NULL;
@@ -63,11 +55,12 @@ hbox_t *hbox_new( wnd_t *parent, int dist )
 } /* End of 'hbox_new' function */
 
 /* Horizontal box constructor */
-bool_t hbox_construct( hbox_t *hbox, wnd_t *parent, int dist )
+bool_t hbox_construct( hbox_t *hbox, wnd_t *parent, char *title, int dist )
 {
 	/* Initialize dialog item part */
-	if (!dlgitem_construct(DLGITEM_OBJ(hbox), parent, "", "", 
-				hbox_get_desired_size, hbox_set_pos, DLGITEM_NOTABSTOP))
+	if (!dlgitem_construct(DLGITEM_OBJ(hbox), parent, title, "", 
+				hbox_get_desired_size, hbox_set_pos, 
+				DLGITEM_NOTABSTOP | (title != NULL ? DLGITEM_BORDER : 0)))
 		return FALSE;
 
 	/* Set message handlers */
@@ -103,6 +96,11 @@ void hbox_get_desired_size( dlgitem_t *di, int *width, int *height )
 			(*height) = dh;
 		(*width) += (dw + box->m_dist);
 	}
+	if (WND_FLAGS(di) & WND_FLAG_BORDER)
+	{
+		(*width) += 2;
+		(*height) += 2;
+	}
 } /* End of 'hbox_get_desired_size' function */
 
 /* Set position */
@@ -113,8 +111,16 @@ void hbox_set_pos( dlgitem_t *di, int x, int y, int width, int height )
 	wnd_t *child;
 
 	/* Arrange the children */
-	cxs = 0;
-	cxe = width;
+	if (WND_FLAGS(di) & WND_FLAG_BORDER)
+	{
+		cxs = 0;
+		cxe = width - 1;
+	}
+	else
+	{
+		cxs = 0;
+		cxe = width;
+	}
 	cy = 0;
 	for ( child = WND_OBJ(di)->m_child; child != NULL; child = child->m_next )
 	{

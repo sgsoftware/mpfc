@@ -5,7 +5,7 @@
 /* FILE NAME   : help_screen.c
  * PURPOSE     : SG MPFC. Help screen functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.08.2004
+ * LAST UPDATE : 18.08.2004
  * NOTE        : Module prefix 'help'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -31,6 +31,9 @@
 #include "error.h"
 #include "help_screen.h"
 #include "wnd.h"
+
+/* Calculate the screen size */
+#define HELP_SCREEN_SIZE(wnd)	(WND_HEIGHT(wnd) - 2)
 
 /* Create new help screen */
 help_screen_t *help_new( wnd_t *parent, int type )
@@ -78,8 +81,6 @@ bool_t help_construct( help_screen_t *help, wnd_t *parent, int type )
 	/* Set fields */
 	help->m_screen = 0;
 	help->m_num_items = 0;
-	help->m_screen_size = WND_HEIGHT(wnd) - 4;
-	help->m_num_screens = 0;
 	help->m_items = NULL;
 	wnd->m_cursor_hidden = TRUE;
 
@@ -124,8 +125,8 @@ wnd_msg_retcode_t help_on_display( wnd_t *wnd )
 	
 	/* Print keys */
 	col_set_color(wnd, COL_EL_HELP_STRINGS);
-	for ( i = h->m_screen_size * h->m_screen, j = 0; 
-			i < h->m_num_items && i < h->m_screen_size * (h->m_screen + 1);
+	for ( i = HELP_SCREEN_SIZE(h) * h->m_screen, j = 0; 
+			i < h->m_num_items && i < HELP_SCREEN_SIZE(h) * (h->m_screen + 1);
 	   		i ++, j ++ )  
 	{
 		wnd_move(wnd, 0, 0, j);
@@ -154,12 +155,10 @@ wnd_msg_retcode_t help_on_keydown( wnd_t *wnd, wnd_key_t key )
 		break;
 	case ' ':
 	case '\n':
-		if (h->m_num_screens)
-		{
-			h->m_screen ++;
-			h->m_screen %= h->m_num_screens;
-			wnd_invalidate(wnd);
-		}
+		h->m_screen ++;
+		if ((h->m_screen) * HELP_SCREEN_SIZE(h) - 1 >= h->m_num_items)
+			h->m_screen = 0;
+		wnd_invalidate(wnd);
 		break;
 	}
 	return WND_MSG_RETCODE_OK;
@@ -171,8 +170,6 @@ void help_add( help_screen_t *h, char *name )
 	h->m_items = (char **)realloc(h->m_items, sizeof(char *) * 
 			(h->m_num_items + 1));
 	h->m_items[h->m_num_items ++] = strdup(name);
-	if ((h->m_num_items % h->m_screen_size) == 1)
-		h->m_num_screens ++;
 } /* End of 'help_add' function */
 
 /* Initialize help screen in player mode */

@@ -39,6 +39,10 @@
 #include "song_info.h"
 #include "wnd.h"
 #include "util.h"
+#include "wnd.h"
+#include "wnd_dialog.h"
+#include "wnd_hbox.h"
+#include "wnd_editbox.h"
 
 /* Info mode columns IDs */
 #define FB_COL_FILENAME 0
@@ -199,7 +203,7 @@ wnd_msg_retcode_t fb_on_keydown( wnd_t *wnd, wnd_key_t key )
 	{
 		bool_t dont_exit = FALSE;
 
-		if (key == 27)
+		if (key == 27 || key == KEY_CTRL_G)
 		{
 			fb->m_search_mode = FALSE;
 			fb->m_search_str[fb->m_search_str_len = 0] = 0;
@@ -249,6 +253,7 @@ wnd_msg_retcode_t fb_on_keydown( wnd_t *wnd, wnd_key_t key )
 			fb->m_search_str[fb->m_search_str_len = 0] = 0;
 			dont_exit = TRUE;
 		}
+		wnd_invalidate(WND_OBJ(fb));
 		if (!dont_exit)
 			return WND_MSG_RETCODE_OK;
 	}
@@ -320,6 +325,7 @@ wnd_msg_retcode_t fb_on_keydown( wnd_t *wnd, wnd_key_t key )
 
 	/* Toggle search mode */
 	case 's':
+	case KEY_CTRL_S:
 		fb->m_search_mode = !fb->m_search_mode;
 		break;
 
@@ -333,7 +339,7 @@ wnd_msg_retcode_t fb_on_keydown( wnd_t *wnd, wnd_key_t key )
 		break;
 	case '+':
 	case '-':
-		//fb_select_pattern(fb, key == '+');
+		fb_select_pattern_dialog(fb, key == '+');
 		break;
 
 	/* Show help */
@@ -617,49 +623,43 @@ void fb_add2plist( browser_t *fb )
 	plist_set_free(set);
 } /* End of 'fb_add2plist' function */
 
-#if 0
 /* Select/deselect files matching a pattern */
-void fb_select_pattern( browser_t *fb, bool_t sel )
+void fb_select_pattern_dialog( browser_t *fb, bool_t sel )
 {
-	editbox_t *box;
-	char *pattern;
+	dialog_t *dlg;
+	hbox_t *hbox;
+	
+	dlg = dialog_new(WND_OBJ(fb), sel ? "Select files matching pattern" :
+			"Deselect files matching pattern");
+	hbox = hbox_new(WND_OBJ(dlg->m_vbox), NULL, 0);
+	label_new(WND_OBJ(hbox), "Pattern: ");
+	editbox_new(WND_OBJ(hbox), "pattern", "*", 50);
+	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", fb_on_sel_pattern);
+	dialog_arrange_children(dlg);
+} /* End of 'fb_select_pattern' function */
+
+/* Handle 'ok_clicked' for pattern dialog */
+wnd_msg_retcode_t fb_on_sel_pattern( wnd_t *wnd )
+{
+	editbox_t *eb = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "pattern"));
+	browser_t *fb = (browser_t *)(wnd->m_parent);
 	int i;
 
-	if (fb == NULL)
-		return;
-
-	/* Display box for pattern input */
-	box = ebox_new(WND_OBJ(fb), 0, WND_HEIGHT(fb) - 1, WND_WIDTH(fb), 1,
-			-1, sel ? _("Select files matching pattern: ") : 
-			_("Deselect files matching pattern: "), "*");
-	if (box == NULL)
-		return;
-	box->m_hist_list = player_hist_lists[PLAYER_HIST_FB_PATTERN];
-	wnd_run(box);
-	if (box->m_last_key == 27)
-	{
-		wnd_destroy(box);
-		return;
-	}
-
-	/* Get pattern */
-	pattern = strdup(EBOX_TEXT(box));
-
-	/* Free memory */
-	wnd_destroy(box);
+	assert(eb);
+	assert(fb);
 
 	/* Select/deselect */
 	for ( i = 0; i < fb->m_num_files; i ++ )
-		if (!fnmatch(pattern, fb->m_files[i].m_name, 0))
+		if (!fnmatch(EDITBOX_TEXT(eb), fb->m_files[i].m_name, 0))
 		{
-			if (sel)
+			if (wnd->m_title[0] == 'S')
 				fb->m_files[i].m_type |= FB_ITEM_SEL;
 			else
 				fb->m_files[i].m_type &= ~FB_ITEM_SEL;
 		}
-	free(pattern);
-} /* End of 'fb_select_pattern' function */
-#endif
+	wnd_invalidate(WND_OBJ(fb));
+	return WND_MSG_RETCODE_OK;
+} /* End of 'fb_on_sel_pattern' function */
 
 /* Find a browser item by the mouse coordinates */
 int fb_find_item_by_mouse( browser_t *fb, int x, int y )

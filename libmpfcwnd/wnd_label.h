@@ -2,12 +2,12 @@
  * Copyright (C) 2004 by SG Software.
  ******************************************************************/
 
-/* FILE NAME   : wnd_vbox.h
- * PURPOSE     : SG MPFC Window Library. Interface for vertical
- *               box functions.
+/* FILE NAME   : wnd_label.h
+ * PURPOSE     : MPFC Window Library. Interface for label 
+ *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 16.08.2004
- * NOTE        : Module prefix 'vbox'.
+ * LAST UPDATE : 17.08.2004
+ * NOTE        : Module prefix 'label'.
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 
@@ -25,42 +25,36 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef __SG_MPFC_WND_VBOX_H__
-#define __SG_MPFC_WND_VBOX_H__
+#ifndef __SG_MPFC_WND_LABEL_H__
+#define __SG_MPFC_WND_LABEL_H__
 
 #include "types.h"
 #include "wnd.h"
 #include "wnd_dlgitem.h"
 
-/* Vertical box type */
+/* Label type */
 typedef struct 
 {
 	/* Dialog item part */
 	dlgitem_t m_wnd;
 
-	/* Distance between children */
-	int m_dist;
-} vbox_t;
+	/* Label text */
+	char *m_text;
+} label_t;
 
-/* Convert window object to vertical box type */
-#define VBOX_OBJ(wnd)	((vbox_t *)wnd)
+/* Create a new label */
+label_t *label_new( wnd_t *parent, char *text );
 
-/* Create a new vertical box */
-vbox_t *vbox_new( wnd_t *parent, char *title, int dist );
+/* Label constructor */
+bool_t label_construct( label_t *l, wnd_t *parent, char *text );
 
-/* Vertical box constructor */
-bool_t vbox_construct( vbox_t *vbox, wnd_t *parent, char *title, int dist );
+/* Calculate size desired by this label */
+void label_get_desired_size( dlgitem_t *di, int *width, int *height );
 
-/* 'keydown' message handler */
-wnd_msg_retcode_t vbox_on_keydown( wnd_t *wnd, wnd_key_t key );
-
-/* Get the desired size */
-void vbox_get_desired_size( dlgitem_t *di, int *width, int *height );
-
-/* Set position */
-void vbox_set_pos( dlgitem_t *di, int x, int y, int width, int height );
+/* 'display' message handler */
+wnd_msg_retcode_t label_on_display( wnd_t *wnd );
 
 #endif
 
-/* End of 'wnd_vbox.h' file */
+/* End of 'wnd_label.h' file */
 

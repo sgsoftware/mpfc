@@ -5,7 +5,7 @@
 /* FILE NAME   : mystring.h
  * PURPOSE     : SG MPFC. Interface for string management functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 8.02.2004
+ * LAST UPDATE : 18.08.2004
  * NOTE        : Module prefix 'str'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -48,6 +48,9 @@ typedef struct
 /* Convert string to (char *) */
 #define STR_TO_CPTR(str) ((str)->m_data)
 
+/* Get string character at the specified position */
+#define STR_AT(str, pos) ((str)->m_data[pos])
+
 /* Create a new string */
 str_t *str_new( char *s );
 
@@ -83,6 +86,9 @@ str_t *str_insert_cptr( str_t *dest, char *src, int index );
 
 /* Insert a string */
 str_t *str_insert_str( str_t *dest, str_t *src, int index );
+
+/* Extract a substring */
+str_t *str_substring( str_t *str, int start, int end );
 
 /* Formatted print */
 int str_printf( str_t *str, char *fmt, ... );

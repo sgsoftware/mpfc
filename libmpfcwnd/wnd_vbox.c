@@ -32,7 +32,7 @@
 #include "wnd_vbox.h"
 
 /* Create a new vertical box */
-vbox_t *vbox_new( wnd_t *parent, int dist )
+vbox_t *vbox_new( wnd_t *parent, char *title, int dist )
 {
 	vbox_t *vbox;
 	wnd_class_t *klass;
@@ -42,18 +42,10 @@ vbox_t *vbox_new( wnd_t *parent, int dist )
 	if (vbox == NULL)
 		return NULL;
 	memset(vbox, 0, sizeof(*vbox));
-
-	/* Initialize window class */
-	klass = wnd_basic_class_init(WND_GLOBAL(parent));
-	if (klass == NULL)
-	{
-		free(vbox);
-		return NULL;
-	}
-	WND_OBJ(vbox)->m_class = klass;
+	WND_OBJ(vbox)->m_class = wnd_basic_class_init(WND_GLOBAL(parent));
 
 	/* Initialize box */
-	if (!vbox_construct(vbox, parent, dist))
+	if (!vbox_construct(vbox, parent, title, dist))
 	{
 		free(vbox);
 		return NULL;
@@ -63,11 +55,12 @@ vbox_t *vbox_new( wnd_t *parent, int dist )
 } /* End of 'vbox_new' function */
 
 /* Vertical box constructor */
-bool_t vbox_construct( vbox_t *vbox, wnd_t *parent, int dist )
+bool_t vbox_construct( vbox_t *vbox, wnd_t *parent, char *title, int dist )
 {
 	/* Initialize dialog item part */
-	if (!dlgitem_construct(DLGITEM_OBJ(vbox), parent, "", "", 
-				vbox_get_desired_size, vbox_set_pos, DLGITEM_NOTABSTOP))
+	if (!dlgitem_construct(DLGITEM_OBJ(vbox), parent, title, "", 
+				vbox_get_desired_size, vbox_set_pos, 
+				DLGITEM_NOTABSTOP | (title != NULL ? DLGITEM_BORDER : 0)))
 		return FALSE;
 
 	/* Set message handlers */
@@ -103,6 +96,11 @@ void vbox_get_desired_size( dlgitem_t *di, int *width, int *height )
 			(*width) = dw;
 		(*height) += (dh + box->m_dist);
 	}
+	if (WND_FLAGS(di) & WND_FLAG_BORDER)
+	{
+		(*width) += 2;
+		(*height) += 2;
+	}
 } /* End of 'vbox_get_desired_size' function */
 
 /* Set position */
@@ -114,8 +112,16 @@ void vbox_set_pos( dlgitem_t *di, int x, int y, int width, int height )
 
 	/* Arrange the children */
 	cx = 0;
-	cys = 0;
-	cye = height;
+	if (WND_FLAGS(di) & WND_FLAG_BORDER)
+	{
+		cys = 0;
+		cye = height - 1;
+	}
+	else
+	{
+		cys = 0;
+		cye = height;
+	}
 	for ( child = WND_OBJ(di)->m_child; child != NULL; child = child->m_next )
 	{
 		dlgitem_t *child_di = DLGITEM_OBJ(child);

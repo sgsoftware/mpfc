@@ -36,6 +36,7 @@ typedef enum
 {
 	DLGITEM_NOTABSTOP	= 1 << 0,
 	DLGITEM_PACK_END	= 1 << 1,
+	DLGITEM_BORDER		= 1 << 2,
 } dlgitem_flags_t;
 
 /* Functions for getting desired size for a dialog item and setting

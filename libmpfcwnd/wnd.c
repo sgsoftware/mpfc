@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Window functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 15.08.2004
+ * LAST UPDATE : 18.08.2004
  * NOTE        : Module prefix 'wnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -67,6 +67,7 @@ wnd_t *wnd_init( cfg_node_t *cfg_list )
 	global->m_curses_wnd = wnd;
 	global->m_last_id = -1;
 	global->m_states_stack_pos = 0;
+	global->m_lib_active = TRUE;
 
 	/* Initialize display buffer */
 	len = COLS * LINES;
@@ -220,8 +221,8 @@ bool_t wnd_construct( wnd_t *wnd, wnd_t *parent, char *title, int x, int y,
 	/* Maximize window */
 	if (parent != NULL && (flags & WND_FLAG_MAXIMIZED))
 	{
-		x = parent->m_client_x;
-		y = parent->m_client_y;
+		x = 0;
+		y = 0;
 		width = parent->m_client_w;
 		height = parent->m_client_h;
 	}
@@ -360,6 +361,13 @@ void wnd_main( wnd_t *wnd_root )
 	for ( was_width = wnd_root->m_width, was_height = wnd_root->m_height;; )
 	{
 		struct winsize winsz;
+
+		/* Do nothing if library is not active now */
+		if (!WND_LIB_ACTIVE(wnd_root))
+		{
+			util_wait();
+			continue;
+		}
 
 		/* Check if screen size is changed */
 		winsz.ws_col = winsz.ws_row = 0;
@@ -790,16 +798,19 @@ int wnd_string2attrib( char *str )
 /* Set focus window */
 void wnd_set_focus( wnd_t *wnd )
 {
-	wnd_t *parent, *child, *prev, *cur;
+	wnd_t *parent, *child, *prev, *cur, *last_parent = NULL;
 
 	assert(wnd);
 
 	/* Rearrange windows in every level until we reach current focus branch */
-	for ( parent = wnd->m_parent, cur = wnd; 
-			parent != NULL && parent->m_focus_child != cur;
+	for ( parent = wnd->m_parent, cur = wnd; parent != NULL;
 			cur = parent, parent = parent->m_parent )
 	{
+		if (parent->m_focus_child == cur)
+			continue;
+
 		prev = NULL;
+		last_parent = parent;
 		for ( child = parent->m_child; child != NULL; child = child->m_next )
 		{
 			if (child->m_zval > cur->m_zval)
@@ -822,8 +833,11 @@ void wnd_set_focus( wnd_t *wnd )
 	wnd_set_global_focus(WND_GLOBAL(wnd));
 
 	/* Repaint */
-	wnd_global_update_visibility(WND_ROOT(wnd));
-	wnd_invalidate(parent == NULL ? WND_ROOT(wnd) : parent);
+	if (last_parent != NULL)
+	{
+		wnd_global_update_visibility(WND_ROOT(wnd));
+		wnd_invalidate(last_parent);
+	}
 } /* End of 'wnd_set_focus' function */
 
 /* Set focus to the next child of this window */
@@ -1281,6 +1295,22 @@ void wnd_calc_real_pos( wnd_t *wnd )
 			wnd->m_real_bottom = parent->m_real_bottom;
 	}
 } /* End of 'wnd_calc_real_pos' function */
+
+/* Close curses */
+void wnd_close_curses( wnd_t *wnd_root )
+{
+	WND_LIB_ACTIVE(wnd_root) = FALSE;
+	clear();
+	refresh();
+	endwin();
+} /* End of 'wnd_close_curses' function */
+
+/* Restore curses after closing */
+void wnd_restore_curses( wnd_t *wnd_root )
+{
+	refresh();
+	WND_LIB_ACTIVE(wnd_root) = TRUE;
+} /* End of 'wnd_restore_curses' function */
 
 /* End of 'wnd.c' file */
 

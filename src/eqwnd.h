@@ -72,8 +72,11 @@ void eqwnd_set_var( int pos, float val, bool_t rel );
 /* Save equalizer parameters */
 void eqwnd_save_params( void );
 
-/* Process load preset from EQF file dialog */
+/* Launch load preset from EQF file dialog */
 void eqwnd_load_eqf_dlg( void );
+
+/* Handle 'ok_clicked' for EQF loading dialog */
+wnd_msg_retcode_t eqwnd_on_load( wnd_t *wnd );
 
 /* Load a Winamp EQF file */
 void eqwnd_load_eqf( char *filename );

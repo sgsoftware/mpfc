@@ -43,6 +43,7 @@
 #define KEY_CTRL_G		7
 #define KEY_CTRL_H		8
 #define KEY_CTRL_I		9
+#define KEY_TAB			9
 #define KEY_CTRL_J		10
 #define KEY_CTRL_K		11
 #define KEY_CTRL_L		12

@@ -46,10 +46,10 @@ typedef struct
 #define HBOX_OBJ(wnd)	((hbox_t *)wnd)
 
 /* Create a new horizontal box */
-hbox_t *hbox_new( wnd_t *parent, int dist );
+hbox_t *hbox_new( wnd_t *parent, char *title, int dist );
 
 /* Horizontal box constructor */
-bool_t hbox_construct( hbox_t *hbox, wnd_t *parent, int dist );
+bool_t hbox_construct( hbox_t *hbox, wnd_t *parent, char *title, int dist );
 
 /* 'keydown' message handler */
 wnd_msg_retcode_t hbox_on_keydown( wnd_t *wnd, wnd_key_t key );
