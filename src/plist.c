@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Play list manipulation
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.08.2004
+ * LAST UPDATE : 15.09.2004
  * NOTE        : Module prefix 'plist'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -45,9 +45,8 @@
 #include "undo.h"
 #include "wnd.h"
 
-/* Check play list validity macro */
-#define PLIST_ASSERT(pl) if ((pl) == NULL) return
-#define PLIST_ASSERT_RET(pl, ret) if ((pl) == NULL) return (ret)
+/* Number of files added by plist_add_set */
+int plist_num = 0;
 
 /* Create a new play list */
 plist_t *plist_new( int start_pos )
@@ -102,7 +101,7 @@ bool_t plist_add( plist_t *pl, char *filename )
 	bool_t ret;
 
 	/* Initialize one-element set and add it */
-	set = plist_set_new();
+	set = plist_set_new(TRUE);
 	plist_set_add(set, filename);
 	ret = plist_add_set(pl, set);
 	plist_set_free(set);
@@ -110,32 +109,18 @@ bool_t plist_add( plist_t *pl, char *filename )
 } /* End of 'plist_add' function */
 
 /* Add single file to play list */
-int plist_add_one_file( plist_t *pl, char *filename )
-{
-	int i;
-
-	PLIST_ASSERT_RET(pl, FALSE);
-
-	/* Add song */
-	i = plist_add_list(pl, filename);
-	if (i < 0)
-		return plist_add_song(pl, filename, NULL, 0, -1);
-	else
-		return i;
-} /* End of 'plist_add_one_file' function */
-
-/* Add a song to play list */
-int plist_add_song( plist_t *pl, char *filename, char *title, int len, 
+int plist_add_one_file( plist_t *pl, vfs_file_t *file, char *title, int len,
 		int where )
 {
 	song_t *song;
 	int was_len;
-	
-	PLIST_ASSERT_RET(pl, FALSE);
+	assert(pl);
 
-	/* Add object */
-	if (plist_is_obj(filename))
-		return plist_add_obj(pl, filename, title, where);
+	/* Choose if file is play list */
+	if (!strcasecmp(file->m_extension, "m3u"))
+		return plist_add_m3u(pl, file->m_name);
+	else if (!strcasecmp(file->m_extension, "pls"))
+		return plist_add_pls(pl, file->m_name);
 
 	/* Lock play list */
 	plist_lock(pl);
@@ -153,7 +138,7 @@ int plist_add_song( plist_t *pl, char *filename, char *title, int len,
 	}
 
 	/* Initialize new song and add it to list */
-	song = song_new(filename, title, len);
+	song = song_new(file, title, len);
 	if (song == NULL)
 	{
 		plist_unlock(pl);
@@ -184,13 +169,13 @@ int plist_add_song( plist_t *pl, char *filename, char *title, int len,
 	if (title == NULL)
 		pl->m_list[where]->m_flags |= SONG_SCHEDULE;
 	return 1;
-} /* End of 'plist_add_song' function */
+} /* End of 'plist_add_one_file' function */
 
 /* Add a play list file to play list */
 int plist_add_list( plist_t *pl, char *filename )
 {
 	char *ext = util_extension(filename);
-	PLIST_ASSERT_RET(pl, FALSE);
+	assert(pl);
 
 	/* Choose play list format */
 	if (!strcasecmp(ext, "m3u"))
@@ -231,6 +216,7 @@ int plist_add_m3u( plist_t *pl, char *filename )
 	{
 		char len[10], *title;
 		int i, j, song_len, str_len;
+		vfs_file_t desc;
 		
 		/* Read song length and title string */
 		file_gets(str, sizeof(str), fd);
@@ -251,12 +237,9 @@ int plist_add_m3u( plist_t *pl, char *filename )
 		file_gets(str, sizeof(str), fd);
 		util_del_nl(str, str);
 
-		/* Check if this is an object */
-		if (plist_is_obj(str))
-			num += plist_add_obj(pl, str, title, -1);
-		/* Add this song to list */
-		else
-			num += plist_add_song(pl, str, title, song_len, -1);
+		/* Add file */
+		vfs_file_desc_init(player_vfs, &desc, str, NULL);
+		num += plist_add_one_file(pl, &desc, title, song_len, -1);
 		free(title);
 	}
 
@@ -397,12 +380,11 @@ int plist_add_pls( plist_t *pl, char *filename )
 
 		if (name != NULL)
 		{
-			/* Check if this is an object */
-			if (plist_is_obj(str))
-				num += plist_add_obj(pl, name, title, -1);
+			vfs_file_t desc;
+
 			/* Add song */
-			else
-				num += plist_add_song(pl, name, title, len < 0 ? 0 : len, -1);
+			vfs_file_desc_init(player_vfs, &desc, name, NULL);
+			num += plist_add_one_file(pl, &desc, title, len < 0 ? 0 : len, -1);
 
 			/* Free this entry */
 			free(name);
@@ -416,80 +398,16 @@ int plist_add_pls( plist_t *pl, char *filename )
 	return num;
 } /* End of 'plist_add_pls' function */
 
-/* Add MPL play list */
-int plist_add_mpl( plist_t *pl, char *filename )
-{
-} /* End of 'plist_add_mpl' function */
-
-/* Low level song adding */
-bool_t __plist_add_song( plist_t *pl, char *filename, char *title, int len, 
-	   int where )
-{
-	song_t *song;
-	int was_len;
-	
-	PLIST_ASSERT_RET(pl, FALSE);
-
-	/* Lock play list */
-	plist_lock(pl);
-
-	/* Try to reallocate memory for play list */
-	was_len = pl->m_len;
-	pl->m_list = (song_t **)realloc(pl->m_list,
-			sizeof(song_t *) * (pl->m_len + 1));
-	if (pl->m_list == NULL)
-	{
-		pl->m_len = 0;
-		error_set_code(ERROR_NO_MEMORY);
-		plist_unlock(pl);
-		return FALSE;
-	}
-
-	/* Initialize new song and add it to list */
-	song = song_new(filename, title, len);
-	if (song == NULL)
-	{
-		plist_unlock(pl);
-		return FALSE;
-	}
-	if (where < 0 || where >= pl->m_len)  
-		pl->m_list[pl->m_len ++] = song;
-	else
-	{
-		memmove(&pl->m_list[where + 1], &pl->m_list[where], 
-				sizeof(song_t *) * (pl->m_len - where));
-		pl->m_list[where] = song;
-		pl->m_len ++;
-	}
-
-	/* If list was empty - put cursor to the first song */
-	if (!was_len)
-	{
-		pl->m_sel_start = pl->m_sel_end = 0;
-		pl->m_visual = FALSE;
-	}
-
-	/* Unlock play list */
-	plist_unlock(pl);
-
-	/* Update screen */
-	wnd_invalidate(player_wnd);
-	
-	return TRUE;
-} /* End of '__plist_add_song' function */
-
 /* Save play list */
 bool_t plist_save( plist_t *pl, char *filename )
 {
 	char *ext = util_extension(filename);
-	PLIST_ASSERT_RET(pl, FALSE);
+	assert(pl);
 
 	if (!strcasecmp(ext, "m3u"))
 		return plist_save_m3u(pl, filename);
 	else if (!strcasecmp(ext, "pls"))
 		return plist_save_pls(pl, filename);
-/*	else if (!strcasecmp(ext, "mpl"))
-		return plist_save_mpl(pl, filename);*/
 	return FALSE;
 } /* End of 'plist_save' function */
 
@@ -513,7 +431,7 @@ bool_t plist_save_m3u( plist_t *pl, char *filename )
 	{
 		fprintf(fd, "#EXTINF:%i,%s\n%s\n", pl->m_list[i]->m_len,
 				STR_TO_CPTR(pl->m_list[i]->m_title), 
-				pl->m_list[i]->m_file_name);
+				pl->m_list[i]->m_full_name);
 	}
 
 	/* Close file */
@@ -544,11 +462,6 @@ bool_t plist_save_pls( plist_t *pl, char *filename )
 	fclose(fd);
 	return TRUE;
 } /* End of 'plist_save_pls' function */
-
-/* Save play list to MPL format */
-bool_t plist_save_mpl( plist_t *pl, char *filename )
-{
-} /* End of 'plist_save_mpl' function */
 
 /* Compare two songs for sorting */
 int plist_song_cmp( song_t *s1, song_t *s2, int criteria )
@@ -597,7 +510,7 @@ void plist_sort_bounds( plist_t *pl, int start, int end, int criteria )
 	song_t **was_list = NULL;
 	bool_t finished = FALSE;
 
-	PLIST_ASSERT(pl);
+	assert(pl);
 	if (start > end)
 		return;
 	if (start < 0)
@@ -700,8 +613,7 @@ void plist_sort_bounds( plist_t *pl, int start, int end, int criteria )
 void plist_sort( plist_t *pl, bool_t global, int criteria )
 {
 	int start, end;
-	
-	PLIST_ASSERT(pl);
+	assert(pl);
 
 	/* Get sort start and end */
 	if (global)
@@ -717,8 +629,7 @@ void plist_sort( plist_t *pl, bool_t global, int criteria )
 void plist_rem( plist_t *pl )
 {
 	int start, end, i, cur;
-	
-	PLIST_ASSERT(pl);
+	assert(pl);
 
 	/* Get real selection bounds */
 	PLIST_GET_SEL(pl, start, end);
@@ -796,7 +707,7 @@ bool_t plist_search( plist_t *pl, char *pstr, int dir, int criteria )
 	int i, count = 0;
 	bool_t found = FALSE;
 
-	PLIST_ASSERT_RET(pl, FALSE);
+	assert(pl);
 	if (!pl->m_len)
 		return;
 
@@ -860,8 +771,7 @@ bool_t plist_search( plist_t *pl, char *pstr, int dir, int criteria )
 void plist_move( plist_t *pl, int y, bool_t relative )
 {
 	int old_end;
-	
-	PLIST_ASSERT(pl);
+	assert(pl);
 
 	/* If we have empty list - set position to 0 */
 	if (!pl->m_len)
@@ -898,7 +808,7 @@ void plist_move( plist_t *pl, int y, bool_t relative )
 /* Centrize view */
 void plist_centrize( plist_t *pl, int index )
 {
-	PLIST_ASSERT(pl);
+	assert(pl);
 
 	if (!pl->m_len)
 		return;
@@ -925,7 +835,7 @@ void plist_display( plist_t *pl, wnd_t *wnd )
 	int i, j, start, end, l_time = 0, s_time = 0;
 	char time_text[80];
 
-	PLIST_ASSERT(pl);
+	assert(pl);
 	PLIST_GET_SEL(pl, start, end);
 
 	/* Display each song */
@@ -1210,11 +1120,11 @@ void plist_reload_info( plist_t *pl, bool_t global )
 	}
 } /* End of 'plist_reload_info' function */
 
-/* Handler for file finder */
-int plist_find_handler( char *name, void *data )
+/* Handle file returned by glob */
+void plist_glob_handler( vfs_file_t *file, void *data )
 {
-	return plist_add_one_file((plist_t *)data, name);
-} /* End of 'plist_find_handler' function */
+	plist_num += plist_add_one_file((plist_t *)data, file, NULL, 0, -1);
+} /* End of 'plist_glob_handler' function */
 
 /* Check if specified file name belongs to an object */
 bool_t plist_is_obj( char *filename )
@@ -1245,43 +1155,33 @@ bool_t plist_add_set( plist_t *pl, plist_set_t *set )
 {
 	int i, num = 0;
 	struct tag_plist_set_t *node;
+	vfs_glob_flags_t flags = 0;
 
 	/* Do nothing if set is empty */
 	if (pl == NULL || set == NULL)
 		return FALSE;
 
 	/* Add each file in the set */
+	if (!set->m_patterns)
+		flags |= VFS_GLOB_NOPATTERN;
+	plist_num = 0;
 	for ( node = set->m_head; node != NULL; node = node->m_next )
 	{
-		char fname[MAX_FILE_NAME], *filename = node->m_name;
-
-		util_strncpy(fname, filename, sizeof(fname));
-		if (file_get_type(filename) == FILE_TYPE_REGULAR && 
-				filename[0] != '/' && filename[0] != '~')
-		{
-			char wd[MAX_FILE_NAME];
-			char fn[MAX_FILE_NAME];
-			
-			getcwd(wd, sizeof(wd));
-			util_strncpy(fn, fname, sizeof(fn));
-			snprintf(fname, sizeof(fname), "%s/%s", wd, fn);
-		}
-
-		/* Find songs */
-		num += find_do(fname, "*", plist_find_handler, pl);
+		vfs_glob(player_vfs, node->m_name, plist_glob_handler, pl, 
+				VFS_LEVEL_INFINITE, flags);
 	}
 
 	/* Set info */
 	plist_flush_scheduled(pl);
 	
 	/* Store undo information */
-	if (player_store_undo && num)
+	if (player_store_undo && plist_num)
 	{
 		struct tag_undo_list_item_t *undo;
 		undo = (struct tag_undo_list_item_t *)malloc(sizeof(*undo));
 		undo->m_type = UNDO_ADD;
 		undo->m_next = undo->m_prev = NULL;
-		undo->m_data.m_add.m_num_songs = num;
+		undo->m_data.m_add.m_num_songs = plist_num;
 		undo->m_data.m_add.m_set = plist_set_dup(set);
 		undo_add(player_ul, undo);
 	}
@@ -1305,15 +1205,16 @@ bool_t plist_add_set( plist_t *pl, plist_set_t *set )
 			cr = PLIST_SORT_BY_TRACK;
 		if (cr >= 0)
 		{
-			plist_sort_bounds(pl, pl->m_len - num, pl->m_len - 1, cr);
+			plist_sort_bounds(pl, pl->m_len - plist_num, pl->m_len - 1, cr);
 		}
 	}
+	plist_num = 0;
 
 	return TRUE;
 } /* End of 'plist_add_set' function */
 
 /* Initialize a set of files for adding */
-plist_set_t *plist_set_new( void )
+plist_set_t *plist_set_new( bool_t patterns )
 {
 	plist_set_t *set;
 
@@ -1321,6 +1222,7 @@ plist_set_t *plist_set_new( void )
 	set = (plist_set_t *)malloc(sizeof(plist_set_t));
 	if (set == NULL)
 		return NULL;
+	set->m_patterns = patterns;
 	set->m_head = set->m_tail = NULL;
 	return set;
 } /* End of 'plist_set_new' function */
@@ -1376,7 +1278,7 @@ plist_set_t *plist_set_dup( plist_set_t *set )
 	if (set == NULL)
 		return NULL;
 
-	s = plist_set_new();
+	s = plist_set_new(set->m_patterns);
 	for ( node = set->m_head; node != NULL; node = node->m_next )
 		plist_set_add(s, node->m_name);
 	return s;

@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for songs manipulation
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 26.08.2004
+ * LAST UPDATE : 15.09.2004
  * NOTE        : Module prefix 'song'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -30,8 +30,10 @@
 
 #include "types.h"
 #include "file.h"
+#include "inp.h"
 #include "mystring.h"
 #include "song_info.h"
+#include "vfs.h"
 
 /* Declare this type */
 struct tag_in_plugin_t;
@@ -42,15 +44,19 @@ struct tag_in_plugin_t;
 #define SONG_SAVE_INFO 0x00000004
 
 /* Song type */
-typedef struct
+typedef struct tag_song_t
 {
 	/* Song title */
 	str_t *m_title;
 
-	/* Song file name */
-	char m_file_name[MAX_FILE_NAME];
-	char *m_short_name;
-	char *m_file_ext;
+	/* Song full name (i.e. with plugin prefix if it was specified) */
+	char *m_full_name;
+
+	/* File name without plugin prefix. This is used for the most part */
+	char *m_file_name;
+
+	/* Short name and file extension */
+	char *m_short_name, *m_file_ext;
 
 	/* Song length */
 	int m_len;
@@ -68,11 +74,11 @@ typedef struct
 	char *m_default_title;
 
 	/* Input plugin being used to play this song */
-	struct tag_in_plugin_t *m_inp;
+	in_plugin_t *m_inp;
 } song_t;
 
 /* Create a new song */
-song_t *song_new( char *filename, char *title, int len );
+song_t *song_new( vfs_file_t *file, char *title, int len );
 
 /* Add a reference to the song object */
 song_t *song_add_ref( song_t *song );
@@ -87,7 +93,7 @@ void song_update_info( song_t *song );
 void song_update_title( song_t *song );
 
 /* Get input plugin */
-struct tag_in_plugin_t *song_get_inp( song_t *song, file_t **fd );
+in_plugin_t *song_get_inp( song_t *song, file_t **fd );
 
 #endif
 

@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for input plugin management
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 27.08.2004
+ * LAST UPDATE : 19.09.2004
  * NOTE        : Module prefix 'inp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -28,20 +28,25 @@
 #ifndef __SG_MPFC_INP_H__
 #define __SG_MPFC_INP_H__
 
+#include <sys/stat.h>
 #include "types.h"
+#include "file.h"
 #include "genre_list.h"
 #include "mystring.h"
-#include "song.h"
 #include "song_info.h"
 
 /* Input plugin flags */
-#define INP_OWN_OUT 0x00000001
-#define INP_OWN_SOUND 0x00000002
+#define INP_OWN_OUT			0x00000001
+#define INP_OWN_SOUND		0x00000002
+#define INP_VFS				0x00000004
+#define INP_VFS_NOT_FIXED	0x00000008
 
 /* Special function flags */
 #define INP_SPEC_SAVE_INFO 0x00000001
 
+/* Forward declarations */
 struct tag_pmng_t;
+struct tag_song_t;
 
 /* Special input plugin function type */
 typedef struct
@@ -97,7 +102,7 @@ typedef struct
 	void (*m_set_eq)( void );
 
 	/* Initialize songs array that respects to the object */
-	song_t **(*m_init_obj_songs)( char *name, int *num_songs );
+	struct tag_song_t **(*m_init_obj_songs)( char *name, int *num_songs );
 
 	/* Set a title for song with empty song info */
 	str_t *(*m_set_song_title)( char *filename );
@@ -105,8 +110,24 @@ typedef struct
 	/* Set next song name */
 	void (*m_set_next_song)( char *name );
 
+	/***
+	 * Virtual file system access functions
+	 ***/
+
+	/* Open a directory */
+	void *(*m_vfs_opendir)( char *name );
+
+	/* Close directory */
+	void (*m_vfs_closedir)( void *dir );
+
+	/* Read directory entry */
+	char *(*m_vfs_readdir)( void *dir );
+
+	/* Get file parameters */
+	int (*m_vfs_stat)( char *name, struct stat *sb );
+
 	/* Reserved */
-	byte m_reserved[68];
+	byte m_reserved[52];
 
 	/* Information about plugin */
 	char *m_about;
@@ -185,7 +206,8 @@ void inp_get_audio_params( in_plugin_t *p, int *channels,
 void inp_set_eq( in_plugin_t *p );
 
 /* Initialize songs array that respects to the object */
-song_t **inp_init_obj_songs( in_plugin_t *p, char *name, int *num_songs );
+struct tag_song_t **inp_init_obj_songs( in_plugin_t *p, char *name, 
+		int *num_songs );
 
 /* Set song title */
 str_t *inp_set_song_title( in_plugin_t *p, char *filename );
@@ -210,6 +232,18 @@ dword inp_get_spec_flags( in_plugin_t *p, int index );
 
 /* Call special function */
 void inp_spec_func( in_plugin_t *p, int index, char *filename );
+
+/* Open directory */
+void *inp_vfs_opendir( in_plugin_t *p, char *name );
+
+/* Close directory */
+void inp_vfs_closedir( in_plugin_t *p, void *dir );
+
+/* Read directory entry */
+char *inp_vfs_readdir( in_plugin_t *p, void *dir );
+
+/* Get file parameters */
+int inp_vfs_stat( in_plugin_t *p, char *name, struct stat *sb );
 
 #endif
 

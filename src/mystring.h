@@ -90,6 +90,9 @@ str_t *str_insert_str( str_t *dest, str_t *src, int index );
 /* Extract a substring */
 str_t *str_substring( str_t *str, int start, int end );
 
+/* Extract a substring from (char *) */
+str_t *str_substring_cptr( char *str, int start, int end );
+
 /* Formatted print */
 int str_printf( str_t *str, char *fmt, ... );
 

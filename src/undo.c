@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Undo list management functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 7.01.2004
+ * LAST UPDATE : 15.09.2004
  * NOTE        : Module prefix 'undo'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -30,6 +30,7 @@
 #include "types.h"
 #include "player.h"
 #include "plist.h"
+#include "vfs.h"
 #include "undo.h"
 
 /* Initialize undo list */
@@ -228,8 +229,12 @@ void undo_undo( struct tag_undo_list_item_t *item )
 		struct tag_undo_list_rem_t *data = &item->m_data.m_rem;
 		int i;
 		for ( i = 0; i < data->m_num_files; i ++ )
-			plist_add_song(player_plist, data->m_files[i], NULL, 0,
+		{
+			vfs_file_t desc;
+			vfs_file_desc_init(player_vfs, &desc, data->m_files[i], NULL);
+			plist_add_one_file(player_plist, &desc, NULL, 0,
 					data->m_start_pos + i);
+		}
 		plist_flush_scheduled(player_plist);
 	}
 	/* Move selection action */

@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Output plugin management functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.02.2004
+ * LAST UPDATE : 19.09.2004
  * NOTE        : Module prefix 'outp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -131,6 +131,20 @@ void outp_flush( out_plugin_t *p )
 	if (p != NULL && (p->m_fl.m_flush != NULL))
 		p->m_fl.m_flush();
 } /* End of 'outp_flush' function */
+
+/* Pause playing */
+void outp_pause( out_plugin_t *p )
+{
+	if (p != NULL && (p->m_fl.m_pause != NULL))
+		p->m_fl.m_pause();
+} /* End of 'outp_pause' function */
+
+/* Resume playing */
+void outp_resume( out_plugin_t *p )
+{
+	if (p != NULL && (p->m_fl.m_resume != NULL))
+		p->m_fl.m_resume();
+} /* End of 'outp_resume' function */
 
 /* Set volume */
 void outp_set_volume( out_plugin_t *p, int left, int right )

@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for plugins manager 
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 31.01.2004
+ * LAST UPDATE : 17.09.2004
  * NOTE        : Module prefix 'pmng'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -34,6 +34,7 @@
 #include "ep.h"
 #include "inp.h"
 #include "outp.h"
+#include "vfs.h"
 
 /* Plugin types */
 #define PMNG_IN		 0 
@@ -104,8 +105,8 @@ int pmng_apply_effects( pmng_t *pmng, byte *data, int len, int fmt,
 /* Search for input plugin with specified name */
 in_plugin_t *pmng_search_inp_by_name( pmng_t *pmng, char *name );
 
-/* Plugin finder handler */
-int pmng_find_handler( char *name, void *data );
+/* Plugin glob handler */
+void pmng_glob_handler( struct tag_vfs_file_t *file, void *data );
 
 /* Check if specified plugin is already loaded */
 bool_t pmng_is_loaded( pmng_t *pmng, char *name, int type );

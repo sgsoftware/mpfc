@@ -43,6 +43,7 @@ extern struct acd_trk_info_t
 	int m_end_min, m_end_sec, m_end_frm;
 	int m_len;
 	int m_number;
+	char m_name[MAX_FILE_NAME];
 	bool_t m_data;
 } acd_tracks_info[ACD_MAX_TRACKS];
 extern int acd_num_tracks;
@@ -51,6 +52,12 @@ extern bool_t acd_info_read;
 
 /* Plugins manager */
 extern pmng_t *acd_pmng;
+
+/* Directory data structure */
+typedef struct
+{
+	int m_next_track;
+} acd_dir_data_t;
 
 /* Get track start frame offset */
 #define acd_get_trk_offset(t) \
@@ -72,6 +79,9 @@ str_t *acd_set_song_title( char *filename );
 
 /* Print message */
 void acd_print( char *format, ... );
+
+/* Load tracks information */
+void acd_load_tracks( int fd );
 
 #endif
 

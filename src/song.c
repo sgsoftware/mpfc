@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Songs manipulation functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 26.08.2004
+ * LAST UPDATE : 15.09.2004
  * NOTE        : Module prefix 'song'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -38,21 +38,23 @@
 #include "song.h"
 #include "song_info.h"
 #include "util.h"
+#include "vfs.h"
 
 /* Create a new song */
-song_t *song_new( char *filename, char *title, int len )
+song_t *song_new( vfs_file_t *file, char *title, int len )
 {
 	song_t *song;
-	char *ext;
 	in_plugin_t *inp;
-
-	/* Get file extension */
-	ext = util_extension(filename);
+	char *filename = file->m_name;
 
 	/* Choose appropriate input plugin */
-	inp = pmng_search_format(player_pmng, ext);
-	if (inp == NULL && file_get_type(filename) == FILE_TYPE_REGULAR)
-		return NULL;
+	inp = file->m_inp;
+	if (inp == NULL)
+	{
+		inp = pmng_search_format(player_pmng, file->m_extension);
+		if (inp == NULL && file_get_type(filename) == FILE_TYPE_REGULAR)
+			return NULL;
+	}
 	
 	/* Try to allocate memory for new song */
 	song = (song_t *)malloc(sizeof(song_t));
@@ -65,11 +67,12 @@ song_t *song_new( char *filename, char *title, int len )
 
 	/* Set song fields */
 	song->m_ref_count = 0;
-	strncpy(song->m_file_name, filename, sizeof(song->m_file_name));
-	song->m_file_name[sizeof(song->m_file_name) - 1] = 0;
-	//util_rem_slashes(song->m_file_name);
-	song->m_file_ext = ext;
-	song->m_short_name = util_short_name(song->m_file_name);
+	song->m_full_name = strdup(file->m_full_name);
+	song->m_file_name = song->m_full_name + (file->m_name - file->m_full_name);
+	song->m_short_name = song->m_full_name +
+		(file->m_short_name - file->m_full_name);
+	song->m_file_ext = song->m_full_name + 
+		(file->m_extension - file->m_full_name);
 	song->m_info = NULL;
 	song->m_inp = inp;
 	song->m_flags = 0;
@@ -108,6 +111,7 @@ void song_free( song_t *song )
 	{
 		str_free(song->m_title);
 		si_free(song->m_info);
+		free(song->m_full_name);
 		free(song);
 	}
 } /* End of 'song_free' function */

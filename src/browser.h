@@ -5,7 +5,7 @@
 /* FILE NAME   : browser.h
  * PURPOSE     : SG MPFC. Interface for file browser functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.08.2004
+ * LAST UPDATE : 20.09.2004
  * NOTE        : Module prefix 'fb'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -29,6 +29,7 @@
 
 #include "types.h"
 #include "song_info.h"
+#include "vfs.h"
 #include "wnd.h"
 
 /* File browser window type */
@@ -118,7 +119,7 @@ void fb_move_cursor( browser_t *fb, int pos, bool_t rel );
 void fb_load_files( browser_t *fb );
 
 /* Add a file to list */
-void fb_add_file( browser_t *fb, char *name );
+void fb_add_file( browser_t *fb, vfs_file_t *file );
 
 /* Free files list */
 void fb_free_files( browser_t *fb );
@@ -162,11 +163,20 @@ void fb_print_info_col( browser_t *fb, int id, struct browser_list_item *item );
 /* Show help screen */
 void fb_help( browser_t *fb );
 
+/* Launch change to directory dialog */
+void fb_cd_dialog( browser_t *fb );
+
+/* 'ok_clicked' handler for directory changing dialog */
+wnd_msg_retcode_t fb_on_cd( wnd_t *wnd );
+
 /* Initialize browser class */
 wnd_class_t *fb_class_init( wnd_global_data_t *global );
 
 /* Set browser class default styles */
 void fb_class_set_default_styles( cfg_node_t *list );
+
+/* Handle glob */
+void fb_glob_handler( vfs_file_t *file, void *data );
 
 #endif
 

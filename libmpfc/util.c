@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Various utility functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.03.2004
+ * LAST UPDATE : 17.09.2004
  * NOTE        : Module prefix 'util'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -27,8 +27,10 @@
 
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
+#include <pwd.h>
 #include <regex.h>
 #include <time.h>
 #include "types.h"
@@ -95,7 +97,7 @@ char *util_extension( char *name )
 {
 	char *str = strrchr(name, '.');
 	if (str == NULL)
-		return name;
+		return name + strlen(name);
 	else
 		return str + 1;
 } /* End of 'util_get_ext' function */
@@ -271,6 +273,31 @@ char *util_strncpy( char *dest, char *src, size_t n )
 	dest[n - 1] = 0;
 	return dest;
 } /* End of 'util_strncpy' function */
+
+/* Get user's home directory */
+char *util_get_home_dir( char *user )
+{
+	char *dir = NULL;
+
+	/* Empty user name means current user */
+	if (!(*user))
+		return getenv("HOME");
+
+	/* Search for this user */
+	for ( ;; )
+	{
+		struct passwd *p = getpwent();
+		if (p == NULL)
+			break;
+		if (!strcmp(p->pw_name, user))
+		{
+			dir = p->pw_dir;
+			break;
+		}
+	}
+	endpwent();
+	return dir;
+} /* End of 'util_get_home_dir' function */
 
 /* End of 'util.c' file */
 

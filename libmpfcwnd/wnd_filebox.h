@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Interface for file box 
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 17.08.2004
+ * LAST UPDATE : 20.09.2004
  * NOTE        : Module prefix 'filebox'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -29,8 +29,16 @@
 #define __SG_MPFC_WND_FILEBOX_H__
 
 #include "types.h"
+#include "vfs.h"
 #include "wnd.h"
 #include "wnd_editbox.h"
+
+/* File box flags */
+typedef enum
+{
+	FILEBOX_ONLY_DIRS = 1 << 0,
+	FILEBOX_NOPATTERN = 1 << 1,
+} filebox_flags_t;
 
 /* File box type */
 typedef struct
@@ -46,8 +54,21 @@ typedef struct
 	} *m_names;
 	bool_t m_names_valid;
 
+	/* Flags */
+	filebox_flags_t m_flags;
+
 	/* Start of the text that we are inserting */
 	int m_insert_start;
+
+	/* Virtual file system data (used for auto-completion) */
+	vfs_t *m_vfs;
+
+	/* Names building temporary values */
+	str_t *m_pattern;
+	bool_t m_use_global, m_not_first;
+
+	/* Command box flag */
+	bool_t m_command_box;
 } filebox_t;
 
 /* Convert window object to file box type */
@@ -79,6 +100,9 @@ void filebox_insert_next( filebox_t *fb );
 
 /* Free names list */
 void filebox_free_names( filebox_t *fb );
+
+/* Handler for glob */
+void filebox_glob_handler( vfs_file_t *file, void *data );
 
 /* 
  * Class functions

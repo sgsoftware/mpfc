@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. File box functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 18.08.2004
+ * LAST UPDATE : 20.09.2004
  * NOTE        : Module prefix 'filebox'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -26,12 +26,11 @@
  */
 
 #include <sys/types.h>
-#include <dirent.h>
+#include <fnmatch.h>
 #include <stdio.h>
 #include <stdlib.h>
 #define __USE_GNU
 #include <string.h>
-#include <sys/stat.h>
 #include <unistd.h>
 #include "types.h"
 #include "mystring.h"
@@ -117,127 +116,92 @@ wnd_msg_retcode_t filebox_on_keydown( wnd_t *wnd, wnd_key_t key )
 /* Load names list */
 void filebox_load_names( filebox_t *fb )
 {
-	str_t *text = EDITBOX_OBJ(fb)->m_text, *dirname = NULL, *pattern = NULL;
+	str_t *text = EDITBOX_OBJ(fb)->m_text, *dirname = NULL;
 	int cursor = EDITBOX_OBJ(fb)->m_cursor;
-	DIR *dir = NULL;
-	struct dirent *de;
-	struct filebox_name_t *item, *last = NULL;
-	int plen, i;
-
+	int i;
+	int field_begin = 0;
+	bool_t not_first = FALSE;
+	bool_t use_global = FALSE;
+	vfs_glob_flags_t glob_flags;
 	assert(fb);
 
-	/* Get directory name */
-	for ( i = cursor - 1; i >= 0; i -- )
+	/* Set glob flags */
+	glob_flags = VFS_GLOB_AT_LEVEL_ONLY | VFS_GLOB_RETURN_DIRS;
+	if (fb->m_flags & FILEBOX_NOPATTERN) 
+		glob_flags |= VFS_GLOB_NOPATTERN;
+	else
+		glob_flags |= VFS_GLOB_OUTPUT_ESCAPED;
+
+	/* In case of command box mode multiple fields are allowed */
+	if (fb->m_command_box)
 	{
-		if (STR_AT(text, i) == '/')
-			break;
-	}
-	dirname = str_substring(text, 0, i);
-	if (dirname == NULL)
-		goto failed;
+		char ch;
 
-	/* Build pattern */
-	plen = cursor - i - 1;
-	pattern = str_substring(text, i + 1, cursor - 1);
-	if (pattern == NULL)
-		goto failed;
-
-	if (STR_AT(dirname, 0) == '~')
-	{
-		char *home_dir = getenv("HOME");
-		str_delete_char(dirname, 0);
-		str_insert_cptr(dirname, home_dir, 0);
-	}
-
-	/* Read directory contents */
-	dir = opendir(STR_TO_CPTR(dirname));
-	if (dir == NULL)
-		goto failed;
-	for ( ;; )
-	{
-		/* Read new name */
-		de = readdir(dir);
-		if (de == NULL)
-			break;
-
-		/* Match pattern */
-		if (de->d_name[0] != '.' && !strncmp(de->d_name, 
-					STR_TO_CPTR(pattern), plen))
+		/* Find fields delimeter */
+		for ( i = cursor - 1; i >= 0; i -- )
 		{
-			struct stat s;
-			str_t *full_name, *name;
-			int name_len = strlen(de->d_name);
-			bool_t isdir;
-
-			/* Is this file a directory? */
-			full_name = str_dup(dirname);
-			str_cat_cptr(full_name, de->d_name);
-			stat(STR_TO_CPTR(full_name), &s);
-			isdir = S_ISDIR(s.st_mode);
-			str_free(full_name);
-
-			/* Add slash in case of directory */
-			name = str_new(&de->d_name[plen]);
-			if (isdir)
-				str_cat_cptr(name, "/");
-
-			/* Create names list item */
-			item = (struct filebox_name_t *)malloc(sizeof(*item));
-			item->m_name = strdup(STR_TO_CPTR(name));
-			str_free(name);
-
-			/* It's the first name */
-			if (fb->m_names == NULL)
+			char ch = STR_AT(text, i);
+			if ((ch == ' ') && ((i == 0) || 
+					((i > 0) && (STR_AT(text, i - 1) != '\\'))))
 			{
-				item->m_next = item;
-				item->m_prev = item;
-				fb->m_names = item;
-			}
-			/* Insert in the beginning */
-			else if (strcmp(item->m_name, fb->m_names->m_name) <= 0)
-			{
-				item->m_next = fb->m_names;
-				item->m_prev = fb->m_names->m_prev;
-				fb->m_names->m_prev->m_next = item;
-				fb->m_names->m_prev = item;
-				fb->m_names = item;
-			}
-			/* Insert in any other position */
-			else
-			{
-				/* Find proper position */
-				struct filebox_name_t *i;
-				for ( i = fb->m_names->m_next;; )
-				{
-					if (strcmp(item->m_name, i->m_name) < 0)
-						break;
-					i = i->m_next;
-					if (i == fb->m_names)
-						break;
-				}
-
-				/* Set links in item */
-				item->m_prev = i->m_prev;
-				item->m_next = i;
-				i->m_prev->m_next = item;
-				i->m_prev = item;
+				field_begin = i + 1;
+				not_first = TRUE;
+				break;
 			}
 		}
-	} 
-	closedir(dir);
-	str_free(dirname);
-	str_free(pattern);
-	fb->m_names_valid = TRUE;
-	fb->m_insert_start = EDITBOX_OBJ(fb)->m_cursor;
-	return;
+		ch = STR_AT(text, field_begin);
+		use_global = (!not_first && !(ch == '.' || ch == '/' || ch == '~'));
+		glob_flags |= VFS_GLOB_SPACE_IS_SPECIAL;
+	}
 
-failed:
-	if (pattern != NULL)
-		str_free(pattern);
-	if (dirname != NULL)
-		str_free(dirname);
-	if (dir != NULL)
-		closedir(dir);
+	/* Get directory name */
+	if (!use_global)
+	{
+		for ( i = cursor - 1; i >= field_begin; i -- )
+		{
+			char ch = STR_AT(text, i);
+			if (ch == '/')
+				break;
+		}
+		dirname = str_substring(text, field_begin, i);
+		if (dirname == NULL)
+			return;
+	}
+
+	/* List files in the directory */
+	fb->m_pattern = str_substring(text, i + 1, cursor - 1);
+	fb->m_not_first = not_first;
+	fb->m_use_global = use_global;
+	if (!use_global)
+	{
+		vfs_glob(fb->m_vfs, STR_TO_CPTR(dirname), filebox_glob_handler, fb,
+				1, glob_flags);
+	}
+	/* List global executables */
+	else
+	{
+		char *path = getenv("PATH");
+		for ( ;; )
+		{
+			char *s = strchr(path, ':');
+			if (s != NULL)
+				(*s) = 0;
+			vfs_glob(fb->m_vfs, path, filebox_glob_handler, fb, 1, glob_flags);
+			if (s != NULL)
+			{
+				(*s) = ':';
+				path = s + 1;
+			}
+			else
+				break;
+		}
+	}
+
+	str_free(fb->m_pattern);
+	str_free(dirname);
+	fb->m_names_valid = TRUE;
+	fb->m_insert_start = i + 1;
+	return;
 } /* End of 'filebox_load_names' function */
 
 /* Insert next entry in the file names */
@@ -292,6 +256,48 @@ void filebox_free_names( filebox_t *fb )
 	}
 	fb->m_names = NULL;
 } /* End of 'filebox_free_names' function */
+
+/* Handler for glob */
+void filebox_glob_handler( vfs_file_t *file, void *data )
+{
+	struct filebox_name_t *item;
+	filebox_t *fb = (filebox_t *)data;
+
+	/* Filter file */
+	if (file->m_short_name[0] == '.' ||
+			strncmp(STR_TO_CPTR(fb->m_pattern), file->m_short_name, 
+				STR_LEN(fb->m_pattern)))
+		return;
+	if (fb->m_command_box && !fb->m_not_first)
+	{
+		if (!(file->m_stat.st_mode & S_IXUSR))
+			return;
+	}
+	if ((fb->m_flags & FILEBOX_ONLY_DIRS) && !S_ISDIR(file->m_stat.st_mode))
+		return;
+
+	/* Create names list item */
+	item = (struct filebox_name_t *)malloc(sizeof(*item));
+	item->m_name = (char *)malloc(strlen(file->m_short_name) + 2);
+	strcpy(item->m_name, file->m_short_name);
+	if (S_ISDIR(file->m_stat.st_mode))
+		strcat(item->m_name, "/");
+
+	/* It's the first name */
+	if (fb->m_names == NULL)
+	{
+		item->m_next = item;
+		item->m_prev = item;
+		fb->m_names = item;
+	}
+	else
+	{
+		item->m_next = fb->m_names;
+		item->m_prev = fb->m_names->m_prev;
+		fb->m_names->m_prev->m_next = item;
+		fb->m_names->m_prev = item;
+	}
+} /* End of 'filebox_glob_handler' function */
 
 /* Initialize file box class */
 wnd_class_t *filebox_class_init( wnd_global_data_t *global )

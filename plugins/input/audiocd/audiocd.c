@@ -43,8 +43,8 @@
 #include "util.h"
 
 /* Get track number from filename */
-#define acd_fname2trk(name) (strncmp(name, "audiocd:track", 13) ? -1 : \
-		atoi(&(name)[13]) - 1)
+#define acd_fname2trk(name) (strncmp(name, "/track", 6) ? -1 : \
+		atoi(&(name)[6]) - 1)
 
 /* Calculate track length */
 #define acd_get_trk_len(trk) \
@@ -111,16 +111,19 @@ bool_t acd_start( char *filename )
 	int mixer_fd;
 	int format = AFMT_S16_LE, ch = 2, rate = 44100;
 
+	/* Open device */
+	if ((fd = acd_prepare_cd()) < 0)
+		return FALSE;
+
+	/* Load tracks information */
+	acd_load_tracks(fd);
+
 	/* Get track number from filename */
 	track = acd_fname2trk(filename);
 	if (track < 0 || track >= acd_num_tracks || 
 			track > acd_tracks_info[acd_num_tracks - 1].m_number)
 		return FALSE;
 	acd_cur_track = track;
-
-	/* Open device */
-	if ((fd = acd_prepare_cd()) < 0)
-		return FALSE;
 
 	/* Start playing */
 	msf.cdmsf_min0 = acd_tracks_info[track].m_start_min;
@@ -230,6 +233,7 @@ int acd_get_stream( void *buf, int size )
 	return size;
 } /* End of 'acd_get_stream' function */
 
+#if 0
 /* Initialize songs that respect to object */
 song_t **acd_init_obj_songs( char *name, int *num_songs )
 {
@@ -324,6 +328,7 @@ song_t **acd_init_obj_songs( char *name, int *num_songs )
 	close(fd);
 	return s;
 } /* End of 'acd_init_obj_songs' function */
+#endif
 
 /* Pause */
 void acd_pause( void )
@@ -457,6 +462,70 @@ void acd_set_next_song( char *name )
 		util_strncpy(acd_next_song, name, sizeof(acd_next_song));
 } /* End of 'acd_set_next_song' function */
 
+/* Open directory */
+void *acd_opendir( char *name )
+{
+	acd_dir_data_t *data;
+	int fd;
+
+	/* Load tracks */
+	fd = acd_prepare_cd();
+	if (fd < 0)
+		return NULL;
+	acd_load_tracks(fd);
+	close(fd);
+	if (acd_num_tracks == 0)
+		return NULL;
+	
+	/* Create directory data */
+	data = (acd_dir_data_t *)malloc(sizeof(*data));
+	data->m_next_track = 0;
+	return data;
+} /* End of 'acd_opendir' function */
+
+/* Close directory */
+void acd_closedir( void *dir )
+{
+	assert(dir);
+	free(dir);
+} /* End of 'acd_closedir' function */
+
+/* Read directory entry */
+char *acd_readdir( void *dir )
+{
+	acd_dir_data_t *data = (acd_dir_data_t *)dir;
+
+	assert(dir);
+
+	/* Finish */
+	if (data->m_next_track >= acd_num_tracks)
+		return NULL;
+
+	/* Return next track name */
+	return acd_tracks_info[data->m_next_track ++].m_name;
+} /* End of 'acd_readdir' function */
+
+/* Get file parameters */
+int acd_stat( char *name, struct stat *sb )
+{
+	memset(sb, 0, sizeof(*sb));
+	if (!strcmp(name, "/"))
+	{
+		sb->st_mode = S_IFDIR;
+		return 0;
+	}
+	else if (!strncmp(name, "/track", 6))
+	{
+		int track = (name[6] - '0') * 10 + (name[7] - '0');
+		if (track >= 1 && track <= acd_num_tracks)
+		{
+			sb->st_mode = S_IFREG;
+			return 0;
+		}
+	}
+	return ENOENT;
+} /* End of 'acd_stat' function */
+
 /* Get functions list */
 void inp_get_func_list( inp_func_list_t *fl )
 {
@@ -465,8 +534,7 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_get_stream = acd_get_stream;
 	fl->m_seek = acd_seek;
 	fl->m_get_audio_params = acd_get_audio_params;
-	fl->m_init_obj_songs = acd_init_obj_songs;
-	fl->m_flags = INP_OWN_SOUND;
+	fl->m_flags = INP_OWN_SOUND | INP_VFS;
 	fl->m_pause = acd_pause;
 	fl->m_resume = acd_resume;
 	fl->m_get_cur_time = acd_get_cur_time;
@@ -474,6 +542,10 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_save_info = acd_save_info;
 	fl->m_set_song_title = acd_set_song_title;
 	fl->m_set_next_song = acd_set_next_song;
+	fl->m_vfs_opendir = acd_opendir;
+	fl->m_vfs_closedir = acd_closedir;
+	fl->m_vfs_readdir = acd_readdir;
+	fl->m_vfs_stat = acd_stat;
 	acd_pmng = fl->m_pmng;
 	acd_print_msg = pmng_get_printer(acd_pmng);
 
@@ -510,6 +582,53 @@ str_t *acd_set_song_title( char *filename )
 	str_printf(title, "Track %02d", track + 1);
 	return title;
 } /* End of 'acd_set_song_title' function */
+
+/* Load tracks information */
+void acd_load_tracks( int fd )
+{
+	int i;
+
+	/* Read tracks information */
+	if (acd_first_time || ioctl(fd, CDROM_MEDIA_CHANGED, 0))
+	{
+		struct cdrom_tochdr toc;
+		struct cdrom_tocentry entry;
+
+		ioctl(fd, CDROMREADTOCHDR, &toc);
+		acd_num_tracks = toc.cdth_trk1 - toc.cdth_trk0 + 1;
+		entry.cdte_format = CDROM_MSF;
+		for ( i = 0; i < acd_num_tracks; i ++ )
+		{
+			entry.cdte_track = i + toc.cdth_trk0;
+			ioctl(fd, CDROMREADTOCENTRY, &entry);
+			acd_tracks_info[i].m_start_min = entry.cdte_addr.msf.minute;
+			acd_tracks_info[i].m_start_sec = entry.cdte_addr.msf.second;
+			acd_tracks_info[i].m_start_frm = entry.cdte_addr.msf.frame;
+			acd_tracks_info[i].m_data = entry.cdte_ctrl & CDROM_DATA_TRACK;
+			acd_tracks_info[i].m_number = i + toc.cdth_trk0;
+			snprintf(acd_tracks_info[i].m_name, 
+					sizeof(acd_tracks_info[i].m_name), "track%02d", i + 1);
+		}
+		for ( i = 0; i < acd_num_tracks - 1; i ++ )
+		{
+			acd_tracks_info[i].m_end_min = acd_tracks_info[i + 1].m_start_min;
+			acd_tracks_info[i].m_end_sec = acd_tracks_info[i + 1].m_start_sec;
+			acd_tracks_info[i].m_end_frm = acd_tracks_info[i + 1].m_start_frm;
+			acd_tracks_info[i].m_len = acd_get_trk_len(i);
+		}
+		entry.cdte_track = CDROM_LEADOUT;
+		ioctl(fd, CDROMREADTOCENTRY, &entry);
+		acd_tracks_info[i].m_end_min = entry.cdte_addr.msf.minute;
+		acd_tracks_info[i].m_end_sec = entry.cdte_addr.msf.second;
+		acd_tracks_info[i].m_end_frm = entry.cdte_addr.msf.frame;
+		acd_tracks_info[i].m_end_min = entry.cdte_addr.msf.minute;
+		acd_tracks_info[i].m_len = acd_get_trk_len(i);
+		acd_first_time = FALSE;
+
+		/* Free CDDB info */
+		cddb_free();
+	}
+} /* End of 'acd_load_tracks' function */
 
 /* End of 'audiocd.c' file */
 

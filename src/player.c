@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG MPFC. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 11.09.2004
+ * LAST UPDATE : 15.09.2004
  * NOTE        : Module prefix 'player'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -49,6 +49,7 @@
 #include "test.h"
 #include "undo.h"
 #include "util.h"
+#include "vfs.h"
 #include "wnd.h"
 #include "wnd_button.h"
 #include "wnd_checkbox.h"
@@ -109,10 +110,6 @@ int player_balance = 0;
 /* Has equalizer value changed */
 bool_t player_eq_changed = FALSE;
 
-/* Objects to load */
-char **player_objects = NULL;
-int player_num_obj = 0;
-
 /* Edit boxes history lists */
 editbox_history_t *player_hist_lists[PLAYER_NUM_HIST_LISTS];
 
@@ -165,6 +162,9 @@ cfg_node_t *cfg_list = NULL;
 /* Standard value for edit boxes width */
 #define PLAYER_EB_WIDTH	50
 
+/* VFS data */
+vfs_t *player_vfs = NULL;
+
 /*****
  *
  * Initialization/deinitialization functions
@@ -212,6 +212,9 @@ bool_t player_init( int argc, char *argv[] )
 	/* Initialize plugin manager */
 	player_pmng = pmng_init(cfg_list, player_print_msg);
 
+	/* Initialize VFS */
+	player_vfs = vfs_init(player_pmng);
+
 	/* Initialize song adder thread */
 	sat_init();
 
@@ -227,22 +230,16 @@ bool_t player_init( int argc, char *argv[] )
 	{
 		return FALSE;
 	}
-	for ( i = 0; i < player_num_obj; i ++ )
-	{
-		plist_add_obj(player_plist, player_objects[i], NULL, -1);
-//		free(player_objects[i]);
-	}
-	free(player_objects);
 
 	/* Make a set of files to add */
-	set = plist_set_new();
+	set = plist_set_new(FALSE);
 	for ( i = 0; i < player_num_files; i ++ )
 		plist_set_add(set, player_files[i]);
 	plist_add_set(player_plist, set);
 	plist_set_free(set);
 
 	/* Load saved play list if files list is empty */
-	if (!player_num_files && !player_num_obj)
+	if (!player_num_files)
 		plist_add(player_plist, "~/mpfc.m3u");
 
 	/* Initialize history lists */
@@ -281,8 +278,7 @@ bool_t player_init( int argc, char *argv[] )
 	player_eq_changed = FALSE;
 
 	/* Start playing from last stop */
-	if (cfg_get_var_int(cfg_list, "play-from-stop") && 
-			!player_num_files && !player_num_obj)
+	if (cfg_get_var_int(cfg_list, "play-from-stop") && !player_num_files)
 	{
 		player_status = cfg_get_var_int(cfg_list, "player-status");
 		player_start = cfg_get_var_int(cfg_list, "player-start") - 1;
@@ -397,6 +393,7 @@ void player_deinit( void )
 	}
 	undo_free(player_ul);
 	player_ul = NULL;
+	vfs_free(player_vfs);
 
 	/* Uninitialize configuration manager */
 	cfg_free_node(cfg_list, TRUE);
@@ -438,19 +435,6 @@ bool_t player_parse_cmd_line( int argc, char *argv[] )
 
 		/* Extract variable name */
 		name = strndup(&str[name_start], name_end - name_start + 1);
-
-		/* Load object */
-		if (!strcmp(name, "obj"))
-		{
-			if (i < argc - 1 && player_num_obj < 10)
-			{
-				player_objects = (char **)realloc(player_objects,
-						sizeof(char *) * (player_num_obj + 1));
-				player_objects[player_num_obj ++] = argv[++i];
-			}
-			free(name);
-			continue;
-		}
 
 		/* We have no value - assume it "1" */
 		if (name_end == strlen(str) - 1)
@@ -797,7 +781,10 @@ void player_handle_action( int action )
 	/* Resume playing */
 	case KBIND_PLAY:
 		if (player_status == PLAYER_STATUS_PAUSED)
+		{
 			inp_resume(player_inp);
+			outp_resume(player_pmng->m_cur_out);
+		}
 		else
 			player_play(player_plist->m_cur_song, 0);
 		player_status = PLAYER_STATUS_PLAYING;
@@ -809,11 +796,13 @@ void player_handle_action( int action )
 		{
 			player_status = PLAYER_STATUS_PAUSED;
 			inp_pause(player_inp);
+			outp_pause(player_pmng->m_cur_out);
 		}
 		else if (player_status == PLAYER_STATUS_PAUSED)
 		{
 			player_status = PLAYER_STATUS_PLAYING;
 			inp_resume(player_inp);
+			outp_resume(player_pmng->m_cur_out);
 		}
 		break;
 
@@ -1787,6 +1776,7 @@ void player_add_dialog( void )
 	dlg = dialog_new(wnd_root, _("Add songs"));
 	eb = filebox_new_with_label(WND_OBJ(dlg->m_vbox), _("File &name: "), 
 			"name", "", 'n', 50);
+	eb->m_vfs = player_vfs;
 	EDITBOX_OBJ(eb)->m_history = player_hist_lists[PLAYER_HIST_LIST_ADD];
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_add);
 	dialog_arrange_children(dlg);
@@ -1829,6 +1819,7 @@ void player_exec_dialog( void )
 	dlg = dialog_new(wnd_root, _("Execute external command"));
 	eb = filebox_new_with_label(WND_OBJ(dlg->m_vbox), _("C&ommand: "), 
 			"command", "", 'o', 50);
+	eb->m_command_box = TRUE;
 	EDITBOX_OBJ(eb)->m_history = player_hist_lists[PLAYER_HIST_LIST_EXEC];
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_exec);
 	dialog_arrange_children(dlg);

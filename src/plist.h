@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for play list manipulation
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.08.2004
+ * LAST UPDATE : 15.09.2004
  * NOTE        : Module prefix 'plist'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -31,6 +31,7 @@
 #include <pthread.h>
 #include "types.h"
 #include "song.h"
+#include "vfs.h"
 #include "wnd.h"
 
 /* Play list type */
@@ -64,6 +65,10 @@ typedef struct
 /* A set of files for adding */
 typedef struct 
 {
+	/* Whether files in set are patterns */
+	bool_t m_patterns;
+	
+	/* Files */
 	struct tag_plist_set_t
 	{
 		char *m_name;
@@ -115,27 +120,14 @@ bool_t plist_add( plist_t *pl, char *filename );
 bool_t plist_add_set( plist_t *pl, plist_set_t *set );
 
 /* Add single file to play list */
-int plist_add_one_file( plist_t *pl, char *filename );
-
-/* Add a song to play list */
-int plist_add_song( plist_t *pl, char *filename, char *title, int len, 
+int plist_add_one_file( plist_t *pl, vfs_file_t *file, char *title, int len,
 		int where );
-
-/* Add a play list file to play list */
-int plist_add_list( plist_t *pl, char *filename );
 
 /* Add M3U play list */
 int plist_add_m3u( plist_t *pl, char *filename );
 
 /* Add PLS play list */
 int plist_add_pls( plist_t *pl, char *filename );
-
-/* Add MPL play list */
-int plist_add_mpl( plist_t *pl, char *filename );
-
-/* Low level song adding */
-bool_t __plist_add_song( plist_t *pl, char *filename, char *title, int len,
-	   int where );
 
 /* Save play list */
 bool_t plist_save( plist_t *pl, char *filename );
@@ -145,9 +137,6 @@ bool_t plist_save_m3u( plist_t *pl, char *filename );
 
 /* Save play list to PLS format */
 bool_t plist_save_pls( plist_t *pl, char *filename );
-
-/* Save play list to MPL format */
-bool_t plist_save_mpl( plist_t *pl, char *filename );
 
 /* Compare two songs for sorting */
 int plist_song_cmp( song_t *s1, song_t *s2, int criteria );
@@ -194,17 +183,14 @@ void plist_set_song_info( plist_t *pl, int index );
 /* Reload all songs information */
 void plist_reload_info( plist_t *pl, bool_t global );
 
-/* Handler for file finder */
-int plist_find_handler( char *name, void *data );
-
-/* Check if specified file name belongs to an object */
-bool_t plist_is_obj( char *filename );
+/* Handle file returned by glob */
+void plist_glob_handler( vfs_file_t *file, void *data );
 
 /* Set info for all scheduled songs */
 void plist_flush_scheduled( plist_t *pl );
 
 /* Initialize a set of files for adding */
-plist_set_t *plist_set_new( void );
+plist_set_t *plist_set_new( bool_t patterns );
 
 /* Duplicate set */
 plist_set_t *plist_set_dup( plist_set_t *set );

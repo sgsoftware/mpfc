@@ -55,6 +55,9 @@ char *util_escape_fname( char *out, char *in );
 /* Get short plugin name */
 char *util_get_plugin_short_name( char *dest, char *src );
 
+/* Get user's home directory */
+char *util_get_home_dir( char *user );
+
 /* Open a file expanding home directories */
 FILE *util_fopen( char *filename, char *flags );
 

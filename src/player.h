@@ -5,7 +5,7 @@
 /* FILE NAME   : player.h
  * PURPOSE     : SG MPFC. Interface for main player functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 18.08.2004
+ * LAST UPDATE : 15.09.2004
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -33,6 +33,7 @@
 #include "pmng.h"
 #include "undo.h"
 #include "wnd.h"
+#include "vfs.h"
 #include "wnd_dialog.h"
 #include "wnd_editbox.h"
 
@@ -50,7 +51,8 @@
 #define PLAYER_HIST_LIST_SEARCH		5
 #define PLAYER_HIST_LIST_EXEC		6
 #define PLAYER_HIST_FB_PATTERN		7
-#define PLAYER_NUM_HIST_LISTS 		8
+#define PLAYER_HIST_FB_CD			8
+#define PLAYER_NUM_HIST_LISTS 		9
 
 /* Sliders parameters */
 #define PLAYER_SLIDER_TIME_Y 2
@@ -103,6 +105,9 @@ extern wnd_t *player_wnd;
 
 /* Configuration list */
 extern cfg_node_t *cfg_list;
+
+/* VFS data */
+extern vfs_t *player_vfs;
 
 /***
  * Initialization/deinitialization functions

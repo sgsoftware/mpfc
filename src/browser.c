@@ -5,7 +5,7 @@
 /* FILE NAME   : browser.c
  * PURPOSE     : SG MPFC. File browser functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.08.2004
+ * LAST UPDATE : 18.09.2004
  * NOTE        : Module prefix 'fb'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -28,7 +28,6 @@
 #include <glob.h>
 #include <string.h>
 #include <sys/types.h>
-#include <sys/stat.h>
 #include "types.h"
 #include "browser.h"
 #include "colors.h"
@@ -43,6 +42,7 @@
 #include "wnd_dialog.h"
 #include "wnd_hbox.h"
 #include "wnd_editbox.h"
+#include "wnd_filebox.h"
 
 /* Info mode columns IDs */
 #define FB_COL_FILENAME 0
@@ -328,6 +328,11 @@ wnd_msg_retcode_t fb_on_keydown( wnd_t *wnd, wnd_key_t key )
 		fb->m_search_mode = !fb->m_search_mode;
 		break;
 
+	/* Change directory */
+	case 'c':
+		fb_cd_dialog(fb);
+		break;
+
 	/* Select/deselect files */
 	case KEY_IC:
 		if (fb->m_num_files)
@@ -465,22 +470,12 @@ void fb_load_files( browser_t *fb )
 
 	/* Add link to parent directory */
 	fb->m_files = (struct browser_list_item *)malloc(sizeof(*fb->m_files));
-	fb->m_num_files = 1;
-	fb->m_files[0].m_name = fb->m_files[0].m_full_name = strdup("..");
-	fb->m_files[0].m_type = (FB_ITEM_DIR | FB_ITEM_UPDIR);
-	fb->m_files[0].m_y = -1;
-	fb->m_files[0].m_info = NULL;
-	fb->m_files[0].m_len = 0;
+	fb->m_num_files = 0;
 
 	/* Find files */
-	memset(&gl, 0, sizeof(gl));
-	snprintf(pattern, sizeof(pattern), "%s*", fb->m_cur_dir);
-	glob(pattern, GLOB_BRACE | GLOB_TILDE, NULL, &gl);
-
-	/* Add these files */
-	for ( i = 0; i < gl.gl_pathc; i ++ )
-		fb_add_file(fb, gl.gl_pathv[i]);
-	globfree(&gl);
+	vfs_glob(player_vfs, fb->m_cur_dir, fb_glob_handler, fb, 1,
+			VFS_GLOB_NOPATTERN | VFS_GLOB_RETURN_DIRS | 
+			VFS_GLOB_RETURN_SPEC_LINKS | VFS_GLOB_AT_LEVEL_ONLY);
 
 	/* Load info if we are in info mode */
 	if (fb->m_info_mode)
@@ -506,19 +501,16 @@ void fb_free_files( browser_t *fb )
 } /* End of 'fb_free_files' function */
 
 /* Add a file to list */
-void fb_add_file( browser_t *fb, char *name )
+void fb_add_file( browser_t *fb, vfs_file_t *file )
 {
 	struct browser_list_item *item;
-	struct stat s;
 	bool_t isdir = FALSE;
 	int i;
-
-	if (fb == NULL || name == NULL)
-		return;
+	assert(fb);
+	assert(file);
 	
 	/* Get file type */
-	stat(name, &s);
-	if (S_ISDIR(s.st_mode))
+	if (S_ISDIR(file->m_stat.st_mode))
 		isdir = TRUE;
 
 	/* Rellocate memory for files list */
@@ -542,11 +534,13 @@ void fb_add_file( browser_t *fb, char *name )
 
 	/* Set file data */
 	item->m_type = isdir ? FB_ITEM_DIR : 0;
-	item->m_full_name = strdup(name);
-	item->m_name = util_short_name(item->m_full_name);
+	item->m_full_name = strdup(file->m_full_name);
+	item->m_name = item->m_full_name + (file->m_short_name - file->m_full_name);
 	item->m_y = -1;
 	item->m_info = NULL;
 	item->m_len = 0;
+	if (!strcmp(item->m_name, ".."))
+		item->m_type |= FB_ITEM_UPDIR;
 	fb->m_num_files ++;
 } /* End of 'fb_add_file' function */
 
@@ -614,10 +608,14 @@ void fb_add2plist( browser_t *fb )
 	if (fb == NULL)
 		return;
 
-	set = plist_set_new();
-	for ( i = 1; i < fb->m_num_files; i ++ )
+	set = plist_set_new(FALSE);
+	for ( i = 0; i < fb->m_num_files; i ++ )
+	{
+		if (fb->m_files[i].m_type & FB_ITEM_UPDIR)
+			continue;
 		if (fb->m_files[i].m_type & FB_ITEM_SEL)
 			plist_set_add(set, fb->m_files[i].m_full_name);
+	}
 	plist_add_set(player_plist, set);
 	plist_set_free(set);
 } /* End of 'fb_add2plist' function */
@@ -865,7 +863,7 @@ void fb_replace_plist( browser_t *fb )
 		return;
 
 	/* Make a set of files */
-	set = plist_set_new();
+	set = plist_set_new(FALSE);
 	for ( i = 1; i < fb->m_num_files; i ++ )
 		if (fb->m_files[i].m_type & FB_ITEM_SEL)
 			plist_set_add(set, fb->m_files[i].m_full_name);
@@ -905,6 +903,42 @@ void fb_class_set_default_styles( cfg_node_t *list )
 	cfg_set_var(list, "title-style", "green:black:bold");
 	cfg_set_var(list, "header-style", "green:black:bold");
 } /* End of 'fb_class_set_default_styles' function */
+
+/* Handle glob */
+void fb_glob_handler( vfs_file_t *file, void *data )
+{
+	/* Filter */
+	if (strcmp(file->m_short_name, "..") && file->m_short_name[0] == '.')
+		return;
+	
+	/* Add this file */
+	fb_add_file((browser_t *)data, file);
+} /* End of 'fb_glob_handler' function */
+
+/* Launch change directory dialog */
+void fb_cd_dialog( browser_t *fb )
+{
+	dialog_t *dlg;
+	filebox_t *eb;
+
+	dlg = dialog_new(WND_OBJ(fb), _("Change directory"));
+	eb = filebox_new_with_label(WND_OBJ(dlg->m_vbox), _("&Directory: "), 
+			"dir", "", 'd', 50);
+	eb->m_vfs = player_vfs;
+	eb->m_flags |= (FILEBOX_ONLY_DIRS | FILEBOX_NOPATTERN);
+	EDITBOX_OBJ(eb)->m_history = player_hist_lists[PLAYER_HIST_FB_CD];
+	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", fb_on_cd);
+	dialog_arrange_children(dlg);
+} /* End of 'fb_cd_dialog' function */
+
+/* 'ok_clicked' handler for directory changing dialog */
+wnd_msg_retcode_t fb_on_cd( wnd_t *wnd )
+{
+	editbox_t *eb = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "dir"));
+	assert(eb);
+	fb_change_dir((browser_t *)wnd->m_parent, EDITBOX_TEXT(eb));
+	return WND_MSG_RETCODE_OK;
+} /* End of 'fb_on_cd' function */
 
 /* End of 'browser.c' file */
 

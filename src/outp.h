@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for output plugin management
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.02.2004
+ * LAST UPDATE : 19.09.2004
  * NOTE        : Module prefix 'outp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -60,8 +60,14 @@ typedef struct
 	/* Flush function */
 	void (*m_flush)( void );
 
+	/* Pause playing */
+	void (*m_pause)( void );
+
+	/* Resume playint */
+	void (*m_resume)( void );
+
 	/* Reserved data */
-	byte m_reserved[88];
+	byte m_reserved[80];
 
 	/* Information about plugin */
 	char *m_about;
@@ -118,6 +124,12 @@ void outp_play( out_plugin_t *p, void *buf, int size );
 
 /* Flush function */
 void outp_flush( out_plugin_t *p );
+
+/* Pause playing */
+void outp_pause( out_plugin_t *p );
+
+/* Resume playing */
+void outp_resume( out_plugin_t *p );
 
 /* Set volume */
 void outp_set_volume( out_plugin_t *p, int left, int right );

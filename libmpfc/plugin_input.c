@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Input plugin management functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 27.08.2004
+ * LAST UPDATE : 17.09.2004
  * NOTE        : Module prefix 'inp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -26,8 +26,12 @@
  */
 
 #include <dlfcn.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include "types.h"
 #include "inp.h"
 #include "mystring.h"
@@ -296,6 +300,40 @@ char *inp_get_about( in_plugin_t *p )
 	else
 		return NULL;
 } /* End of 'inp_get_about' function */
+
+/* Open directory */
+void *inp_vfs_opendir( in_plugin_t *p, char *name )
+{
+	if (p != NULL && p->m_fl.m_vfs_opendir != NULL)
+		return p->m_fl.m_vfs_opendir(name);
+	else
+		return NULL;
+} /* End of 'inp_vfs_opendir' function */
+
+/* Close directory */
+void inp_vfs_closedir( in_plugin_t *p, void *dir )
+{
+	if (p != NULL && p->m_fl.m_vfs_closedir != NULL)
+		p->m_fl.m_vfs_closedir(dir);
+} /* End of 'inp_vfs_closedir' function */
+
+/* Read directory entry */
+char *inp_vfs_readdir( in_plugin_t *p, void *dir )
+{
+	if (p != NULL && p->m_fl.m_vfs_readdir != NULL)
+		return p->m_fl.m_vfs_readdir(dir);
+	else
+		return NULL;
+} /* End of 'inp_vfs_readdir' function */
+
+/* Get file parameters */
+int inp_vfs_stat( in_plugin_t *p, char *name, struct stat *sb )
+{
+	if (p != NULL && p->m_fl.m_vfs_stat != NULL)
+		return p->m_fl.m_vfs_stat(name, sb);
+	else
+		return EACCES;
+} /* End of 'inp_vfs_stat' function */
 
 /* End of 'inp.c' file */
 

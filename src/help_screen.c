@@ -260,6 +260,7 @@ void help_init_browser( help_screen_t *help )
 	help_add(help, _("-:\t\t Deselect files matching a pattern"));
 	help_add(help, _("a:\t\t Add selected files to playlist"));
 	help_add(help, _("r:\t\t Replace playlist files with the selected"));
+	help_add(help, _("c:\t\t Change directory"));
 	help_add(help, _("i:\t\t Toggle song info mode"));
 	help_add(help, _("s:\t\t Toggle search mode"));
 	help_add(help, _("?:\t\t This help screen"));

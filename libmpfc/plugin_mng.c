@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Plugins manager functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 31.01.2004
+ * LAST UPDATE : 17.09.2004
  * NOTE        : Module prefix 'pmng'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -32,11 +32,11 @@
 #include "cfg.h"
 #include "csp.h"
 #include "ep.h"
-#include "finder.h"
 #include "inp.h"
 #include "outp.h"
 #include "pmng.h"
 #include "util.h"
+#include "vfs.h"
 
 /* Initialize plugins */
 pmng_t *pmng_init( cfg_node_t *list, pmng_print_msg_t print_msg )
@@ -135,7 +135,7 @@ in_plugin_t *pmng_search_format( pmng_t *pmng, char *format )
 {
 	int i;
 
-	if (pmng == NULL)
+	if (pmng == NULL || !(*format))
 		return NULL;
 
 	for ( i = 0; i < pmng->m_num_inp; i ++ )
@@ -212,30 +212,34 @@ bool_t pmng_load_plugins( pmng_t *pmng )
 	data.m_type = PMNG_IN;
 	snprintf(path, sizeof(path), "%s/input", 
 			cfg_get_var(pmng->m_cfg_list, "lib-dir"));
-	find_do(path, "*.so", pmng_find_handler, &data);
+	vfs_glob(NULL, path, pmng_glob_handler, &data, VFS_LEVEL_INFINITE, 
+			VFS_GLOB_NOPATTERN);
 
 	/* Load output plugins */
 	data.m_type = PMNG_OUT;
 	snprintf(path, sizeof(path), "%s/output", 
 			cfg_get_var(pmng->m_cfg_list, "lib-dir"));
-	find_do(path, "*.so", pmng_find_handler, &data);
+	vfs_glob(NULL, path, pmng_glob_handler, &data, VFS_LEVEL_INFINITE, 
+			VFS_GLOB_NOPATTERN);
 
 	/* Load effect plugins */
 	data.m_type = PMNG_EFFECT;
 	snprintf(path, sizeof(path), "%s/effect", 
 			cfg_get_var(pmng->m_cfg_list, "lib-dir"));
-	find_do(path, "*.so", pmng_find_handler, &data);
+	vfs_glob(NULL, path, pmng_glob_handler, &data, VFS_LEVEL_INFINITE, 
+			VFS_GLOB_NOPATTERN);
 
 	/* Load charset plugins */
 	data.m_type = PMNG_CHARSET;
 	snprintf(path, sizeof(path), "%s/charset", 
 			cfg_get_var(pmng->m_cfg_list, "lib-dir"));
-	find_do(path, "*.so", pmng_find_handler, &data);
+	vfs_glob(NULL, path, pmng_glob_handler, &data, VFS_LEVEL_INFINITE, 
+			VFS_GLOB_NOPATTERN);
 	return TRUE;
 } /* End of 'pmng_load_plugins' function */
 
-/* Plugin finder handler */
-int pmng_find_handler( char *name, void *data )
+/* Plugin glob handler */
+void pmng_glob_handler( vfs_file_t *file, void *data )
 {
 	struct data_t
 	{
@@ -244,6 +248,12 @@ int pmng_find_handler( char *name, void *data )
 	} *pmng_data;
 	pmng_t *pmng;
 	int type;
+	char *name;
+
+	/* Filter files */
+	if (strcmp(file->m_extension, "so"))
+		return;
+	name = file->m_name;
 
 	/* Get data */
 	pmng_data = (struct data_t *)data;
@@ -252,7 +262,7 @@ int pmng_find_handler( char *name, void *data )
 
 	/* Check if this plugin is not loaded already */
 	if (pmng_is_loaded(pmng, name, type))
-		return 0;
+		return;
 
 	/* Input plugin */
 	if (type == PMNG_IN)
@@ -299,8 +309,7 @@ int pmng_find_handler( char *name, void *data )
 		if (csp != NULL)
 			pmng_add_charset(pmng, csp);
 	}
-	return 0;
-} /* End of 'pmng_find_handler' function */
+} /* End of 'pmng_glob_handler' function */
 
 /* Check if specified plugin is already loaded */
 bool_t pmng_is_loaded( pmng_t *pmng, char *name, int type )

@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Radio input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 9.02.2004
+ * LAST UPDATE : 19.09.2004
  * NOTE        : Module prefix 'rec'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -25,21 +25,38 @@
  * MA 02111-1307, USA.
  */
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/fcntl.h>
 #include <sys/soundcard.h>
+#include <sys/stat.h>
 #include "types.h"
 #include "inp.h"
 #include "mystring.h"
 #include "pmng.h"
 
 /* Recording sources */
-#define REC_MIC 0
-#define REC_LINE 1
-#define REC_CD 2
+enum
+{
+	REC_MIC,
+	REC_LINE,
+	REC_CD
+};
+static struct 
+{
+	char *m_name;
+	int m_id;
+} rec_sources[] = { {"mic", REC_MIC}, {"line", REC_LINE}, {"cd", REC_CD} };
+static int rec_num_sources = sizeof(rec_sources) / sizeof(rec_sources[0]);
+
+/* Structure for readdir */
+typedef struct
+{
+	int m_next_file;
+} rec_dir_data_t;
 
 /* Plugins manager */
 static pmng_t *rec_pmng = NULL;
@@ -53,17 +70,13 @@ static int rec_source = -1;
 /* Convert file name to recording source */
 static int rec_name2src( char *filename )
 {
-	if (strncmp(filename, "recorder:", 9))
-		return -1;
-	filename += 9;
-	if (!strcmp(filename, "mic"))
-		return REC_MIC;
-	else if (!strcmp(filename, "line"))
-		return REC_LINE;
-	else if (!strcmp(filename, "cd"))
-		return REC_CD;
-	else
-		return -1;
+	int i;
+	for ( i = 0; i < rec_num_sources; i ++ )
+	{
+		if (filename[0] == '/' && !strcmp(&filename[1], rec_sources[i].m_name))
+			return i;
+	}
+	return -1;
 } /* End of 'rec_name2src' function */
 
 /* Start play function */
@@ -82,7 +95,7 @@ bool_t rec_start( char *filename )
 	if (mixer_fd >= 0)
 	{
 		int mask = 0;
-		switch (rec_source)
+		switch (rec_sources[rec_source].m_id)
 		{
 		case REC_MIC:
 			mask = SOUND_MASK_MIC;
@@ -136,7 +149,7 @@ str_t *rec_set_song_title( char *filename )
 {
 	int src = rec_name2src(filename);
 
-	switch (src)
+	switch (rec_sources[src].m_id)
 	{
 	case REC_MIC:
 		return str_new(_("Microphone"));
@@ -149,40 +162,6 @@ str_t *rec_set_song_title( char *filename )
 	}
 } /* End of 'rec_set_song_title' function */
 
-/* Initialize songs that respect to object */
-song_t **rec_init_obj_songs( char *name, int *num_songs )
-{
-	song_t **s = NULL;
-	int source = -1;
-
-	(*num_songs) = 0;
-	if (!strlen(name))
-		return NULL;
-
-	/* Get source */
-	if (!strcmp(name, "mic"))
-		source = REC_MIC;
-	else if (!strcmp(name, "line"))
-		source = REC_LINE;
-	else if (!strcmp(name, "cd"))
-		source = REC_CD;
-	if (source < 0)
-		return NULL;
-
-	/* Initialize songs */
-	(*num_songs) = 1;
-	s = (song_t **)malloc(sizeof(song_t *));
-	s[0] = (song_t *)malloc(sizeof(song_t));
-	memset(s[0], 0, sizeof(song_t));
-	snprintf(s[0]->m_file_name, sizeof(s[0]->m_file_name), "recorder:%s", name);
-	s[0]->m_title = rec_set_song_title(s[0]->m_file_name);
-	s[0]->m_len = 0;
-	s[0]->m_info = NULL;
-	s[0]->m_inp = NULL;
-	s[0]->m_ref_count = 1;
-	return s;
-} /* End of 'rec_init_obj_songs' function */
-
 /* Get audio parameters */
 void rec_get_audio_params( int *ch, int *freq, dword *fmt, int *bitrate )
 {
@@ -192,6 +171,57 @@ void rec_get_audio_params( int *ch, int *freq, dword *fmt, int *bitrate )
 	*bitrate = 0;
 } /* End of 'rec_get_audio_params' function */
 
+/* Open directory */
+void *rec_opendir( char *name )
+{
+	rec_dir_data_t *data;
+	int fd;
+
+	/* Create directory data */
+	data = (rec_dir_data_t *)malloc(sizeof(*data));
+	data->m_next_file = 0;
+	return data;
+} /* End of 'rec_opendir' function */
+
+/* Close directory */
+void rec_closedir( void *dir )
+{
+	assert(dir);
+	free(dir);
+} /* End of 'rec_closedir' function */
+
+/* Read directory entry */
+char *rec_readdir( void *dir )
+{
+	rec_dir_data_t *data = (rec_dir_data_t *)dir;
+
+	assert(dir);
+
+	/* Finish */
+	if (data->m_next_file >= rec_num_sources)
+		return NULL;
+
+	/* Return next file name */
+	return rec_sources[data->m_next_file ++].m_name;
+} /* End of 'rec_readdir' function */
+
+/* Get file parameters */
+int rec_stat( char *name, struct stat *sb )
+{
+	memset(sb, 0, sizeof(*sb));
+	if (!strcmp(name, "/"))
+	{
+		sb->st_mode = S_IFDIR;
+		return 0;
+	}
+	else if (rec_name2src(name) >= 0)
+	{
+		sb->st_mode = S_IFREG;
+		return 0;
+	}
+	return ENOENT;
+} /* End of 'rec_stat' function */
+
 /* Get functions list */
 void inp_get_func_list( inp_func_list_t *fl )
 {
@@ -199,9 +229,12 @@ void inp_get_func_list( inp_func_list_t *fl )
 	fl->m_end = rec_end;
 	fl->m_get_stream = rec_get_stream;
 	fl->m_get_audio_params = rec_get_audio_params;
-	fl->m_init_obj_songs = rec_init_obj_songs;
-	fl->m_flags = INP_OWN_SOUND;
+	fl->m_flags = INP_OWN_SOUND | INP_VFS;
 	fl->m_set_song_title = rec_set_song_title;
+	fl->m_vfs_opendir = rec_opendir;
+	fl->m_vfs_readdir = rec_readdir;
+	fl->m_vfs_closedir = rec_closedir;
+	fl->m_vfs_stat = rec_stat;
 	rec_pmng = fl->m_pmng;
 } /* End of 'inp_get_func_list' function */
 

@@ -34,16 +34,14 @@ static int alsa_channels = 2;
 static char *alsa_default_dev = "plughw:0,0";
 
 void alsa_end ();
-char *alsa_get_dev();
+bool_t alsa_open_dev( void );
 
 bool_t alsa_start ()
 {
   int dir = 1;
-  char *dev;
 
-  dev = alsa_get_dev();
-  if (snd_pcm_open (&handle, dev, SND_PCM_STREAM_PLAYBACK, 0) < 0)
-    return FALSE;
+  if (!alsa_open_dev())
+	  return FALSE;
   hwparams = malloc (snd_pcm_hw_params_sizeof ());
   memset (hwparams, 0, snd_pcm_hw_params_sizeof());
   snd_pcm_hw_params_any (handle, hwparams);
@@ -51,14 +49,14 @@ bool_t alsa_start ()
   snd_pcm_hw_params_set_format (handle, hwparams, alsa_fmt);
   snd_pcm_hw_params_set_rate_near (handle, hwparams, &alsa_rate, &dir);
   snd_pcm_hw_params_set_channels (handle, hwparams, alsa_channels);
-  snd_pcm_hw_params_set_periods (handle, hwparams, 2, 0);
-  snd_pcm_hw_params_set_period_size (handle, hwparams, 2048, 0);
-  snd_pcm_hw_params_set_buffer_size (handle, hwparams, 4096);
+  snd_pcm_hw_params_set_period_time(handle, hwparams, 100000, 0);
+  snd_pcm_hw_params_set_buffer_time(handle, hwparams, 500000, 0);
   if (snd_pcm_hw_params (handle, hwparams) < 0)
     {
       alsa_end ();
       return FALSE;
     }
+  snd_pcm_prepare (handle);
   return TRUE;
 }
 
@@ -197,13 +195,54 @@ void alsa_get_volume (int *left, int *right)
   snd_mixer_close (mix);
 }
 
-char *alsa_get_dev( void )
+bool_t alsa_open_dev( void )
 {
 	char *dev;
+
+	/* Get device name */
 	dev = cfg_get_var(pmng_get_cfg(alsa_pmng), "alsa-device");
 	if (dev == NULL)
-		return alsa_default_dev;
-	return dev;
+		dev = alsa_default_dev;
+
+	/* Try devices specified in this variable */
+	while (dev != NULL)
+	{
+		/* Get next device name */
+		char *s = strchr(dev, ';');
+		if (s != NULL)
+			(*s) = 0;
+
+		/* Try to open this device */
+		if (snd_pcm_open(&handle, dev, SND_PCM_STREAM_PLAYBACK, 
+					SND_PCM_NONBLOCK) >= 0)
+		{
+			int ret;
+
+			snd_pcm_close(handle);
+			handle = NULL;
+			ret = snd_pcm_open(&handle, dev, SND_PCM_STREAM_PLAYBACK, 0);
+			if (s != NULL)
+				(*s) = ';';
+			return (ret >= 0);
+		}
+		if (s != NULL)
+			(*s) = ';';
+		dev = (s == NULL ? NULL : s + 1);
+	}
+
+	return FALSE;
+}
+
+void alsa_pause( void )
+{
+	if (handle != NULL)
+		snd_pcm_pause(handle, TRUE);
+}
+
+void alsa_resume( void )
+{
+	if (handle != NULL)
+		snd_pcm_pause(handle, FALSE);
 }
 
 void outp_get_func_list (outp_func_list_t *fl)
@@ -215,6 +254,8 @@ void outp_get_func_list (outp_func_list_t *fl)
   fl->m_set_freq = alsa_set_rate;
   fl->m_set_fmt = alsa_set_fmt;
   fl->m_flush = alsa_flush;
+  fl->m_pause = alsa_pause;
+  fl->m_resume = alsa_resume;
   fl->m_set_volume = alsa_set_volume;
   fl->m_get_volume = alsa_get_volume;
   alsa_pmng = fl->m_pmng;

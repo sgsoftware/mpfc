@@ -226,6 +226,8 @@ str_t *str_substring( str_t *str, int start, int end )
 
 	if (str == NULL)
 		return NULL;
+	if (end < start)
+		return str_new("");
 
 	/* Allocate memory */
 	new_str = (str_t *)malloc(sizeof(str_t));
@@ -242,6 +244,32 @@ str_t *str_substring( str_t *str, int start, int end )
 	new_str->m_data[new_str->m_len] = 0;
 	return new_str;
 } /* End of 'str_substring' function */
+
+/* Extract a substring from (char *) */
+str_t *str_substring_cptr( char *str, int start, int end )
+{
+	str_t *new_str;
+
+	if (str == NULL)
+		return NULL;
+	if (end < start)
+		return str_new("");
+
+	/* Allocate memory */
+	new_str = (str_t *)malloc(sizeof(str_t));
+	if (new_str == NULL)
+		return NULL;
+
+	/* Initialize fields */
+	new_str->m_len = end - start + 1;
+	new_str->m_data = NULL;
+	new_str->m_allocated = 0;
+	new_str->m_portion_size = STR_PORTION_SIZE;
+	str_allocate(new_str, new_str->m_len);
+	memcpy(new_str->m_data, &str[start], new_str->m_len);
+	new_str->m_data[new_str->m_len] = 0;
+	return new_str;
+} /* End of 'str_substring_cptr' function */
 
 /* Escape the special symbols (assuming that string is a file name) */
 void str_fn_escape_specs( str_t *str, bool_t escape_slashes )
