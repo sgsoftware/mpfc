@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG MPFC. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 3.12.2003
+ * LAST UPDATE : 18.12.2003
  * NOTE        : Module prefix 'player'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -41,6 +41,7 @@
 #include "file_input.h"
 #include "help_screen.h"
 #include "history.h"
+#include "iwt.h"
 #include "key_bind.h"
 #include "label.h"
 #include "listbox.h"
@@ -176,6 +177,9 @@ bool_t player_init( int argc, char *argv[] )
 	/* Initialize song adder thread */
 	sat_init();
 
+	/* Initialize info writer thread */
+	iwt_init();
+
 	/* Initialize undo list */
 	player_ul = undo_new();
 
@@ -262,6 +266,7 @@ void player_deinit( void )
 	
 	/* End playing thread */
 	sat_free();
+	iwt_free();
 	player_end_track = TRUE;
 	player_end_thread = TRUE;
 	pthread_join(player_tid, NULL);
@@ -1206,14 +1211,10 @@ void player_info_dialog( void )
 			s->m_info->m_not_own_present = TRUE;
 		
 			/* Save info */
-			sprintf(msg, _("Saving info to file %s"), 
-					util_get_file_short_name(s->m_file_name));
-			player_print_msg(msg);
-			inp_save_info(song_get_inp(s), s->m_file_name, s->m_info);
-			player_print_msg(_("Saved"));
+			iwt_push(s);
 
 			/* Update */
-			song_update_info(s);
+//			song_update_info(s);
 
 			/* Break if local */
 			if (local)
@@ -2363,14 +2364,10 @@ void player_save_info_dlg( wnd_t *wnd )
 		s->m_info->m_not_own_present = TRUE;
 	
 		/* Save info */
-		sprintf(msg, _("Saving info to file %s"), 
-				util_get_file_short_name(s->m_file_name));
-		player_print_msg(msg);
-		inp_save_info(song_get_inp(s), s->m_file_name, s->m_info);
-		player_print_msg(_("Saved"));
+		iwt_push(s);
 
 		/* Update */
-		song_update_info(s);
+//		song_update_info(s);
 
 		/* Break if local */
 		if (player_info_local)

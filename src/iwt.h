@@ -2,12 +2,12 @@
  * Copyright (C) 2003 by SG Software.
  ******************************************************************/
 
-/* FILE NAME   : sat.h
- * PURPOSE     : SG MPFC. Interface for song adder thread
+/* FILE NAME   : iwt.h
+ * PURPOSE     : SG MPFC. Interface for info saver thread
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 15.08.2003
- * NOTE        : Module prefix 'sat'.
+ * LAST UPDATE : 18.12.2003
+ * NOTE        : Module prefix 'iwt'.
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 
@@ -25,28 +25,28 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef __SG_MPFC_SAT_H__
-#define __SG_MPFC_SAT_H__
+#ifndef __SG_MPFC_IWT_H__
+#define __SG_MPFC_IWT_H__
 
 #include "types.h"
-#include "plist.h"
+#include "song.h"
 
-/* Initialize SAT module */
-bool_t sat_init( void );
+/* Initialize IWT module */
+bool_t iwt_init( void );
 
-/* Uninitialize SAT module */
-void sat_free( void );
+/* Uninitialize IWT module */
+void iwt_free( void );
 
 /* Push song to queue */
-void sat_push( plist_t *pl, int index );
+void iwt_push( song_t *song );
 
 /* Pop song from queue */
-int sat_pop( plist_t *pl );
+song_t *iwt_pop( void );
 
-/* Song adder thread function */
-void *sat_thread( void *arg );
+/* Info writer thread function */
+void *iwt_thread( void *arg );
 
 #endif
 
-/* End of 'sat.h' file */
+/* End of 'iwt.h' file */
 

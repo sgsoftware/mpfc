@@ -476,7 +476,7 @@ void id3_v2_set_frame( id3_tag_data_t *tag, char *name, char *val )
 	p = tag->m_frames_start;
 	diff1 = tag->m_frames_start - tag->m_stream;
 	diff2 = tag->m_cur_frame - tag->m_stream;
-
+	
 	/* Search for specified frame */
 	for ( found = finished = FALSE; !found && !finished; )
 	{
@@ -486,13 +486,13 @@ void id3_v2_set_frame( id3_tag_data_t *tag, char *name, char *val )
 		id = p;
 		size = ID3_CONVERT_FROM_SYNCHSAFE(*(dword *)(p + 4));
 
-		/* Compare frame ID with needed */
-		if (!strncmp(id, name, 4))
-			found = TRUE;
 		/* Frames finished */
-		else if (!ID3_IS_VALID_FRAME_NAME(id) || 
+		if (!ID3_IS_VALID_FRAME_NAME(id) || 
 				(p - tag->m_stream >= tag->m_stream_len))
 			finished = TRUE;
+		/* Compare frame ID with needed */
+		else if (!strncmp(id, name, 4))
+			found = TRUE;
 		/* Move to the next frame */
 		else
 			p += (10 + size);

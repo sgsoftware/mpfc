@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: mpfc 1.1\n"
-"POT-Creation-Date: 2003-12-09 21:22+0300\n"
+"POT-Creation-Date: 2003-12-18 19:46+0300\n"
 "PO-Revision-Date: 2003-02-13 09:15+0300\n"
 "Last-Translator: Sergey E. Galanov <sgsoftware@mail.ru>\n"
 "Language-Team: Russian <sgsoftware@mail.ru>\n"
@@ -19,7 +19,7 @@ msgstr ""
 msgid "Initialization error : %s\n"
 msgstr "Ошибка инициализии : %s\n"
 
-#: src/player.c:450
+#: src/player.c:455
 msgid ""
 "SG Software Media Player For Console\n"
 "version 1.1\n"
@@ -27,141 +27,132 @@ msgstr ""
 "Плейер для консоли от SG Software\n"
 "версия 1.1\n"
 
-#: src/player.c:661
+#: src/player.c:666
 msgid "Unable to initialize output plugin"
 msgstr "Не могу инициализировать выходной плагин"
 
-#: src/player.c:843
+#: src/player.c:848
 msgid "Enter file (or directory) name: "
 msgstr "Введите имя файла (или каталога): "
 
-#: src/player.c:868
+#: src/player.c:873
 msgid "Enter file name: "
 msgstr "Введите имя файла: "
 
-#: src/player.c:881
+#: src/player.c:886
 msgid "Play list saved"
 msgstr "Плей-лист сохранен"
 
-#: src/player.c:882
+#: src/player.c:887
 msgid "Unable to save play list"
 msgstr "Не могу сохранить плей-лист"
 
-#: src/player.c:896
+#: src/player.c:901
 #, c-format
 msgid "Removed %i songs"
 msgstr "Удалено %i песен"
 
-#: src/player.c:909
+#: src/player.c:914
 msgid "Sort globally? (Yes/No)"
 msgstr "Сортировать глобально? (Yes/No)"
 
-#: src/player.c:921
+#: src/player.c:926
 msgid "Sort by: (T)itle, (F)ile name, (P)ath and file name"
 msgstr "Сортировать по: Заголовку(T), Имени файла(F), Пути и имени(P)"
 
-#: src/player.c:953
+#: src/player.c:958
 msgid "Enter search string: "
 msgstr "Введите строку для поиска: "
 
-#: src/player.c:967 src/player.c:1601
+#: src/player.c:972 src/player.c:1602
 msgid "String not found"
 msgstr "Строка не найдена"
 
-#: src/player.c:969 src/player.c:1603
+#: src/player.c:974 src/player.c:1604
 msgid "String found"
 msgstr "Строка найдена"
 
-#: src/player.c:1007
+#: src/player.c:1012
 msgid "Info edit locally? (Yes/No)"
 msgstr "Редактировать информацию локально? (Yes/No)"
 
-#: src/player.c:1085
+#: src/player.c:1090
 msgid "Song name: "
 msgstr "Название песни: "
 
-#: src/player.c:1087
+#: src/player.c:1092
 msgid "Artist name: "
 msgstr "Исполнитель: "
 
-#: src/player.c:1089
+#: src/player.c:1094
 msgid "Album name: "
 msgstr "Альбом: "
 
-#: src/player.c:1091
+#: src/player.c:1096
 msgid "Year: "
 msgstr "Год: "
 
-#: src/player.c:1093
+#: src/player.c:1098
 msgid "Track No: "
 msgstr "Номер трека: "
 
-#: src/player.c:1095
+#: src/player.c:1100
 msgid "Comments: "
 msgstr "Комментарии: "
 
-#: src/player.c:1097
+#: src/player.c:1102
 msgid "Genre: "
 msgstr "Жанр: "
 
-#: src/player.c:1209 src/player.c:2366
-#, c-format
-msgid "Saving info to file %s"
-msgstr "Сохраняю информацию в файл в %s"
-
-#: src/player.c:1213 src/player.c:2370
-msgid "Saved"
-msgstr "Сохранено"
-
-#: src/player.c:1352
+#: src/player.c:1353
 msgid "Variables manager"
 msgstr "Менеджер переменных"
 
-#: src/player.c:1359 src/player.c:1912
+#: src/player.c:1360 src/player.c:1913
 msgid "Value: "
 msgstr "Значение: "
 
-#: src/player.c:1362 src/player.c:1908
+#: src/player.c:1363 src/player.c:1909
 msgid "New variable"
 msgstr "Новая переменная"
 
-#: src/player.c:1365
+#: src/player.c:1366
 msgid "Save"
 msgstr "Сохранить"
 
-#: src/player.c:1368
+#: src/player.c:1369
 msgid "Restore value"
 msgstr "Восстановить переменную"
 
-#: src/player.c:1402
+#: src/player.c:1403
 msgid "Enter object name: "
 msgstr "Введите имя объекта: "
 
-#: src/player.c:1773
+#: src/player.c:1774
 msgid "Enter repeat value for the next command: "
 msgstr "Введите число повторений для следующей команды: "
 
-#: src/player.c:1819
+#: src/player.c:1820
 msgid "Enter variable name: "
 msgstr "Введите имя переменной: "
 
-#: src/player.c:1838
+#: src/player.c:1839
 msgid "Enter variable value: "
 msgstr "Введите значение переменной: "
 
-#: src/player.c:1910
+#: src/player.c:1911
 msgid "Name: "
 msgstr "Имя: "
 
-#: src/player.c:2042
+#: src/player.c:2043
 msgid "Enter command: "
 msgstr "Введите команду: "
 
-#: src/player.c:2097
+#: src/player.c:2098
 msgid "Search for: (T)itle, (N)ame, (A)rtist, A(l)bum, (Y)ear, (G)enre"
 msgstr "Поиск по: заголовку(T), исполнителю(A), альбому(L), году(Y), жанру(G)"
 
-#: src/player.c:2200
+#: src/player.c:2201
 msgid "Reload info in the whole list? (Yes/No)"
 msgstr "Загрузить информацию во всем списке? (Yes/No)"
 
@@ -444,7 +435,7 @@ msgid "Getting address of host %s"
 msgstr "Получаю адрес %s"
 
 #: src/file/http.c:90 src/file/http.c:104 src/file/http.c:159
-#: plugins/input/mp3/mp3.c:884
+#: plugins/input/mp3/mp3.c:886
 msgid "OK"
 msgstr "OK"
 
@@ -477,7 +468,7 @@ msgstr "Облом!"
 msgid "Filling buffer: %d%% done"
 msgstr ""
 
-#: plugins/input/mp3/mp3.c:417
+#: plugins/input/mp3/mp3.c:419
 #, c-format
 msgid ""
 "MPEG %s, layer %i\n"
@@ -498,47 +489,47 @@ msgstr ""
 "Подлинный: %s\n"
 "Акцент: %s"
 
-#: plugins/input/mp3/mp3.c:430 plugins/input/mp3/mp3.c:546
+#: plugins/input/mp3/mp3.c:432 plugins/input/mp3/mp3.c:548
 msgid "Single channel"
 msgstr "Один канал"
 
-#: plugins/input/mp3/mp3.c:431 plugins/input/mp3/mp3.c:547
+#: plugins/input/mp3/mp3.c:433 plugins/input/mp3/mp3.c:549
 msgid "Dual channel"
 msgstr "Два канала"
 
-#: plugins/input/mp3/mp3.c:432 plugins/input/mp3/mp3.c:548
+#: plugins/input/mp3/mp3.c:434 plugins/input/mp3/mp3.c:550
 msgid "Joint Stereo"
 msgstr "Объединенное стерео"
 
-#: plugins/input/mp3/mp3.c:433 plugins/input/mp3/mp3.c:549
+#: plugins/input/mp3/mp3.c:435 plugins/input/mp3/mp3.c:551
 msgid "Stereo"
 msgstr "Стерео"
 
-#: plugins/input/mp3/mp3.c:434 plugins/input/mp3/mp3.c:435
-#: plugins/input/mp3/mp3.c:436 plugins/input/mp3/mp3.c:550
-#: plugins/input/mp3/mp3.c:551 plugins/input/mp3/mp3.c:552
+#: plugins/input/mp3/mp3.c:436 plugins/input/mp3/mp3.c:437
+#: plugins/input/mp3/mp3.c:438 plugins/input/mp3/mp3.c:552
+#: plugins/input/mp3/mp3.c:553 plugins/input/mp3/mp3.c:554
 msgid "Yes"
 msgstr "Да"
 
-#: plugins/input/mp3/mp3.c:434 plugins/input/mp3/mp3.c:435
-#: plugins/input/mp3/mp3.c:436 plugins/input/mp3/mp3.c:550
-#: plugins/input/mp3/mp3.c:551 plugins/input/mp3/mp3.c:552
+#: plugins/input/mp3/mp3.c:436 plugins/input/mp3/mp3.c:437
+#: plugins/input/mp3/mp3.c:438 plugins/input/mp3/mp3.c:552
+#: plugins/input/mp3/mp3.c:553 plugins/input/mp3/mp3.c:554
 msgid "No"
 msgstr "Нет"
 
-#: plugins/input/mp3/mp3.c:437 plugins/input/mp3/mp3.c:553
+#: plugins/input/mp3/mp3.c:439 plugins/input/mp3/mp3.c:555
 msgid "None"
 msgstr "Нет"
 
-#: plugins/input/mp3/mp3.c:439 plugins/input/mp3/mp3.c:555
+#: plugins/input/mp3/mp3.c:441 plugins/input/mp3/mp3.c:557
 msgid "50/15 microseconds"
 msgstr "50/15 микросекунд"
 
-#: plugins/input/mp3/mp3.c:439 plugins/input/mp3/mp3.c:555
+#: plugins/input/mp3/mp3.c:441 plugins/input/mp3/mp3.c:557
 msgid "CCITT J.17"
 msgstr "CCITT J.17"
 
-#: plugins/input/mp3/mp3.c:530
+#: plugins/input/mp3/mp3.c:532
 #, c-format
 msgid ""
 "MPEG %s, layer %i\n"
@@ -565,12 +556,12 @@ msgstr ""
 "Длина: %i секунд\n"
 "Размер файла: %i байт"
 
-#: plugins/input/mp3/mp3.c:860
+#: plugins/input/mp3/mp3.c:862
 #, c-format
 msgid "Removing tag from file %s"
 msgstr "Удаляю тег из файла %s"
 
-#: plugins/input/mp3/mp3.c:908
+#: plugins/input/mp3/mp3.c:910
 msgid "Remove ID3 tags"
 msgstr "Удалить теги ID3"
 
@@ -706,3 +697,9 @@ msgstr ""
 "Частота сэмплов: %i\n"
 "Байт/сек: %i\n"
 "Выравнивание блока: %i"
+
+#~ msgid "Saving info to file %s"
+#~ msgstr "Сохраняю информацию в файл в %s"
+
+#~ msgid "Saved"
+#~ msgstr "Сохранено"

@@ -37,6 +37,7 @@ struct tag_in_plugin_t;
 /* Song flags */
 #define SONG_SCHEDULE 0x00000001
 #define SONG_GET_INFO 0x00000002
+#define SONG_SAVE_INFO 0x00000004
 
 /* Song type */
 typedef struct

@@ -375,9 +375,11 @@ void mp3_save_info( char *filename, song_info_t *info )
 	if (info->m_genre == GENRE_ID_OWN_STRING)
 		strcpy(str, info->m_genre_data.m_text);
 	else
+	{
 		sprintf(str, "(%d)", (info->m_genre == GENRE_ID_UNKNOWN) ? 
 				info->m_genre_data.m_data : 
 				mp3_glist->m_list[info->m_genre].m_data);
+	}
 	id3_set_frame(tag, ID3_FRAME_GENRE, str);
 
 	/* Save tag or save it later */
