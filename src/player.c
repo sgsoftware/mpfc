@@ -378,8 +378,8 @@ void player_display( wnd_t *wnd, dword data )
 	if (player_plist->m_cur_song == -1)
 	{
 		col_set_color(wnd, COL_EL_ABOUT);
-		wnd_printf(wnd, "SG Software Media Player For Console\n"
-				"version 1.0alpha\n");
+		wnd_printf(wnd, _("SG Software Media Player For Console\n"
+				"version 1.0alpha\n"));
 		col_set_color(wnd, COL_EL_DEFAULT);
 	}
 	else
@@ -1121,16 +1121,16 @@ void player_var_manager( void )
 	var_lb->m_minimalizing = FALSE;
 	WND_OBJ(var_lb)->m_id = PLAYER_VAR_MNGR_VARS;
 	val_eb = ebox_new(WND_OBJ(dlg), 2, WND_HEIGHT(dlg) - 3,
-			WND_WIDTH(dlg) - 4, 1, 256, "Value: ", 
+			WND_WIDTH(dlg) - 4, 1, 256, _("Value: "), 
 			(cfg_list->m_num_vars) ? cfg_list->m_vars[0].m_val : "");
 	WND_OBJ(val_eb)->m_id = PLAYER_VAR_MNGR_VAL;
-	btn = btn_new(WND_OBJ(dlg), 2, WND_HEIGHT(dlg) - 2, -1, "New variable");
+	btn = btn_new(WND_OBJ(dlg), 2, WND_HEIGHT(dlg) - 2, -1, _("New variable"));
 	WND_OBJ(btn)->m_id = PLAYER_VAR_MNGR_NEW;
 	btn = btn_new(WND_OBJ(dlg), WND_X(btn) + WND_WIDTH(btn) + 1, 
-			WND_HEIGHT(dlg) - 2, -1, "Save");
+			WND_HEIGHT(dlg) - 2, -1, _("Save"));
 	WND_OBJ(btn)->m_id = PLAYER_VAR_MNGR_SAVE;
 	btn = btn_new(WND_OBJ(dlg), WND_X(btn) + WND_WIDTH(btn) + 1,
-		   	WND_HEIGHT(dlg) - 2, -1, "Restore value");
+		   	WND_HEIGHT(dlg) - 2, -1, _("Restore value"));
 	WND_OBJ(btn)->m_id = PLAYER_VAR_MNGR_RESTORE;
 
 	/* Fill variables list box */
@@ -1434,6 +1434,7 @@ void player_handle_action( int action )
 		PLIST_GET_SEL(player_plist, player_start, player_end);
 		if (!player_plist->m_len)
 			break;
+		player_status = PLAYER_STATUS_PLAYING;
 		player_play(player_start, 0);
 		break;
 
@@ -1663,11 +1664,11 @@ void player_var_mngr_notify( wnd_t *wnd, dword data )
 		dlgbox_t *d;
 		editbox_t *name, *val;
 
-		d = dlg_new(WND_OBJ(dlg), 4, 4, 40, 5, "New variable");
+		d = dlg_new(WND_OBJ(dlg), 4, 4, 40, 5, _("New variable"));
 		name = ebox_new(WND_OBJ(d), 4, 3, WND_WIDTH(d) - 5, 1, 256, 
-				"Name: ", "");
+				_("Name: "), "");
 		val = ebox_new(WND_OBJ(d), 4, 4, WND_WIDTH(d) - 5, 1, 256, 
-				"Value: ", "");
+				_("Value: "), "");
 		wnd_run(d);
 		if (d->m_ok)
 		{

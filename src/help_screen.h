@@ -31,7 +31,7 @@
 #include "window.h"
 
 /* The maximal number of items in help screen */
-#define HELP_MAX_ITEMS 40
+#define HELP_MAX_ITEMS 80
 
 /* Help screen window type */
 typedef struct tag_help_screen_t

@@ -79,9 +79,6 @@ void cfg_init( void );
 /* Uninitialize configuration */
 void cfg_free( void );
 
-/* Free configuration list */
-void cfg_free_list( cfg_list_t *list );
-
 /* Initialize data base */
 void cfg_init_db( void );
 
@@ -93,6 +90,9 @@ void cfg_read_rcfile( cfg_list_t *list, char *name );
 
 /* Parse one line from configuration file */
 void cfg_parse_line( cfg_list_t *list, char *str );
+
+/* Free configuration list */
+void cfg_free_list( cfg_list_t *list );
 
 /* Add variable */
 void cfg_new_var( cfg_list_t *list, char *name, char *val );

@@ -74,7 +74,7 @@ void kbind_init( void )
 	kbind_add(KBIND_TIME_FW, 2, 'l', 't');
 	kbind_add(KBIND_TIME_BW, 1, '<');
 	kbind_add(KBIND_TIME_BW, 2, 'h', 't');
-	kbind_add(KBIND_TIME_MOVE, 2, 'g', 't');
+	kbind_add(KBIND_TIME_MOVE, 1, 't');
 	kbind_add(KBIND_VOL_FW, 1, '+');
 	kbind_add(KBIND_VOL_FW, 2, 'l', 'v');
 	kbind_add(KBIND_VOL_BW, 1, '-');
