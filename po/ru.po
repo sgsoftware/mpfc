@@ -5,7 +5,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: mpfc 1.1\n"
+"Project-Id-Version: mpfc 1.2\n"
 "POT-Creation-Date: 2004-02-10 13:19+0300\n"
 "PO-Revision-Date: 2003-02-13 09:15+0300\n"
 "Last-Translator: Sergey E. Galanov <sgsoftware@mail.ru>\n"
@@ -448,41 +448,36 @@ msgid "Deselect files matching pattern: "
 msgstr "Снять выделение с файлов, удовлетворяющих шаблону: "
 
 #: src/browser.c:696
-#, fuzzy
 msgid "File name"
-msgstr "Введите имя файла: "
+msgstr "Имя файла"
 
 #: src/browser.c:703
 msgid "Title"
-msgstr ""
+msgstr "Название"
 
 #: src/browser.c:710
-#, fuzzy
 msgid "Artist"
-msgstr "Исполнитель: "
+msgstr "Исполнитель"
 
 #: src/browser.c:717
 msgid "Album"
-msgstr ""
+msgstr "Альбом"
 
 #: src/browser.c:724
-#, fuzzy
 msgid "Year"
-msgstr "Год: "
+msgstr "Год"
 
 #: src/browser.c:731
-#, fuzzy
 msgid "Genre"
-msgstr "Жанр: "
+msgstr "Жанр"
 
 #: src/browser.c:738
-#, fuzzy
 msgid "Track"
-msgstr "Номер трека: "
+msgstr "Трек"
 
 #: src/browser.c:745
 msgid "Time"
-msgstr ""
+msgstr "Время"
 
 #: plugins/input/mp3/mp3.c:438
 #, c-format
@@ -568,13 +563,13 @@ msgstr ""
 "Копирайт: %s\n"
 "Подлинный: %s\n"
 "Акцент: %s\n"
-"примерно %i фреймов\n"
+":s%i фреймов\n"
 "Длина: %i секунд\n"
 "Размер файла: %i байт"
 
 #: plugins/input/mp3/mp3.c:585
 msgid "approx. "
-msgstr ""
+msgstr "примерно "
 
 #: plugins/input/mp3/mp3.c:898
 #, c-format

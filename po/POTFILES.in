@@ -1,13 +1,3 @@
-src/main.c
-src/player.c
-src/plist.c
-src/help_screen.c
-src/error.c
-src/eqwnd.c
-src/browser.c
-plugins/input/mp3/mp3.c
-plugins/input/ogg/ogg.c
-plugins/input/ogg/vcedit.c
-plugins/input/audiocd/audiocd.c
-plugins/input/audiocd/cddb.c
-plugins/input/wav/wav.c
+src/*.c
+libmpfc/*.c
+plugins/*/*/*.c
