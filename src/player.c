@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG MPFC. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 2.10.2004
+ * LAST UPDATE : 7.11.2004
  * NOTE        : Module prefix 'player'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -266,21 +266,12 @@ bool_t player_init( int argc, char *argv[] )
 		return FALSE;
 	}
 
-	/* Initialize song adder thread */
-	logger_debug(player_log, "Initializing sat");
-	if (!sat_init())
+	/* Initialize info read/write thread */
+	logger_debug(player_log, "Initializing info read/write thread");
+	if (!irw_init())
 	{
 		logger_fatal(player_log, 0, 
-				_("Unable to initialize song adder thread"));
-		return FALSE;
-	}
-
-	/* Initialize info writer thread */
-	logger_debug(player_log, "Initializing iwt");
-	if (!iwt_init())
-	{
-		logger_fatal(player_log, 0, 
-				_("Unable to initialize info writer thread"));
+				_("Unable to initialize info read/write thread"));
 		return FALSE;
 	}
 
@@ -430,10 +421,8 @@ void player_root_destructor( wnd_t *wnd )
 	player_save_cfg();
 	
 	/* End playing thread */
-	logger_debug(player_log, "Doing sat_free");
-	sat_free();
-	logger_debug(player_log, "Doing iwt_free");
-	iwt_free();
+	logger_debug(player_log, "Doing irw_free");
+	irw_free();
 	logger_debug(player_log, "Setting next song to NULL");
 	inp_set_next_song(player_inp, NULL);
 	if (player_tid)
@@ -2481,7 +2470,7 @@ void player_save_info_dialog( dialog_t *dlg )
 	song_t **songs_list;
 	song_t *main_song;
 	int num_songs, i;
-	bool_t write_in_all;
+	bool_t write_in_all = FALSE;
 
 	/* Get the values */
 	name = EDITBOX_OBJ(dialog_find_item(dlg, "name"));
@@ -2531,9 +2520,11 @@ void player_save_info_dialog( dialog_t *dlg )
 			si_set_comments(info, EDITBOX_TEXT(comments));
 		if (genre->m_modified)
 			si_set_genre(info, EDITBOX_TEXT(genre));
+		song_update_title(songs_list[i]);
+		wnd_invalidate(player_wnd);
 
 		/* Save info */
-		iwt_push(songs_list[i]);
+		irw_push(songs_list[i], SONG_INFO_WRITE);
 	}
 } /* End of 'player_save_info_dialog' function */
 

@@ -288,6 +288,7 @@ void *wnd_kbd_thread( void *arg )
 	struct timeval was_tv, now_tv;
 	int was_btn;
 	int key;
+	wnd_global_data_t *global = data->m_global;
 
 	gettimeofday(&was_tv, NULL);
 	for ( ; !data->m_end_thread; ) 
@@ -305,11 +306,11 @@ void *wnd_kbd_thread( void *arg )
 					wnd_mouse_button_t btn;
 
 					/* Get event parameters */
-					pthread_mutex_lock(&WND_CURSES_MUTEX(wnd_root));
+					pthread_mutex_lock(&global->m_curses_mutex);
 					btn = getch() - 040;
 					x = getch() - 040 - 1;
 					y = getch() - 040 - 1;
-					pthread_mutex_unlock(&WND_CURSES_MUTEX(wnd_root));
+					pthread_mutex_unlock(&global->m_curses_mutex);
 					type = WND_MOUSE_DOWN;
 					switch (btn)
 					{
@@ -337,14 +338,14 @@ void *wnd_kbd_thread( void *arg )
 					was_btn = btn;
 					
 					/* Handle mouse */
-					wnd_mouse_handle_event(WND_MOUSE_DATA(wnd_root), 
+					wnd_mouse_handle_event(global->m_mouse_data,
 							x, y, btn, type, NULL);
 					continue;
 				//}
 			}
 
 			/* Send message */
-			wnd_t *focus = WND_FOCUS(wnd_root);
+			wnd_t *focus = global->m_focus;
 			if (focus != NULL)
 			{
 				wnd_msg_send(focus, "keydown", wnd_msg_key_new(keycode));
@@ -352,9 +353,9 @@ void *wnd_kbd_thread( void *arg )
 		}
 
 		/* Read key into buffer */
-		pthread_mutex_lock(&WND_CURSES_MUTEX(wnd_root));
+		pthread_mutex_lock(&global->m_curses_mutex);
 		key = getch();
-		pthread_mutex_unlock(&WND_CURSES_MUTEX(wnd_root));
+		pthread_mutex_unlock(&global->m_curses_mutex);
 		if (key == ERR)
 		{
 			util_wait();

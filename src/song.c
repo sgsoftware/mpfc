@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Songs manipulation functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 22.09.2004
+ * LAST UPDATE : 7.11.2004
  * NOTE        : Module prefix 'song'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -74,6 +74,7 @@ song_t *song_new( vfs_file_t *file, char *title, int len )
 	song->m_flags = 0;
 	song->m_len = len;
 	song->m_title = NULL;
+	pthread_mutex_init(&song->m_mutex, NULL);
 	if (title == NULL)
 		song_update_title(song);
 	else
@@ -110,6 +111,7 @@ void song_free( song_t *song )
 		free(song->m_full_name);
 		if (song->m_default_title != NULL)
 			free(song->m_default_title);
+		pthread_mutex_destroy(&song->m_mutex);
 		free(song);
 	}
 } /* End of 'song_free' function */
@@ -117,13 +119,16 @@ void song_free( song_t *song )
 /* Update song information */
 void song_update_info( song_t *song )
 {
-	if (song == NULL || (song->m_flags & SONG_SAVE_INFO))
+	if (song == NULL || (song->m_flags & SONG_INFO_WRITE))
 		return;
 
+	song_lock(song);
 	si_free(song->m_info);
 	song->m_info = inp_get_info(song->m_inp, song->m_file_name, 
 			&song->m_len);
 	song_update_title(song);
+	song->m_flags &= (~SONG_INFO_READ);
+	song_unlock(song);
 } /* End of 'song_update_info' function */
 
 /* Fill song title from data from song info and other parameters */
@@ -211,6 +216,18 @@ void song_update_title( song_t *song )
 		str_printf(str, "%s - %s", info->m_artist, info->m_name);
 	}
 } /* End of 'song_get_title_from_info' function */
+
+/* Write song info */
+void song_write_info( song_t *s )
+{
+	s->m_flags &= ~(SONG_INFO_READ | SONG_INFO_WRITE);
+	if (!inp_save_info(s->m_inp, s->m_file_name, s->m_info))
+	{
+		song_update_info(s);
+		logger_error(player_log, 0, _("Failed to save info to file %s"),
+				s->m_file_name);
+	}
+} /* End of 'song_write_info' function */
 
 /* Get input plugin */
 in_plugin_t *song_get_inp( song_t *song, file_t **fd )

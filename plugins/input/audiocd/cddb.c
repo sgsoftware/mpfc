@@ -366,20 +366,23 @@ void cddb_server2data( char *buf )
 } /* End of 'cddb_server2data' function */
 
 /* Save CDDB data */
-void cddb_save_data( dword id )
+bool_t cddb_save_data( dword id )
 {
 	char fn[MAX_FILE_NAME];
 	FILE *fd;
 	int i;
 
 	if (cddb_data == NULL)
-		return;
+		return TRUE;
 
 	/* Construct file name and open it */
 	snprintf(fn, sizeof(fn), "%s/.mpfc/cddb/%x", getenv("HOME"), id);
 	fd = fopen(fn, "wt");
 	if (fd == NULL)
-		return;
+	{
+		logger_error(acd_log, 1, _("Unable to open file %s for writing"), fn);
+		return FALSE;
+	}
 
 	/* Write data */
 	for ( i = 0; i < cddb_data_len; i ++ )
@@ -387,10 +390,11 @@ void cddb_save_data( dword id )
 
 	/* Close file */
 	fclose(fd);
+	return TRUE;
 } /* End of 'cddb_save_data' function */
 
 /* Save track info */
-void cddb_save_trk_info( int track, song_info_t *info )
+bool_t cddb_save_trk_info( int track, song_info_t *info )
 {
 	dword id;
 	int i;
@@ -512,7 +516,7 @@ void cddb_save_trk_info( int track, song_info_t *info )
 	}
 
 	/* Save data */
-	cddb_save_data(id);
+	return cddb_save_data(id);
 } /* End of 'cddb_save_trk_info' function */
 
 /* Add a string to data */

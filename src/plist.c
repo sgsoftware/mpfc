@@ -503,13 +503,13 @@ void plist_sort_bounds( plist_t *pl, int start, int end, int criteria )
 		finished = TRUE;
 		for ( i = 0; i < pl->m_len; i ++ )
 		{
-			if (pl->m_list[i]->m_flags & SONG_GET_INFO)
+			if (pl->m_list[i]->m_flags & SONG_INFO_READ)
 			{
 				finished = FALSE;
 				break;
 			}
 		}
-		util_delay(0, 1000000);
+		util_wait();
 	}
 
 	/* Lock play list */
@@ -974,23 +974,10 @@ void plist_move_sel( plist_t *pl, int y, bool_t relative )
 	plist_unlock(pl);
 } /* End of 'plist_move_sel' function */
 
-/* Set song information */
-void plist_set_song_info( plist_t *pl, int index )
-{
-	if (pl == NULL || index < 0 || index >= pl->m_len)
-		return;
-
-	plist_lock(pl);
-	song_update_info(pl->m_list[index]);
-	pl->m_list[index]->m_flags &= (~SONG_GET_INFO);
-	plist_unlock(pl);
-	wnd_invalidate(player_wnd);
-} /* End of 'plist_set_song_info' function */
-
 /* Reload all songs information */
 void plist_reload_info( plist_t *pl, bool_t global )
 {
-	int i;
+	int i, start, end;
 	
 	if (pl == NULL || !pl->m_len)
 		return;
@@ -998,16 +985,18 @@ void plist_reload_info( plist_t *pl, bool_t global )
 	/* Update info */
 	if (global)
 	{
-		for ( i = 0; i < pl->m_len; i ++ )
-			sat_push(pl, i);
+		start = 0;
+		end = pl->m_len - 1;
 	}
 	else
 	{
-		int start, end;
 		PLIST_GET_SEL(pl, start, end);
+	}
 
-		for ( i = start; i <= end; i ++ )
-			sat_push(pl, i);
+	for ( i = start; i <= end; i ++ )
+	{
+		song_t *s = pl->m_list[i];
+		irw_push(s, SONG_INFO_READ);
 	}
 } /* End of 'plist_reload_info' function */
 
@@ -1034,11 +1023,14 @@ void plist_flush_scheduled( plist_t *pl )
 	int i;
 
 	for ( i = 0; i < pl->m_len; i ++ )
-		if (pl->m_list[i]->m_flags & SONG_SCHEDULE)
+	{
+		song_t *s = pl->m_list[i];
+		if (s->m_flags & SONG_SCHEDULE)
 		{
-			sat_push(pl, i);
-			pl->m_list[i]->m_flags &= (~SONG_SCHEDULE);
+			irw_push(s, SONG_INFO_READ);
+			s->m_flags &= (~SONG_SCHEDULE);
 		}
+	}
 } /* End of 'plist_flush_scheduled' function */
 
 /* Add a set of files to play list */

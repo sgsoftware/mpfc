@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for input plugin management
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 9.10.2004
+ * LAST UPDATE : 8.11.2004
  * NOTE        : Module prefix 'inp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -100,7 +100,7 @@ typedef struct
 	song_info_t *(*m_get_info)( char *file_name, int *len );
 	
 	/* Save song information function */
-	void (*m_save_info)( char *file_name, song_info_t *info );
+	bool_t (*m_save_info)( char *file_name, song_info_t *info );
 	
 	/* Get supported file formats */
 	void (*m_get_formats)( char *extensions, char *content_type );
@@ -197,7 +197,7 @@ int inp_get_cur_time( in_plugin_t *p );
 song_info_t *inp_get_info( in_plugin_t *p, char *file_name, int *len );
 	
 /* Save song information function */
-void inp_save_info( in_plugin_t *p, char *file_name, song_info_t *info );
+bool_t inp_save_info( in_plugin_t *p, char *file_name, song_info_t *info );
 	
 /* Get supported file formats */
 void inp_get_formats( in_plugin_t *p, char *extensions, char *content_type );

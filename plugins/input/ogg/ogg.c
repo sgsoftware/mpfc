@@ -66,7 +66,7 @@ static song_info_t *ogg_info = NULL;
 static vorbis_info *ogg_vi = NULL;
 
 /* Some declarations */
-void ogg_save_info( char *filename, song_info_t *info );
+bool_t ogg_save_info( char *filename, song_info_t *info );
 
 /* Callback functions for libvorbis */
 static size_t ogg_file_read( void *ptr, size_t size, size_t nmemb, 
@@ -268,7 +268,7 @@ static void ogg_add_list( vorbis_comment *vc, char **comments )
 } /* End of 'ogg_add_list' function */
 
 /* Save song information */
-void ogg_save_info( char *filename, song_info_t *info )
+bool_t ogg_save_info( char *filename, song_info_t *info )
 {
 	char **comment_list;
 	vcedit_state *state;
@@ -279,7 +279,11 @@ void ogg_save_info( char *filename, song_info_t *info )
 	
 	/* Supported only for regular files */
 	if (file_get_type(filename) != FILE_TYPE_REGULAR)
-		return;
+	{
+		logger_error(ogg_log, 1, _("Only regular files are supported for"
+					"writing info by ogg plugin"));
+		return FALSE;
+	}
 
 	/* Convert to UTF-8 if need */
 	if (cfg_get_var_int(ogg_cfg, "always-use-utf8") &&
@@ -294,7 +298,7 @@ void ogg_save_info( char *filename, song_info_t *info )
 		if (ogg_info != NULL)
 			si_free(ogg_info);
 		ogg_info = si_dup(info);
-		return;
+		return TRUE;
 	}
 
 	/* Read current info at first */
@@ -303,13 +307,14 @@ void ogg_save_info( char *filename, song_info_t *info )
 	if (in == NULL)
 	{
 		vcedit_clear(state);
-		return;
+		logger_error(ogg_log, 1, _("Unable to open file %s"), filename);
+		return FALSE;
 	}
 	if (vcedit_open(state, in) < 0)
 	{
 		fclose(in);
 		vcedit_clear(state);
-		return;
+		return FALSE;
 	}
 	comment = vcedit_comments(state);
 	comment_list = ogg_get_comment_list(comment);
@@ -334,20 +339,23 @@ void ogg_save_info( char *filename, song_info_t *info )
 	{
 		fclose(in);
 		vcedit_clear(state);
-		return;
+		return FALSE;
 	}
 	if ((out = fdopen(outfd, "wb")) == NULL)
 	{
 		close(outfd);
 		fclose(in);
 		vcedit_clear(state);
-		return;
+		logger_error(ogg_log, 1, _("Unable to open file %s for writing"), 
+				tmpfn);
+		return FALSE;
 	}
 	vcedit_write(state, out);
 	vcedit_clear(state);
 	fclose(in);
 	fclose(out);
 	rename(tmpfn, filename);
+	return TRUE;
 } /* End of 'ogg_save_info' function */
 
 /* Get song information */

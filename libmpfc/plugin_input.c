@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Input plugin management functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 10.10.2004
+ * LAST UPDATE : 8.11.2004
  * NOTE        : Module prefix 'inp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -113,8 +113,9 @@ song_info_t *inp_get_info( in_plugin_t *p, char *file_name, int *len )
 } /* End of 'inp_get_info' function */
 	
 /* Save song information function */
-void inp_save_info( in_plugin_t *p, char *file_name, song_info_t *info )
+bool_t inp_save_info( in_plugin_t *p, char *file_name, song_info_t *info )
 {
+	bool_t ret = FALSE;
 	if (p != NULL && (p->m_pd.m_save_info != NULL) && info != NULL)
 	{
 		/* Convert charset */
@@ -124,11 +125,12 @@ void inp_save_info( in_plugin_t *p, char *file_name, song_info_t *info )
 		
 		si_convert_cs(info, cfg_get_var(pmng_get_cfg(pmng), 
 					"charset-save-info"), pmng);
-		p->m_pd.m_save_info(file_name, info);
+		ret = p->m_pd.m_save_info(file_name, info);
 		si_convert_cs(info, was_cs, pmng);
 		if (was_cs != NULL)
 			free(was_cs);
 	}
+	return ret;
 } /* End of 'inp_save_info' function */
 	
 /* Get supported file formats */

@@ -101,14 +101,17 @@ id3_tag_t *id3_read( char *filename )
 } /* End of 'id3_read' function */
 
 /* Save tag to file */
-void id3_write( id3_tag_t *tag, char *filename )
+bool_t id3_write( id3_tag_t *tag, char *filename )
 {
+	bool_t ret1, ret2;
+
 	if (tag == NULL || filename == NULL)
 		return;
 
 	/* Write tags */
-	id3_v1_write(&tag->m_v1, filename);
-	id3_v2_write(&tag->m_v2, filename);
+	ret1 = id3_v1_write(&tag->m_v1, filename);
+	ret2 = id3_v2_write(&tag->m_v2, filename);
+	return (ret1 || ret2);
 } /* End of 'id3_write' function */
 
 /* Extract next frame from tag */
@@ -245,7 +248,7 @@ void id3_v2_read( id3_tag_data_t *tag, file_t *fd )
 } /* End of 'id3_v2_read' function */
 
 /* Save ID3V1 tag to file */
-void id3_v1_write( id3_tag_data_t *tag, char *filename )
+bool_t id3_v1_write( id3_tag_data_t *tag, char *filename )
 {
 	FILE *fd;
 	char magic[3];
@@ -253,7 +256,9 @@ void id3_v1_write( id3_tag_data_t *tag, char *filename )
 	/* Open file */
 	fd = fopen(filename, "r+b");
 	if (fd == NULL)
-		return;
+	{
+		return FALSE;
+	}
 
 	/* Determine if there exists tag */
 	fseek(fd, -ID3_V1_TOTAL_SIZE, SEEK_END);
@@ -268,10 +273,11 @@ void id3_v1_write( id3_tag_data_t *tag, char *filename )
 
 	/* Close file */
 	fclose(fd);
+	return TRUE;
 } /* End of 'id3_v1_write' function */
 
 /* Save ID3V2 tag to file */
-void id3_v2_write( id3_tag_data_t *tag, char *filename )
+bool_t id3_v2_write( id3_tag_data_t *tag, char *filename )
 {
 	FILE *fd;
 	int file_size;
@@ -283,7 +289,7 @@ void id3_v2_write( id3_tag_data_t *tag, char *filename )
 	/* Open file */
 	fd = fopen(filename, "rb");
 	if (fd == NULL)
-		return;
+		return FALSE;
 
 	/* Get information about current tag */
 	fread(magic, 1, 3, fd);
@@ -327,6 +333,7 @@ void id3_v2_write( id3_tag_data_t *tag, char *filename )
 	fwrite(data, 1, file_size + size, fd);
 	fclose(fd);
 	free(data);
+	return TRUE;
 } /* End of 'id3_v2_write' function */
 
 /* Read next frame in ID3V1 */

@@ -452,7 +452,7 @@ song_info_t *acd_get_info( char *filename, int *len )
 } /* End of 'acd_get_info' function */
 
 /* Save song info */
-void acd_save_info( char *filename, song_info_t *info )
+bool_t acd_save_info( char *filename, song_info_t *info )
 {
 	int track;
 
@@ -463,7 +463,7 @@ void acd_save_info( char *filename, song_info_t *info )
 		return;
 
 	/* Save info */
-	cddb_save_trk_info(track, info);
+	return cddb_save_trk_info(track, info);
 } /* End of 'acd_save_info' function */
 
 /* Set next song name */

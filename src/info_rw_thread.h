@@ -1,13 +1,13 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2004 by SG Software.
  ******************************************************************/
 
-/* FILE NAME   : iwt.h
- * PURPOSE     : SG MPFC. Interface for info saver thread
- *               functions.
+/* FILE NAME   : info_rw_thread.h
+ * PURPOSE     : SG MPFC. Interface for song information read/write
+ *               thread functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 18.12.2003
- * NOTE        : Module prefix 'iwt'.
+ * LAST UPDATE : 8.11.2004
+ * NOTE        : Module prefix 'irw'.
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 
@@ -25,34 +25,44 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef __SG_MPFC_IWT_H__
-#define __SG_MPFC_IWT_H__
+#ifndef __SG_MPFC_INFO_RW_THREAD_H__
+#define __SG_MPFC_INFO_RW_THREAD_H__
 
 #include "types.h"
 #include "song.h"
 
-/* Initialize IWT module */
-bool_t iwt_init( void );
+/* Songs queue */
+typedef struct tag_irw_queue_t 
+{
+	/* The song */
+	song_t *m_song;
 
-/* Uninitialize IWT module */
-void iwt_free( void );
+	/* Next and previous songs in the queue */
+	struct tag_irw_queue_t *m_next, *m_prev;
+} irw_queue_t;
 
-/* Push song to queue */
-void iwt_push( song_t *song );
+/* Initialize info read/write thread */
+bool_t irw_init( void );
 
-/* Pop song from queue */
-song_t *iwt_pop( void );
+/* Free thread */
+void irw_free( void );
+
+/* Add song to the queue */
+void irw_push( song_t *song, song_flags_t flag );
+
+/* Get song from the queue */
+song_t *irw_pop( void );
+
+/* Thread function */
+void *irw_thread( void *arg );
 
 /* Lock queue */
-void iwt_lock( void );
+void irw_lock( void );
 
 /* Unlock queue */
-void iwt_unlock( void );
-
-/* Info writer thread function */
-void *iwt_thread( void *arg );
+void irw_unlock( void );
 
 #endif
 
-/* End of 'iwt.h' file */
+/* End of 'info_rw_thread.h' file */
 

@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for songs manipulation
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 15.09.2004
+ * LAST UPDATE : 7.11.2004
  * NOTE        : Module prefix 'song'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -28,6 +28,7 @@
 #ifndef __SG_MPFC_SONG_H__
 #define __SG_MPFC_SONG_H__
 
+#include <pthread.h>
 #include "types.h"
 #include "file.h"
 #include "inp.h"
@@ -39,9 +40,12 @@
 struct tag_in_plugin_t;
 
 /* Song flags */
-#define SONG_SCHEDULE 0x00000001
-#define SONG_GET_INFO 0x00000002
-#define SONG_SAVE_INFO 0x00000004
+typedef enum
+{
+	SONG_SCHEDULE = 1 << 0,
+	SONG_INFO_READ = 1 << 1,
+	SONG_INFO_WRITE = 1 << 2
+} song_flags_t;
 
 /* Song type */
 typedef struct tag_song_t
@@ -65,7 +69,7 @@ typedef struct tag_song_t
 	song_info_t *m_info;
 
 	/* Flags */
-	dword m_flags;
+	song_flags_t m_flags;
 
 	/* Song object references counter */
 	int m_ref_count;
@@ -75,6 +79,9 @@ typedef struct tag_song_t
 
 	/* Input plugin being used to play this song */
 	in_plugin_t *m_inp;
+
+	/* Song mutex */
+	pthread_mutex_t m_mutex;
 } song_t;
 
 /* Create a new song */
@@ -92,8 +99,15 @@ void song_update_info( song_t *song );
 /* Fill song title from data from song info and other parameters */
 void song_update_title( song_t *song );
 
+/* Write song info */
+void song_write_info( song_t *song );
+
 /* Get input plugin */
 in_plugin_t *song_get_inp( song_t *song, file_t **fd );
+
+/* Lock/unlock song */
+#define song_lock(s) (pthread_mutex_lock(&((s)->m_mutex)))
+#define song_unlock(s) (pthread_mutex_unlock(&((s)->m_mutex)))
 
 #endif
 

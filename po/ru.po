@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: mpfc 1.3.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-10-31 23:43+0300\n"
+"POT-Creation-Date: 2004-11-04 12:54+0300\n"
 "PO-Revision-Date: 2003-02-13 09:15+0300\n"
 "Last-Translator: Sergey E. Galanov <sgsoftware@mail.ru>\n"
 "Language-Team: Russian <sgsoftware@mail.ru>\n"
@@ -74,7 +74,7 @@ msgstr "Не могу прочитать каталог %s"
 msgid "Unable to stat file %s"
 msgstr "Не могу получить информацию о файле %s"
 
-#: libmpfcwnd/wnd.c:742
+#: libmpfcwnd/wnd.c:746
 msgid "No children\n"
 msgstr "Нет детей\n"
 
@@ -393,11 +393,11 @@ msgstr ""
 "Байт/сек: %i\n"
 "Выравнивание блока: %i"
 
-#: plugins/output/alsa/alsa.c:276
+#: plugins/output/alsa/alsa.c:288
 msgid "Configure ALSA plugin"
 msgstr "Конфигурация плагина alsa"
 
-#: plugins/output/alsa/alsa.c:277 plugins/output/oss/oss.c:178
+#: plugins/output/alsa/alsa.c:289 plugins/output/oss/oss.c:178
 msgid "&Device: "
 msgstr "Устройство (&d): "
 

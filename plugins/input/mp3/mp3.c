@@ -291,15 +291,20 @@ static short mp3_mad_fixed_to_short( mad_fixed_t sample )
 } /* End of 'mp3_mad_fixed_to_short' function */
 
 /* Save song information */
-void mp3_save_info( char *filename, song_info_t *info )
+bool_t mp3_save_info( char *filename, song_info_t *info )
 {
 	id3_tag_t *tag;
 	byte *data = NULL;
 	int size;
+	bool_t ret = TRUE;
 
 	/* Supported only for regular files */
 	if (file_get_type(filename) != FILE_TYPE_REGULAR)
-		return;
+	{
+		logger_error(mp3_log, 1, _("Only regular files are supported for"
+					"writing info by mp3 plugin"));
+		return FALSE;
+	}
 
 	/* Save this tag */
 	if (!strcmp(filename, mp3_file_name))
@@ -314,7 +319,10 @@ void mp3_save_info( char *filename, song_info_t *info )
 	{
 		tag = id3_new();
 		if (tag == NULL)
-			return;
+		{
+			logger_error(mp3_log, 1, _("Unable to create ID3 tag"));
+			return FALSE;
+		}
 	}
 
 	/* Update tag fields */
@@ -335,9 +343,10 @@ void mp3_save_info( char *filename, song_info_t *info )
 	}
 	else
 	{
-		id3_write(tag, filename);
+		ret = id3_write(tag, filename);
 		id3_free(tag);
 	}
+	return ret;
 } /* End of 'mp3_save_info' function */
 
 /* Check if given buffer is frame header */

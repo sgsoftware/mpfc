@@ -45,7 +45,7 @@ void cddb_free( void );
 song_info_t *cddb_get_trk_info( int track );
 
 /* Save track info */
-void cddb_save_trk_info( int track, song_info_t *info );
+bool_t cddb_save_trk_info( int track, song_info_t *info );
 
 /* Search for CDDB entry on local machine */
 bool_t cddb_read_local( dword id );
@@ -69,7 +69,7 @@ bool_t cddb_server_recv( int fd, char *buf, int size );
 void cddb_server2data( char *buf );
 
 /* Save CDDB data */
-void cddb_save_data( dword id );
+bool_t cddb_save_data( dword id );
 
 /* Add a string to data */
 void cddb_data_add( char *str, int index );

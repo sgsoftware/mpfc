@@ -140,7 +140,7 @@ id3_tag_t *id3_new( void );
 id3_tag_t *id3_read( char *filename );
 
 /* Write tag to file */
-void id3_write( id3_tag_t *tag, char *filename );
+bool_t id3_write( id3_tag_t *tag, char *filename );
 
 /* Extract next frame from tag */
 void id3_next_frame( id3_tag_t *tag, id3_frame_t *frame );
@@ -185,10 +185,10 @@ void id3_v1_set_frame( id3_tag_data_t *tag, char *name, char *val );
 void id3_v2_set_frame( id3_tag_data_t *tag, char *name, char *val, char *cs );
 
 /* Save ID3V1 tag to file */
-void id3_v1_write( id3_tag_data_t *tag, char *filename );
+bool_t id3_v1_write( id3_tag_data_t *tag, char *filename );
 
 /* Save ID3V2 tag to file */
-void id3_v2_write( id3_tag_data_t *tag, char *filename );
+bool_t id3_v2_write( id3_tag_data_t *tag, char *filename );
 
 /* Remove ending spaces in string */
 void id3_rem_end_spaces( char *str, int len );
