@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. File input edit box functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 6.08.2003
+ * LAST UPDATE : 1.11.2003
  * NOTE        : Module prexix 'fin'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -92,6 +92,7 @@ void fin_destroy( wnd_t *wnd )
 void fin_handle_key( wnd_t *wnd, dword data )
 {
 	file_input_box_t *box = (file_input_box_t *)wnd;
+	editbox_t *ebox = (editbox_t *)wnd;
 	int key = (int)data;
 
 	/* Remember last pressed key */
@@ -99,34 +100,41 @@ void fin_handle_key( wnd_t *wnd, dword data )
 
 	/* Add character to text if it is printable */
 	if (key >= ' ' && key < 256)
-		ebox_add(&box->m_box, key);
+		ebox_add(ebox, key);
 	/* Expand file name */
 	else if (key == '\t')
 		fin_expand(box);
 	/* Move cursor */
 	else if (key == KEY_RIGHT)
-		ebox_move(&box->m_box, TRUE, 1);
+		ebox_move(ebox, TRUE, 1);
 	else if (key == KEY_LEFT)
-		ebox_move(&box->m_box, TRUE, -1);
+		ebox_move(ebox, TRUE, -1);
 	else if (key == KEY_HOME)
-		ebox_move(&box->m_box, FALSE, 0);
+		ebox_move(ebox, FALSE, 0);
 	else if (key == KEY_END)
-		ebox_move(&box->m_box, FALSE, box->m_box.m_len);
+		ebox_move(ebox, FALSE, box->m_box.m_len);
+	/* Various delete portion of a string functions */
+	else if (key == 21)
+		ebox_del_range(ebox, 0, ebox->m_cursor - 1);
+	else if (key == '\v')
+		ebox_del_range(ebox, ebox->m_cursor, ebox->m_len - 1);
+	else if (key == 25)
+		ebox_del_range(ebox, 0, ebox->m_len - 1);
 	/* History stuff */
 	else if (key == KEY_UP)
-		ebox_hist_move(&box->m_box, TRUE);
+		ebox_hist_move(ebox, TRUE);
 	else if (key == KEY_DOWN)
-		ebox_hist_move(&box->m_box, FALSE);
+		ebox_hist_move(ebox, FALSE);
 	/* Delete character */
 	else if (key == KEY_BACKSPACE)
-		ebox_del(&box->m_box, box->m_box.m_cursor - 1);
+		ebox_del(ebox, ebox->m_cursor - 1);
 	else if (key == KEY_DC)
-		ebox_del(&box->m_box, box->m_box.m_cursor);
+		ebox_del(ebox, ebox->m_cursor);
 	/* Exit */
 	else if (key == '\n' || key == 27)
 	{
 		/* Save content to history list */
-		ebox_hist_save(&box->m_box, key);
+		ebox_hist_save(ebox, key);
 		wnd_send_msg(wnd, WND_MSG_CLOSE, 0);
 	}
 

@@ -577,7 +577,7 @@ void *wnd_kbd_thread( void *arg )
 			else
 #endif
 			{
-				if (key == 12)
+				if (key == '\f')
 				{
 					wnd_redisplay(wnd_root);
 				}

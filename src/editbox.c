@@ -5,7 +5,7 @@
 /* FILE NAME   : editbox.c
  * PURPOSE     : SG MPFC. Edit box functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 8.08.2003
+ * LAST UPDATE : 1.11.2003
  * NOTE        : Module prefix 'ebox'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -135,6 +135,13 @@ void ebox_handle_key( wnd_t *wnd, dword data )
 		ebox_move(box, FALSE, 0);
 	else if (key == KEY_END)
 		ebox_move(box, FALSE, box->m_len);
+	/* Various delete portion of a string functions */
+	else if (key == 21)
+		ebox_del_range(box, 0, box->m_cursor - 1);
+	else if (key == '\v')
+		ebox_del_range(box, box->m_cursor, box->m_len - 1);
+	else if (key == 25)
+		ebox_del_range(box, 0, box->m_len - 1);
 	/* History stuff */
 	else if (key == KEY_UP)
 		ebox_hist_move(box, TRUE);
@@ -270,6 +277,15 @@ void ebox_set_text( editbox_t *box, char *text )
 	ebox_set_cursor(box, box->m_len);
 	wnd_send_msg(box, WND_MSG_DISPLAY, 0);
 } /* End of 'ebox_set_text' function */
+
+/* Delete a range of characters */
+void ebox_del_range( editbox_t *box, int start, int end )
+{
+	int i;
+
+	for ( i = start; i <= end; i ++ )
+		ebox_del(box, start);
+} /* End of 'ebox_del_range' function */
 
 /* End of 'editbox.c' file */
 

@@ -5,7 +5,7 @@
 /* FILE NAME   : editbox.h
  * PURPOSE     : SG MPFC. Interface for edit box functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 8.08.2003
+ * LAST UPDATE : 1.11.2003
  * NOTE        : Module prefix 'ebox'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -88,6 +88,9 @@ void ebox_add( editbox_t *box, char c );
 
 /* Delete a character */
 void ebox_del( editbox_t *box, int index );
+
+/* Delete a range of characters */
+void ebox_del_range( editbox_t *box, int start, int end );
 
 /* Move cursor */
 void ebox_move( editbox_t *box, bool_t rel, int offset );
