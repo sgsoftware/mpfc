@@ -1,11 +1,11 @@
 \input texinfo @c -*-texinfo-*-
 @c %**start of header
 @setfilename mpfc.info
-@settitle MPFC 1.3.1
+@settitle MPFC 1.3.2
 @c %**end of header
 
 @copying
-This manual describes the SG Music Player For Linux Console, version 1.3.1.
+This manual describes the SG Music Player For Linux Console, version 1.3.2.
 
 Copyright @copyright{} 2003-2004 SG Software.
 @end copying
@@ -27,9 +27,9 @@ Copyright @copyright{} 2003-2004 SG Software.
 
 @ifinfo
 @node Top, Introduction, (dir), (dir)
-@top MPFC 1.2
+@top MPFC 1.3.2
 
-This manual documents version 1.2 of SG MPFC, media player for Linux console.
+This manual documents version 1.3.2 of SG MPFC, media player for Linux console.
 
 Copyright @copyright{} 2003 SG Software
 
@@ -66,8 +66,9 @@ to enter them but you may change these keys (@pxref{Key bindings}).
 @menu
 * Launching MPFC::
 * Moving around::
-* Playing::
+* Playing files::
 * Playlist management::
+* Window system::
 * Other features::
 @end menu
 
@@ -107,7 +108,7 @@ Note that ``objects'' system is no longer used.
 
 If you want to exit MPFC use command @kbd{q}.
 
-@node Moving around, Playing, Launching MPFC, Getting Started
+@node Moving around, Playing files, Launching MPFC, Getting Started
 @section Moving around
 As soon as you have launched MPFC you will notice that the largest part of 
 the screen is occupied by the play list. This is a list of all songs you can
@@ -179,8 +180,8 @@ move to mark <Letter> command @kbd{`<Letter>} is used. Also there is a special
 mark---`. You can't set it directly but it always points to your last position
 so if you want to return to it type: @kbd{``}.
 
-@node Playing, Playlist management, Moving around, Getting Started
-@section Playing
+@node Playing files, Playlist management, Moving around, Getting Started
+@section Playing files
 @menu
 * Play/pause/stop::
 * Play modes::
@@ -190,7 +191,7 @@ so if you want to return to it type: @kbd{``}.
 * Equalizer::
 @end menu
 
-@node Play/pause/stop, Play modes, Playing, Playing
+@node Play/pause/stop, Play modes, Playing files, Playing files
 @subsection Play/pause/stop
 There are four basic playing commands:
 
@@ -212,7 +213,7 @@ for moving 10 seconds back or forth and command @kbd{gt} to move to any
 specified position (these commands support repeat values, for @kbd{gt} its
 meaning is the same as for @kbd{G}, @pxref{Basic cursor movement operations}).
 
-@node Play modes, Boundaries, Play/pause/stop, Playing
+@node Play modes, Boundaries, Play/pause/stop, Playing files
 @subsection Play modes
 Normally after the song you specified to play finishes MPFC begins to play 
 the next song in playlist and so on until it reaches the playlist end when it
@@ -225,7 +226,7 @@ but MPFC begins playing from the beginning when it reaches end. Also you may
 set these modes by variables ``shuffle-play'' and ``loop-play'' 
 (@pxref{Using Variables}).
  
-@node Boundaries, Time back, Play modes, Playing
+@node Boundaries, Time back, Play modes, Playing files
 @subsection Boundaries
 Normally the beginning of playlist is the first song and the end is the last 
 one. But you can change them by setting boundaries. First select a playlist
@@ -237,21 +238,21 @@ area in visual mode (@pxref{Visual mode}). Then you can use one of two commands:
 
 To clear boundaries use command @kbd{pc}.
 
-@node Time back, Volume and balance, Boundaries, Playing
+@node Time back, Volume and balance, Boundaries, Playing files
 @subsection Time back
 Time back is a feature in MPFC that helps you to return to the place in song
 where you have been the last time before jump (not that here manual jump is
 meant, e.g. with a @kbd{@key{RET}} command). To do it use command 
 @kbd{@key{BS}}.
 
-@node Volume and balance, Equalizer, Time back, Playing
+@node Volume and balance, Equalizer, Time back, Playing files
 @subsection Volume and balance
 You can see current volume and balance in the top right corner of the screen
 as two slidebars (the upper is volume). To increase or decrease volume and 
 balance levels use @kbd{-} and @kbd{+} commands for volume and @kbd{[} and 
 @kbd{]} commands for balance.
 
-@node Equalizer,, Volume and balance, Playing
+@node Equalizer,, Volume and balance, Playing files
 @subsection Equalizer
 MPFC supports equalizer. To launch equalizer panel use command @kbd{e}. Here
 you are able to adjust equalizer band levels. To exit panel press @kbd{q} or
@@ -267,7 +268,7 @@ You can control equalizer parameters using variables. These variables are
 
 Note that equalizer may be disabled by setting ``equalizer-off'' variable.
 
-@node Playlist management, Other features, Playing, Getting Started
+@node Playlist management, Window system, Playing files, Getting Started
 @section Playlist management
 @menu
 * Visual mode::
@@ -307,9 +308,11 @@ list. Launch it using @kbd{B} command. To select/deselect file press
 @kbd{@key{INSERT}} key. Also you may select or deselect a group of files
 matching a specified pattern. To do this press @kbd{+} (for select) or
 @kbd{-} (for deselect) key and enter the pattern. After you have selected
-the files you can add them to play list by pressing @kbd{a} key. You may press
-@kbd{h} to go to your home directory or @kbd{@key{BACKSPACE}} to go to the
-parent directory. 
+the files you can add them to play list by pressing @kbd{a} or @kbd{r} key.
+The latter one also clears the existing play list. You may press
+@kbd{h} to go to your home directory, @kbd{@key{BACKSPACE}} to go to the
+parent directory or @kbd{@key{c}} to manually specify a directory you want
+to move to. 
 
 File browser always is in one of two modes: normal or song info. In normal 
 mode file names are displayed. In song info mode some parts of song info
@@ -423,21 +426,225 @@ by clicking respective button in the song info dialog.
 Also there is a command that reloads all selected playlist songs 
 information---@kbd{I}.
 
-@node Other features,, Playlist management, Getting Started
+@node Window system, Other features, Playlist management, Getting Started
+@section Window system
+@menu
+* Overview::
+* Using dialogs::
+* Styles::
+@end menu
+
+@node Overview, Using dialogs, Window system, Window system
+@subsection Overview
+MPFC has an advanced window system. When you start MPFC there always appears
+play list window. As a result of some events there can appear other windows
+(e.g. file browser, help screen or various dialogs). 
+
+All the top-level windows are listed in a special place on the root window
+which is called ``window bar'' and situated on the last line of the screen.
+Currently active (``focused'') window is marked with green color. To move
+between windows you press @kbd{@key{ALT}-,} or @kbd{@key{ALT}-.} keys. You
+may also select a window by clicking mouse left button its image on the 
+window bar.
+
+Most of the windows have a border with controls on it. These controls are
+a close window button (presented by ``x'' letter) and maximize button
+(``o'' letter). Use them by clicking mouse or pressing buttons 
+@kbd{@key{ALT}-c} and @kbd{@key{ALT}-m} respectively.
+
+Windows are often resizable and movable. To turn window to the
+resize mode press @kbd{@key{ALT}-s}, to the move mode--@kbd{@key{ALT}-p}.
+After that window border will turn its color to green and you'll be able
+to change size/position of the window using arrow keys. Then press 
+@kbd{@key{ENTER}} to finish operation.
+
+@node Using dialogs, Styles, Overview, Window system
+@subsection Using dialogs
+Dialogs are widely used in MPFC for operations where user input is required.
+There is number of special keys for navigating through the dialog items.
+First of all, you can use @kbd{@key{TAB}} key to move to the next item.
+But in big dialogs it is better to use special shortcuts to items. Many of
+the items have a letter associated with them. This letter is usually marked
+red on the label. So when you press @kbd{@key{ALT}} with this letter you
+jump to it.
+
+Also there are @kbd{@key{ENTER}} key connected with the ``OK'' button and
+@kbd{@key{ESCAPE}} or @kbd{@key{CTRL}-G} connected with the ``Cancel'' button.
+
+@node Styles,, Using dialogs, Window system
+@subsection Styles
+Window system display parameters are highly configurable. This configuration
+is implemented with a concept of a style.
+
+Style is a parameter of some item of the interface. In fact it is a 
+variable (@pxref{Using Variables}) that you may set as you always do. 
+Usually it represents color and symbol attribute of the text. In that case
+variable value has the following format: <color>[:bg-color[:attrib]].
+Color is one of the following values: ``black'', ``red'', ``green'', ``blue'',
+``yellow'', ``magenta'', ``cyan'' and ``white''. ``attrib'' field is a
+combination (delimited by a comma) of the following values: ``standout'',
+``underline'', ``reverse'', ``blink'', ``dim'', ``bold'', ``protect'',
+``invis'' and ``altcharset''. Note that not all of these attributes are
+supported on your terminal. In fact you usually will use only ``bold'' and,
+maybe, ``blink''.
+
+Before listing style names a note on window classes should be made. Any window
+belongs to some class. All these classes make an hierarchy. The main purpose
+of the classes is to let the user configure styles of a group of similar 
+windows (e.g edit boxes). 
+
+Root configuration list where all the window system related variables are
+holded is ``windows''. It has child list ``classes''. This list has many
+child lists for each of the available classes.
+
+When MPFC searches for a style for a particular window it first seeks for 
+a variable of the name same with the style name in the window configuration
+list. In fact, this list is not (yet) accessible for a user, so it does not
+make much sense. Then it searches for this variable in the window class 
+configuration list, then in that class parent class list, and so on, until
+it reaches the base window system configuration list. If it is not found
+there, style is undefined (value for an undefined style is ``white:black'').
+So, for example, if you want all the edit boxes to display their text
+bold green with red background you should set variable 
+``windows.classes.editbox.text-style'' to ``green:red:bold''.
+
+Here is a list of some window classes and their styles.
+
+@menu
+* basic::
+* player::
+* browser::
+* help::
+* eqwnd::
+* logger_view::
+* dialog::
+* dlgitem::
+@end menu
+
+@node basic, player, Styles, Styles
+@subsection basic
+``basic'' class is the base window class. It defines the following styles:
+
+@itemize
+@item caption-style;
+@item border-style;
+@item repos-border-style;
+@item maximize-box-style;
+@item close-box-style;
+@item wndbar-focus-style;
+@item text-style;
+@item focus-text-style.
+@end itemize
+
+@node player, browser, basic, Styles
+@subsection player
+``player'' class is class of the player window. Styles:
+
+@itemize
+@item plist-style: style of play list item;
+@item plist-playing-style: style of play list item currently being played;
+@item plist-selected-style: style of a selected play list item;
+@item plist-sel-and-play-style: combination of the previous two;
+@item plist-time-style: style of play list item time;
+@item title-style: current song title style;
+@item time-style: current time style;
+@item audio-params-style: audio parameters style;
+@item about-style: about string style;
+@item slider-style: sliders style (for time, volume and balance);
+@item play-modes-style: ``Loop'' and ``Shuffle'' strings style;
+@item status-style: status line style.
+@end itemize
+
+@node browser, help, player, Styles
+``browser'' class is class of file browser window. Styles:
+
+@itemize
+@item file-style;
+@item cur-file-style;
+@item dir-style;
+@item cur-dir-style;
+@item selection-style;
+@item cur-selecton-style;
+@item search-prompt-style;
+@item search-string-style;
+@item title-style;
+@item header-style.
+@end itemize
+
+@node help, eqwnd, browser, Styles
+``help'' class is class of help screen. Styles:
+
+@itemize
+@item item-style;
+@item prompt-style.
+@end itemize
+
+@node eqwnd, logger_view, help, Styles
+``eqwnd'' class is class of equalizer window. Styles:
+
+@itemize
+@item band-style;
+@item focus-band-style;
+@item label-style;
+@item focus-label-style.
+@end itemize
+
+@node logger_view, dialog, eqwnd, Styles
+``logger_view'' is child of ``scrollable'' class. Styles of ``scrollable'':
+
+@itemize
+@item scroll-arrow-style;
+@item scroll-bar-style;
+@item scroll-slider-style.
+@end itemize
+
+Styles of ``logger_view'':
+
+@itemize
+@item logger-normal-style;
+@item logger-status-style;
+@item logger-warning-style;
+@item logger-error-style;
+@item logger-fatal-style;
+@item logger-debug-style.
+@end itemize
+
+@node dialog, dlgitem, logger_view, Styles
+``dialog'' class is class of dialogs. It has no specific styles.
+
+@node dlgitem,, dialog, Styles
+``dlgitem'' class is class of various dialog items. It has many child classes:
+``button'', ``editbox'' (with ``filebox'' and ``combo'' children), ``label'',
+``radio'', ``checkbox'', ``hbox'' and ``vbox''.
+
+@node Other features,, Window system, Getting Started
 @section Other features
 @menu
 * Command execution::
+* Log::
 * History::
 * Setting mouse parameters::
 @end menu
 
-@node Command execution, History, Other features, Other features
+@node Command execution, Log, Other features, Other features
 @subsection Command execution
 You are able to execute an external command when you are in MPFC. To do this
 use @kbd{!} command. You will be prompted for the command. After you finish
 press @kbd{@key{RET}} to return to MPFC.
 
-@node History, Setting mouse parameters, Command execution, Other features
+@node Log, History, Command execution, Other features
+@subsection Log
+MPFC has a log system. You may view log messages in two places. First is
+@file{~/.mpfc/log} file (this name may be changed by setting ``log-file''
+variable). Second is logger view window. It is activated by pressing
+@key{O} key. 
+
+An important issue concerning the log system is log level. It is set with
+``log-level'' variable and it controls the amount of messages you get. 
+Possible values for it are: ``none'', ``low'', ``default'', ``high'' and
+``debug'' (there is a little use from the latter for a common user, though).
+
+@node History, Setting mouse parameters, Log, Other features
 @subsection History
 Some edit boxes when you do input support history so that you can restore
 any of the strings you have entered there before. To jump between these
@@ -465,11 +672,10 @@ set---to ``yes''.
 
 @menu
 * Setting variables::
-* Colors::
 * Key bindings::
 @end menu
 
-@node Setting variables, Colors, Using Variables, Using Variables
+@node Setting variables, Key bindings, Using Variables, Using Variables
 @section Setting variables
 You may set a variable in three different places.
 
@@ -510,80 +716,7 @@ variables list to the main configuration file and restore value of changed
 variable. Note that buttons are pressed by @kbd{@key{SPC}} key. To exit the
 manager press @kbd{@key{RET}} or @kbd{@key{ESC}}.
 
-@node Colors, Key bindings, Setting variables, Using Variables
-@section Colors
-You can completely change MPFC window elements colors. To do it use special
-variables starting with ``col-el-''. Here is a list of these variables:
-
-@itemize @bullet
-@item
-col-el-plist-title: common playlist song title;
-@item
-col-el-plist-title-cur: title of the currently playing song in playlist;
-@item
-col-el-plist-title-sel: title of a selected song in playlist;
-@item
-col-el-plist-title-cur-sel: title of a currently playing song that is selected;
-@item
-col-el-cur-title: title of the currently playing song in the top of the window;
-@item 
-col-el-cur-time: current time;
-@item
-col-el-plist-time: total time and other information in the bottom of the window;
-@item
-col-el-about: about label in the top of the window;
-@item
-col-el-slider: slider color;
-@item 
-col-el-play-modes: play modes labels;
-@item
-col-el-status: status bar (where messages appear);
-@item
-col-el-help-title: help window title;
-@item
-col-el-help-string: help window items;
-@item
-col-el-dlg-title: dialog box title;
-@item
-col-el-dlg-item-title: dialog box item title;
-@item
-col-el-dlg-item-content: dialog box item content;
-@item
-col-el-lbox-cur-focused: focused list box current selection;
-@item
-col-el-lbox-cur: unfocused list box current selection;
-@item
-col-el-btn-focused: focused button;
-@item
-col-el-btn: unfocused button;
-@item
-col-el-fb-title: file browser title;
-@item
-col-el-fb-file: a normal file in file browser;
-@item
-col-el-fb-file-hl: a highlighted file in file browser;
-@item
-col-el-fb-dir: a directory in file browser;
-@item
-col-el-fb-dir-hl: a highlighted directory in file browser;
-@item
-col-el-fb-sel: a selected file in file browser;
-@item
-col-el-fb-sel-hl: a highlighted selected file in file browser;
-@item
-col-el-default: default
-@end itemize
-
-The format of variable value is the following: <color>[:background[:bold]]. 
-Color and background may be the following: black, red, green, yellow, blue,
-magenta, cyan and white. If color is not specified it is white. Also you can
-set modifier ``bold'', so foreground color becomes brighter.
-
-You can save groups of these settings as color schemes. Schemes are stored in
-directory @file{~/.mpfc/colors}. Each scheme is a file with syntax same with
-MPFC configuration file where these variables are set.
-
-@node Key bindings,, Colors, Using Variables
+@node Key bindings,, Setting variables, Using Variables
 @section Key bindings
 There are standard key bindings for every MPFC action but you can change these
 bindings. Bindings are controlled by special variables starting with ``kbind-''

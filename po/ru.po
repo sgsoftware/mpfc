@@ -445,7 +445,9 @@ msgstr "Не могу инициализировать журнальную систему"
 msgid ""
 "MPFC %s Log\n"
 "%s"
-msgstr "Журнал MPFC %s\n%s"
+msgstr ""
+"Журнал MPFC %s\n"
+"%s"
 
 #: src/player.c:227
 msgid "Window system initialization failed"
@@ -499,7 +501,7 @@ msgid "version %s"
 msgstr "версия %s"
 
 #: src/player.c:1719
-#, fuzzy, c-format
+#, c-format
 msgid "Input plugin for file %s failed"
 msgstr "Входной плагин обломился с файлом %s"
 
@@ -632,7 +634,7 @@ msgid "C&omment"
 msgstr "Комментарии (&o)"
 
 #: src/player.c:2277
-#, fuzzy, c-format
+#, c-format
 msgid "Removed %d songs"
 msgstr "Удалено %d песен"
 
@@ -669,12 +671,12 @@ msgid "&Stop job"
 msgstr "Остановить задачу (&s)"
 
 #: src/player.c:2355
-#, fuzzy, c-format
+#, c-format
 msgid "Play list saved to %s"
 msgstr "Плей-лист сохранен в %s"
 
 #: src/player.c:2358
-#, fuzzy, c-format
+#, c-format
 msgid "Unable to save play list to %s"
 msgstr "Не могу сохранить плей-лист в %s"
 
@@ -692,7 +694,7 @@ msgid "%i/%i songs; %i:%02i:%02i/%i:%02i:%02i"
 msgstr "%i/%i песен; %i:%02i:%02i/%i:%02i:%02i"
 
 #: src/iwt.c:173
-#, fuzzy, c-format
+#, c-format
 msgid "Saved info to file %s"
 msgstr "Информация сохранена в файл %s"
 
@@ -730,7 +732,6 @@ msgid "Redirect to %s"
 msgstr "Перенаправление к %s"
 
 #: libmpfc/file_http.c:195
-#, fuzzy
 msgid "Failure"
 msgstr "Облом!"
 
@@ -951,7 +952,7 @@ msgstr "CCITT J.17"
 
 # c-format
 #: plugins/input/mp3/mp3.c:571
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "MPEG %s, layer %i\n"
 "Bitrate: %i kb/s\n"
@@ -973,7 +974,7 @@ msgstr ""
 "Копирайт: %s\n"
 "Подлинный: %s\n"
 "Акцент: %s\n"
-":s%i фреймов\n"
+"%s%i фреймов\n"
 "Длина: %i секунд\n"
 "Размер файла: %i байт"
 
@@ -997,108 +998,3 @@ msgstr "Нет детей\n"
 #: libmpfcwnd/wnd_dialog.c:97
 msgid "Cancel"
 msgstr "Отмена"
-
-#~ msgid "Saving play list"
-#~ msgstr "Сохраняю плей-лист"
-
-#~ msgid "Destroying play list"
-#~ msgstr "Уничтожаю плей-лист"
-
-#~ msgid "Starting input plugin"
-#~ msgstr "Строка не найдена"
-
-#, fuzzy
-#~ msgid "Starting output plugin"
-#~ msgstr "Не могу инициализировать выходной плагин"
-
-#~ msgid "No error"
-#~ msgstr "Нет ошибки"
-
-#~ msgid "No such file or directory"
-#~ msgstr "Нет такого файла или директории"
-
-#~ msgid "No enough memory"
-#~ msgstr "Недостаточно памяти"
-
-#~ msgid "Curses library error"
-#~ msgstr "Ошибка библиотеки curses"
-
-#~ msgid "Unknown file type"
-#~ msgstr "Неизвестный формат файла"
-
-#~ msgid "Invalid command line parameters"
-#~ msgstr "Неправильные параметры командной строки"
-
-#~ msgid "Output plugin error"
-#~ msgstr "Ошибка выходного плагина"
-
-#~ msgid "Effect plugin error"
-#~ msgstr "Ошибка плагина эффектов"
-
-#~ msgid "O:\t\t Advanced variables manager"
-#~ msgstr "O:\t\t Продвинутый менеджер переменных"
-
-#~ msgid "Initialization error : %s\n"
-#~ msgstr "Ошибка инициализии : %s\n"
-
-#~ msgid "String found"
-#~ msgstr "Строка найдена"
-
-#~ msgid "Add object"
-#~ msgstr "Добавить объект"
-
-#~ msgid "Object &name: "
-#~ msgstr "Имя объекта (&n): "
-
-#~ msgid "Saved"
-#~ msgstr "Сохранено"
-
-#~ msgid "A:\t\t Add object"
-#~ msgstr "A:\t\t Добавить объект"
-
-#~ msgid "Enter file (or directory) name: "
-#~ msgstr "Введите имя файла (или каталога): "
-
-#~ msgid "Sort globally? (Yes/No)"
-#~ msgstr "Сортировать глобально? (Yes/No)"
-
-#~ msgid "Sort by: (T)itle, (F)ile name, (P)ath and file name, T(r)ack"
-#~ msgstr ""
-#~ "Сортировать по: Заголовку(T), Имени файла(F), Пути и имени(P), Треку(r)"
-
-#~ msgid "Enter search string: "
-#~ msgstr "Введите строку для поиска: "
-
-#~ msgid "Info edit locally? (Yes/No)"
-#~ msgstr "Редактировать информацию локально? (Yes/No)"
-
-#~ msgid "Song name: "
-#~ msgstr "Название песни: "
-
-#~ msgid "Artist name: "
-#~ msgstr "Исполнитель: "
-
-#~ msgid "Album name: "
-#~ msgstr "Альбом: "
-
-#~ msgid "New variable"
-#~ msgstr "Новая переменная"
-
-#~ msgid "Save"
-#~ msgstr "Сохранить"
-
-#~ msgid "Enter variable name: "
-#~ msgstr "Введите имя переменной: "
-
-#~ msgid "Enter variable value: "
-#~ msgstr "Введите значение переменной: "
-
-#~ msgid "Enter command: "
-#~ msgstr "Введите команду: "
-
-#~ msgid "Search for: (T)itle, (N)ame, (A)rtist, A(l)bum, (Y)ear, (G)enre"
-#~ msgstr ""
-#~ "Поиск по: заголовку(T), исполнителю(A), альбому(L), году(Y), жанру(G)"
-
-#~ msgid "Reload info in the whole list? (Yes/No)"
-#~ msgstr "Загрузить информацию во всем списке? (Yes/No)"
