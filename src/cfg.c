@@ -75,11 +75,9 @@ void cfg_free( void )
 void cfg_init_default( void )
 {
 	/* Set variables */
-	cfg_set_var_int(cfg_list, "silent-mode", 0);
 	cfg_set_var(cfg_list, "output-plugin", "oss");
 	cfg_set_var_int(cfg_list, "mp3-quick-get-len", 1);
 	cfg_set_var_int(cfg_list, "save-playlist-on-exit", 1);
-	cfg_set_var_int(cfg_list, "search-nocase", 0);
 	cfg_set_var_int(cfg_list, "play-from-stop", 1);
 	cfg_set_var(cfg_list, "lib-dir", LIBDIR"/mpfc");
 	cfg_set_var_int(cfg_list, "echo-delay", 500);
@@ -172,7 +170,7 @@ void cfg_parse_line( cfg_list_t *list, char *str )
 void cfg_init_db( void )
 {
 	cfg_set_to_db(cfg_list, "cur-song", NULL, CFG_RUNTIME);
-	cfg_set_to_db(cfg_list, "cur-song_name", NULL, CFG_RUNTIME);
+	cfg_set_to_db(cfg_list, "cur-song-name", NULL, CFG_RUNTIME);
 	cfg_set_to_db(cfg_list, "cur-time", NULL, CFG_RUNTIME);
 	cfg_set_to_db(cfg_list, "player-status", NULL, CFG_RUNTIME);
 	cfg_set_to_db(cfg_list, "player-start", NULL, CFG_RUNTIME);

@@ -524,14 +524,17 @@ void player_play( int song, int start_time )
 } /* End of 'player_play' function */
 
 /* End playing song */
-void player_end_play( bool rem_cur_song )
+void player_end_play( bool_t rem_cur_song )
 {
-	if (rem_cur_song)
-		player_plist->m_cur_song = -1;
+	int was_song = player_plist->m_cur_song;
+	
+	player_plist->m_cur_song = -1;
 	player_end_track = TRUE;
 //	player_status = PLAYER_STATUS_STOPPED;
 	while (player_timer_tid)
 		util_delay(0, 100000);
+	if (!rem_cur_song)
+		player_plist->m_cur_song = was_song;
 	cfg_set_var(cfg_list, "cur-song-name", "");
 } /* End of 'player_end_play' function */
 
