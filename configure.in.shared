@@ -1,9 +1,9 @@
 AC_INIT(src/main.c)
-AM_INIT_AUTOMAKE(mpfc, 1.3)
+AM_INIT_AUTOMAKE(mpfc, 1.3.1)
 AC_PROG_CC
 AC_PROG_LIBTOOL
-CFLAGS="-O0 -g"
-AC_SUBST(CFLAGS)
+#CFLAGS="-O0 -g"
+#AC_SUBST(CFLAGS)
 
 AM_CONFIG_HEADER(config.h)
 AM_GNU_GETTEXT
@@ -95,7 +95,7 @@ fi
 
 # Stuff for audiocd plugin
 AC_ARG_ENABLE(audiocd, 
-[	--disable-audiocd		Disable audiocd input plugin [default=enabled]],,
+[	--disable-audiocd	Disable audiocd input plugin [default=enabled]],,
 		enable_audiocd="yes")
 if test "x$enable_audiocd" = xyes; then
 	# Check for cdrom includes
@@ -141,8 +141,8 @@ fi
 
 # Stuff for esd plugin
 AC_ARG_ENABLE(esd, 
-[	--disable-esd		Disable esd input plugin [default=enabled]],,
-		enable_esd="yes")
+[	--enable-esd		Enable esd input plugin [default=disabled]],,
+		enable_esd="no")
 if test "x$enable_esd" = xyes; then
 	# Check for esound lib
 	LIBS_save=$LIBS
@@ -153,20 +153,70 @@ if test "x$enable_esd" = xyes; then
 	AC_SUBST(ESD_LIBS)
 	AC_SUBST(ESD_CFLAGS)
 	LIBS=$LIBS_save
-else
-	AC_MSG_RESULT([*** esd plugin disabled per user request ***])
 fi
 
-# Handle specific plugins choosing
-for class in CHARSET EFFECT INPUT OUTPUT; do
-    value=`eval echo "\\$${class}_PLUGINS"`
-    if test "x${value}" = x; then
-       eval ${class}_PLUGINS="\$\(ALL_PLUGINS\)"
-    else
-       value=`echo ${value} | sed -e 's/,/ /g'`
-       eval ${class}_PLUGINS="\${value}"
-    fi
+# Set enabling stuff for other plugins
+AC_ARG_ENABLE(radio, 
+[	--disable-radio		Disable radio input plugin [default=enabled]],,
+		enable_radio="yes")
+AC_ARG_ENABLE(recorder, 
+[	--disable-recorder	Disable recorder input plugin [default=enabled]],,
+		enable_recorder="yes")
+AC_ARG_ENABLE(timidi, 
+[	--disable-timidi	Disable timidi input plugin [default=enabled]],,
+		enable_timidi="yes")
+AC_ARG_ENABLE(wav, 
+[	--disable-wav		Disable wav input plugin [default=enabled]],,
+		enable_wav="yes")
+AC_ARG_ENABLE(disk_writer, 
+[	--disable-disk_writer	Disable disk_writer output plugin 
+ 	[default=enabled]],, enable_disk_writer="yes")
+AC_ARG_ENABLE(oss, 
+[	--disable-oss		Disable oss output plugin [default=enabled]],,
+		enable_oss="yes")
+AC_ARG_ENABLE(effect-echo, 
+[	--disable-effect-echo	Disable echo effect plugin [default=enabled]],,
+		enable_effect_echo="yes")
+AC_ARG_ENABLE(charset-ru, 
+[	--disable-charset-ru	Disable russian charset plugin [default=enabled]],,
+		enable_charset_ru="yes")
+
+# Choose input plugins
+for plugin in audiocd mp3 ogg radio recorder timidi wav; do
+	name="\$enable_$plugin"
+	value=`eval echo $name`
+	if test "x${value}" = xyes; then
+		INPUT_PLUGINS="$INPUT_PLUGINS $plugin"
+	fi
 done
+
+# Choose output plugins
+for plugin in alsa disk_writer esd oss; do
+	name="\$enable_$plugin"
+	value=`eval echo $name`
+	if test "x${value}" = xyes; then
+		OUTPUT_PLUGINS="$OUTPUT_PLUGINS $plugin"
+	fi
+done
+
+# Choose effect plugins
+for plugin in echo; do
+	name="\$enable_effect_$plugin"
+	value=`eval echo $name`
+	if test "x${value}" = xyes; then
+		EFFECT_PLUGINS="$EFFECT_PLUGINS $plugin"
+	fi
+done
+
+# Choose charset plugins
+for plugin in ru; do
+	name="\$enable_charset_$plugin"
+	value=`eval echo $name`
+	if test "x${value}" = xyes; then
+		CHARSET_PLUGINS="$CHARSET_PLUGINS $plugin"
+	fi
+done
+
 AC_SUBST(CHARSET_PLUGINS)
 AC_SUBST(EFFECT_PLUGINS)
 AC_SUBST(INPUT_PLUGINS)
@@ -184,3 +234,7 @@ AC_OUTPUT(Makefile src/Makefile libmpfc/Makefile libmpfcwnd/Makefile
 			plugins/input/recorder/Makefile plugins/output/alsa/Makefile \
 			plugins/output/esd/Makefile \
 			doc/Makefile)
+
+# Configure rcfiles
+./build_rcfile.pl "$OUTPUT_PLUGINS" "local" > src/.mpfcrc
+./build_rcfile.pl "$OUTPUT_PLUGINS" "global" > mpfcrc
