@@ -5,7 +5,7 @@
 /* FILE NAME   : browser.c
  * PURPOSE     : SG MPFC. File browser functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 11.03.2004
+ * LAST UPDATE : 12.03.2004
  * NOTE        : Module prefix 'fb'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -430,10 +430,10 @@ void fb_move_cursor( browser_t *fb, int pos, bool_t rel )
 			fb->m_cursor >= fb->m_scrolled + fb->m_height)
 	{
 		fb->m_scrolled += (fb->m_cursor - was_cursor);
+		if (fb->m_scrolled >= fb->m_num_files - fb->m_height)
+			fb->m_scrolled = fb->m_num_files - fb->m_height;
 		if (fb->m_scrolled < 0)
 			fb->m_scrolled = 0;
-		else if (fb->m_scrolled >= fb->m_num_files - fb->m_height)
-			fb->m_scrolled = fb->m_num_files - fb->m_height;
 	}
 } /* End of 'fb_move_cursor' function */
 
@@ -543,7 +543,7 @@ void fb_go_to_dir( browser_t *fb )
 	struct browser_list_item *item;
 	int cursor = 0;
 	char was_dir[MAX_FILE_NAME];
-	
+
 	if (fb == NULL || fb->m_cursor < 0 || fb->m_cursor >= fb->m_num_files)
 		return;
 
@@ -745,7 +745,7 @@ void fb_print_header( browser_t *fb )
 void fb_print_file( browser_t *fb, struct browser_list_item *item )
 {
 	wnd_t *wnd = WND_OBJ(fb);
-	
+
 	/* If we are not in info mode - print file name */
 	if (!fb->m_info_mode || item->m_info == NULL)
 		wnd_printf(wnd, "%s", item->m_name);
@@ -865,14 +865,21 @@ void fb_replace_plist( browser_t *fb )
 	if (fb == NULL)
 		return;
 
-	/* Clear playlist first */
-	plist_clear(player_plist);
-
-	/* Add these files */
+	/* Make a set of files */
 	set = plist_set_new();
 	for ( i = 1; i < fb->m_num_files; i ++ )
 		if (fb->m_files[i].m_type & FB_ITEM_SEL)
 			plist_set_add(set, fb->m_files[i].m_full_name);
+
+	/* Check that this contains at least one file */
+	if (set->m_head == NULL)
+	{
+		plist_set_free(set);
+		return;
+	}
+
+	/* Replace files */
+	plist_clear(player_plist);
 	plist_add_set(player_plist, set);
 	plist_set_free(set);
 } /* End of 'fb_replace_plist' function */

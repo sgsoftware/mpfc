@@ -191,7 +191,10 @@ void kbind_free( void )
 
 	for ( i = 0; i < KBIND_NUM_ACTIONS; i ++ )
 		if (kbind_bindings[i].m_seqs != NULL)
+		{
 			free(kbind_bindings[i].m_seqs);
+			kbind_bindings[i].m_seqs = NULL;
+		}
 } /* End of 'kbind_free' function */
 
 /* Add binding */

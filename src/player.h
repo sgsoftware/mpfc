@@ -284,6 +284,9 @@ void player_file_browser( void );
 /* Set a new search string */
 void player_set_search_string( char *str );
 
+/* Signal handler */
+void player_handle_signal( int signum );
+
 #endif
 
 /* End of 'player.h' file */

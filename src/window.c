@@ -742,7 +742,7 @@ void wnd_clear( wnd_t *wnd, bool_t start_from_cursor )
 /* Totally redisplay window */
 void wnd_redisplay( wnd_t *wnd )
 {
-	wnd_clear(wnd, FALSE);
+//	wnd_clear(wnd, FALSE);
 	wrefresh(wnd->m_wnd);
 	wnd_display(wnd);
 /*	touchwin(wnd->m_wnd);

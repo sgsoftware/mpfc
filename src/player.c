@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG MPFC. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 11.03.2004
+ * LAST UPDATE : 23.04.2004
  * NOTE        : Module prefix 'player'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -155,10 +155,8 @@ bool_t player_init( int argc, char *argv[] )
 	plist_set_t *set;
 
 	/* Set signal handlers */
-	/*signal(SIGINT, player_handle_signal);
-	signal(SIGSTOP, player_handle_signal);
-	signal(SIGTSTP, player_handle_signal);
-	signal(SIGCONT, player_handle_signal);*/
+/*	signal(SIGINT, player_handle_signal);
+	signal(SIGTERM, player_handle_signal);*/
 	
 	/* Initialize configuration */
 	snprintf(player_cfg_file, sizeof(player_cfg_file), 
@@ -301,30 +299,44 @@ void player_deinit( void )
 	sat_free();
 	iwt_free();
 	inp_set_next_song(player_inp, NULL);
-	player_end_track = TRUE;
-	player_end_thread = TRUE;
-	pthread_join(player_tid, NULL);
-	player_end_thread = FALSE;
-	player_tid = 0;
+	if (player_tid)
+	{
+		player_end_track = TRUE;
+		player_end_thread = TRUE;
+		pthread_join(player_tid, NULL);
+		player_end_thread = FALSE;
+		player_tid = 0;
+	}
 	
 	/* Uninitialize plugin manager */
 	pmng_free(player_pmng);
+	player_pmng = NULL;
 
 	/* Uninitialize key bindings */
 	kbind_free();
 
 	/* Uninitialize history lists */
 	for ( i = 0; i < PLAYER_NUM_HIST_LISTS; i ++ )
+	{
 		hist_list_free(player_hist_lists[i]);
+		player_hist_lists[i] = NULL;
+	}
 
 	/* Free memory allocated for strings */
 	if (player_msg != NULL)
+	{
 		free(player_msg);
+		player_msg = NULL;
+	}
 	if (player_search_string != NULL)
+	{
 		free(player_search_string);
+		player_search_string = NULL;
+	}
 	
 	/* Destroy screen window */
 	wnd_destroy(wnd_root);
+	wnd_root = NULL;
 	
 	/* Destroy all objects */
 	if (player_plist != NULL)
@@ -337,9 +349,11 @@ void player_deinit( void )
 		player_plist = NULL;
 	}
 	undo_free(player_ul);
+	player_ul = NULL;
 
 	/* Uninitialize configuration manager */
 	cfg_free();
+	cfg_list = NULL;
 } /* End of 'player_deinit' function */
 
 /* Run player */
@@ -550,6 +564,15 @@ void player_display( wnd_t *wnd, dword data )
 			col_set_color(wnd, COL_EL_DEFAULT);
 		}
 
+		/* Print loop mode */
+		if (cfg_get_var_int(cfg_list, "loop-play"))
+		{
+			wnd_advance(wnd, wnd->m_width - 5, 0);
+			col_set_color(wnd, COL_EL_PLAY_MODES);
+			wnd_printf(wnd, "Loop");
+			col_set_color(wnd, COL_EL_DEFAULT);
+		}
+
 		/* Print current time */
 		t = (show_rem = cfg_get_var_int(cfg_list, "show-time-remaining")) ? 
 			s->m_len - player_cur_time : player_cur_time;
@@ -559,15 +582,6 @@ void player_display( wnd_t *wnd, dword data )
 				show_rem ? "-" : "", t / 60, t % 60,
 				s->m_len / 60, s->m_len % 60);
 		col_set_color(wnd, COL_EL_DEFAULT);
-
-		/* Print loop mode */
-		if (cfg_get_var_int(cfg_list, "loop-play"))
-		{
-			wnd_advance(wnd, wnd->m_width - 5, 0);
-			col_set_color(wnd, COL_EL_PLAY_MODES);
-			wnd_printf(wnd, "Loop");
-			col_set_color(wnd, COL_EL_DEFAULT);
-		}
 	}
 
 	/* Display current audio parameters */
@@ -2513,7 +2527,7 @@ void player_file_browser( void )
 	browser_t *fb;
 
 	/* Create browser and run it */
-	fb = fb_new(wnd_root, 0, 0, wnd_root->m_width, wnd_root->m_height - 2,
+	fb = fb_new(wnd_root, 0, 0, wnd_root->m_width, wnd_root->m_height - 1,
 			player_fb_dir);
 	wnd_run(fb);
 	util_strncpy(player_fb_dir, fb->m_cur_dir, sizeof(player_fb_dir));
@@ -2527,6 +2541,13 @@ void player_set_search_string( char *str )
 		free(player_search_string);
 	player_search_string = strdup(str);
 } /* End of 'player_set_search_string' function */
+
+/* Signal handler */
+void player_handle_signal( int signum )
+{
+	if (signum == SIGINT || signum == SIGTERM)
+		player_deinit();
+} /* End of 'player_handle_signal' function */
 
 /* End of 'player.c' file */
 
