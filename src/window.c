@@ -5,7 +5,7 @@
 /* FILE NAME   : window.c
  * PURPOSE     : SG Konsamp. Window functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 3.08.2003
+ * LAST UPDATE : 9.08.2003
  * NOTE        : Module prefix 'wnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -160,6 +160,7 @@ bool wnd_init( wnd_t *wnd, wnd_t *parent, int x, int y, int w, int h )
 	wnd->m_child = NULL;
 	wnd->m_next = NULL;
 	wnd->m_flags = 0;
+	wnd->m_id = 0;
 	if (wnd->m_parent != NULL)
 	{
 		if (wnd->m_parent->m_child == NULL)
@@ -319,6 +320,7 @@ int wnd_run( void *obj )
 				/* Close window */
 				if ((id == WND_MSG_CLOSE) || ((id == WND_MSG_CHANGE_FOCUS) &&
 							(wnd->m_parent != NULL) && 
+							(wnd->m_flags & WND_ITEM) &&
 							(wnd->m_parent->m_flags & WND_DIALOG)))
 				{
 					done = TRUE;
@@ -349,11 +351,19 @@ void wnd_send_msg( void *obj, dword id, dword data )
 	struct tag_msg_queue *msg;
 
 	WND_ASSERT(wnd);
-	
+
 	/* Display window immediately */
 	if (id == WND_MSG_DISPLAY)
 	{
 		wnd_display(wnd_root);
+		return;
+	}
+
+	/* Execute some messages */
+	if (id == WND_MSG_NOTIFY)
+	{
+		if (wnd->m_msg_handlers[id] != NULL)
+			(wnd->m_msg_handlers[id])(wnd, data);
 		return;
 	}
 
@@ -544,7 +554,6 @@ void *wnd_kbd_thread( void *arg )
 			{
 				if (key == KEY_REFRESH)
 				{
-					util_log("Here\n");
 					wnd_redisplay(wnd_root);
 				}
 				wnd_send_msg(wnd_focus, WND_MSG_KEYDOWN, (dword)key);
@@ -565,7 +574,7 @@ void wnd_handle_close( wnd_t *wnd, dword data )
 	WND_ASSERT(wnd);
 
 	/* Close parent window if it is dialog box */
-	if (wnd->m_parent != NULL && 
+	if ((wnd->m_flags & WND_ITEM) && wnd->m_parent != NULL && 
 			(wnd->m_parent->m_flags & WND_DIALOG))
 		wnd_send_msg(wnd->m_parent, WND_MSG_CLOSE, 0);
 } /* End of 'wnd_handle_close' function */
@@ -590,7 +599,8 @@ void wnd_handle_ch_focus( wnd_t *wnd, dword data )
 		}
 	}
 	/* If we are item - close ourselves and inform parent to change focus */
-	else if ((wnd->m_parent != NULL) && (wnd->m_parent->m_flags & WND_DIALOG))
+	else if ((wnd->m_parent != NULL) && (wnd->m_flags & WND_ITEM) &&
+			(wnd->m_parent->m_flags & WND_DIALOG))
 	{
 		wnd_send_msg(wnd->m_parent, WND_MSG_CHANGE_FOCUS, 0);
 	}
@@ -640,6 +650,12 @@ int wnd_init_pair( int fg, int bg )
 	}
 	return 0;
 } /* End of 'wnd_init_pair' function */
+
+/* Check that window is focused */
+bool wnd_is_focused( void *wnd )
+{
+	return ((wnd_t *)wnd == wnd_focus);
+} /* End of 'wnd_is_focused' function */
 
 /* End of 'window.c' file */
 

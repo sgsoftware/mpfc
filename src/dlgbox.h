@@ -82,6 +82,9 @@ void dlg_display( wnd_t *wnd, dword data );
 /* Dialog box key handler function  */
 void dlg_handle_key( wnd_t *wnd, dword data );
 
+/* Get item by its ID */
+wnd_t *dlg_get_item_by_id( dlgbox_t *dlg, short id );
+
 #endif
 
 /* End of 'dlgbox.h' file */

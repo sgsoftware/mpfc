@@ -111,7 +111,8 @@ bool help_init( help_screen_t *help, wnd_t *parent, int x, int y,
 	help_add(help, _("e:\t\t Launch equalizer window"));
 	help_add(help, _("R:\t\t Set/unset shuffle play mode"));
 	help_add(help, _("L:\t\t Set/unset loop play mode"));
-	help_add(help, _("o:\t\t Variables manager"));
+	help_add(help, _("o:\t\t Variables mini-manager"));
+	help_add(help, _("O:\t\t Variables manager"));
 	help_add(help, _("?:\t\t This help screen"));
 	return TRUE;
 } /* End of 'help_init' function */

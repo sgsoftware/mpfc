@@ -141,5 +141,19 @@ void dlg_handle_key( wnd_t *wnd, dword data )
 	}
 } /* End of 'dlg_handle_key' function */
 
+/* Get item by its ID */
+wnd_t *dlg_get_item_by_id( dlgbox_t *dlg, short id )
+{
+	wnd_t *wnd;
+	
+	if (dlg == NULL)
+		return NULL;
+
+	for ( wnd = ((wnd_t *)dlg)->m_child; wnd != NULL; wnd = wnd->m_next )
+		if (wnd->m_id == id)
+			return wnd;
+	return NULL;
+} /* End of 'dlg_get_item_by_id' function */
+
 /* End of 'dlgbox.c' file */
 

@@ -5,7 +5,7 @@
 /* FILE NAME   : editbox.c
  * PURPOSE     : SG Konsamp. Edit box functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 6.08.2003
+ * LAST UPDATE : 8.08.2003
  * NOTE        : Module prefix 'ebox'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -84,6 +84,7 @@ bool ebox_init( editbox_t *wnd, wnd_t *parent, int x, int y, int width,
 	wnd->m_changed = FALSE;
 	strcpy(wnd->m_text_before_hist, wnd->m_text);
 	((wnd_t *)wnd)->m_wnd_destroy = ebox_destroy;
+	WND_OBJ(wnd)->m_flags = WND_ITEM;
 	return TRUE;
 } /* End of 'ebox_init' function */
 
@@ -256,6 +257,18 @@ void ebox_hist_save( editbox_t *box, int key )
 		hist_add_item(box->m_hist_list, box->m_text);
 	box->m_hist_list->m_cur = NULL;
 } /* End of 'ebox_hist_save' function */
+
+/* Set edit box text */
+void ebox_set_text( editbox_t *box, char *text )
+{
+	if (box == NULL || text == NULL)
+		return;
+
+	strcpy(box->m_text, text);
+	box->m_len = strlen(box->m_text);
+	ebox_set_cursor(box, box->m_len);
+	wnd_send_msg(box, WND_MSG_DISPLAY, 0);
+} /* End of 'ebox_set_text' function */
 
 /* End of 'editbox.c' file */
 

@@ -5,7 +5,7 @@
 /* FILE NAME   : editbox.h
  * PURPOSE     : SG Konsamp. Interface for edit box functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 6.08.2003
+ * LAST UPDATE : 8.08.2003
  * NOTE        : Module prefix 'ebox'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -94,6 +94,9 @@ void ebox_move( editbox_t *box, bool rel, int offset );
 
 /* Set new cursor position */
 void ebox_set_cursor( editbox_t *box, int new_pos );
+
+/* Set edit box text */
+void ebox_set_text( editbox_t *box, char *text );
 
 /* Handle history moving */
 void ebox_hist_move( editbox_t *box, bool up );

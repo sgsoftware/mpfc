@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Configuration handling functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 27.07.2003
+ * LAST UPDATE : 9.08.2003
  * NOTE        : Module prefix 'cfg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -30,6 +30,7 @@
 #include <string.h>
 #include "types.h"
 #include "cfg.h"
+#include "util.h"
 
 /* Check if symbol is a white space */
 #define cfg_is_whitespace(c) (c <= ' ')
@@ -322,7 +323,7 @@ void cfg_save_list( cfg_list_t *list, char *fname )
 		return;
 
 	/* Open file */
-	fd = fopen(fname, "wt");
+	fd = util_fopen(fname, "wt");
 	if (fd == NULL)
 		return;
 

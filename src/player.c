@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "types.h"
+#include "button.h"
 #include "cfg.h"
 #include "choice_ctrl.h"
 #include "colors.h"
@@ -969,45 +970,48 @@ void player_skip_songs( int num )
 /* Launch variables manager */
 void player_var_manager( void )
 {
-	editbox_t *ebox;
-	char name[256], val[256];
+	dlgbox_t *dlg;
+	listbox_t *var_lb;
+	editbox_t *val_eb;
+	button_t *btn;
+	int i;
 
-	/* Create edit box for variable name input */
-	ebox = ebox_new(wnd_root, 0, wnd_root->m_height - 1, 
-			wnd_root->m_width, 1, 256, _("Enter variable name: "), "");
-	if (ebox == NULL)
-		return;
-	ebox->m_hist_list = player_hist_lists[PLAYER_HIST_LIST_VAR_NAME];
+	/* Initialize dialog */
+	dlg = dlg_new(wnd_root, 2, 2, wnd_root->m_width - 4, 20, 
+			_("Variables manager"));
+	wnd_register_handler(dlg, WND_MSG_NOTIFY, player_var_mngr_notify);
+	var_lb = lbox_new(WND_OBJ(dlg), 2, 2, WND_WIDTH(dlg) - 4, 
+			WND_HEIGHT(dlg) - 5, "");
+	var_lb->m_minimalizing = FALSE;
+	WND_OBJ(var_lb)->m_id = PLAYER_VAR_MNGR_VARS;
+	val_eb = ebox_new(WND_OBJ(dlg), 2, WND_HEIGHT(dlg) - 3,
+			WND_WIDTH(dlg) - 4, 1, 256, "Value: ", 
+			(cfg_list->m_num_vars) ? cfg_list->m_vars[0].m_val : "");
+	WND_OBJ(val_eb)->m_id = PLAYER_VAR_MNGR_VAL;
+	btn = btn_new(WND_OBJ(dlg), 2, WND_HEIGHT(dlg) - 2, -1, "New variable");
+	WND_OBJ(btn)->m_id = PLAYER_VAR_MNGR_NEW;
+	btn = btn_new(WND_OBJ(dlg), WND_X(btn) + WND_WIDTH(btn) + 1, 
+			WND_HEIGHT(dlg) - 2, -1, "Save");
+	WND_OBJ(btn)->m_id = PLAYER_VAR_MNGR_SAVE;
+	btn = btn_new(WND_OBJ(dlg), WND_X(btn) + WND_WIDTH(btn) + 1,
+		   	WND_HEIGHT(dlg) - 2, -1, "Restore value");
+	WND_OBJ(btn)->m_id = PLAYER_VAR_MNGR_RESTORE;
 
-	/* Run message loop */
-	wnd_run(ebox);
+	/* Fill variables list box */
+	for ( i = 0; i < cfg_list->m_num_vars; i ++ )
+		lbox_add(var_lb, cfg_list->m_vars[i].m_name);
+	lbox_move_cursor(var_lb, FALSE, 0, TRUE);
 
-	/* Check input */
-	if (ebox->m_last_key != '\n' || !ebox->m_len)
-	{
-		wnd_destroy(ebox);
-		return;
-	}
-	strcpy(name, ebox->m_text);
-	wnd_destroy(ebox);
+	/* Display dialog */
+	wnd_run(dlg);
 
-	/* Get value */
-	ebox = ebox_new(wnd_root, 0, wnd_root->m_height - 1, 
-			wnd_root->m_width, 1, 256, _("Enter variable value: "), "");
-	if (ebox == NULL)
-		return;
-	ebox->m_hist_list = player_hist_lists[PLAYER_HIST_LIST_VAR_VAL];
-	wnd_run(ebox);
-	if (ebox->m_last_key != '\n')
-	{
-		wnd_destroy(ebox);
-		return;
-	}
-	strcpy(val, ebox->m_len ? ebox->m_text : "1");
-	wnd_destroy(ebox);
+	/* Save variables */
+	if (var_lb->m_cursor >= 0)
+		cfg_set_var(cfg_list, var_lb->m_list[var_lb->m_cursor].m_name, 
+				val_eb->m_text);
 
-	/* Set variable value */
-	cfg_set_var(cfg_list, name, val);
+	/* Free memory */
+	wnd_destroy(dlg);
 } /* End of 'player_var_manager' function */
 
 /* Launch add object dialog */
@@ -1224,6 +1228,9 @@ void player_handle_action( int action )
 	case KBIND_VAR_MANAGER:
 		player_var_manager();
 		break;
+	case KBIND_VAR_MINI_MANAGER:
+		player_var_mini_mngr();
+		break;
 
 	/* Move play list */
 	case KBIND_PLIST_DOWN:
@@ -1281,6 +1288,131 @@ void player_handle_action( int action )
 	if (!dont_change_repval)
 		player_repval = 0;
 } /* End of 'player_handle_action' function */
+
+/* Launch variables mini-manager */
+void player_var_mini_mngr( void )
+{
+	editbox_t *ebox;
+	char name[256], val[256];
+
+	/* Create edit box for variable name input */
+	ebox = ebox_new(wnd_root, 0, wnd_root->m_height - 1, 
+			wnd_root->m_width, 1, 256, _("Enter variable name: "), "");
+	if (ebox == NULL)
+		return;
+	ebox->m_hist_list = player_hist_lists[PLAYER_HIST_LIST_VAR_NAME];
+
+	/* Run message loop */
+	wnd_run(ebox);
+
+	/* Check input */
+	if (ebox->m_last_key != '\n' || !ebox->m_len)
+	{
+		wnd_destroy(ebox);
+		return;
+	}
+	strcpy(name, ebox->m_text);
+	wnd_destroy(ebox);
+
+	/* Get value */
+	ebox = ebox_new(wnd_root, 0, wnd_root->m_height - 1, 
+			wnd_root->m_width, 1, 256, _("Enter variable value: "), "");
+	if (ebox == NULL)
+		return;
+	ebox->m_hist_list = player_hist_lists[PLAYER_HIST_LIST_VAR_VAL];
+	wnd_run(ebox);
+	if (ebox->m_last_key != '\n')
+	{
+		wnd_destroy(ebox);
+		return;
+	}
+	strcpy(val, ebox->m_len ? ebox->m_text : "1");
+	wnd_destroy(ebox);
+
+	/* Set variable value */
+	cfg_set_var(cfg_list, name, val);
+} /* End of 'player_var_mini_mngr' function */
+
+/* Variables manager dialog notify handler */
+void player_var_mngr_notify( wnd_t *wnd, dword data )
+{
+	dlgbox_t *dlg;
+	short id, act;
+	static int pos = -1;
+	editbox_t *eb;
+	listbox_t *lb;
+
+	if (wnd == NULL)
+		return;
+
+	/* Get message data */
+	dlg = (dlgbox_t *)wnd;
+	id = WND_NOTIFY_ID(data);
+	act = WND_NOTIFY_ACT(data);
+	eb = (editbox_t *)dlg_get_item_by_id(dlg, PLAYER_VAR_MNGR_VAL);
+	lb = (listbox_t *)dlg_get_item_by_id(dlg, PLAYER_VAR_MNGR_VARS);
+	if (eb == NULL || lb == NULL)
+		return;
+
+	/* List box cursor movement */
+	if (id == PLAYER_VAR_MNGR_VARS && act == LBOX_MOVE)
+	{
+		/* Save current edit box value to the respective variable */
+		if (pos >= 0)
+			cfg_set_var(cfg_list, lb->m_list[pos].m_name, eb->m_text);
+			
+		/* Read new variable */
+		pos = lb->m_cursor;
+		ebox_set_text(eb, cfg_list->m_vars[pos].m_val);
+	}
+	/* Save list */
+	else if (id == PLAYER_VAR_MNGR_SAVE && act == BTN_CLICKED)
+	{
+		cfg_save_list(cfg_list, "~/.mpfcrc");
+	}
+	/* Restore value */
+	else if (id == PLAYER_VAR_MNGR_RESTORE && act == BTN_CLICKED)
+	{
+		if (lb->m_cursor >= 0)
+		{
+			ebox_set_text(eb, cfg_get_var(cfg_list,
+						lb->m_list[lb->m_cursor].m_name));
+		}
+	}
+	/* New variable */
+	else if (id == PLAYER_VAR_MNGR_NEW && act == BTN_CLICKED)
+	{
+		dlgbox_t *d;
+		editbox_t *name, *val;
+
+		d = dlg_new(WND_OBJ(dlg), 4, 4, 40, 5, "New variable");
+		name = ebox_new(WND_OBJ(d), 4, 3, WND_WIDTH(d) - 5, 1, 256, 
+				"Name: ", "");
+		val = ebox_new(WND_OBJ(d), 4, 4, WND_WIDTH(d) - 5, 1, 256, 
+				"Value: ", "");
+		wnd_run(d);
+		if (d->m_ok)
+		{
+			int was_len = cfg_list->m_num_vars;
+
+			/* Set variable */
+			cfg_set_var(cfg_list, name->m_text, val->m_text);
+
+			/* Update main dialog items */
+			if (was_len != cfg_list->m_num_vars)
+			{
+				lbox_add(lb, name->m_text);
+			}
+			else
+			{
+				if (lb->m_cursor >= 0 && 
+						!strcmp(lb->m_list[lb->m_cursor].m_name, name->m_text))
+					ebox_set_text(eb, val->m_text);
+			}
+		}
+		wnd_destroy(d);
+	}
+} /* End of 'player_var_mngr_notify' function */
 
 /* End of 'player.c' file */
 

@@ -5,7 +5,7 @@
 /* FILE NAME   : window.h
  * PURPOSE     : SG Konsamp. Interface for window functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 28.07.2003
+ * LAST UPDATE : 9.08.2003
  * NOTE        : Module prefix 'wnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -41,14 +41,25 @@ struct tag_wnd_t;
 #define WND_MSG_MOUSE_LEFT_CLICK		3
 #define WND_MSG_CLOSE					4
 #define WND_MSG_CHANGE_FOCUS			5
-#define WND_MSG_NUMBER					6
+#define WND_MSG_NOTIFY					6
+#define WND_MSG_NUMBER					7
 
 /* Window flags */
 #define WND_DIALOG						0x00000001
+#define WND_ITEM						0x00000002
 
 /* Get macros */
 #define WND_OBJ(wnd)		((wnd_t *)(wnd))
 #define WND_FLAGS(wnd)		(((wnd_t *)(wnd))->m_flags)
+#define WND_X(wnd)			(((wnd_t *)(wnd))->m_x)
+#define WND_Y(wnd)			(((wnd_t *)(wnd))->m_y)
+#define WND_WIDTH(wnd)		(((wnd_t *)(wnd))->m_width)
+#define WND_HEIGHT(wnd)		(((wnd_t *)(wnd))->m_height)
+
+/* Create data for notify message */
+#define WND_NOTIFY_DATA(id, act) (((id) << 16) | (act))
+#define WND_NOTIFY_ID(data) ((data) >> 16)
+#define WND_NOTIFY_ACT(data) (short)(data)
 
 /* Window message handler function */
 typedef void (*wnd_msg_handler)( struct tag_wnd_t *wnd, dword data );
@@ -61,6 +72,9 @@ typedef struct tag_wnd_t
 
 	/* Window position and size */
 	int m_x, m_y, m_width, m_height;
+
+	/* Window ID */
+	short m_id;
 
 	/* Window flags */
 	dword m_flags;
@@ -160,6 +174,9 @@ void wnd_redisplay( wnd_t *wnd );
 
 /* Initialize color pair */
 int wnd_init_pair( int fg, int bg );
+
+/* Check that window is focused */
+bool wnd_is_focused( void *wnd );
 
 #endif
 

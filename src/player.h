@@ -5,7 +5,7 @@
 /* FILE NAME   : player.h
  * PURPOSE     : SG MPFC. Interface for main player functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 6.08.2003
+ * LAST UPDATE : 8.08.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -46,6 +46,13 @@
 #define PLAYER_HIST_LIST_VAR_VAL	4
 #define PLAYER_HIST_LIST_SEARCH		5
 #define PLAYER_NUM_HIST_LISTS 		6
+
+/* Variables manager dialog items IDs */
+#define PLAYER_VAR_MNGR_VARS	0
+#define PLAYER_VAR_MNGR_VAL		1
+#define PLAYER_VAR_MNGR_NEW		2
+#define PLAYER_VAR_MNGR_SAVE	3
+#define PLAYER_VAR_MNGR_RESTORE	4
 
 /* Equalizer information */
 extern bool player_eq_changed;
@@ -143,6 +150,12 @@ void player_display_slider( wnd_t *wnd, int x, int y, int width,
 
 /* Skip some songs */
 void player_skip_songs( int num );
+
+/* Launch variables mini-manager */
+void player_var_mini_mngr( void );
+
+/* Variables manager dialog notify handler */
+void player_var_mngr_notify( wnd_t *wnd, dword data );
 
 /* Launch variables manager */
 void player_var_manager( void );
