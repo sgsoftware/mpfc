@@ -892,7 +892,7 @@ void player_info_dialog( void )
 		ifl.m_save_info(s->m_file_name, s->m_info);
 
 		/* Update */
-		song_set_info(s, s->m_info);
+		song_update_info(s);
 	}
 	
 	wnd_destroy(dlg);
