@@ -498,11 +498,11 @@ void id3_v2_set_frame( id3_tag_data_t *tag, char *name, char *val )
 			memmove(p + new_size + 10, p + size + 10, 
 					was_len - diff - size - 10);
 		}
-		else if (size - 1 > len)
+		else if (size > new_size)
 		{
 			memmove(p + new_size + 10, p + size + 10, 
 					was_len - diff - size - 10);
-			tag->m_stream_len += (size - len - 1);
+			tag->m_stream_len += (new_size - size);
 			tag->m_stream = (byte *)realloc(tag->m_stream, tag->m_stream_len);
 			p = tag->m_stream + diff;
 		}
