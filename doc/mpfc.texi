@@ -336,11 +336,15 @@ can make advantage of them (e.g. for MP3 this information is written in its
 ID3 tag). 
 
 You can view and edit this information using song info editor dialog. To 
-call it place cursor to the respective song and use @kbd{i} command. The dialog
+call it place cursor to the respective song and use @kbd{i} command. 
+You can also edit info for multiple songs. To do it select these songs in
+visual mode and answer ``No'' an appeating question. The dialog
 will appear (if the format allows you). Then you will be able to change its
 contents by setting focus to the respective edit box (press @kbd{@key{TAB}}
 several times to reach it). If you want to save changes press @kbd{@key{RET}},
-otherwise press @kbd{@key{ESC}}.
+otherwise press @kbd{@key{ESC}}. If some of the selected songs have different
+values for an info field it will remain the same unless you change it. If you
+change any field its value will be saved to each of the selected songs.
 
 You may change songs title accordingly to their info. To do it you must change
 ``title-format'' variable value (@pxref{Using Variables}). Its value may be any
@@ -369,7 +373,12 @@ string including some format sequences:
 The default value is ``%p - %t'' that means that title contains artist and 
 song names divided by dash sign.
 
-Also there is a command that reloads all playlist songs information---@kbd{I}.
+Some plugins may have special functions associated with their respective
+songs (e.g. function of removing tags for mp3 plugin). This function is called
+by clicking respective button in the song info dialog.
+
+Also there is a command that reloads all selected playlist songs 
+information---@kbd{I}.
 
 @node Other features,, Playlist management, Getting Started
 @section Other features
@@ -421,8 +430,8 @@ set---to ``yes''.
 @section Setting variables
 You may set a variable in three different places.
 
-The first is MPFC configuration file (@file{~/.mpfcrc}). 
-In this file each variable
+The first is any of MPFC configuration files (@file{/etc/mpfcrc} and
+@file{~/.mpfcrc}).  In this file each variable
 is specified in its own line in the format: <variable>[=value], where
 ``variable'' is variable name and ``value'' is variable value. You may skip
 the second part of this expression, then variable will be set to ``1''.
@@ -691,11 +700,20 @@ Audio CD plugin supports Audio CDs. This support is done through objects
 ``audiocd''. The object name part has no meaning for this plugin.
 
 Song info for Audio CD is supported through CDDB. If you want to obtain
-this information you must be connected to the Internet. After MPFC gets this
+this information you must be connected to the Internet. CDDB server is set
+through ``cddb-host'' variable. The default value is ``freedb.freedb.org''.
+After MPFC gets 
 information it stores it on your local machine and further loads it from this
 machine. Alternatively you may specify info by your own and store it. CDDB
 submission is not supported yet. Note that to use info for Audio CD you must
 have @file{cddb} directory in your @file{~/.mpfc}.
+
+Also you can submit info to CDDB. To do it click on the respective button
+in info editor for any of this CD songs. Note that you must have two variables
+set. First is ``cddb-email'' and it holds your e-mail address. Second is
+``cddb-category'' and it holds the category of disc you are about to submit.
+Possible values are: ``blues'', ``classical'', ``country'', ``data'', ``folk'',
+``jazz'', ``misc'', ``newage'', ``reggae'', ``rock'' and ``soundtrack''.
 
 @node Radio,, Audio CD, Input
 @subsection Radio
