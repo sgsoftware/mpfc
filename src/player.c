@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG MPFC. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 18.12.2003
+ * LAST UPDATE : 28.12.2003
  * NOTE        : Module prefix 'player'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -618,7 +618,6 @@ void player_end_play( bool_t rem_cur_song )
 void *player_thread( void *arg )
 {
 	bool_t no_outp = FALSE;
-	int next_track = -1;
 	
 	/* Main loop */
 	while (!player_end_thread)
@@ -644,10 +643,9 @@ void *player_thread( void *arg )
 	
 		/* Start playing */
 		inp = song_get_inp(s);
-		next_track = player_get_next_track();
 		if (!inp_start(inp, s->m_file_name))
 		{
-			player_set_track(next_track);
+			player_next_track();
 			error_set_code(ERROR_UNKNOWN_FILE_TYPE);
 			strcpy(player_msg, error_text);
 			wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
@@ -693,12 +691,6 @@ void *player_thread( void *arg )
 		pthread_create(&player_timer_tid, NULL, player_timer_func, 0);
 		//wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
 	
-		/* Inform input plugin about next track */
-		inp_set_next_song(player_inp, next_track >= 0 ?
-				player_plist->m_list[next_track]->m_file_name : NULL);
-		inp_set_next_song(player_inp, next_track >= 0 ?
-				player_plist->m_list[next_track]->m_file_name : NULL);
-
 		/* Play */
 		while (!player_end_track)
 		{
@@ -765,6 +757,10 @@ void *player_thread( void *arg )
 		/* Stop timer thread */
 		player_stop_timer();
 
+		/* Send message about track end */
+		if (!player_end_track)
+			player_next_track();
+
 		/* End playing */
 		inp_end(inp);
 		player_inp = NULL;
@@ -772,10 +768,6 @@ void *player_thread( void *arg )
 		/* End output plugin */
 		if (!no_outp)
 			outp_end(pmng_cur_out);
-
-		/* Send message about track end */
-		if (!player_end_track)
-			player_set_track(next_track);
 
 		/* Update screen */
 		wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
@@ -1244,11 +1236,16 @@ void player_help( void )
 	wnd_destroy(h);
 } /* End of 'player_help' function */
 
-/* Get next track */
-int player_get_next_track( void )
+/* Go to next track */
+void player_next_track( void )
 {
-	return player_skip_songs(1, FALSE);
-} /* End of 'player_get_next_track' function */
+	int next_track;
+	
+	next_track = player_skip_songs(1, FALSE);
+	inp_set_next_song(player_inp, next_track >= 0 ?
+		player_plist->m_list[next_track]->m_file_name : NULL);
+	player_set_track(next_track);
+} /* End of 'player_next_track' function */
 
 /* Start track */
 void player_set_track( int track )

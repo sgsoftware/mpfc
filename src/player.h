@@ -5,7 +5,7 @@
 /* FILE NAME   : player.h
  * PURPOSE     : SG MPFC. Interface for main player functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 15.11.2003
+ * LAST UPDATE : 28.12.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -178,8 +178,8 @@ void player_help_display( wnd_t *wnd, dword data );
 /* Handle key message handler for help screen */
 void player_help_handle_key( wnd_t *wnd, dword data );
 
-/* Get next track */
-int player_get_next_track( void );
+/* Go to next next track */
+void player_next_track( void );
 
 /* Start track */
 void player_set_track( int track );
