@@ -49,6 +49,7 @@ wnd_t *wnd_init( cfg_node_t *cfg_list, logger_t *log )
 	wnd_class_t *klass = NULL;
 	struct wnd_display_buf_symbol_t *db_data = NULL;
 	int i, len;
+	bool_t force_terminal_bg;
 
 	/* Initialize NCURSES */
 	wnd = initscr();
@@ -57,9 +58,14 @@ wnd_t *wnd_init( cfg_node_t *cfg_list, logger_t *log )
 	start_color();
 	cbreak();
 	noecho();
-	//keypad(wnd, TRUE);
 	nodelay(wnd, TRUE);
-	wnd_init_pairs();
+	force_terminal_bg = cfg_get_var_bool(cfg_list, "force-terminal-bg");
+	if (force_terminal_bg)
+	{
+		use_default_colors();
+		assume_default_colors(-1, -1);
+	}
+	wnd_init_pairs(force_terminal_bg);
 
 	/* Initialize global data */
 	global = (wnd_global_data_t *)malloc(sizeof(wnd_global_data_t));
@@ -456,7 +462,7 @@ void wnd_main( wnd_t *wnd_root )
 } /* End of 'wnd_main' function */
 
 /* Initialize color pairs array */
-void wnd_init_pairs( void )
+void wnd_init_pairs( bool_t force_terminal_bg )
 {
 	int i;
 
@@ -472,6 +478,8 @@ void wnd_init_pairs( void )
 		/* Convert our colors to NCURSES */
 		cfg = wnd_color_our2curses(fg);
 		cbg = wnd_color_our2curses(bg);
+		if (force_terminal_bg && cbg == COLOR_BLACK)
+			cbg = -1;
 
 		/* Initialize this color pair */
 		init_pair(i, cfg, cbg);
