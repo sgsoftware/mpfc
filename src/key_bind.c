@@ -121,6 +121,7 @@ void kbind_init( void )
 	kbind_add(KBIND_SET_PLAY_BOUNDS, 2, 'P', 's');
 	kbind_add(KBIND_CLEAR_PLAY_BOUNDS, 2, 'P', 'c');
 	kbind_add(KBIND_PLAY_BOUNDS, 2, 'P', '\n');
+	kbind_add(KBIND_EXEC, 1, '!');
 
 	/* Read bindings from configuration */
 	kbind_read_from_cfg();
@@ -318,6 +319,8 @@ int kbind_var2act( char *name )
 		return KBIND_CLEAR_PLAY_BOUNDS;
 	else if (!strcmp(name, "kbind_play_bounds"))
 		return KBIND_PLAY_BOUNDS;
+	else if (!strcmp(name, "kbind_exec"))
+		return KBIND_EXEC;
 	return -1;
 } /* End of 'kbind_var2act' function */
 

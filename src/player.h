@@ -5,7 +5,7 @@
 /* FILE NAME   : player.h
  * PURPOSE     : SG MPFC. Interface for main player functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 16.08.2003
+ * LAST UPDATE : 6.09.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -48,7 +48,8 @@
 #define PLAYER_HIST_LIST_VAR_NAME	3
 #define PLAYER_HIST_LIST_VAR_VAL	4
 #define PLAYER_HIST_LIST_SEARCH		5
-#define PLAYER_NUM_HIST_LISTS 		6
+#define PLAYER_HIST_LIST_EXEC		6
+#define PLAYER_NUM_HIST_LISTS 		7
 
 /* Variables manager dialog items IDs */
 #define PLAYER_VAR_MNGR_VARS	0
@@ -189,6 +190,9 @@ void player_save_cfg_list( cfg_list_t *list, char *fname );
 
 /* Update volume */
 void player_update_vol( void );
+
+/* Execute a command */
+void player_exec( void );
 
 #endif
 

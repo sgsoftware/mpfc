@@ -1389,6 +1389,11 @@ void player_handle_action( int action )
 		player_play(0);
 		break;
 
+	/* Execute outer command */
+	case KBIND_EXEC:
+		player_exec();
+		break;
+
 	/* Digit means command repeation value edit */
 	case KBIND_DIG_1:
 	case KBIND_DIG_2:
@@ -1654,6 +1659,37 @@ void player_update_vol( void )
 	}
 	outp_set_volume(pmng_cur_out, l, r);
 } /* End of 'player_update_vol' function */
+
+/* Execute a command */
+void player_exec( void )
+{
+	editbox_t *ebox;
+
+	/* Create edit box for command */
+	ebox = ebox_new(wnd_root, 0, wnd_root->m_height - 1, 
+			wnd_root->m_width, 1, 256, _("Enter command: "), "");
+	if (ebox != NULL)
+	{
+		ebox->m_hist_list = player_hist_lists[PLAYER_HIST_LIST_EXEC];
+		
+		/* Run message loop */
+		wnd_run(ebox);
+
+		/* Execute if enter was pressed */
+		if (ebox->m_last_key == '\n')
+		{
+			wnd_clear(wnd_root, FALSE);
+			refresh();
+			endwin();
+			system(ebox->m_text);
+			getchar();
+			refresh();
+		}
+
+		/* Destroy edit box */
+		wnd_destroy(ebox);
+	}
+} /* End of 'player_exec' function */
 
 /* End of 'player.c' file */
 

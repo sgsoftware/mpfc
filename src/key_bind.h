@@ -88,7 +88,8 @@
 #define KBIND_SET_PLAY_BOUNDS	54
 #define KBIND_CLEAR_PLAY_BOUNDS	55
 #define KBIND_PLAY_BOUNDS		56
-#define KBIND_NUM_ACTIONS		57
+#define KBIND_EXEC				57
+#define KBIND_NUM_ACTIONS		58
 
 /* The maximal key sequence length */
 #define KBIND_MAX_SEQ_LEN 10
