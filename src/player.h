@@ -137,6 +137,9 @@ void player_display_slider( wnd_t *wnd, int x, int y, int width,
 /* Skip some songs */
 void player_skip_songs( int num );
 
+/* Launch variables manager */
+void player_var_manager( void );
+
 #endif
 
 /* End of 'player.h' file */

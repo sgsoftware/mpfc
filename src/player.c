@@ -406,6 +406,11 @@ void player_handle_key( wnd_t *wnd, dword data )
 		cfg_set_var_int(cfg_list, "loop_play",
 				!cfg_get_var_int(cfg_list, "loop_play"));
 		break;
+
+	/* Variables manager */
+	case 'o':
+		player_var_manager();
+		break;
 		
 	/* Digit means command repeation value edit */
 	case '1':
@@ -1083,6 +1088,49 @@ void player_skip_songs( int num )
 	else
 		player_play();
 } /* End of 'player_skip_songs' function */
+
+/* Launch variables manager */
+void player_var_manager( void )
+{
+	editbox_t *ebox;
+	char name[256], val[256];
+
+	/* Create edit box for variable name input */
+	ebox = ebox_new(wnd_root, 0, wnd_root->m_height - 1, 
+			wnd_root->m_width, 1, 256, _("Enter variable name: "), "");
+	if (ebox == NULL)
+		return;
+
+	/* Run message loop */
+	wnd_run(ebox);
+
+	/* Check input */
+	if (ebox->m_last_key != '\n' || !ebox->m_len)
+	{
+		wnd_destroy(ebox);
+		return;
+	}
+	strcpy(name, ebox->m_text);
+	wnd_destroy(ebox);
+
+	/* Get value */
+	ebox = ebox_new(wnd_root, 0, wnd_root->m_height - 1, 
+			wnd_root->m_width, 1, 256, _("Enter variable value: "), "");
+	if (ebox == NULL)
+		return;
+	wnd_run(ebox);
+	if (ebox->m_last_key != '\n')
+	{
+		wnd_destroy(ebox);
+		return;
+	}
+	strcpy(val, ebox->m_len ? ebox->m_text : "1");
+	wnd_destroy(ebox);
+
+	/* Set variable value */
+	util_log("Setting %s to %s\n", name, val);
+	cfg_set_var(cfg_list, name, val);
+} /* End of 'player_var_manager' function */
 
 /* End of 'player.c' file */
 
