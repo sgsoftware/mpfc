@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Song adder thread functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 14.08.2003
+ * LAST UPDATE : 22.10.2004
  * NOTE        : Module prefix 'sat'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -71,14 +71,21 @@ void sat_push( plist_t *pl, int index )
 /* Pop song from queue */
 int sat_pop( plist_t *pl )
 {
-	int i;
+	int i, ret = -1;
 	
 	if (pl == NULL)
 		return -1;
+	plist_lock(pl);
 	for ( i = 0; i < pl->m_len; i ++ )
+	{
 		if (pl->m_list[i] != NULL && (pl->m_list[i]->m_flags & SONG_GET_INFO))
-			return i;
-	return -1;
+		{
+			ret = i;
+			break;
+		}
+	}
+	plist_unlock(pl);
+	return ret;
 } /* End of 'sat_pop' function */
 
 /* Song adder thread function */

@@ -4,4 +4,7 @@ ACLOCAL_AMFLAGS = -I m4
 
 sysconf_DATA = mpfcrc
 
-EXTRA_DIST = config.rpath mkinstalldirs  config.rpath build_rcfile.pl
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = mpfc.pc
+
+EXTRA_DIST = mpfc.pc.in config.rpath mkinstalldirs  config.rpath build_rcfile.pl

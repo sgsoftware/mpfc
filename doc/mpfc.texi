@@ -921,7 +921,7 @@ Here is the list of available key bindings for various window classes.
 @end itemize
 
 @node Other window system features,, Key bindings, Window system
-@subsection 
+@subsection Terminfo hints
 MPFC uses terminfo(5) for translating escape sequences into real keys.
 Unfortunately, terminfo table does not always contain all of needed 
 capabilities. For example, values for @key{Ctrl-Left} and @key{Ctrl-Right}
@@ -937,6 +937,12 @@ For example, to set values for @key{Ctrl-Left} and @key{Ctrl-Right}:
 windows.ti.%i = "\e[5C"
 windows.ti.#4 = "\e[5D"
 @end example
+
+@subsection Using terminal background
+Sometimes you want to use background color of your terminal instead of
+default MPFC background (black). To do this set ``force-terminal-bg''
+variable to 1. Then all the colors with black background will be treated as
+colors with default terminal background.
 
 @node Other features,, Window system, Getting Started
 @section Other features

@@ -238,7 +238,7 @@ AC_OUTPUT(Makefile src/Makefile libmpfc/Makefile libmpfcwnd/Makefile
 			plugins/charset/Makefile plugins/charset/ru/Makefile \
 			plugins/input/recorder/Makefile plugins/output/alsa/Makefile \
 			plugins/output/esd/Makefile \
-			doc/Makefile)
+			doc/Makefile mpfc.pc)
 
 # Configure rcfiles
 ./build_rcfile.pl "$OUTPUT_PLUGINS" "local" > src/.mpfcrc
