@@ -1012,8 +1012,13 @@ void wnd_sync_screen( wnd_t *wnd )
 	wnd_display_buf_lock(buf);
 	for ( pos = buf->m_data;; pos ++ )
 	{
+		dword ch;
+
 		/* Set symbol */
-		addch(pos->m_attr | pos->m_char);
+		ch = pos->m_char;
+		if (ch < 0x20 || ch == 0x7F)
+			ch = '?';
+		addch(pos->m_attr | /*pos->m_char*/ch);
 
 		/* Move to next symbol */
 		if (x >= buf->m_width - 1)

@@ -78,6 +78,7 @@ void wnd_kbd_init_seq( wnd_kbd_data_t *data )
 	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "K3"), KEY_A3);
 	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "K2"), KEY_B2);
 	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "kb"), KEY_BACKSPACE);
+	wnd_kbd_add_seq(data, "\x7F", KEY_BACKSPACE);
 	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "@1"), KEY_BEG);
 	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "kB"), KEY_BTAB);
 	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "K4"), KEY_C1);
@@ -290,7 +291,6 @@ void *wnd_kbd_thread( void *arg )
 			/* Handle mouse events */
 			if (keycode == KEY_MOUSE)
 			{
-				util_log("in mouse\n");
 				//if (WND_MOUSE_DATA(wnd_root)->m_driver == WND_MOUSE_XTERM)
 				//{
 					int x, y;
