@@ -150,13 +150,25 @@ void alsa_set_volume (int left, int right)
 {
   snd_mixer_t* mix;
   snd_mixer_elem_t* elem;
+  long scaled_left, scaled_right;
+  long min, max;
   snd_mixer_open (&mix, 0);
   snd_mixer_attach (mix, "default");
   snd_mixer_selem_register (mix, NULL, NULL);
   snd_mixer_load (mix);
   elem = snd_mixer_first_elem (mix);
-  snd_mixer_selem_set_playback_volume (elem, SND_MIXER_SCHN_FRONT_LEFT, (long)left);
-  snd_mixer_selem_set_playback_volume (elem, SND_MIXER_SCHN_FRONT_RIGHT, (long)right);
+  snd_mixer_selem_get_playback_volume_range(elem, &min, &max);
+  if (max <= min)
+  {
+	  snd_mixer_close(mix);
+	  return;
+  }
+  scaled_left = min + ((max - min) * left / 100);
+  scaled_right = min + ((max - min) * right / 100);
+  snd_mixer_selem_set_playback_volume (elem, SND_MIXER_SCHN_FRONT_LEFT,
+		  scaled_left);
+  snd_mixer_selem_set_playback_volume (elem, SND_MIXER_SCHN_FRONT_RIGHT,
+		  scaled_right);
   snd_mixer_close (mix);
 }
 
@@ -164,13 +176,24 @@ void alsa_get_volume (int *left, int *right)
 {
   snd_mixer_t* mix;
   snd_mixer_elem_t* elem;
+  long min, max;
   snd_mixer_open (&mix, 0);
   snd_mixer_attach (mix, "default");
   snd_mixer_selem_register (mix, NULL, NULL);
   snd_mixer_load (mix);
   elem = snd_mixer_first_elem (mix);
-  snd_mixer_selem_get_playback_volume (elem, SND_MIXER_SCHN_FRONT_LEFT, (long*)left);
-  snd_mixer_selem_get_playback_volume (elem, SND_MIXER_SCHN_FRONT_RIGHT, (long*)right);
+  snd_mixer_selem_get_playback_volume_range(elem, &min, &max);
+  if (max <= min)
+  {
+	  snd_mixer_close(mix);
+	  return;
+  }
+  snd_mixer_selem_get_playback_volume (elem, SND_MIXER_SCHN_FRONT_LEFT,
+		  (long *)left);
+  snd_mixer_selem_get_playback_volume (elem, SND_MIXER_SCHN_FRONT_RIGHT,
+		  (long *)right);
+  (*left) = ((*left) - min) * 100 / (max - min);
+  (*right) = ((*right) - min) * 100 / (max - min);
   snd_mixer_close (mix);
 }
 
