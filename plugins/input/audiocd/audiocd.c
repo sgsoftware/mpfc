@@ -136,7 +136,7 @@ bool_t acd_start( char *filename )
 	}
 	acd_time = 0;
 	acd_info_read = FALSE;
-	strcpy(acd_next_song, "");
+	util_strncpy(acd_next_song, "", sizeof(acd_next_song));
 
 	/* Close device */
 	close(fd);
@@ -309,8 +309,8 @@ song_t **acd_init_obj_songs( char *name, int *num_songs )
 		if (acd_tracks_info[i].m_data)
 			continue;
 		s[j ++] = song = (song_t *)malloc(sizeof(song_t));
-		sprintf(song->m_file_name, "audiocd:track%02d", 
-				acd_tracks_info[i].m_number);
+		snprintf(song->m_file_name, sizeof(song->m_file_name),
+				"audiocd:track%02d", acd_tracks_info[i].m_number);
 		song->m_title = acd_set_song_title(song->m_file_name);
 		song->m_len = acd_tracks_info[i].m_len;
 		song->m_inp = NULL;
@@ -454,7 +454,7 @@ void acd_set_next_song( char *name )
 	if (name == NULL)
 		strcpy(acd_next_song, "");
 	else
-		strcpy(acd_next_song, name);
+		util_strncpy(acd_next_song, name, sizeof(acd_next_song));
 } /* End of 'acd_set_next_song' function */
 
 /* Get functions list */
@@ -495,7 +495,7 @@ void acd_print( char *format, ... )
 	va_list ap;
 
 	va_start(ap, format);
-	vsprintf(msg, format, ap);
+	vsnprintf(msg, sizeof(msg), format, ap);
 	va_end(ap);
 	
 	if (acd_print_msg != NULL)

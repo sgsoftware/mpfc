@@ -127,7 +127,7 @@ char *util_escape_fname( char *out, char *in )
 	char in_name[MAX_FILE_NAME];
 	
 	len = strlen(in);
-	strcpy(in_name, in);
+	util_strncpy(in_name, in, sizeof(in_name));
 	for ( i = j = 0; i <= len; i ++ )
 	{
 		if (UTIL_FNAME_IS_SPECIAL(in_name[i]))
@@ -143,9 +143,9 @@ FILE *util_fopen( char *filename, char *flags )
 	FILE *fd;
 	
 	if (filename[0] == '~' && filename[1] == '/')
-		sprintf(fname, "%s/%s", getenv("HOME"), &filename[2]);
+		snprintf(fname, sizeof(fname), "%s/%s", getenv("HOME"), &filename[2]);
 	else
-		strcpy(fname, filename);
+		util_strncpy(fname, filename, sizeof(fname));
 	fd = fopen(fname, flags);
 	return fd;
 } /* End of 'util_fopen' function */
@@ -258,6 +258,14 @@ void util_get_dir_name( char *dir, char *filename )
 		dir[s - filename] = 0;
 	}
 } /* End of 'util_get_dir_name' function */
+
+/* A safe string copying (writes null to the end) */
+char *util_strncpy( char *dest, char *src, size_t n )
+{
+	strcpy(dest, src);
+	dest[n - 1] = 0;
+	return dest;
+} /* End of 'util_strncpy' function */
 
 /* End of 'util.c' file */
 

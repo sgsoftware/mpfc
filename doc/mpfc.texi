@@ -868,7 +868,7 @@ will try to guess charset in each case. This certainly makes sense only for
 input charsets.
 
 MPFC is distributed with one charset plugin---for russian charsets. It supports
-the following charsets: KOI8-R (``koi8-r''), Windows-1251 (``'cp1251') and
+the following charsets: KOI8-R (``koi8-r''), Windows-1251 (``cp1251'') and
 automatic russian charsets (``ru-auto'') that expands to the latter two or 
 UTF-8.
 

@@ -69,7 +69,7 @@ bool_t fin_init( file_input_box_t *fin, wnd_t *parent, int x, int y,
 	}
 
 	/* Set fileinputbox-specific fields */
-	strcpy(fin->m_cur_path, "");
+	util_strncpy(fin->m_cur_path, "", sizeof(fin->m_cur_path));
 	fin->m_dir_list = fin->m_cur_list = NULL;
 	fin->m_was_cursor = -1;
 	fin->m_paste_len = 0;
@@ -159,13 +159,13 @@ void fin_expand( file_input_box_t *box )
 		/* Get current path */
 		for ( i = box->m_box.m_cursor; 
 				i >= 0 && (EBOX_TEXT(box))[i] != '/'; i -- );
-		strcpy(path, EBOX_TEXT(box));
+		util_strncpy(path, EBOX_TEXT(box), sizeof(path));
 		path[i + 1] = 0;
 	
 		/* Rebuild directory list if it is invalid now */
 		if (box->m_dir_list == NULL || strcmp(box->m_cur_path, path))
 		{
-			strcpy(box->m_cur_path, path);
+			util_strncpy(box->m_cur_path, path, sizeof(box->m_cur_path));
 			fin_rebuild_list(box);
 		}
 	}

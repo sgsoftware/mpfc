@@ -161,7 +161,7 @@ bool_t cddb_read_local( dword id )
 	FILE *fd;
 
 	/* Construct file name and open it */
-	sprintf(fn, "%s/.mpfc/cddb/%x", getenv("HOME"), id);
+	snprintf(fn, sizeof(fn), "%s/.mpfc/cddb/%x", getenv("HOME"), id);
 	fd = fopen(fn, "rt");
 	if (fd == NULL)
 		return FALSE;
@@ -232,17 +232,19 @@ bool_t cddb_read_server( dword id )
 	acd_print(_("Sending query to server"));
 	if (!cddb_server_recv(sockfd, buf, CDDB_BUF_SIZE - 1))
 		goto close;
-	sprintf(buf, "cddb hello %s %s mpfc 1.1\n", getenv("USER"), 
+	snprintf(buf, sizeof(buf), "cddb hello %s %s mpfc 1.1\n", getenv("USER"), 
 			getenv("HOSTNAME"));
 	if (!cddb_server_send(sockfd, buf, CDDB_BUF_SIZE - 1))
 		goto close;
 	if (!cddb_server_recv(sockfd, buf, CDDB_BUF_SIZE - 1))
 		goto close;
-	sprintf(buf, "cddb query %x %i ", id, acd_num_tracks);
+	snprintf(buf, sizeof(buf), "cddb query %x %i ", id, acd_num_tracks);
 	for ( i = 0; i < acd_num_tracks; i ++ )
-		sprintf(&buf[strlen(buf)], "%i ", acd_get_trk_offset(i));
+		snprintf(&buf[strlen(buf)], sizeof(buf) - strlen(buf), 
+				"%i ", acd_get_trk_offset(i));
 	i --;
-	sprintf(&buf[strlen(buf)], "%i\n", acd_get_disc_len());
+	snprintf(&buf[strlen(buf)], sizeof(buf) - strlen(buf),
+			"%i\n", acd_get_disc_len());
 	if (!cddb_server_send(sockfd, buf, CDDB_BUF_SIZE - 1))
 		goto close;
 	if (!cddb_server_recv(sockfd, buf, CDDB_BUF_SIZE - 1))
@@ -250,7 +252,7 @@ bool_t cddb_read_server( dword id )
 	if (strncmp(buf, "200", 3))
 		goto close;
 	sscanf(&buf[4], "%s", category);
-	sprintf(buf, "cddb read %s %x\n", category, id);
+	snprintf(buf, sizeof(buf), "cddb read %s %x\n", category, id);
 	if (!cddb_server_send(sockfd, buf, CDDB_BUF_SIZE - 1))
 		goto close;
 	if (!cddb_server_recv(sockfd, buf, CDDB_BUF_SIZE - 1))
@@ -368,7 +370,7 @@ void cddb_save_data( dword id )
 		return;
 
 	/* Construct file name and open it */
-	sprintf(fn, "%s/.mpfc/cddb/%x", getenv("HOME"), id);
+	snprintf(fn, sizeof(fn), "%s/.mpfc/cddb/%x", getenv("HOME"), id);
 	fd = fopen(fn, "wt");
 	if (fd == NULL)
 		return;
@@ -395,44 +397,47 @@ void cddb_save_trk_info( int track, song_info_t *info )
 	{
 		char str[256];
 
-		sprintf(str, "# xcmd");
+		snprintf(str, sizeof(str), "# xcmd");
 		cddb_data_add(str, -1);
-		sprintf(str, "#");
+		snprintf(str, sizeof(str), "#");
 		cddb_data_add(str, -1);
-		sprintf(str, "# Track frame offsets:");
-		cddb_data_add(str, -1);
-		for ( i = 0; i < acd_num_tracks; i ++ )
-		{
-			sprintf(str, "#        %i", acd_get_trk_offset(i));
-			cddb_data_add(str, -1);
-		}
-		sprintf(str, "#");
-		cddb_data_add(str, -1);
-		sprintf(str, "# Disc length: %i seconds", acd_get_disc_len());
-		cddb_data_add(str, -1);
-		sprintf(str, "#");
-		cddb_data_add(str, -1);
-		sprintf(str, "DISCID=%x", id);
-		cddb_data_add(str, -1);
-		sprintf(str, "DTITLE=%s / %s", info->m_artist, info->m_album);
-		cddb_data_add(str, -1);
-		sprintf(str, "DYEAR=%s", info->m_year);
-		cddb_data_add(str, -1);
-		sprintf(str, "DGENRE=%s", info->m_genre);
+		snprintf(str, sizeof(str), "# Track frame offsets:");
 		cddb_data_add(str, -1);
 		for ( i = 0; i < acd_num_tracks; i ++ )
 		{
-			sprintf(str, "TTITLE%i=%s", i, (i == track) ? info->m_name : "");
+			snprintf(str, sizeof(str), "#        %i", acd_get_trk_offset(i));
 			cddb_data_add(str, -1);
 		}
-		sprintf(str, "EXTD=");
+		snprintf(str, sizeof(str), "#");
+		cddb_data_add(str, -1);
+		snprintf(str, sizeof(str), 
+				"# Disc length: %i seconds", acd_get_disc_len());
+		cddb_data_add(str, -1);
+		snprintf(str, sizeof(str), "#");
+		cddb_data_add(str, -1);
+		snprintf(str, sizeof(str), "DISCID=%x", id);
+		cddb_data_add(str, -1);
+		snprintf(str, sizeof(str), 
+				"DTITLE=%s / %s", info->m_artist, info->m_album);
+		cddb_data_add(str, -1);
+		snprintf(str, sizeof(str), "DYEAR=%s", info->m_year);
+		cddb_data_add(str, -1);
+		snprintf(str, sizeof(str), "DGENRE=%s", info->m_genre);
 		cddb_data_add(str, -1);
 		for ( i = 0; i < acd_num_tracks; i ++ )
 		{
-			sprintf(str, "EXTT%i=", i);
+			snprintf(str, sizeof(str), 
+					"TTITLE%i=%s", i, (i == track) ? info->m_name : "");
 			cddb_data_add(str, -1);
 		}
-		sprintf(str, "PLAYORDER=");
+		snprintf(str, sizeof(str), "EXTD=");
+		cddb_data_add(str, -1);
+		for ( i = 0; i < acd_num_tracks; i ++ )
+		{
+			snprintf(str, sizeof(str), "EXTT%i=", i);
+			cddb_data_add(str, -1);
+		}
+		snprintf(str, sizeof(str), "PLAYORDER=");
 		cddb_data_add(str, -1);
 	}
 	/* Or update existing */
@@ -442,34 +447,35 @@ void cddb_save_trk_info( int track, song_info_t *info )
 		char title[80];
 		bool_t dtitle = FALSE, dgenre = FALSE, dyear = FALSE, ttitle = FALSE;
 			
-		sprintf(title, "TTITLE%i=", track);
+		snprintf(title, sizeof(title), "TTITLE%i=", track);
 		for ( i = 0; i < cddb_data_len; i ++ )
 		{
 			if (!strncmp(cddb_data[i], "DTITLE=", 7))
 			{
 				free(cddb_data[i]);
-				sprintf(str, "DTITLE=%s / %s", info->m_artist, info->m_album);
+				snprintf(str, sizeof(str),
+						"DTITLE=%s / %s", info->m_artist, info->m_album);
 				cddb_data[i] = strdup(str);
 				dtitle = TRUE;
 			}
 			else if (!strncmp(cddb_data[i], "DGENRE=", 7))
 			{
 				free(cddb_data[i]);
-				sprintf(str, "DGENRE=%s", info->m_genre);
+				snprintf(str, sizeof(str), "DGENRE=%s", info->m_genre);
 				cddb_data[i] = strdup(str);
 				dgenre = TRUE;
 			}
 			else if (!strncmp(cddb_data[i], "DYEAR=", 6))
 			{
 				free(cddb_data[i]);
-				sprintf(str, "DYEAR=%s", info->m_year);
+				snprintf(str, sizeof(str), "DYEAR=%s", info->m_year);
 				cddb_data[i] = strdup(str);
 				dyear = TRUE;
 			}
 			else if (!strncmp(cddb_data[i], title, strlen(title)))
 			{
 				free(cddb_data[i]);
-				sprintf(str, "%s%s", title, info->m_name);
+				snprintf(str, sizeof(str), "%s%s", title, info->m_name);
 				cddb_data[i] = strdup(str);
 				ttitle = TRUE;
 			}
@@ -478,22 +484,23 @@ void cddb_save_trk_info( int track, song_info_t *info )
 		/* If not found any of important fields - insert them */
 		if (!dtitle)
 		{
-			sprintf(str, "DTITLE=%s / %s", info->m_artist, info->m_album);
+			snprintf(str, sizeof(str),
+					"DTITLE=%s / %s", info->m_artist, info->m_album);
 			cddb_data_add(str, -1);
 		}
 		if (!dgenre)
 		{
-			sprintf(str, "DGENRE=%s", info->m_genre);
+			snprintf(str, sizeof(str), "DGENRE=%s", info->m_genre);
 			cddb_data_add(str, -1);
 		}
 		if (!dyear)
 		{
-			sprintf(str, "DYEAR=%s", info->m_year);
+			snprintf(str, sizeof(str), "DYEAR=%s", info->m_year);
 			cddb_data_add(str, -1);
 		}
 		if (!ttitle)
 		{
-			sprintf(str, "%s%s", title, info->m_name);
+			snprintf(str, sizeof(str), "%s%s", title, info->m_name);
 			cddb_data_add(str, -1);
 		}
 	}
@@ -641,7 +648,8 @@ char *cddb_make_post_string( char *email, char *category )
 		return NULL;
 
 	/* Fill buffer */
-	sprintf(buf, "POST /~cddb/submit.cgi HTTP/1.0\r\nCategory: %s\r\n"
+	snprintf(buf, sizeof(buf),
+			"POST /~cddb/submit.cgi HTTP/1.0\r\nCategory: %s\r\n"
 			"Discid: %x\r\nUser-Mail: %s\r\nSubmut-Mode: submit\r\n"
 			"Charset: ISO-8859-1\r\n"
 			"X-Cddbd-Note: Sent by MPFC\r\n"

@@ -71,7 +71,7 @@ bool_t wav_start( char *filename )
 	wav_fd = file_open(filename, "rb", NULL);
 	if (wav_fd == NULL)
 		return FALSE;
-	strcpy(wav_fname, filename);
+	util_strncpy(wav_fname, filename, sizeof(wav_fname));
 
 	/* Read WAV file header */
 	file_read(riff, 1, sizeof(riff), wav_fd);
@@ -239,7 +239,7 @@ song_info_t *wav_get_info( char *filename, int *length )
 	/* Initialize info */
 	si = si_new();
 	si->m_flags |= SI_ONLY_OWN;
-	sprintf(str,
+	snprintf(str, sizeof(str),
 			_("File size: %i bytes\n"
 			"Length: %i seconds\n"
 			"Bits/sample: %i\n"

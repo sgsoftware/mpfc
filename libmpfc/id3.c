@@ -359,13 +359,13 @@ void id3_v1_next_frame( id3_tag_data_t *tag, id3_frame_t *frame )
 	case ID3_V1_TRACK_OFFSET:
 		strcpy(frame->m_name, ID3_FRAME_TRACK);
 		frame->m_val = (char *)malloc(4);
-		sprintf(frame->m_val, "%d", (int)*(tag->m_cur_frame));
+		snprintf(frame->m_val, 4, "%d", (int)*(tag->m_cur_frame));
 		tag->m_cur_frame += ID3_V1_TRACK_SIZE;
 		break;
 	case ID3_V1_GENRE_OFFSET:
 		strcpy(frame->m_name, ID3_FRAME_GENRE);
 		frame->m_val = (char *)malloc(4);
-		sprintf(frame->m_val, "%d", (int)*(tag->m_cur_frame));
+		snprintf(frame->m_val, 4, "%d", (int)*(tag->m_cur_frame));
 		tag->m_cur_frame += ID3_V1_GENRE_SIZE;
 		break;
 	default:

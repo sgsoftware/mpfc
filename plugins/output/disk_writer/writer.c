@@ -58,7 +58,7 @@ bool_t dw_start( void )
 	str = cfg_get_var(pmng_get_cfg(dw_pmng), "cur-song-name");
 	if (str == NULL)
 		return FALSE;
-	strcpy(name, str);
+	util_strncpy(name, str, sizeof(name));
 	str = strrchr(name, '.');
 	if (str != NULL)
 		strcpy(str, ".wav");
@@ -67,9 +67,9 @@ bool_t dw_start( void )
 	util_replace_char(name, ':', '_');
 	str = cfg_get_var(pmng_get_cfg(dw_pmng), "disk-writer-path");
 	if (str != NULL)
-		sprintf(full_name, "%s/%s", str, name);
+		snprintf(full_name, sizeof(full_name), "%s/%s", str, name);
 	else
-		sprintf(full_name, "%s", name);
+		snprintf(full_name, sizeof(full_name), "%s", name);
 
 	/* Try to open file */
 	dw_fd = file_open(full_name, "w+b", NULL);

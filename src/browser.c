@@ -100,7 +100,7 @@ bool_t fb_init( browser_t *fb, wnd_t *parent, int x, int y, int w,
 	wnd_register_handler(wnd, WND_MSG_MOUSE_MIDDLE_CLICK, fb_handle_mouse_mdl);
 
 	/* Set fields */
-	strcpy(fb->m_cur_dir, dir);
+	util_strncpy(fb->m_cur_dir, dir, sizeof(fb->m_cur_dir));
 	fb->m_num_files = 0;
 	fb->m_files = NULL;
 	fb->m_cursor = 0;
@@ -379,7 +379,7 @@ void fb_load_files( browser_t *fb )
 
 	/* Find files */
 	memset(&gl, 0, sizeof(gl));
-	sprintf(pattern, "%s*", fb->m_cur_dir);
+	snprintf(pattern, sizeof(pattern), "%s*", fb->m_cur_dir);
 	glob(pattern, GLOB_BRACE | GLOB_TILDE, NULL, &gl);
 
 	/* Add these files */
@@ -471,7 +471,7 @@ void fb_go_to_dir( browser_t *fb )
 		return;
 
 	/* Set new directory name */
-	strcpy(was_dir, fb->m_cur_dir);
+	util_strncpy(was_dir, fb->m_cur_dir, sizeof(was_dir));
 	if (item->m_type & FB_ITEM_UPDIR)
 	{
 		char *s;
@@ -489,7 +489,8 @@ void fb_go_to_dir( browser_t *fb )
 		}
 	}
 	else
-		sprintf(fb->m_cur_dir, "%s/", item->m_full_name);
+		snprintf(fb->m_cur_dir, sizeof(fb->m_cur_dir), "%s/", 
+				item->m_full_name);
 	fb_load_files(fb);
 
 	/* Set cursor */
@@ -587,7 +588,7 @@ void fb_change_dir( browser_t *fb, char *dir )
 	if (fb == NULL)
 		return;
 
-	strcpy(fb->m_cur_dir, dir);
+	util_strncpy(fb->m_cur_dir, dir, sizeof(fb->m_cur_dir));
 	if (fb->m_cur_dir[strlen(fb->m_cur_dir) - 1] != '/')
 		strcat(fb->m_cur_dir, "/");
 	fb_load_files(fb);

@@ -107,7 +107,7 @@ bool_t ogg_start( char *filename )
 	ogg_freq = ogg_vi->rate;
 	ogg_bitrate = 0;
 	ogg_info = NULL;
-	strcpy(ogg_filename, filename);
+	util_strncpy(ogg_filename, filename, sizeof(ogg_filename));
 	return TRUE;
 } /* End of 'ogg_start' function */
 
@@ -119,7 +119,7 @@ void ogg_end( void )
 	ov_clear(&ogg_vf);
 
 	/* Save info if need */
-	strcpy(fname, ogg_filename);
+	util_strncpy(fname, ogg_filename, sizeof(fname));
 	strcpy(ogg_filename, "");
 	ogg_vi = NULL;
 	if (ogg_info != NULL)
@@ -223,7 +223,7 @@ static char **ogg_add_tag( char **list, char *label, char *tag )
 	int i;
 
 	/* Search list for our tag */
-	sprintf(str, "%s=%s", label, tag);
+	snprintf(str, sizeof(str), "%s=%s", label, tag);
 	len = strlen(label) + 1;
 	for ( i = 0; list[i] != NULL; i ++ )
 	{
@@ -311,7 +311,7 @@ void ogg_save_info( char *filename, song_info_t *info )
 	free(comment_list);
 
 	/* Save */
-	sprintf(tmpfn, "%s.XXXXXX", filename);
+	snprintf(tmpfn, sizeof(tmpfn), "%s.XXXXXX", filename);
 	if ((outfd = mkstemp(tmpfn)) < 0)
 	{
 		fclose(in);
@@ -351,7 +351,7 @@ song_info_t *ogg_get_info( char *filename, int *len )
 
 		si = si_new();
 		si->m_flags |= SI_ONLY_OWN;
-		sprintf(own_data, 
+		snprintf(own_data, sizeof(own_data),
 				_("Nominal bitrate: %i kb/s\n"
 				"Samplerate: %i Hz\n"
 				"Channels: %i"),
@@ -392,7 +392,7 @@ song_info_t *ogg_get_info( char *filename, int *len )
 	vi = ov_info(&vf, -1);
 	if (vi != NULL)
 	{
-		sprintf(own_data, 
+		snprintf(own_data, sizeof(own_data),
 				_("Nominal bitrate: %i kb/s\n"
 				"Samplerate: %i Hz\n"
 				"Channels: %i\n"

@@ -158,7 +158,8 @@ bool_t player_init( int argc, char *argv[] )
 	signal(SIGCONT, player_handle_signal);*/
 	
 	/* Initialize configuration */
-	sprintf(player_cfg_file, "%s/.mpfcrc", getenv("HOME"));
+	snprintf(player_cfg_file, sizeof(player_cfg_file), 
+			"%s/.mpfcrc", getenv("HOME"));
 	cfg_init();
 
 	/* Parse command line */
@@ -2313,7 +2314,8 @@ void player_handle_color_scheme( char *name )
 	char fname[MAX_FILE_NAME];
 	
 	/* Read configuration from respective file */
-	sprintf(fname, "~/.mpfc/colors/%s", cfg_get_var(cfg_list, name));
+	snprintf(fname, sizeof(fname), "~/.mpfc/colors/%s", 
+			cfg_get_var(cfg_list, name));
 	cfg_read_rcfile(cfg_list, fname);
 } /* End of 'player_handle_color_scheme' function */
 
@@ -2323,7 +2325,8 @@ void player_handle_kbind_scheme( char *name )
 	char fname[MAX_FILE_NAME];
 	
 	/* Read configuration from respective file */
-	sprintf(fname, "~/.mpfc/kbinds/%s", cfg_get_var(cfg_list, name));
+	snprintf(fname, sizeof(fname), "~/.mpfc/kbinds/%s", 
+			cfg_get_var(cfg_list, name));
 	cfg_read_rcfile(cfg_list, fname);
 } /* End of 'player_handle_kbind_scheme' function */
 

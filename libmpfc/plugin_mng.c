@@ -174,7 +174,7 @@ int pmng_apply_effects( pmng_t *pmng, byte *data, int len, int fmt,
 		char name[256];
 		
 		/* Apply effect plugin if it is enabled */
-		sprintf(name, "enable-effect-%s", pmng->m_ep[i]->m_name);
+		snprintf(name, sizeof(name), "enable-effect-%s", pmng->m_ep[i]->m_name);
 		if (cfg_get_var_int(pmng->m_cfg_list, name))
 			l = ep_apply(pmng->m_ep[i], data, l, fmt, freq, channels);
 	}
@@ -210,22 +210,26 @@ bool_t pmng_load_plugins( pmng_t *pmng )
 
 	/* Load input plugins */
 	data.m_type = PMNG_IN;
-	sprintf(path, "%s/input", cfg_get_var(pmng->m_cfg_list, "lib-dir"));
+	snprintf(path, sizeof(path), "%s/input", 
+			cfg_get_var(pmng->m_cfg_list, "lib-dir"));
 	find_do(path, "*.so", pmng_find_handler, &data);
 
 	/* Load output plugins */
 	data.m_type = PMNG_OUT;
-	sprintf(path, "%s/output", cfg_get_var(pmng->m_cfg_list, "lib-dir"));
+	snprintf(path, sizeof(path), "%s/output", 
+			cfg_get_var(pmng->m_cfg_list, "lib-dir"));
 	find_do(path, "*.so", pmng_find_handler, &data);
 
 	/* Load effect plugins */
 	data.m_type = PMNG_EFFECT;
-	sprintf(path, "%s/effect", cfg_get_var(pmng->m_cfg_list, "lib-dir"));
+	snprintf(path, sizeof(path), "%s/effect", 
+			cfg_get_var(pmng->m_cfg_list, "lib-dir"));
 	find_do(path, "*.so", pmng_find_handler, &data);
 
 	/* Load charset plugins */
 	data.m_type = PMNG_CHARSET;
-	sprintf(path, "%s/charset", cfg_get_var(pmng->m_cfg_list, "lib-dir"));
+	snprintf(path, sizeof(path), "%s/charset", 
+			cfg_get_var(pmng->m_cfg_list, "lib-dir"));
 	find_do(path, "*.so", pmng_find_handler, &data);
 	return TRUE;
 } /* End of 'pmng_load_plugins' function */

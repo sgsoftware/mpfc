@@ -106,7 +106,8 @@ file_t *fhttp_open( file_t *f, char *mode )
 
 		/* Send request for file we need */
 		file_print_msg(f, _("Sending request for file %s"), file_name);
-		sprintf(str, "GET /%s HTTP/1.0\r\nHost: %s\r\nUser-Agent: mpfc/1.0"
+		snprintf(str, sizeof(str), 
+				"GET /%s HTTP/1.0\r\nHost: %s\r\nUser-Agent: mpfc/1.0"
 				"\r\n\r\n", file_name, host_name);
 		if (send(data->m_sock, str, strlen(str) + 1, 0) < 0)
 			goto close;
@@ -412,11 +413,11 @@ char *fhttp_get_field( char *header, int size, char *field )
 	char str[256], *s1, *s2;
 	int len;
 
-	len = sprintf(str, "\r\n%s: ", field);
+	len = snprintf(str, sizeof(str), "\r\n%s: ", field);
 	s1 = strstr(header, str);
 	if (s1 == NULL)
 	{
-		len = sprintf(str, "\r\n%s:", field);
+		len = snprintf(str, sizeof(str), "\r\n%s:", field);
 		s1 = strstr(header, str);
 		if (s1 == NULL)
 			return NULL;

@@ -73,6 +73,9 @@ void util_rem_slashes( char *name );
 /* Get file directory name */
 void util_get_dir_name( char *dir, char *filename );
 
+/* A safe string copying (writes null to the end) */
+char *util_strncpy( char *dest, char *src, size_t n );
+
 #endif
 
 /* End of 'util.h' file */

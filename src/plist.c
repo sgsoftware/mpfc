@@ -1166,7 +1166,7 @@ bool_t plist_add_set( plist_t *pl, plist_set_t *set )
 	{
 		char fname[MAX_FILE_NAME], *filename = node->m_name;
 
-		strcpy(fname, filename);
+		util_strncpy(fname, filename, sizeof(fname));
 		if (file_get_type(filename) == FILE_TYPE_REGULAR && 
 				filename[0] != '/' && filename[0] != '~')
 		{
@@ -1174,8 +1174,8 @@ bool_t plist_add_set( plist_t *pl, plist_set_t *set )
 			char fn[MAX_FILE_NAME];
 			
 			getcwd(wd, sizeof(wd));
-			strcpy(fn, fname);
-			sprintf(fname, "%s/%s", wd, fn);
+			util_strncpy(fn, fname, sizeof(fn));
+			snprintf(fname, sizeof(fname), "%s/%s", wd, fn);
 		}
 
 		/* Find songs */
@@ -1272,7 +1272,10 @@ void plist_set_add( plist_set_t *set, char *name )
 	if (set->m_tail == NULL)
 		set->m_head = set->m_tail = node;
 	else
+	{
 		set->m_tail->m_next = node;
+		set->m_tail = node;
+	}
 } /* End of 'plist_set_add' function */
 
 /* Duplicate set */

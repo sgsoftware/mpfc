@@ -135,7 +135,7 @@ bool_t mp3_start( char *filename )
 	mp3_samples = 0;
 	mp3_seek_val = -1;
 	mp3_bitrate = 0;
-	strcpy(mp3_file_name, filename);
+	util_strncpy(mp3_file_name, filename, sizeof(mp3_file_name));
 
 	/* Read song parameters */
 	memset(&mp3_head, 0, sizeof(mp3_head));
@@ -434,7 +434,7 @@ static song_info_t *mp3_read_info( char *filename, int *len, int *nf )
 		*len = 0;
 		si = si_new();
 		si->m_flags |= SI_ONLY_OWN;
-		sprintf(own_data, 
+		snprintf(own_data, sizeof(own_data),
 			_("MPEG %s, layer %i\n"
 			"Bitrate: %i kb/s\n"
 			"Samplerate: %i Hz\n"
@@ -555,7 +555,7 @@ static song_info_t *mp3_read_info( char *filename, int *len, int *nf )
 		if (nf != NULL)
 			*nf = num_frames;
 		
-		sprintf(own_data, 
+		snprintf(own_data, sizeof(own_data),
 			_("MPEG %s, layer %i\n"
 			"Bitrate: %i kb/s\n"
 			"Samplerate: %i Hz\n"

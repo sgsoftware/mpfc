@@ -47,13 +47,14 @@ bool_t midi_start( char *filename )
 	char cmd[512];
 	
 	/* Run TiMidity */
-	sprintf(cmd, "timidity -id -Or1sl -s 44100 %s -o - 2>/dev/null", filename);
+	snprintf(cmd, sizeof(cmd), 
+			"timidity -id -Or1sl -s 44100 %s -o - 2>/dev/null", filename);
 	midi_pfd = popen(cmd, "r");
 	if (midi_pfd == NULL)
 		return FALSE;
 
 	/* Save file name */
-	strcpy(midi_fname, filename);
+	util_strncpy(midi_fname, filename, sizeof(midi_fname));
 	return TRUE;
 } /* End of 'midi_start' function */
 

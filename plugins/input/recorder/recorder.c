@@ -173,7 +173,7 @@ song_t **rec_init_obj_songs( char *name, int *num_songs )
 	(*num_songs) = 1;
 	s = (song_t **)malloc(sizeof(song_t *));
 	s[0] = (song_t *)malloc(sizeof(song_t));
-	sprintf(s[0]->m_file_name, "recorder:%s", name);
+	snprintf(s[0]->m_file_name, sizeof(s[0]->m_file_name), "recorder:%s", name);
 	s[0]->m_title = rec_set_song_title(s[0]->m_file_name);
 	s[0]->m_len = 0;
 	s[0]->m_info = NULL;
