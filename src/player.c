@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG MPFC. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 23.04.2004
+ * LAST UPDATE : 5.08.2004
  * NOTE        : Module prefix 'player'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -32,29 +32,22 @@
 #include <unistd.h>
 #include "types.h"
 #include "browser.h"
-#include "button.h"
 #include "cfg.h"
-#include "choice_ctrl.h"
 #include "colors.h"
-#include "combobox.h"
-#include "dlgbox.h"
-#include "editbox.h"
 #include "eqwnd.h"
 #include "error.h"
-#include "file_input.h"
+#include "file.h"
 #include "help_screen.h"
 #include "history.h"
 #include "iwt.h"
 #include "key_bind.h"
-#include "label.h"
-#include "listbox.h"
-#include "menu.h"
 #include "player.h"
 #include "plist.h"
 #include "pmng.h"
 #include "sat.h"
 #include "undo.h"
 #include "util.h"
+#include "wnd.h"
 
 /* Files for player to play */
 int player_num_files = 0;
@@ -148,6 +141,15 @@ char player_cfg_file[MAX_FILE_NAME] = "";
 /* Previous file browser session directory name */
 char player_fb_dir[MAX_FILE_NAME] = "";
 
+/* Root window */
+wnd_t *wnd_root = NULL;
+
+/* Play list window */
+wnd_t *player_wnd = NULL;
+
+/* Configuration list */
+cfg_node_t *cfg_list = NULL;
+
 /* Initialize player */
 bool_t player_init( int argc, char *argv[] )
 {
@@ -161,27 +163,29 @@ bool_t player_init( int argc, char *argv[] )
 	/* Initialize configuration */
 	snprintf(player_cfg_file, sizeof(player_cfg_file), 
 			"%s/.mpfcrc", getenv("HOME"));
-	cfg_init();
+	if (!player_init_cfg())
+		return FALSE;
 
 	/* Parse command line */
 	if (!player_parse_cmd_line(argc, argv))
 		return FALSE;
 
-	/* Create screen window */
-	if (wnd_new_root() == NULL)
-	{
+	/* Initialize window system */
+	wnd_root = wnd_init(cfg_list);
+	if (wnd_root == NULL)
 		return FALSE;
-	}
-	wnd_register_handler(wnd_root, WND_MSG_DISPLAY, 
-			player_display);
-	wnd_register_handler(wnd_root, WND_MSG_KEYDOWN, 
-			player_handle_key);
-	wnd_register_handler(wnd_root, WND_MSG_MOUSE_LEFT_CLICK,
-			player_handle_mouse_click);
-	wnd_register_handler(wnd_root, WND_MSG_MOUSE_LEFT_DOUBLE,
-			player_handle_mouse_double);
-	wnd_register_handler(wnd_root, WND_MSG_MOUSE_MIDDLE_CLICK,
-			player_handle_mouse_middle);
+
+	/* Create window for play list */
+	player_wnd = wnd_new("Play list", wnd_root, 0, 0, 0, 0, 
+			WND_FLAG_FULL_BORDER | WND_FLAG_MAXIMIZED);
+	wnd_msg_add_handler(&player_wnd->m_on_display, player_on_display);
+	wnd_msg_add_handler(&player_wnd->m_on_keydown, player_on_keydown);
+	wnd_msg_add_handler(&player_wnd->m_on_close, player_on_close);
+	wnd_msg_add_handler(&player_wnd->m_on_mouse_ldown, player_on_mouse_ldown);
+	wnd_msg_add_handler(&player_wnd->m_on_mouse_mdown, player_on_mouse_mdown);
+	wnd_msg_add_handler(&player_wnd->m_on_mouse_ldouble, 
+			player_on_mouse_ldouble);
+	player_wnd->m_cursor_hidden = TRUE;
 
 	/* Initialize key bindings */
 	kbind_init();
@@ -284,7 +288,7 @@ bool_t player_init( int argc, char *argv[] )
 void player_deinit( void )
 {
 	int i;
-	
+
 	/* Save information about place in song where we stop */
 	cfg_set_var_int(cfg_list, "cur-song", 
 			player_plist->m_cur_song);
@@ -334,10 +338,6 @@ void player_deinit( void )
 		player_search_string = NULL;
 	}
 	
-	/* Destroy screen window */
-	wnd_destroy(wnd_root);
-	wnd_root = NULL;
-	
 	/* Destroy all objects */
 	if (player_plist != NULL)
 	{
@@ -352,7 +352,7 @@ void player_deinit( void )
 	player_ul = NULL;
 
 	/* Uninitialize configuration manager */
-	cfg_free();
+	cfg_free_node(cfg_list);
 	cfg_list = NULL;
 } /* End of 'player_deinit' function */
 
@@ -360,7 +360,9 @@ void player_deinit( void )
 bool_t player_run( void )
 {
 	/* Run window message loop */
-	wnd_run(wnd_root);
+	wnd_main(wnd_root);
+	wnd_root = NULL;
+	player_wnd = NULL;
 	return TRUE;
 } /* End of 'player_run' function */
 
@@ -427,23 +429,24 @@ bool_t player_parse_cmd_line( int argc, char *argv[] )
 } /* End of 'player_parse_cmd_line' function */
 
 /* Handle key function */
-void player_handle_key( wnd_t *wnd, dword data )
+wnd_msg_retcode_t player_on_keydown( wnd_t *wnd, wnd_key_t *keycode )
 {
-	kbind_key2buf((int)data);
+	if (!keycode->m_alt)
+		kbind_key2buf(keycode->m_key);
+	return WND_MSG_RETCODE_OK;
 } /* End of 'player_handle_key' function */
 
-/* Handle mouse left button click */
-void player_handle_mouse_click( wnd_t *wnd, dword data )
+/* Handle left-button click */
+wnd_msg_retcode_t player_on_mouse_ldown( wnd_t *wnd, int x, int y,
+		wnd_mouse_button_t btn, wnd_mouse_event_t type )
 {
-	int x = WND_MOUSE_X(data), y = WND_MOUSE_Y(data);
-
 	/* Move cursor in play list */
 	if (y >= player_plist->m_start_pos && 
 			y < player_plist->m_start_pos + PLIST_HEIGHT)
 	{
 		plist_move(player_plist, y - player_plist->m_start_pos + 
 				player_plist->m_scrolled, FALSE);
-		wnd_send_msg(wnd, WND_MSG_DISPLAY, 0);
+		wnd_invalidate(wnd);
 	}
 	/* Set volume */
 	else if (y == PLAYER_SLIDER_VOL_Y && x >= PLAYER_SLIDER_VOL_X &&
@@ -451,7 +454,7 @@ void player_handle_mouse_click( wnd_t *wnd, dword data )
 	{
 		player_set_vol((x - PLAYER_SLIDER_VOL_X) * 100 / 
 				PLAYER_SLIDER_VOL_W, FALSE);
-		wnd_send_msg(wnd, WND_MSG_DISPLAY, 0);
+		wnd_invalidate(wnd);
 	}
 	/* Set balance */
 	else if (y == PLAYER_SLIDER_BAL_Y && x >= PLAYER_SLIDER_BAL_X &&
@@ -459,7 +462,7 @@ void player_handle_mouse_click( wnd_t *wnd, dword data )
 	{
 		player_set_bal((x - PLAYER_SLIDER_BAL_X) * 100 / 
 				PLAYER_SLIDER_BAL_W, FALSE);
-		wnd_send_msg(wnd, WND_MSG_DISPLAY, 0);
+		wnd_invalidate(wnd);
 	}
 	/* Set time */
 	else if (y == PLAYER_SLIDER_TIME_Y && x >= PLAYER_SLIDER_TIME_X &&
@@ -472,17 +475,32 @@ void player_handle_mouse_click( wnd_t *wnd, dword data )
 			{
 				player_seek((x - PLAYER_SLIDER_TIME_X) * 
 						s->m_len / PLAYER_SLIDER_TIME_W, FALSE);
-				wnd_send_msg(wnd, WND_MSG_DISPLAY, 0);
+				wnd_invalidate(wnd);
 			}
 		}
 	}
-} /* End of 'player_handle_mouse_click' function */
+	return WND_MSG_RETCODE_OK;
+} /* End of 'player_on_mouse_ldown' function */
 
-/* Handle mouse left button double click */
-void player_handle_mouse_double( wnd_t *wnd, dword data )
+/* Handle middle-button click */
+wnd_msg_retcode_t player_on_mouse_mdown( wnd_t *wnd, int x, int y,
+		wnd_mouse_button_t btn, wnd_mouse_event_t type )
 {
-	int x = WND_MOUSE_X(data), y = WND_MOUSE_Y(data);
+	/* Centrize this song */
+	if (y >= player_plist->m_start_pos && 
+			y < player_plist->m_start_pos + PLIST_HEIGHT)
+	{
+		plist_centrize(player_plist, y - player_plist->m_start_pos + 
+				player_plist->m_scrolled);
+		wnd_invalidate(wnd);
+	}
+	return WND_MSG_RETCODE_OK;
+} /* End of 'player_on_mouse_mdown' function */
 
+/* Handle left-button double click */
+wnd_msg_retcode_t player_on_mouse_ldouble( wnd_t *wnd, int x, int y,
+		wnd_mouse_button_t btn, wnd_mouse_event_t type )
+{
 	/* Play song */
 	if (y >= player_plist->m_start_pos && 
 			y < player_plist->m_start_pos + PLIST_HEIGHT)
@@ -493,53 +511,51 @@ void player_handle_mouse_double( wnd_t *wnd, dword data )
 		{
 			player_status = PLAYER_STATUS_PLAYING;
 			player_play(s, 0);
-			wnd_send_msg(wnd, WND_MSG_DISPLAY, 0);
+			wnd_invalidate(wnd);
 		}
 	}
-} /* End of 'player_handle_mouse_double' function */
+	return WND_MSG_RETCODE_OK;
+} /* End of 'player_on_mouse_ldouble' function */
 
 /* Display player function */
-void player_display( wnd_t *wnd, dword data )
+wnd_msg_retcode_t player_on_display( wnd_t *wnd )
 {
 	int i;
 	song_t *s = NULL;
 	char aparams[256];
 
-	/* Clear the screen */
-	//wnd_clear(wnd, FALSE);
-	
 	/* Display head */
-	wnd_move(wnd, 0, 0);
+	wnd_move(wnd, 0, 0, 0);
 	if (player_plist->m_cur_song == -1)
 	{
 		/* Print about */
-		wnd_advance(wnd, 0, 0);
+		wnd_move(wnd, 0, 0, 0);
 		col_set_color(wnd, COL_EL_ABOUT);
-		wnd_printf(wnd, _("SG Software Media Player For Console"));
+		wnd_printf(wnd, 0, 0, _("SG Software Media Player For Console"));
 		col_set_color(wnd, COL_EL_DEFAULT);
 		
 		/* Print shuffle mode */
 		if (cfg_get_var_int(cfg_list, "shuffle-play"))
 		{
-			wnd_advance(wnd, WND_WIDTH(wnd) - 13, 0);
+			wnd_move(wnd, 0, WND_WIDTH(wnd) - 13, 0);
 			col_set_color(wnd, COL_EL_PLAY_MODES);
-			wnd_printf(wnd, "Shuffle");
+			wnd_printf(wnd, 0, 0, "Shuffle");
 			col_set_color(wnd, COL_EL_DEFAULT);
 		}
 		
 		/* Print loop mode */
 		if (cfg_get_var_int(cfg_list, "loop-play"))
 		{
-			wnd_advance(wnd, WND_WIDTH(wnd) - 5, 0);
+			wnd_move(wnd, 0, WND_WIDTH(wnd) - 5, 0);
 			col_set_color(wnd, COL_EL_PLAY_MODES);
-			wnd_printf(wnd, "Loop");
+			wnd_printf(wnd, 0, 0, "Loop");
 			col_set_color(wnd, COL_EL_DEFAULT);
 		}
 
 		/* Print version */
-		wnd_advance(wnd, 0, 1);
+		wnd_move(wnd, 0, 0, 1);
 		col_set_color(wnd, COL_EL_ABOUT);
-		wnd_printf(wnd, _("version %s"), VERSION);
+		wnd_printf(wnd, 0, 0, _("version %s"), VERSION);
 		col_set_color(wnd, COL_EL_DEFAULT);
 	}
 	else
@@ -549,36 +565,36 @@ void player_display( wnd_t *wnd, dword data )
 		
 		/* Print current song title */
 		s = player_plist->m_list[player_plist->m_cur_song];
-		wnd_advance(wnd, 0, 0);
+		wnd_move(wnd, 0, 0, 0);
 		col_set_color(wnd, COL_EL_CUR_TITLE);
-		wnd_printf_bound(wnd, WND_WIDTH(wnd) - 1, WND_PRINT_ELLIPSES, "%s", 
+		wnd_printf(wnd, WND_PRINT_ELLIPSES, WND_WIDTH(wnd) - 1, "%s", 
 				STR_TO_CPTR(s->m_title));
 		col_set_color(wnd, COL_EL_DEFAULT);
 
 		/* Print shuffle mode */
 		if (cfg_get_var_int(cfg_list, "shuffle-play"))
 		{
-			wnd_advance(wnd, WND_WIDTH(wnd) - 13, 0);
+			wnd_move(wnd, 0, WND_WIDTH(wnd) - 13, 0);
 			col_set_color(wnd, COL_EL_PLAY_MODES);
-			wnd_printf(wnd, "Shuffle");
+			wnd_printf(wnd, 0, 0, "Shuffle");
 			col_set_color(wnd, COL_EL_DEFAULT);
 		}
 
 		/* Print loop mode */
 		if (cfg_get_var_int(cfg_list, "loop-play"))
 		{
-			wnd_advance(wnd, WND_WIDTH(wnd) - 5, 0);
+			wnd_move(wnd, 0, WND_WIDTH(wnd) - 5, 0);
 			col_set_color(wnd, COL_EL_PLAY_MODES);
-			wnd_printf(wnd, "Loop");
+			wnd_printf(wnd, 0, 0, "Loop");
 			col_set_color(wnd, COL_EL_DEFAULT);
 		}
 
 		/* Print current time */
 		t = (show_rem = cfg_get_var_int(cfg_list, "show-time-remaining")) ? 
 			s->m_len - player_cur_time : player_cur_time;
-		wnd_advance(wnd, 0, 1);
+		wnd_move(wnd, 0, 0, 1);
 		col_set_color(wnd, COL_EL_CUR_TIME);
-		wnd_printf(wnd, "%s%i:%02i/%i:%02i\n", 
+		wnd_printf(wnd, 0, 0, "%s%i:%02i/%i:%02i\n", 
 				show_rem ? "-" : "", t / 60, t % 60,
 				s->m_len / 60, s->m_len % 60);
 		col_set_color(wnd, COL_EL_DEFAULT);
@@ -593,13 +609,13 @@ void player_display( wnd_t *wnd, dword data )
 	if (player_stereo)
 		sprintf(aparams, "%s%s", aparams, 
 				(player_stereo == PLAYER_STEREO) ? "stereo" : "mono");
-	wnd_advance(wnd, PLAYER_SLIDER_BAL_X - strlen(aparams) - 1, 
+	wnd_move(wnd, 0, PLAYER_SLIDER_BAL_X - strlen(aparams) - 1, 
 			PLAYER_SLIDER_BAL_Y);
 	col_set_color(wnd, COL_EL_AUDIO_PARAMS);
-	wnd_printf(wnd, "%s", aparams);
+	wnd_printf(wnd, 0, 0, "%s", aparams);
 	col_set_color(wnd, COL_EL_DEFAULT);
 
-	/* Display different slidebars */
+	/* Display various slidebars */
 	player_display_slider(wnd, PLAYER_SLIDER_BAL_X, PLAYER_SLIDER_BAL_Y,
 			PLAYER_SLIDER_BAL_W, player_balance, 100.);
 	player_display_slider(wnd, PLAYER_SLIDER_TIME_X, PLAYER_SLIDER_TIME_Y, 
@@ -613,17 +629,15 @@ void player_display( wnd_t *wnd, dword data )
 	/* Print message */
 	if (player_msg != NULL)
 	{
-		wnd_advance(wnd, 0, WND_HEIGHT(wnd) - 1);
+		wnd_move(wnd, 0, 0, WND_HEIGHT(wnd) - 1);
 		col_set_color(wnd, COL_EL_STATUS);
-		wnd_printf(wnd, "%s", player_msg);
+		wnd_printf(wnd, 0, 0, "%s", player_msg);
 		col_set_color(wnd, COL_EL_DEFAULT);
 	}
-
-	/* Hide cursor */
-	col_set_color(wnd, COL_EL_DEFAULT);
-	wnd_advance(wnd, WND_WIDTH(wnd), WND_HEIGHT(wnd));
+	return WND_MSG_RETCODE_OK;
 } /* End of 'player_display' function */
 
+#if 0
 /* Key handler function for command repeat value edit box */
 void player_repval_handle_key( wnd_t *wnd, dword data )
 {
@@ -659,6 +673,7 @@ void player_repval_handle_key( wnd_t *wnd, dword data )
 	else 
 		wnd_send_msg(wnd, WND_MSG_CLOSE, 0);
 } /* End of 'player_repval_handle_key' function */
+#endif
 
 /* Seek song */
 void player_seek( int sec, bool_t rel )
@@ -679,7 +694,7 @@ void player_seek( int sec, bool_t rel )
 
 	inp_seek(song_get_inp(s), new_time);
 	player_cur_time = new_time;
-	wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
+	wnd_invalidate(player_wnd);
 } /* End of 'player_seek' function */
 
 /* Play song */
@@ -758,7 +773,7 @@ void *player_thread( void *arg )
 			player_next_track();
 			error_set_code(ERROR_UNKNOWN_FILE_TYPE);
 			player_print_msg("%s", error_text);
-			wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
+			wnd_invalidate(player_wnd);
 			continue;
 		}
 		if (player_cur_time > 0)
@@ -780,7 +795,7 @@ void *player_thread( void *arg )
 //			wnd_send_msg(wnd_root, WND_MSG_USER, PLAYER_MSG_END_TRACK);
 			inp_end(inp);
 			player_status = PLAYER_STATUS_STOPPED;
-			wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
+			wnd_invalidate(player_wnd);
 			continue;
 		}
 
@@ -842,7 +857,7 @@ void *player_thread( void *arg )
 								"audio-params-display-count");
 						if (!disp_count)
 							disp_count = 20;
-						wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
+						wnd_invalidate(player_wnd);
 					}
 					disp_count --;
 					if (disp_count < 0)
@@ -905,7 +920,7 @@ void *player_thread( void *arg )
 			outp_end(player_pmng->m_cur_out);
 
 		/* Update screen */
-		wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
+		wnd_invalidate(player_wnd);
 	}
 	return NULL;
 } /* End of 'player_thread' function */
@@ -952,13 +967,13 @@ void *player_timer_func( void *arg )
 				{
 					player_cur_time += (new_t - t);
 					t = new_t;
-					wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
+					wnd_invalidate(player_wnd);
 				}
 			}
 			else if (tm - player_cur_time)
 			{
 				player_cur_time = tm;
-				wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
+				wnd_invalidate(player_wnd);
 			}
 		}
 
@@ -974,6 +989,7 @@ void *player_timer_func( void *arg )
 	return NULL;
 } /* End of 'player_timer_func' function */
 
+#if 0
 /* Process add file dialog */
 void player_add_dialog( void )
 {
@@ -1345,17 +1361,7 @@ void player_info_dialog( void )
 	
 	wnd_destroy(dlg);
 } /* End of 'player_info_dialog' function */
-
-/* Show help screen */
-void player_help( void )
-{
-	help_screen_t *h;
-
-	h = help_new(wnd_root, HELP_PLAYER, 0, 0, WND_WIDTH(wnd_root), 
-			WND_HEIGHT(wnd_root));
-	wnd_run(h);
-	wnd_destroy(h);
-} /* End of 'player_help' function */
+#endif
 
 /* Go to next track */
 void player_next_track( void )
@@ -1394,28 +1400,18 @@ void player_display_slider( wnd_t *wnd, int x, int y, int width,
 {
 	int i, slider_pos;
 	
-	wnd_advance(wnd, x, y);
+	wnd_move(wnd, 0, x, y);
 	slider_pos = (range) ? (pos * width / range) : 0;
 	col_set_color(wnd, COL_EL_SLIDER);
 	for ( i = 0; i <= width; i ++ )
 	{
 		if (i == slider_pos)
-			wnd_printf(wnd, "O");
+			wnd_printf(wnd, 0, 0, "O");
 		else 
-			wnd_printf(wnd, "=");
+			wnd_printf(wnd, 0, 0, "=");
 	}
 	col_set_color(wnd, COL_EL_DEFAULT);
 } /* End of 'player_display_slider' function */
-
-/* Process equalizer dialog */
-void player_eq_dialog( void )
-{
-	eq_wnd_t *wnd;
-
-	wnd = eqwnd_new(wnd_root, 0, 0, WND_WIDTH(wnd_root), WND_HEIGHT(wnd_root));
-	wnd_run(wnd);
-	wnd_destroy(wnd);
-} /* End of 'player_eq_dialog' function */
 
 /* Skip some songs */
 int player_skip_songs( int num, bool_t play )
@@ -1469,6 +1465,7 @@ int player_skip_songs( int num, bool_t play )
 	return song;
 } /* End of 'player_skip_songs' function */
 
+#if 0
 /* Launch variables manager */
 void player_var_manager( void )
 {
@@ -1546,12 +1543,13 @@ void player_add_obj_dialog( void )
 		wnd_destroy(ebox);
 	}
 } /* End of 'player_add_obj_dialog' function */
+#endif
 
 /* Handle action */
 void player_handle_action( int action )
 {
 	char str[10];
-	editbox_t *ebox;
+//	editbox_t *ebox;
 	bool_t dont_change_repval = FALSE;
 	int was_pos;
 	int was_song, was_time;
@@ -1566,12 +1564,12 @@ void player_handle_action( int action )
 	{
 	/* Exit MPFC */
 	case KBIND_QUIT:
-		wnd_send_msg(wnd_root, WND_MSG_CLOSE, 0);
+		wnd_close(wnd_root);
 		break;
 
 	/* Show help screen */
 	case KBIND_HELP:
-		player_help();
+		help_new(wnd_root, HELP_PLAYER);
 		break;
 
 	/* Move cursor */
@@ -1685,42 +1683,42 @@ void player_handle_action( int action )
 
 	/* Add a file */
 	case KBIND_ADD:
-		player_add_dialog();
+//		player_add_dialog();
 		break;
 
 	/* Add an object */
 	case KBIND_ADD_OBJ:
-		player_add_obj_dialog();
+//		player_add_obj_dialog();
 		break;
 
 	/* Save play list */
 	case KBIND_SAVE:
-		player_save_dialog();
+//		player_save_dialog();
 		break;
 
 	/* Remove song(s) */
 	case KBIND_REM:
-		player_rem_dialog();
+//		player_rem_dialog();
 		break;
 
 	/* Sort play list */
 	case KBIND_SORT:
-		player_sort_dialog();
+//		player_sort_dialog();
 		break;
 
 	/* Song info dialog */
 	case KBIND_INFO:
-		player_info_dialog();
+//		player_info_dialog();
 		break;
 
 	/* Search */
 	case KBIND_SEARCH:
-		player_search_dialog(PLIST_SEARCH_TITLE);
+//		player_search_dialog(PLIST_SEARCH_TITLE);
 		break;
 
 	/* Advanced search */
 	case KBIND_ADVANCED_SEARCH:
-		player_advanced_search_dialog();
+//		player_advanced_search_dialog();
 		break;
 
 	/* Find next/previous search match */
@@ -1736,7 +1734,7 @@ void player_handle_action( int action )
 
 	/* Show equalizer dialog */
 	case KBIND_EQUALIZER:
-		player_eq_dialog();
+		eqwnd_new(wnd_root);
 		break;
 
 	/* Set/unset shuffle mode */
@@ -1753,10 +1751,10 @@ void player_handle_action( int action )
 
 	/* Variables manager */
 	case KBIND_VAR_MANAGER:
-		player_var_manager();
+//		player_var_manager();
 		break;
 	case KBIND_VAR_MINI_MANAGER:
-		player_var_mini_mngr();
+//		player_var_mini_mngr();
 		break;
 
 	/* Move play list */
@@ -1783,7 +1781,7 @@ void player_handle_action( int action )
 
 	/* Reload info */
 	case KBIND_RELOAD_INFO:
-		player_info_reload_dialog();
+//		player_info_reload_dialog();
 		break;
 
 	/* Set play boundaries */
@@ -1807,7 +1805,7 @@ void player_handle_action( int action )
 
 	/* Execute outer command */
 	case KBIND_EXEC:
-		player_exec();
+//		player_exec();
 		break;
 
 	/* Go back */
@@ -1887,9 +1885,10 @@ void player_handle_action( int action )
 
 	/* Launch file browser */
 	case KBIND_FILE_BROWSER:
-		player_file_browser();
+		fb_new(wnd_root, player_fb_dir);
 		break;
 
+#if 0
 	/* Digit means command repeation value edit */
 	case KBIND_DIG_1:
 	case KBIND_DIG_2:
@@ -1926,6 +1925,7 @@ void player_handle_action( int action )
 			wnd_destroy(ebox);
 		}
 		break;
+#endif
 	}
 
 	/* Flush repeat value */
@@ -1944,6 +1944,7 @@ void player_handle_action( int action )
 	}
 } /* End of 'player_handle_action' function */
 
+#if 0
 /* Launch variables mini-manager */
 void player_var_mini_mngr( void )
 {
@@ -2076,25 +2077,23 @@ void player_var_mngr_notify( wnd_t *wnd, dword data )
 		wnd_destroy(d);
 	}
 } /* End of 'player_var_mngr_notify' function */
+#endif
 
 /* Save variables to main configuration file */
 void player_save_cfg_vars( cfg_list_t *list, char *vars )
 {
 	char *name;
-	cfg_list_t *tlist;
+	cfg_node_t *tlist;
 	int i, j;
 	
 	if (list == NULL)
 		return;
 
 	/* Initialize variables with initial values */
-	tlist = (cfg_list_t *)malloc(sizeof(cfg_list_t));
-	tlist->m_vars = NULL;
-	tlist->m_num_vars = 0;
-	tlist->m_db = NULL;
+	tlist = cfg_new_list(NULL, "root", 0, 0);
 
 	/* Read rc file */
-	cfg_read_rcfile(tlist, player_cfg_file);
+	player_read_rcfile(tlist, player_cfg_file);
 
 	/* Update variables */
 	for ( i = 0, j = 0;; i ++ )
@@ -2115,12 +2114,13 @@ void player_save_cfg_vars( cfg_list_t *list, char *vars )
 	player_save_cfg_list(tlist, player_cfg_file);
 
 	/* Free temporary list */
-	cfg_free_list(tlist);
+	cfg_free_node(tlist);
 } /* End of 'player_save_cfg_vars' function */
 
 /* Save configuration list */
 void player_save_cfg_list( cfg_list_t *list, char *fname )
 {
+#if 0
 	FILE *fd;
 	int i;
 
@@ -2142,6 +2142,7 @@ void player_save_cfg_list( cfg_list_t *list, char *fname )
 
 	/* Close file */
 	fclose(fd);
+#endif
 } /* End of 'player_save_cfg_list' function */
 
 /* Set balance */
@@ -2173,6 +2174,7 @@ void player_update_vol( void )
 	outp_set_volume(player_pmng->m_cur_out, l, r);
 } /* End of 'player_update_vol' function */
 
+#if 0
 /* Execute a command */
 void player_exec( void )
 {
@@ -2201,6 +2203,7 @@ void player_exec( void )
 		wnd_destroy(ebox);
 	}
 } /* End of 'player_exec' function */
+#endif
 
 /* Set mark */
 void player_set_mark( char m )
@@ -2226,6 +2229,7 @@ void player_go_back( void )
 	}
 } /* End of 'player_go_back' function */
 
+#if 0
 /* Advanced search dialog */
 void player_advanced_search_dialog( void )
 {
@@ -2270,23 +2274,26 @@ void player_advanced_search_dialog( void )
 	}
 	player_search_dialog(t);
 } /* End of 'player_advanced_search_dialog' function */
+#endif
 
 /* Handle 'title_format' variable setting */
-void player_handle_var_title_format( char *name )
+bool_t player_handle_var_title_format( cfg_node_t *var, char *value )
 {
 	int i;
 
 	for ( i = 0; i < player_plist->m_len; i ++ )
 		song_update_title(player_plist->m_list[i]);
-	wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
+	wnd_invalidate(wnd_root);
+	return TRUE;
 } /* End of 'player_handle_var_title_format' function */
 
 /* Handle 'output_plugin' variable setting */
-void player_handle_var_outp( char *name )
+bool_t player_handle_var_outp( cfg_node_t *var, char *value )
 {
 	int i;
+
 	if (player_pmng == NULL)
-		return;
+		return TRUE;
 
 	/* Choose new output plugin */
 	for ( i = 0; i < player_pmng->m_num_outp; i ++ )
@@ -2296,6 +2303,7 @@ void player_handle_var_outp( char *name )
 			player_pmng->m_cur_out = player_pmng->m_outp[i];
 			break;
 		}
+	return TRUE;
 } /* End of 'player_handle_var_outp' function */
 
 /* Return to the last time */
@@ -2326,31 +2334,34 @@ void player_print_msg( char *fmt, ... )
 			len *= 2;
 		player_msg = (char *)realloc(player_msg, len);
 	}
-	wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
+	wnd_invalidate(player_wnd);
 } /* End of 'player_print_msg' function */
 
 /* Handle 'color-scheme' variable setting */
-void player_handle_color_scheme( char *name )
+bool_t player_handle_color_scheme( cfg_node_t *node, char *value )
 {
 	char fname[MAX_FILE_NAME];
 	
 	/* Read configuration from respective file */
-	snprintf(fname, sizeof(fname), "~/.mpfc/colors/%s", 
-			cfg_get_var(cfg_list, name));
-	cfg_read_rcfile(cfg_list, fname);
+	snprintf(fname, sizeof(fname), "%s/.mpfc/colors/%s", 
+			getenv("HOME"), cfg_get_var(cfg_list, node->m_name));
+	player_read_rcfile(cfg_list, fname);
+	return TRUE;
 } /* End of 'player_handle_color_scheme' function */
 
 /* Handle 'kbind-scheme' variable setting */
-void player_handle_kbind_scheme( char *name )
+bool_t player_handle_kbind_scheme( cfg_node_t *node, char *value )
 {
 	char fname[MAX_FILE_NAME];
 	
 	/* Read configuration from respective file */
-	snprintf(fname, sizeof(fname), "~/.mpfc/kbinds/%s", 
-			cfg_get_var(cfg_list, name));
-	cfg_read_rcfile(cfg_list, fname);
+	snprintf(fname, sizeof(fname), "%s/.mpfc/kbinds/%s", 
+			getenv("HOME"), cfg_get_var(cfg_list, node->m_name));
+	player_read_rcfile(cfg_list, fname);
+	return TRUE;
 } /* End of 'player_handle_kbind_scheme' function */
 
+#if 0
 /* Info reload dialog */
 void player_info_reload_dialog( void )
 {
@@ -2441,21 +2452,6 @@ void player_update_info_dlg( wnd_t *wnd )
 			info->m_own_data);
 } /* End of 'player_update_info_dlg' function */
 
-/* Handle mouse middle button click */
-void player_handle_mouse_middle( wnd_t *wnd, dword data )
-{
-	int x = WND_MOUSE_X(data), y = WND_MOUSE_Y(data);
-
-	/* Centrize this song */
-	if (y >= player_plist->m_start_pos && 
-			y < player_plist->m_start_pos + PLIST_HEIGHT)
-	{
-		plist_centrize(player_plist, y - player_plist->m_start_pos + 
-				player_plist->m_scrolled);
-		wnd_send_msg(wnd, WND_MSG_DISPLAY, 0);
-	}
-} /* End of 'player_handle_mouse_middle' function */
-
 /* Save currently opened info editor dialog */
 void player_save_info_dlg( wnd_t *wnd )
 {
@@ -2520,19 +2516,7 @@ void player_save_info_dlg( wnd_t *wnd )
 			break;
 	}
 } /* End of 'player_save_info_dlg' function */
-
-/* Launch file browser */
-void player_file_browser( void )
-{
-	browser_t *fb;
-
-	/* Create browser and run it */
-	fb = fb_new(wnd_root, 0, 0, WND_WIDTH(wnd_root), WND_HEIGHT(wnd_root) - 1,
-			player_fb_dir);
-	wnd_run(fb);
-	util_strncpy(player_fb_dir, fb->m_cur_dir, sizeof(player_fb_dir));
-	wnd_destroy(fb);
-} /* End of 'player_file_browser' function */
+#endif
 
 /* Set a new search string */
 void player_set_search_string( char *str )
@@ -2548,6 +2532,149 @@ void player_handle_signal( int signum )
 	if (signum == SIGINT || signum == SIGTERM)
 		player_deinit();
 } /* End of 'player_handle_signal' function */
+
+/* Initialize configuration */
+bool_t player_init_cfg( void )
+{
+	/* Initialize root configuration list and variables handlers */
+	cfg_list = cfg_new_list(NULL, "", CFG_NODE_BIG_LIST, 0);
+	cfg_new_var(cfg_list, "cur-song", CFG_NODE_RUNTIME, NULL, NULL);
+	cfg_new_var(cfg_list, "cur-song-name", CFG_NODE_RUNTIME, NULL, NULL);
+	cfg_new_var(cfg_list, "cur-time", CFG_NODE_RUNTIME, NULL, NULL);
+	cfg_new_var(cfg_list, "player-status", CFG_NODE_RUNTIME, NULL, NULL);
+	cfg_new_var(cfg_list, "player-start", CFG_NODE_RUNTIME, NULL, NULL);
+	cfg_new_var(cfg_list, "player-end", CFG_NODE_RUNTIME, NULL, NULL);
+	cfg_new_var(cfg_list, "title-format", 0, NULL, 
+			player_handle_var_title_format);
+	cfg_new_var(cfg_list, "output-plugin", 0, NULL, 
+			player_handle_var_outp);
+	cfg_new_var(cfg_list, "color-scheme", 0, NULL,
+			player_handle_color_scheme);
+	cfg_new_var(cfg_list, "kbind-scheme", 0, NULL, 
+			player_handle_kbind_scheme);
+
+	/* Set default variable values */
+	cfg_set_var(cfg_list, "output-plugin", "oss");
+	cfg_set_var_int(cfg_list, "mp3-quick-get-len", 1);
+	cfg_set_var_int(cfg_list, "save-playlist-on-exit", 1);
+	cfg_set_var_int(cfg_list, "play-from-stop", 1);
+	cfg_set_var(cfg_list, "lib-dir", LIBDIR"/mpfc");
+	cfg_set_var_int(cfg_list, "echo-delay", 500);
+	cfg_set_var_int(cfg_list, "echo-volume", 50);
+	cfg_set_var_int(cfg_list, "echo-feedback", 50);
+	cfg_set_var_int(cfg_list, "fb-fname-len", 0);
+	cfg_set_var_int(cfg_list, "fb-artist-len", 15);
+	cfg_set_var_int(cfg_list, "fb-title-len", 30);
+	cfg_set_var_int(cfg_list, "fb-album-len", 21);
+	cfg_set_var_int(cfg_list, "fb-year-len", 4);
+	cfg_set_var_int(cfg_list, "fb-comments-len", 0);
+	cfg_set_var_int(cfg_list, "fb-genre-len", 0);
+	cfg_set_var_int(cfg_list, "fb-track-len", 0);
+	cfg_set_var_int(cfg_list, "fb-time-len", 5);
+
+	/* Read rc file from home directory and from current directory */
+	player_read_rcfile(cfg_list, "/etc/mpfcrc");
+	player_read_rcfile(cfg_list, player_cfg_file);
+	player_read_rcfile(cfg_list, ".mpfcrc");
+	return TRUE;
+} /* End of 'player_init_cfg' function */
+
+/* Read configuration file */
+void player_read_rcfile( cfg_node_t *list, char *name )
+{
+	file_t *fd;
+
+	assert(list);
+	assert(name);
+
+	/* Try to open file */
+	fd = file_open(name, "rt", NULL);
+	if (fd == NULL)
+		return;
+
+	/* Read */
+	while (!file_eof(fd))
+	{
+		str_t *str;
+		
+		/* Read line */
+		str = file_get_str(fd);
+
+		/* Parse this line */
+		player_parse_cfg_line(list, STR_TO_CPTR(str));
+		str_free(str);
+	}
+
+	/* Close file */
+	file_close(fd);
+} /* End of 'player_read_rcfile' function */
+
+/* Read one line from the configuration file */
+#define player_is_whitespace(c)	((c) <= 0x20)	
+void player_parse_cfg_line( cfg_node_t *list, char *str )
+{
+	int i, j, len;
+	char *name, *val;
+
+	assert(list);
+	assert(str);
+	
+	/* If string begins with '#' - it is comment */
+	if (str[0] == '#')
+		return;
+
+	/* Skip white space */
+	len = strlen(str);
+	for ( i = 0; i < len && player_is_whitespace(str[i]); i ++ );
+
+	/* Read until next white space */
+	for ( j = i; j < len && str[j] != '=' && 
+			!player_is_whitespace(str[j]); j ++ );
+	if (player_is_whitespace(str[j]) || str[j] == '=')
+		j --;
+
+	/* Extract variable name */
+	name = (char *)malloc(j - i + 2);
+	memcpy(name, &str[i], j - i + 1);
+	name[j - i + 1] = 0;
+
+	/* Read '=' sign */
+	for ( ; j < len && str[j] != '='; j ++ );
+
+	/* Variable has no value - let it be "1" */
+	if (j == len)
+	{
+		cfg_set_var(list, name, "1");
+		free(name);
+	}
+	/* Read value */
+	else
+	{
+		/* Get value begin */
+		for ( i = j + 1; i < len && player_is_whitespace(str[i]); i ++ );
+
+		/* Get value end */
+		for ( j = i; j < len && !player_is_whitespace(str[j]); j ++ );
+		if (player_is_whitespace(str[j]))
+			j --;
+
+		/* Extract value and set it */
+		val = (char *)malloc(j - i + 2);
+		memcpy(val, &str[i], j - i + 1);
+		val[j - i + 1] = 0;
+		cfg_set_var(list, name, val);
+		free(name);
+		free(val);
+	}
+} /* End of 'player_parse_cfg_line' function */
+
+/* Play list window closing handler */
+wnd_msg_retcode_t player_on_close( wnd_t *wnd )
+{
+	assert(wnd);
+	wnd_close(wnd_root);
+	return WND_MSG_RETCODE_OK;
+} /* End of 'player_on_close' function */
 
 /* End of 'player.c' file */
 

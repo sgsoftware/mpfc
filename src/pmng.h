@@ -67,14 +67,14 @@ typedef struct tag_pmng_t
 	out_plugin_t *m_cur_out;
 
 	/* Configuration variables list */
-	cfg_list_t *m_cfg_list;
+	cfg_node_t *m_cfg_list;
 
 	/* Message printing function */
 	pmng_print_msg_t m_printer;
 } pmng_t;
 
 /* Initialize plugins */
-pmng_t *pmng_init( cfg_list_t *list, pmng_print_msg_t print_msg );
+pmng_t *pmng_init( cfg_node_t *list, pmng_print_msg_t print_msg );
 
 /* Unitialize plugins */
 void pmng_free( pmng_t *pmng );
@@ -117,7 +117,7 @@ in_plugin_t *pmng_search_content_type( pmng_t *pmng, char *content );
 cs_plugin_t *pmng_find_charset( pmng_t *pmng, char *name, int *index );
 
 /* Get configuration variables list */
-cfg_list_t *pmng_get_cfg( pmng_t *pmng );
+cfg_node_t *pmng_get_cfg( pmng_t *pmng );
 
 /* Get message printer */
 pmng_print_msg_t pmng_get_printer( pmng_t *pmng );

@@ -5,7 +5,7 @@
 /* FILE NAME   : help_screen.h
  * PURPOSE     : SG MPFC. Interface for help screen functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 4.02.2004
+ * LAST UPDATE : 5.08.2004
  * NOTE        : Module prefix 'help'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -28,10 +28,10 @@
 #define __SG_MPFC_HELP_SCREEN_H__
 
 #include "types.h"
-#include "window.h"
+#include "wnd.h"
 
 /* Help screen window type */
-typedef struct tag_help_screen_t
+typedef struct 
 {
 	/* Window part */
 	wnd_t m_wnd;
@@ -49,9 +49,6 @@ typedef struct tag_help_screen_t
 	char **m_items;
 	int m_num_items;
 
-	/* Title */
-	char *m_title;
-
 	/* Help screen type */
 	int m_type;
 } help_screen_t;
@@ -62,20 +59,19 @@ typedef struct tag_help_screen_t
 #define HELP_EQWND 2
 
 /* Create new help screen */
-help_screen_t *help_new( wnd_t *parent, int type, int x, int y, int w, int h );
+help_screen_t *help_new( wnd_t *parent, int type );
 
 /* Initialize help screen */
-bool_t help_init( help_screen_t *help, int type, wnd_t *parent, int x, int y, 
-	   int w, int h );
+bool_t help_construct( help_screen_t *help, wnd_t *parent, int type );
 
-/* Destroy help screen */
-void help_free( wnd_t *wnd );
+/* Destructor */
+void help_destructor( wnd_t *wnd );
 
 /* Handle display message */
-void help_display( wnd_t *wnd, dword data );
+wnd_msg_retcode_t help_on_display( wnd_t *wnd );
 
 /* Handle key message */
-void help_handle_key( wnd_t *wnd, dword data );
+wnd_msg_retcode_t help_on_keydown( wnd_t *wnd, wnd_key_t *keycode );
 
 /* Add item */
 void help_add( help_screen_t *h, char *name );

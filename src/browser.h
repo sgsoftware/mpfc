@@ -5,7 +5,7 @@
 /* FILE NAME   : browser.h
  * PURPOSE     : SG MPFC. Interface for file browser functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 11.03.2004
+ * LAST UPDATE : 5.08.2004
  * NOTE        : Module prefix 'fb'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -29,10 +29,10 @@
 
 #include "types.h"
 #include "song_info.h"
-#include "window.h"
+#include "wnd.h"
 
 /* File browser window type */
-typedef struct tag_browser_t
+typedef struct 
 {
 	/* Common window part */
 	wnd_t m_wnd;
@@ -64,9 +64,6 @@ typedef struct tag_browser_t
 	/* Scrolling value */ 
 	int m_scrolled;
 
-	/* List part height */
-	int m_height;
-
 	/* Is info mode active? */
 	bool_t m_info_mode;
 
@@ -84,32 +81,35 @@ typedef struct tag_browser_t
 		((fb)->m_files[pos].m_type |= FB_ITEM_SEL))
 	
 /* Create a new file browser window */
-browser_t *fb_new( wnd_t *parent, int x, int y, int w, int h, char *dir );
+browser_t *fb_new( wnd_t *parent, char *dir );
 
 /* Initialize file browser */
-bool_t fb_init( browser_t *fb, wnd_t *parent, int x, int y, int w, 
-					int h, char *dir );
+bool_t fb_construct( browser_t *fb, wnd_t *parent, char *dir );
 
-/* Destroy window */
-void fb_free( wnd_t *wnd );
+/* Browser destructor */
+void fb_destructor( wnd_t *wnd );
 
 /* Display window */
-void fb_display( wnd_t *wnd, dword data );
+wnd_msg_retcode_t fb_on_display( wnd_t *wnd );
 
 /* Handle key pressing */
-void fb_handle_key( wnd_t *wnd, dword data );
+wnd_msg_retcode_t fb_on_keydown( wnd_t *wnd, wnd_key_t *keycode );
 
 /* Handle mouse left button */
-void fb_handle_mouse( wnd_t *wnd, dword data );
+wnd_msg_retcode_t fb_on_mouse_ldown( wnd_t *wnd, int x, int y,
+		wnd_mouse_button_t btn, wnd_mouse_event_t type );
 
 /* Handle mouse right button */
-void fb_handle_mouse_right( wnd_t *wnd, dword data );
+wnd_msg_retcode_t fb_on_mouse_rdown( wnd_t *wnd, int x, int y,
+		wnd_mouse_button_t btn, wnd_mouse_event_t type );
 
 /* Handle mouse middle button */
-void fb_handle_mouse_mdl( wnd_t *wnd, dword data );
+wnd_msg_retcode_t fb_on_mouse_mdown( wnd_t *wnd, int x, int y,
+		wnd_mouse_button_t btn, wnd_mouse_event_t type );
 
 /* Handle mouse left button double click */
-void fb_handle_mouse_dbl( wnd_t *wnd, dword data );
+wnd_msg_retcode_t fb_on_mouse_ldouble( wnd_t *wnd, int x, int y,
+		wnd_mouse_button_t btn, wnd_mouse_event_t type );
 
 /* Move cursor to a specified position */
 void fb_move_cursor( browser_t *fb, int pos, bool_t rel );

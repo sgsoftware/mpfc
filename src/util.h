@@ -46,6 +46,9 @@ char *util_short_name( char *name );
 /* Delay */
 void util_delay( long s, long ns );
 
+/* Wait a little */
+void util_wait( void );
+
 /* Convert file name to the one with escaped special symbols */
 char *util_escape_fname( char *out, char *in );
 

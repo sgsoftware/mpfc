@@ -3,10 +3,10 @@
  ******************************************************************/
 
 /* FILE NAME   : cfg.c
- * PURPOSE     : SG MPFC. Basic configuration handling functions
+ * PURPOSE     : SG MPFC. Configuration handling functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 3.02.2004
+ * LAST UPDATE : 6.07.2004
  * NOTE        : Module prefix 'cfg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -25,214 +25,340 @@
  * MA 02111-1307, USA.
  */
 
+#include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "types.h"
 #include "cfg.h"
 
-/* Add variable */
-void cfg_new_var( cfg_list_t *list, char *name, char *val )
+/* Create a new configuration list */
+cfg_node_t *cfg_new_list( cfg_node_t *parent, char *name, dword flags,
+		int hash_size )
 {
-	if (list == NULL || name == NULL || val == NULL)
-		return;
+	cfg_node_t *node;
+
+	/* Create the node */
+	node = cfg_new_node(parent, name, flags);
+	if (node == NULL)
+		return NULL;
 	
-	list->m_vars = (cfg_var_t *)realloc(list->m_vars, sizeof(cfg_var_t) * 
-			(list->m_num_vars + 1));
-	list->m_vars[list->m_num_vars].m_name = strdup(name);
-	list->m_vars[list->m_num_vars].m_val = strdup(val);
-	list->m_num_vars ++;
+	/* Make children hash */
+	if (hash_size == 0)
+	{
+		if (flags & CFG_NODE_SMALL_LIST)
+			hash_size = CFG_HASH_SMALL_SIZE;
+		else if (flags & CFG_NODE_MEDIUM_LIST)
+			hash_size = CFG_HASH_MEDIUM_SIZE;
+		else if (flags & CFG_NODE_BIG_LIST)
+			hash_size = CFG_HASH_BIG_SIZE;
+		else
+			hash_size = CFG_HASH_DEFAULT_SIZE;
+	}
+	CFG_LIST(node)->m_hash_size = hash_size;
+	CFG_LIST(node)->m_children = (struct cfg_list_hash_item_t **)
+		malloc(hash_size * sizeof(struct cfg_list_hash_item_t *));
+	memset(CFG_LIST(node)->m_children, 0, 
+			hash_size * sizeof(struct cfg_list_hash_item_t *));
+	if (node->m_parent != NULL)
+		cfg_insert_node(node->m_parent, node);
+	return node;
+} /* End of 'cfg_new_list' function */
+
+/* Create a new variable */
+cfg_node_t *cfg_new_var( cfg_node_t *parent, char *name, dword flags, 
+		char *value, cfg_var_handler_t handler )
+{
+	cfg_node_t *node;
+
+	/* Create node */
+	flags |= CFG_NODE_VAR;
+	node = cfg_new_node(parent, name, flags);
+	if (node == NULL)
+		return NULL;
+
+	/* Set variable data */
+	CFG_VAR(node)->m_value = (value == NULL ? NULL : strdup(value));
+	CFG_VAR(node)->m_handler = handler;
+
+	/* Call handler */
+	if (!cfg_call_var_handler(TRUE, node, value))
+	{
+		cfg_free_node(node);
+		return NULL;
+	}
+	cfg_insert_node(node->m_parent, node);
+	return node;
 } /* End of 'cfg_new_var' function */
 
-/* Search for variable and return its index (or negative on failure) */
-int cfg_search_var( cfg_list_t *list, char *name )
+/* Create a new node and leave node type specific information unset 
+ * (don't use this function directly; use previous two instead) */
+cfg_node_t *cfg_new_node( cfg_node_t *parent, char *name, dword flags )
 {
-	int i;
+	cfg_node_t *node;
+	cfg_node_t *real_parent;
+	char *real_name;
 
-	if (list == NULL)
-		return -1;
+	assert(name);
 
-	for ( i = 0; i < list->m_num_vars; i ++ )
-		if (!strcmp(list->m_vars[i].m_name, name))
-			return i;
-	return -1;
-} /* End of 'cfg_search_var' function */
+	/* Find real parent */
+	if (parent != NULL)
+	{
+		real_parent = cfg_find_real_parent(parent, name, &real_name);
+		if (real_parent == NULL)
+			return NULL;
+	}
+	else
+	{
+		real_parent = parent;
+		real_name = name;
+	}
+
+	/* Allocate memory */
+	node = (cfg_node_t *)malloc(sizeof(cfg_node_t));
+	if (node == NULL)
+		return node;
+
+	/* Set fields */
+	node->m_name = strdup(real_name);
+	node->m_flags = flags;
+	node->m_parent = real_parent;
+	return node;
+} /* End of 'cfg_new_node' function */
+
+/* Free node */
+void cfg_free_node( cfg_node_t *node )
+{
+	assert(node);
+
+	/* Free common data */
+	free(node->m_name);
+
+	/* Free variable data */
+	if (CFG_NODE_IS_VAR(node))
+	{
+		if (CFG_VAR(node)->m_value != NULL)
+			free(CFG_VAR(node)->m_value);
+	}
+	/* Free list data */
+	else
+	{
+		int i;
+
+		for ( i = 0; i < CFG_LIST(node)->m_hash_size; i ++ )
+		{
+			struct cfg_list_hash_item_t *item, *next;
+			for ( item = CFG_LIST(node)->m_children[i]; item != NULL; )
+			{
+				next = item->m_next;
+				cfg_free_node(item->m_node);
+				item = next;
+			}
+		}
+		free(CFG_LIST(node)->m_children);
+	}
+
+	/* Free node itself */
+	free(node);
+} /* End of 'cfg_free_node' function */
+
+/* Insert a node into the list */
+void cfg_insert_node( cfg_node_t *list, cfg_node_t *node )
+{
+	int hash;
+	struct cfg_list_hash_item_t *item;
+
+	assert(list);
+	assert(node);
+	assert(node->m_name);
+	assert(CFG_NODE_IS_LIST(list));
+	
+	/* Calculate hash for this node */
+	hash = cfg_calc_hash(node->m_name, CFG_LIST(list)->m_hash_size);
+
+	/* Create item and append to the list */
+	item = (struct cfg_list_hash_item_t *)malloc(
+			sizeof(struct cfg_list_hash_item_t));
+	if (item == NULL)
+		return;
+	item->m_node = node;
+	item->m_next = CFG_LIST(list)->m_children[hash];
+	CFG_LIST(list)->m_children[hash] = item;
+} /* End of 'cfg_insert_node' function */
+
+/* Search for the node */
+cfg_node_t *cfg_search_node( cfg_node_t *parent, char *name )
+{
+	cfg_node_t *real_parent;
+	cfg_node_t *node;
+	char *real_name;
+
+	assert(parent);
+	assert(name);
+
+	/* Find the real node parent and real name */
+	real_parent = cfg_find_real_parent(parent, name, &real_name);
+	if (real_parent == NULL)
+		return NULL;
+
+	/* Search for node */
+	node = cfg_search_list(real_parent, real_name);
+	free(real_name);
+	return node;
+} /* End of 'cfg_search_node' function */
 
 /* Set variable value */
-void cfg_set_var( cfg_list_t *list, char *name, char *val )
+void cfg_set_var( cfg_node_t *parent, char *name, char *value )
 {
-	int i;
-
-	if (list == NULL)
-		return;
+	cfg_node_t *node;
 	
-	/* Search for this variable */
-	i = cfg_search_var(list, name);
+	/* Search for this node */
+	node = cfg_search_node(parent, name);
 
-	/* Variable exists - modify its value */
-	if (i >= 0)
+	/* Change value */
+	if (node != NULL && CFG_NODE_IS_VAR(node))
 	{
-		free(list->m_vars[i].m_val);
-		list->m_vars[i].m_val = strdup(val);
+		if (!cfg_call_var_handler(FALSE, node, value))
+			return;
+		free(CFG_VAR(node)->m_value);
+		CFG_VAR(node)->m_value = (value == NULL ? NULL : strdup(value));
+		cfg_call_var_handler(TRUE, node, value);
 	}
-	/* Create new variable */
-	else
-		cfg_new_var(list, name, val);
-
-	/* Handle variable */
-	cfg_handle_var(list, name);
+	/* Create node if not found */
+	else if (node == NULL)
+		cfg_new_var(parent, name, 0, value, NULL);
 } /* End of 'cfg_set_var' function */
 
 /* Set variable integer value */
-void cfg_set_var_int( cfg_list_t *list, char *name, int val )
+void cfg_set_var_int( cfg_node_t *parent, char *name, int val )
 {
-	char str[20];
-
-	if (list == NULL)
-		return;
-
-	sprintf(str, "%d", val);
-	cfg_set_var(list, name, str);
+	char str[32];
+	snprintf(str, sizeof(str), "%d", val);
+	cfg_set_var(parent, name, str);
 } /* End of 'cfg_set_var_int' function */
 
-/* Get variable value */
-char *cfg_get_var( cfg_list_t *list, char *name )
+/* Set variable integer float */
+void cfg_set_var_float( cfg_node_t *parent, char *name, float val )
 {
-	int i;
+	char str[32];
+	snprintf(str, sizeof(str), "%f", val);
+	cfg_set_var(parent, name, str);
+} /* End of 'cfg_set_var_float' function */
 
-	if (list == NULL)
+/* Get variable value */
+char *cfg_get_var( cfg_node_t *parent, char *name )
+{
+	cfg_node_t *node;
+
+	/* Get node */
+	node = cfg_search_node(parent, name);
+	if (node == NULL || !CFG_NODE_IS_VAR(node))
 		return NULL;
-
-	/* Search for this variable */
-	i = cfg_search_var(list, name);
-	return (i >= 0) ? list->m_vars[i].m_val : NULL;
+	return CFG_VAR(node)->m_value;
 } /* End of 'cfg_get_var' function */
 
 /* Get variable integer value */
-int cfg_get_var_int( cfg_list_t *list, char *name )
+int cfg_get_var_int( cfg_node_t *parent, char *name )
 {
-	char *val = cfg_get_var(list, name);
-	if (val == NULL)
-		return 0;
-	else
-		return atoi(val);
+	char *str = cfg_get_var(parent, name);
+	return (str == NULL) ? 0 : atoi(str);
 } /* End of 'cfg_get_var_int' function */
 
-/* Set variable integer float */
-void cfg_set_var_float( cfg_list_t *list, char *name, float val )
-{
-	char str[80];
-
-	if (list == NULL)
-		return;
-
-	sprintf(str, "%f", val);
-	cfg_set_var(list, name, str);
-} /* End of 'cfg_set_var_float' function */
-
 /* Get variable float value */
-float cfg_get_var_float( cfg_list_t *list, char *name )
+float cfg_get_var_float( cfg_node_t *parent, char *name )
 {
-	char *val = cfg_get_var(list, name);
-	if (val == NULL)
-		return 0;
-	else
-		return atof(val);
+	char *str = cfg_get_var(parent, name);
+	return (str == NULL) ? 0. : atof(str);
 } /* End of 'cfg_get_var_float' function */
 
-/* Free configuration list */
-void cfg_free_list( cfg_list_t *list )
+/* Find the real parent of node */
+cfg_node_t *cfg_find_real_parent( cfg_node_t *parent, char *name, 
+		char **real_name )
 {
-	if (list != NULL)
+	cfg_node_t *real_parent;
+
+	assert(parent);
+	assert(name);
+	assert(CFG_NODE_IS_LIST(parent));
+
+	/* Walk through parents */
+	for ( real_parent = parent;; )
 	{
-		cfg_db_t *t, *t1;
-		
-		for ( t = list->m_db; t != NULL; )
-		{
-			t1 = t->m_next;
-			if (t->m_name != NULL)
-				free(t->m_name);
-			free(t);
-			t = t1;
-		}
-		
-		if (list->m_vars != NULL)
-		{
-			int i;
+		char *next_name = strchr(name, '.');
 
-			for ( i = 0; i < list->m_num_vars; i ++ )
-			{
-				free(list->m_vars[i].m_name);
-				free(list->m_vars[i].m_val);
-			}
-			free(list->m_vars);
-		}
-		free(list);
-	}
-} /* End of 'cfg_free_list' function */
-
-/* Get variable flags */
-byte cfg_get_var_flags( cfg_list_t *list, char *name )
-{
-	cfg_db_t *t;
-	
-	if (list == NULL)
-		return 0;
-
-	for ( t = list->m_db; t != NULL; t = t->m_next )
-		if (!strcmp(name, t->m_name))
-			return t->m_flags;
-	return 0;
-} /* End of 'cfg_get_var_flags' function */
-
-/* Handle variable setting */
-void cfg_handle_var( cfg_list_t *list, char *name )
-{
-	cfg_db_t *t;
-	
-	/* Search for entry in data base */
-	if (list == NULL || list->m_db == NULL)
-		return;
-	for ( t = list->m_db; t != NULL; t = t->m_next )
-		if (!strcmp(name, t->m_name))
+		/* If no '.' found - stop (we've found last parent in hierarchy) */
+		if (next_name == NULL)
 			break;
 
-	/* Call handler */
-	if (t != NULL && t->m_handler != NULL)
-		(t->m_handler)(name);
-} /* End of 'cfg_handle_var' function */
-
-/* Set variable information to the data base */
-void cfg_set_to_db( cfg_list_t *list, char *name, 
-		void (*handler)( char * ), dword flags )
-{
-	cfg_db_t *t, *p;
-	
-	if (list == NULL)
-		return;
-
-	/* Search for existing entry */
-	for ( t = list->m_db, p = NULL; t != NULL; p = t, t = t->m_next )
-		if (!strcmp(name, t->m_name))
-			break;
-
-	/* Add entry */
-	if (t == NULL)
-	{
-		if (p == NULL)
-			t = list->m_db = (cfg_db_t *)malloc(sizeof(cfg_db_t));
-		else
-			t = p->m_next = (cfg_db_t *)malloc(sizeof(cfg_db_t));
-		t->m_next = NULL;
-		t->m_name = NULL;
+		/* Extract child list name */
+		*next_name = 0;
+		real_parent = cfg_search_list(real_parent, name);
+		*next_name = '.';
+		if (real_parent == NULL)
+			return NULL;
+		name = next_name + 1;
 	}
 
-	/* Set data */
-	if (t->m_name != NULL)
-		free(t->m_name);
-	t->m_name = strdup(name);
-	t->m_handler = handler;
-	t->m_flags = flags;
-} /* End of 'cfg_set_to_db' function */
+	/* Set real name */
+	if (real_name != NULL)
+		(*real_name) = strdup(name);
+	return real_parent;
+} /* End of 'cfg_find_real_parent' function */
+
+/* Search list for a child node (name given is the exact name, without dots) */
+cfg_node_t *cfg_search_list( cfg_node_t *list, char *name )
+{
+	struct cfg_list_hash_item_t *item;
+	int hash;
+	cfg_node_t *node = NULL;
+
+	/* Check that this is a list */
+	if (!CFG_NODE_IS_LIST(list))
+		return NULL;
+
+	/* Calculate hash */
+	hash = cfg_calc_hash(name, CFG_LIST(list)->m_hash_size);
+
+	/* Search for node */
+	for ( item = CFG_LIST(list)->m_children[hash]; item != NULL; 
+			item = item->m_next )
+	{
+		if (!strcmp(item->m_node->m_name, name))
+		{
+			node = item->m_node;
+			break;
+		}
+	}
+	return node;
+} /* End of 'cfg_search_list' function */
+
+/* Call variable handler */
+bool_t cfg_call_var_handler( bool_t after, cfg_node_t *node, char *value )
+{
+	assert(node);
+	assert(CFG_NODE_IS_VAR(node));
+
+	if (value == NULL)
+		return TRUE;
+
+	if (after && (node->m_flags & CFG_NODE_HANDLE_AFTER_CHANGE) ||
+			CFG_VAR_HANDLER(node) == NULL)
+		return TRUE;
+	return CFG_VAR_HANDLER(node)(node, value);
+} /* End of 'cfg_call_var_handler' function */
+
+/* Calculate string hash value */
+int cfg_calc_hash( char *str, int table_size )
+{
+	int val = 0;
+
+	while (*str)
+	{
+		val += *str;
+		str ++;
+	}
+	return val % table_size;
+} /* End of 'cfg_calc_hash' function */
 
 /* End of 'cfg.c' file */
 

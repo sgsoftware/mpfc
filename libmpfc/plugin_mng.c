@@ -39,7 +39,7 @@
 #include "util.h"
 
 /* Initialize plugins */
-pmng_t *pmng_init( cfg_list_t *list, pmng_print_msg_t print_msg )
+pmng_t *pmng_init( cfg_node_t *list, pmng_print_msg_t print_msg )
 {
 	pmng_t *pmng;
 
@@ -403,7 +403,7 @@ cs_plugin_t *pmng_find_charset( pmng_t *pmng, char *name, int *index )
 } /* End of 'pmng_find_charset' function */
 
 /* Get configuration variables list */
-cfg_list_t *pmng_get_cfg( pmng_t *pmng )
+cfg_node_t *pmng_get_cfg( pmng_t *pmng )
 {
 	if (pmng == NULL)
 		return NULL;

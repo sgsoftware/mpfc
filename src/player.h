@@ -5,7 +5,7 @@
 /* FILE NAME   : player.h
  * PURPOSE     : SG MPFC. Interface for main player functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 31.01.2004
+ * LAST UPDATE : 5.08.2004
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -33,7 +33,7 @@
 #include "plist.h"
 #include "pmng.h"
 #include "undo.h"
-#include "window.h"
+#include "wnd.h"
 
 /* User messages for root window types */
 #define PLAYER_MSG_END_TRACK    0
@@ -74,12 +74,12 @@
 /* Sliders parameters */
 #define PLAYER_SLIDER_TIME_Y 2
 #define PLAYER_SLIDER_TIME_X 0
-#define PLAYER_SLIDER_TIME_W (WND_WIDTH(wnd_root) - 24)
+#define PLAYER_SLIDER_TIME_W (WND_WIDTH(player_wnd) - 24)
 #define PLAYER_SLIDER_VOL_Y  2
-#define PLAYER_SLIDER_VOL_X  (WND_WIDTH(wnd_root) - 22)
+#define PLAYER_SLIDER_VOL_X  (WND_WIDTH(player_wnd) - 22)
 #define PLAYER_SLIDER_VOL_W  20
 #define PLAYER_SLIDER_BAL_Y  1
-#define PLAYER_SLIDER_BAL_X  (WND_WIDTH(wnd_root) - 22)
+#define PLAYER_SLIDER_BAL_X  (WND_WIDTH(player_wnd) - 22)
 #define PLAYER_SLIDER_BAL_W  20
 
 /* Equalizer information */
@@ -103,6 +103,18 @@ extern pmng_t *player_pmng;
 /* User configuration file name */
 extern char player_cfg_file[MAX_FILE_NAME];
 
+/* Previous file browser session directory name */
+extern char player_fb_dir[MAX_FILE_NAME];
+
+/* Root window */
+extern wnd_t *wnd_root;
+
+/* Play list window */
+extern wnd_t *player_wnd;
+
+/* Configuration list */
+extern cfg_node_t *cfg_list;
+
 /* Initialize player */
 bool_t player_init( int argc, char *argv[] );
 
@@ -112,23 +124,38 @@ void player_deinit( void );
 /* Run player */
 bool_t player_run( void );
 
+/* Initialize configuration */
+bool_t player_init_cfg( void );
+
+/* Read configuration file */
+void player_read_rcfile( cfg_node_t *list, char *name );
+
+/* Read one line from the configuration file */
+void player_parse_cfg_line( cfg_node_t *list, char *str );
+
 /* Parse program command line */
 bool_t player_parse_cmd_line( int argc, char *argv[] );
 
 /* Handle key function */
-void player_handle_key( wnd_t *wnd, dword data );
+wnd_msg_retcode_t player_on_keydown( wnd_t *wnd, wnd_key_t *keycode );
 
-/* Handle mouse left button click */
-void player_handle_mouse_click( wnd_t *wnd, dword data );
+/* Handle left-button click */
+wnd_msg_retcode_t player_on_mouse_ldown( wnd_t *wnd, int x, int y,
+		wnd_mouse_button_t btn, wnd_mouse_event_t type );
 
-/* Handle mouse left button double click */
-void player_handle_mouse_double( wnd_t *wnd, dword data );
+/* Handle middle-button click */
+wnd_msg_retcode_t player_on_mouse_mdown( wnd_t *wnd, int x, int y,
+		wnd_mouse_button_t btn, wnd_mouse_event_t type );
 
-/* Handle mouse middle button click */
-void player_handle_mouse_middle( wnd_t *wnd, dword data );
+/* Handle left-button double click */
+wnd_msg_retcode_t player_on_mouse_ldouble( wnd_t *wnd, int x, int y,
+		wnd_mouse_button_t btn, wnd_mouse_event_t type );
 
 /* Display player function */
-void player_display( wnd_t *wnd, dword data );
+wnd_msg_retcode_t player_on_display( wnd_t *wnd );
+
+/* Play list window closing handler */
+wnd_msg_retcode_t player_on_close( wnd_t *wnd );
 
 /* User message handling function */
 void player_handle_user( wnd_t *wnd, dword data );
@@ -225,10 +252,10 @@ void player_add_obj_dialog( void );
 void player_handle_action( int action );
 
 /* Save variables to main configuration file */
-void player_save_cfg_vars( cfg_list_t *list, char *vars );
+void player_save_cfg_vars( cfg_node_t *list, char *vars );
 
 /* Save configuration list */
-void player_save_cfg_list( cfg_list_t *list, char *fname );
+void player_save_cfg_list( cfg_node_t *list, char *fname );
 
 /* Update volume */
 void player_update_vol( void );
@@ -249,16 +276,16 @@ void player_go_back( void );
 void player_advanced_search_dialog( void );
 
 /* Handle 'title-format' variable setting */
-void player_handle_var_title_format( char *name );
+bool_t player_handle_var_title_format( cfg_node_t *var, char *value );
 
 /* Handle 'output-plugin' variable setting */
-void player_handle_var_outp( char *name );
+bool_t player_handle_var_outp( cfg_node_t *var, char *value );
 
 /* Handle 'color-scheme' variable setting */
-void player_handle_color_scheme( char *name );
+bool_t player_handle_color_scheme( cfg_node_t *var, char *value );
 
 /* Handle 'kbind-scheme' variable setting */
-void player_handle_kbind_scheme( char *name );
+bool_t player_handle_kbind_scheme( cfg_node_t *var, char *value );
 
 /* Return to the last time */
 void player_time_back( void );

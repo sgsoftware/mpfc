@@ -5,7 +5,7 @@
 /* FILE NAME   : eqwnd.h
  * PURPOSE     : SG MPFC. Interface for equalizer window functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 21.12.2003
+ * LAST UPDATE : 5.08.2004
  * NOTE        : Module prefix 'eqwnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -28,13 +28,13 @@
 #define __SG_MPFC_EQUALIZER_H__
 
 #include "types.h"
-#include "window.h"
+#include "wnd.h"
 
 /* Number of bands (including preamp) */
 #define EQWND_NUM_BANDS 11
 
 /* Equalizer window type */
-typedef struct tag_eq_wnd_t
+typedef struct 
 {
 	/* Window part */
 	wnd_t m_wnd;
@@ -44,22 +44,20 @@ typedef struct tag_eq_wnd_t
 } eq_wnd_t;
 
 /* Create a new equalizer window */
-eq_wnd_t *eqwnd_new( wnd_t *parent, int x, int y, int w, int h );
+eq_wnd_t *eqwnd_new( wnd_t *parent );
 
 /* Initialize equalizer window */
-bool_t eqwnd_init( eq_wnd_t *eq, wnd_t *parent, int x, int y, int w, int h );
-
-/* Destroy equalizer window */
-void eqwnd_free( wnd_t *wnd );
+bool_t eqwnd_construct( eq_wnd_t *eq, wnd_t *parent );
 
 /* Handle display message */
-void eqwnd_display( wnd_t *wnd, dword data );
+wnd_msg_retcode_t eqwnd_on_display( wnd_t *wnd );
 
 /* Handle key message */
-void eqwnd_handle_key( wnd_t *wnd, dword data );
+wnd_msg_retcode_t eqwnd_on_keydown( wnd_t *wnd, wnd_key_t *keycode );
 
 /* Handle mouse left button click */
-void eqwnd_handle_mouse( wnd_t *wnd, dword data );
+wnd_msg_retcode_t eqwnd_on_mouse_ldown( wnd_t *wnd, int x, int y,
+		wnd_mouse_button_t btn, wnd_mouse_event_t type );
 
 /* Display slider */
 int eqwnd_display_slider( wnd_t *wnd, int x, int start_y, int end_y,

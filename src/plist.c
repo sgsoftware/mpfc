@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Play list manipulation
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 11.03.2004
+ * LAST UPDATE : 5.08.2004
  * NOTE        : Module prefix 'plist'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -43,7 +43,7 @@
 #include "song.h"
 #include "util.h"
 #include "undo.h"
-#include "window.h"
+#include "wnd.h"
 
 /* Check play list validity macro */
 #define PLIST_ASSERT(pl) if ((pl) == NULL) return
@@ -380,7 +380,7 @@ bool_t __plist_add_song( plist_t *pl, char *filename, char *title, int len,
 	plist_unlock(pl);
 
 	/* Update screen */
-	wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
+	wnd_invalidate(player_wnd);
 	
 	return TRUE;
 } /* End of '__plist_add_song' function */
@@ -863,13 +863,13 @@ void plist_display( plist_t *pl, wnd_t *wnd )
 			char len[10];
 			int x;
 			
-			wnd_advance(wnd, 0, pl->m_start_pos + i);
-			wnd_printf_bound(wnd, WND_WIDTH(wnd) - 13, WND_PRINT_ELLIPSES, 
+			wnd_move(wnd, 0, 0, pl->m_start_pos + i);
+			wnd_printf(wnd, WND_PRINT_ELLIPSES, WND_WIDTH(wnd) - 7, 
 					"%i. %s", j + 1, STR_TO_CPTR(s->m_title));
 			sprintf(len, "%i:%02i", s->m_len / 60, s->m_len % 60);
-			wnd_advance(wnd, WND_WIDTH(wnd) - strlen(len) - 1, 
+			wnd_move(wnd, WND_MOVE_ADVANCE, WND_WIDTH(wnd) - strlen(len) - 1, 
 					pl->m_start_pos + i);
-			wnd_printf(wnd, "%s", len);
+			wnd_printf(wnd, 0, 0, "%s", len);
 		}
 	}
 	col_set_color(wnd, COL_EL_DEFAULT);
@@ -888,9 +888,9 @@ void plist_display( plist_t *pl, wnd_t *wnd )
 			(end >= 0 && pl->m_len > 0) ? end - start + 1 : 0, pl->m_len,
 			s_time / 3600, (s_time % 3600) / 60, s_time % 60,
 			l_time / 3600, (l_time % 3600) / 60, l_time % 60);
-	wnd_advance(wnd, WND_WIDTH(wnd) - strlen(time_text) - 1, 
+	wnd_move(wnd, 0, WND_WIDTH(wnd) - strlen(time_text) - 1, 
 			pl->m_start_pos + PLIST_HEIGHT);
-	wnd_printf(wnd, "%s", time_text);
+	wnd_printf(wnd, 0, 0, "%s", time_text);
 	col_set_color(wnd, COL_EL_DEFAULT);
 } /* End of 'plist_display' function */
 
@@ -990,7 +990,7 @@ int plist_add_obj( plist_t *pl, char *name, char *title, int where )
 	}
 
 	/* Update screen */
-	wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
+	wnd_invalidate(player_wnd);
 	return num_songs;
 } /* End of 'plist_add_obj' function */
 
@@ -1093,7 +1093,7 @@ void plist_set_song_info( plist_t *pl, int index )
 	song_update_info(pl->m_list[index]);
 	pl->m_list[index]->m_flags &= (~SONG_GET_INFO);
 	plist_unlock(pl);
-	wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
+	wnd_invalidate(player_wnd);
 } /* End of 'plist_set_song_info' function */
 
 /* Reload all songs information */

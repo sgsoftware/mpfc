@@ -5,7 +5,7 @@
 /* FILE NAME   : help_screen.c
  * PURPOSE     : SG MPFC. Help screen functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 11.03.2004
+ * LAST UPDATE : 5.08.2004
  * NOTE        : Module prefix 'help'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -30,10 +30,10 @@
 #include "colors.h"
 #include "error.h"
 #include "help_screen.h"
-#include "window.h"
+#include "wnd.h"
 
 /* Create new help screen */
-help_screen_t *help_new( wnd_t *parent, int type, int x, int y, int w, int h )
+help_screen_t *help_new( wnd_t *parent, int type )
 {
 	help_screen_t *help;
 
@@ -46,7 +46,7 @@ help_screen_t *help_new( wnd_t *parent, int type, int x, int y, int w, int h )
 	}
 
 	/* Initialize help screen */
-	if (!help_init(help, type, parent, x, y, w, h))
+	if (!help_construct(help, parent, type))
 	{
 		free(help);
 		return NULL;
@@ -55,18 +55,22 @@ help_screen_t *help_new( wnd_t *parent, int type, int x, int y, int w, int h )
 } /* End of 'help_new' function */
 
 /* Initialize help screen */
-bool_t help_init( help_screen_t *help, int type, wnd_t *parent, int x, int y, 
-	   int w, int h )
+bool_t help_construct( help_screen_t *help, wnd_t *parent, int type )
 {
 	wnd_t *wnd = (wnd_t *)help;
 	
 	/* Initialize window part */
-	if (!wnd_init(wnd, parent, x, y, w, h))
+	if (!wnd_construct(wnd, type == HELP_PLAYER ? 
+				_("MPFC Default Key Bindings") : (type == HELP_EQWND ?
+					_("Equalizer Key Bindings") : 
+					_("File Browser Key Bindings")), 
+				parent, 0, 0, 0, 0, WND_FLAG_FULL_BORDER | WND_FLAG_MAXIMIZED))
 		return FALSE;
 
 	/* Register handlers */
-	wnd_register_handler(wnd, WND_MSG_DISPLAY, help_display);
-	wnd_register_handler(wnd, WND_MSG_KEYDOWN, help_handle_key);
+	wnd_msg_add_handler(&wnd->m_on_display, help_on_display);
+	wnd_msg_add_handler(&wnd->m_on_keydown, help_on_keydown);
+	wnd_msg_add_handler(&wnd->m_destructor, help_destructor);
 
 	/* Set fields */
 	help->m_screen = 0;
@@ -74,7 +78,7 @@ bool_t help_init( help_screen_t *help, int type, wnd_t *parent, int x, int y,
 	help->m_screen_size = WND_HEIGHT(wnd) - 4;
 	help->m_num_screens = 0;
 	help->m_items = NULL;
-	wnd->m_wnd_destroy = help_free;
+	wnd->m_cursor_hidden = TRUE;
 
 	/* Initialize items */
 	switch (type)
@@ -88,77 +92,62 @@ bool_t help_init( help_screen_t *help, int type, wnd_t *parent, int x, int y,
 	case HELP_EQWND:
 		help_init_eqwnd(help);
 		break;
-	default:
-		wnd_destroy(wnd);
-		return FALSE;
 	}
 	help->m_type = type;
-	WND_OBJ(help)->m_flags |= (WND_INITIALIZED);
 	return TRUE;
 } /* End of 'help_init' function */
 
-/* Destroy help screen */
-void help_free( wnd_t *wnd )
+/* Help screen destructor */
+void help_destructor( wnd_t *wnd )
 {
 	help_screen_t *h = (help_screen_t *)wnd;
 	int i;
 
-	if (h == NULL)
-		return;
+	assert(h);
 	
 	if (h->m_items != NULL)
 	{
 		for ( i = 0; i < h->m_num_items; i ++ )
 			free(h->m_items[i]);	
 		free(h->m_items);
-		free(h->m_title);
 	}
-	wnd_destroy_func(wnd);
 } /* End of 'help_free' function */
 
 /* Handle display message */
-void help_display( wnd_t *wnd, dword data )
+wnd_msg_retcode_t help_on_display( wnd_t *wnd )
 {
 	help_screen_t *h = (help_screen_t *)wnd;
 	int i, j;
 	
-	/* Print title */
-	//wnd_clear(wnd, FALSE);
-	wnd_move(wnd, 0, 0);
-	wnd_advance(wnd, (WND_WIDTH(wnd) - strlen(h->m_title)) / 2, 0);
-	col_set_color(wnd, COL_EL_HELP_TITLE);
-	wnd_printf(wnd, "%s\n\n", h->m_title);
-	col_set_color(wnd, COL_EL_DEFAULT);
-
 	/* Print keys */
 	col_set_color(wnd, COL_EL_HELP_STRINGS);
-	for ( i = h->m_screen_size * h->m_screen, j = 1; 
+	for ( i = h->m_screen_size * h->m_screen, j = 0; 
 			i < h->m_num_items && i < h->m_screen_size * (h->m_screen + 1);
 	   		i ++, j ++ )  
 	{
-		wnd_advance(wnd, 0, j);
-		wnd_printf(wnd, "%s", h->m_items[i]);
+		wnd_move(wnd, 0, 0, j);
+		wnd_printf(wnd, 0, 0, "%s", h->m_items[i]);
 	}
 	col_set_color(wnd, COL_EL_DEFAULT);
 
 	col_set_color(wnd, COL_EL_STATUS);
-	wnd_advance(wnd, 0, WND_HEIGHT(wnd) - 1);
-	wnd_printf(wnd, _("Press <Space> to see next screen and <q> to exit\n"));
+	wnd_move(wnd, 0, 0, WND_HEIGHT(wnd) - 1);
+	wnd_printf(wnd, 0, 0, 
+			_("Press <Space> to see next screen and <q> to exit\n"));
 	col_set_color(wnd, COL_EL_DEFAULT);
-	wnd_advance(wnd, WND_WIDTH(wnd), WND_HEIGHT(wnd));
+	return WND_MSG_RETCODE_OK;
 } /* End of 'help_display' function */
 
 /* Handle key message */
-void help_handle_key( wnd_t *wnd, dword data )
+wnd_msg_retcode_t help_on_keydown( wnd_t *wnd, wnd_key_t *keycode )
 {
-	int key = (int)data;
 	help_screen_t *h = (help_screen_t *)wnd;
 
-	switch (key)
+	switch (keycode->m_key)
 	{
 	case 'q':
-	case 27:
-		wnd_send_msg(wnd, WND_MSG_CLOSE, 0);
+	case KEY_ESCAPE:
+		wnd_close(wnd);
 		break;
 	case ' ':
 	case '\n':
@@ -166,9 +155,11 @@ void help_handle_key( wnd_t *wnd, dword data )
 		{
 			h->m_screen ++;
 			h->m_screen %= h->m_num_screens;
+			wnd_invalidate(wnd);
 		}
 		break;
 	}
+	return WND_MSG_RETCODE_OK;
 } /* End of 'help_handle_key' function */
 
 /* Add item */
@@ -184,7 +175,6 @@ void help_add( help_screen_t *h, char *name )
 /* Initialize help screen in player mode */
 void help_init_player( help_screen_t *help )
 {
-	help->m_title = strdup(_("MPFC Default Key Bindings"));
 	help_add(help, _("q:\t\t Quit program"));
 	help_add(help, _("j or <Down>:\t Move one line down"));
 	help_add(help, _("k or <Up>:\t Move one line up"));
@@ -246,7 +236,6 @@ void help_init_player( help_screen_t *help )
 /* Initialize help screen in browser mode */
 void help_init_browser( help_screen_t *help )
 {
-	help->m_title = strdup(_("File Browser Key Bindings"));
 	help_add(help, _("q:\t\t Return to player"));
 	help_add(help, _("j or <Down>:\t Move one line down"));
 	help_add(help, _("k or <Up>:\t Move one line up"));
@@ -268,7 +257,6 @@ void help_init_browser( help_screen_t *help )
 /* Initialize help screen in equalizer window mode */
 void help_init_eqwnd( help_screen_t *help )
 {
-	help->m_title = strdup(_("Equalizer Key Bindings"));
 	help_add(help, _("q or <Esc>:\t Return to player"));
 	help_add(help, _("h or <Left>:\t Move cursor left"));
 	help_add(help, _("l or <Right>:\t Move cursor right"));

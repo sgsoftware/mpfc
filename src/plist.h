@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for play list manipulation
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 11.03.2004
+ * LAST UPDATE : 5.08.2004
  * NOTE        : Module prefix 'plist'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -31,7 +31,7 @@
 #include <pthread.h>
 #include "types.h"
 #include "song.h"
-#include "window.h"
+#include "wnd.h"
 
 /* Play list type */
 typedef struct
@@ -72,7 +72,7 @@ typedef struct
 } plist_set_t;
 
 /* Get list height */
-#define PLIST_HEIGHT (WND_HEIGHT(wnd_root) - 5)
+#define PLIST_HEIGHT (WND_HEIGHT(player_wnd) - 5)
 
 /* Sort criterias */
 #define PLIST_SORT_BY_TITLE 0

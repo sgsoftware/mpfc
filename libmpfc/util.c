@@ -110,6 +110,11 @@ void util_delay( long s, long ns )
 	nanosleep(&tv, NULL);
 } /* End of 'util_delay' function */
 
+/* Wait a little */
+void util_wait( void )
+{
+	util_delay(0, 100000);
+} /* End of 'util_wait' function */
 /* Get file name without full path */
 char *util_short_name( char *name )
 {

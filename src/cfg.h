@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for configuration handling
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 3.02.2004
+ * LAST UPDATE : 6.07.2004
  * NOTE        : Module prefix 'cfg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -30,103 +30,141 @@
 
 #include "types.h"
 
-/* Variable flags */
-#define CFG_RUNTIME 0x01
-
-/* Variables data base type */
-typedef struct tag_cfg_db_t
+/* Node flags */
+typedef enum
 {
-	/* Variable name */
+	/* Whether node represents a variable instead of a list */
+	CFG_NODE_VAR					= 1 << 0,
+
+	/* Flags for list creation time - specify how big will be the list.
+	 * They are used to choose a sensible hash table size.
+	 * Note that they make sense if the size is not specified directly */
+	CFG_NODE_SMALL_LIST				= 1 << 1,
+	CFG_NODE_MEDIUM_LIST			= 1 << 2,
+	CFG_NODE_BIG_LIST				= 1 << 3,
+
+	/* Variable is run-time. This means that it is not saved when exiting */
+	CFG_NODE_RUNTIME				= 1 << 4,
+
+	/* Variable handler is called after changing the value */
+	CFG_NODE_HANDLE_AFTER_CHANGE	= 1 << 5
+} cfg_node_flags_t;
+
+/* Default values for list hash table size */
+#define CFG_HASH_SMALL_SIZE		5
+#define CFG_HASH_MEDIUM_SIZE	20
+#define CFG_HASH_BIG_SIZE		50
+#define CFG_HASH_DEFAULT_SIZE	CFG_HASH_MEDIUM_SIZE
+
+/* Handler for a variable (a function that is called whenever variable 
+ * value is changed) type. 
+ * If this function returns FALSE (and flag CFG_NODE_HANDLE_AFTER_CHANGE
+ * is not set), change does not actually occur */
+struct tag_cfg_node_t;
+typedef bool_t (*cfg_var_handler_t)( struct tag_cfg_node_t *var, char *value );
+
+/* Configuration tree node */
+typedef struct tag_cfg_node_t
+{
+	/* Node name */
 	char *m_name;
 
-	/* Variable handler (is called when variable is set) */
-	void (*m_handler)( char *name );
+	/* Node flags */
+	cfg_node_flags_t m_flags;
 
-	/* Variable flags */
-	dword m_flags;
+	/* Link to the parent list */
+	struct tag_cfg_node_t *m_parent;
 
-	/* Next list element */
-	struct tag_cfg_db_t *m_next;
-} cfg_db_t;
+	/* Node type specific data */
+	union
+	{
+		/* Data for variable (if flag CFG_NODE_VAR is set) */
+		struct cfg_var_data_t
+		{
+			/* Variable value */
+			char *m_value;
 
-/* Variable type */
-typedef struct tag_cfg_var_t
-{
-	/* Variable name */
-	char *m_name;
+			/* Handler for this variable (a function that is called
+			 * whenever variable value is changed) */
+			cfg_var_handler_t m_handler;
+		} m_var;
 
-	/* Variable value */
-	char *m_val;
-} cfg_var_t;
+		/* Data for list */
+		struct cfg_list_data_t
+		{
+			/* Child items hash */
+			struct cfg_list_hash_item_t
+			{
+				struct tag_cfg_node_t *m_node;
+				struct cfg_list_hash_item_t *m_next;
+			} **m_children;
+			int m_hash_size;
+		} m_list;
+	} m_data;
+} cfg_node_t;
 
-/* Variables list type */
-typedef struct tag_cfg_var_list_t
-{
-	/* Variables list */
-	cfg_var_t *m_vars;
-	int m_num_vars;
+/* Alias for compatibility with some old code */
+typedef cfg_node_t cfg_list_t;
 
-	/* Data base */
-	cfg_db_t *m_db;
-} cfg_list_t;
+/* Access node fields */
+#define CFG_NODE_IS_VAR(node)		((node)->m_flags & CFG_NODE_VAR)
+#define CFG_NODE_IS_LIST(node)		(!((node)->m_flags & CFG_NODE_VAR))
+#define CFG_LIST(node)				(&((node)->m_data.m_list))
+#define CFG_VAR(node)				(&((node)->m_data.m_var))
+#define CFG_VAR_VALUE(node)			(CFG_VAR(node)->m_value)
+#define CFG_VAR_HANDLER(node)		(CFG_VAR(node)->m_handler)
 
-/* Global variables list */
-extern cfg_list_t *cfg_list;
+/* Create a new configuration list */
+cfg_node_t *cfg_new_list( cfg_node_t *parent, char *name, dword flags,
+		int hash_size );
 
-/* Initialize configuration */
-void cfg_init( void );
+/* Create a new variable */
+cfg_node_t *cfg_new_var( cfg_node_t *parent, char *name, dword flags, 
+		char *value, cfg_var_handler_t handler );
 
-/* Uninitialize configuration */
-void cfg_free( void );
+/* Create a new node and leave node type specific information unset 
+ * (don't use this function directly; use previous two instead) */
+cfg_node_t *cfg_new_node( cfg_node_t *parent, char *name, dword flags );
 
-/* Initialize data base */
-void cfg_init_db( void );
+/* Insert a node into the list */
+void cfg_insert_node( cfg_node_t *list, cfg_node_t *node );
 
-/* Initialize variables with default values */
-void cfg_init_default( void );
+/* Free node */
+void cfg_free_node( cfg_node_t *node );
 
-/* Read configuration file */
-void cfg_read_rcfile( cfg_list_t *list, char *name );
-
-/* Parse one line from configuration file */
-void cfg_parse_line( cfg_list_t *list, char *str );
-
-/* Free configuration list */
-void cfg_free_list( cfg_list_t *list );
-
-/* Add variable */
-void cfg_new_var( cfg_list_t *list, char *name, char *val );
-
-/* Search for variable and return its index (or negative on failure) */
-int cfg_search_var( cfg_list_t *list, char *name );
+/* Search for the node */
+cfg_node_t *cfg_search_node( cfg_node_t *parent, char *name );
 
 /* Set variable value */
-void cfg_set_var( cfg_list_t *list, char *name, char *val );
+void cfg_set_var( cfg_node_t *parent, char *name, char *val );
 
 /* Set variable integer value */
-void cfg_set_var_int( cfg_list_t *list, char *name, int val );
+void cfg_set_var_int( cfg_node_t *parent, char *name, int val );
 
 /* Set variable integer float */
-void cfg_set_var_float( cfg_list_t *list, char *name, float val );
+void cfg_set_var_float( cfg_node_t *parent, char *name, float val );
 
 /* Get variable value */
-char *cfg_get_var( cfg_list_t *list, char *name );
+char *cfg_get_var( cfg_node_t *parent, char *name );
 
 /* Get variable integer value */
-int cfg_get_var_int( cfg_list_t *list, char *name );
+int cfg_get_var_int( cfg_node_t *parent, char *name );
 
 /* Get variable float value */
-float cfg_get_var_float( cfg_list_t *list, char *name );
+float cfg_get_var_float( cfg_node_t *parent, char *name );
 
-/* Get variable flags */
-byte cfg_get_var_flags( cfg_list_t *list, char *name );
+/* Find the real parent of node */
+cfg_node_t *cfg_find_real_parent( cfg_node_t *parent, char *name, 
+		char **real_name );
 
-/* Handle variable setting */
-void cfg_handle_var( cfg_list_t *list, char *name );
+/* Search list for a child node (name given is the exact name, without dots) */
+cfg_node_t *cfg_search_list( cfg_node_t *list, char *name );
 
-/* Set variable information to the data base */
-void cfg_set_to_db( cfg_list_t *list, char *name, 
-		void (*handler)( char * ), dword flags );
+/* Call variable handler */
+bool_t cfg_call_var_handler( bool_t after, cfg_node_t *node, char *value );
+
+/* Calculate string hash value */
+int cfg_calc_hash( char *str, int table_size );
 
 #endif
 

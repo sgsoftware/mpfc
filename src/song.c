@@ -131,7 +131,7 @@ void song_update_title( song_t *song )
 	/* Use specified title format */
 	fmt = cfg_get_var(cfg_list, "title-format");
 	str = song->m_title = str_new("");
-	if (fmt != NULL)
+	if (fmt != NULL && (*fmt != 0))
 	{
 		for ( ; *fmt && !finish; fmt ++ )
 		{

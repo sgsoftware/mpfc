@@ -5,7 +5,7 @@
 /* FILE NAME   : browser.c
  * PURPOSE     : SG MPFC. File browser functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 12.03.2004
+ * LAST UPDATE : 5.08.2004
  * NOTE        : Module prefix 'fb'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -32,13 +32,12 @@
 #include "types.h"
 #include "browser.h"
 #include "colors.h"
-#include "editbox.h"
 #include "error.h"
 #include "help_screen.h"
 #include "player.h"
 #include "plist.h"
 #include "song_info.h"
-#include "window.h"
+#include "wnd.h"
 #include "util.h"
 
 /* Info mode columns IDs */
@@ -53,6 +52,9 @@
 #define FB_COL_TIME 8
 #define FB_COL_NUM 9
 
+/* Obtain the height of spaces for files in browser */
+#define FB_HEIGHT(fb)	(WND_HEIGHT(fb) - 3)
+
 /* Variable names associated with columns length */
 char *fb_vars[FB_COL_NUM] = 
 { "fb-fname-len", "fb-title-len", "fb-artist-len", "fb-album-len", 
@@ -60,7 +62,7 @@ char *fb_vars[FB_COL_NUM] =
   "fb-time-len" };
 
 /* Create a new file browser window */
-browser_t *fb_new( wnd_t *parent, int x, int y, int w, int h, char *dir )
+browser_t *fb_new( wnd_t *parent, char *dir )
 {
 	browser_t *fb;
 
@@ -73,7 +75,7 @@ browser_t *fb_new( wnd_t *parent, int x, int y, int w, int h, char *dir )
 	}
 
 	/* Initialize window */
-	if (!fb_init(fb, parent, x, y, w, h, dir))
+	if (!fb_construct(fb, parent, dir))
 	{
 		free(fb);
 		return NULL;
@@ -82,22 +84,23 @@ browser_t *fb_new( wnd_t *parent, int x, int y, int w, int h, char *dir )
 } /* End of 'fb_new' function */
 
 /* Initialize file browser */
-bool_t fb_init( browser_t *fb, wnd_t *parent, int x, int y, int w, 
-					int h, char *dir )
+bool_t fb_construct( browser_t *fb, wnd_t *parent, char *dir )
 {
 	wnd_t *wnd = (wnd_t *)fb;
 
 	/* Initialize window part */
-	if (!wnd_init(wnd, parent, x, y, w, h))
+	if (!wnd_construct(wnd, "File browser", parent, 0, 0, 0, 0, 
+				WND_FLAG_FULL_BORDER | WND_FLAG_MAXIMIZED))
 		return FALSE;
 
 	/* Register handlers */
-	wnd_register_handler(wnd, WND_MSG_DISPLAY, fb_display);
-	wnd_register_handler(wnd, WND_MSG_KEYDOWN, fb_handle_key);
-	wnd_register_handler(wnd, WND_MSG_MOUSE_LEFT_CLICK, fb_handle_mouse);
-	wnd_register_handler(wnd, WND_MSG_MOUSE_LEFT_DOUBLE, fb_handle_mouse_dbl);
-	wnd_register_handler(wnd, WND_MSG_MOUSE_RIGHT_CLICK, fb_handle_mouse_right);
-	wnd_register_handler(wnd, WND_MSG_MOUSE_MIDDLE_CLICK, fb_handle_mouse_mdl);
+	wnd_msg_add_handler(&wnd->m_on_display, fb_on_display);
+	wnd_msg_add_handler(&wnd->m_on_keydown, fb_on_keydown);
+	wnd_msg_add_handler(&wnd->m_on_mouse_ldown, fb_on_mouse_ldown);
+	wnd_msg_add_handler(&wnd->m_on_mouse_mdown, fb_on_mouse_mdown);
+	wnd_msg_add_handler(&wnd->m_on_mouse_rdown, fb_on_mouse_rdown);
+	wnd_msg_add_handler(&wnd->m_on_mouse_ldouble, fb_on_mouse_ldouble);
+	wnd_msg_add_handler(&wnd->m_destructor, fb_destructor);
 
 	/* Set fields */
 	util_strncpy(fb->m_cur_dir, dir, sizeof(fb->m_cur_dir));
@@ -105,37 +108,36 @@ bool_t fb_init( browser_t *fb, wnd_t *parent, int x, int y, int w,
 	fb->m_files = NULL;
 	fb->m_cursor = 0;
 	fb->m_scrolled = 0;
-	fb->m_height = h - 3;
 	fb->m_info_mode = FALSE;
 	fb->m_search_mode = FALSE;
 	strcpy(fb->m_search_str, "");
 	fb->m_search_str_len = 0;
 	fb_load_files(fb);
-	WND_OBJ(fb)->m_flags |= (WND_INITIALIZED);
+	wnd->m_cursor_hidden = TRUE;
 	return TRUE;
 } /* End of 'fb_init' function */
 
-/* Destroy window */
-void fb_free( wnd_t *wnd )
+/* Browser destructor */
+void fb_destructor( wnd_t *wnd )
 {
+	util_strncpy(player_fb_dir, ((browser_t *)wnd)->m_cur_dir, 
+			sizeof(player_fb_dir));
 	fb_free_files((browser_t *)wnd);
-	wnd_destroy(wnd);
 } /* End of 'fb_free' function */
 
 /* Display window */
-void fb_display( wnd_t *wnd, dword data )
+wnd_msg_retcode_t fb_on_display( wnd_t *wnd )
 {
 	browser_t *fb = (browser_t *)wnd;
-	int i, y;
+	int i, j, y;
 
-	if (fb == NULL)
-		return;
+	assert(fb);
 
-	wnd_move(wnd, 0, 0);
+	wnd_move(wnd, 0, 0, 0);
 
 	/* Print current directory */
 	col_set_color(wnd, COL_EL_FB_TITLE);
-	wnd_printf(wnd, _("Current directory is %s\n"), fb->m_cur_dir);
+	wnd_printf(wnd, 0, 0, _("Current directory is %s\n"), fb->m_cur_dir);
 
 	/* Clean information about items position in window */
 	for ( i = 0; i < fb->m_num_files; i ++ )
@@ -145,12 +147,13 @@ void fb_display( wnd_t *wnd, dword data )
 	fb_print_header(fb);
 	
 	/* Print files */
-	y = wnd_gety(wnd);
-	for ( i = fb->m_scrolled; i < fb->m_num_files && 
-			wnd_gety(wnd) < y + fb->m_height; i ++ )
+	y = wnd->m_cursor_y;
+	for ( i = fb->m_scrolled, j = y; i < fb->m_num_files && 
+			wnd->m_cursor_y < y + FB_HEIGHT(fb); i ++, j ++ )
 	{
 		byte type = fb->m_files[i].m_type;
 		
+		wnd_move(wnd, 0, 0, j);
 		if (type & FB_ITEM_SEL)
 			col_set_color(wnd, i == fb->m_cursor ? COL_EL_FB_SEL_HL :
 					COL_EL_FB_SEL);
@@ -160,39 +163,34 @@ void fb_display( wnd_t *wnd, dword data )
 		else
 			col_set_color(wnd, i == fb->m_cursor ? COL_EL_FB_FILE_HL :
 					COL_EL_FB_FILE);
-		fb->m_files[i].m_y = wnd_gety(wnd);
+		fb->m_files[i].m_y = wnd->m_cursor_y;
 		fb_print_file(fb, &fb->m_files[i]);
 		if (type & FB_ITEM_DIR)
-			wnd_printf(wnd, "/\n");
-		else
-			wnd_printf(wnd, "\n");
+			wnd_printf(wnd, 0, 0, "/");
 	}
 	col_set_color(wnd, COL_EL_DEFAULT);
-	wnd_clear(wnd, TRUE);
 
 	/* Print search stuff */
 	if (fb->m_search_mode)
 	{
-		wnd_move(wnd, 0, WND_HEIGHT(wnd) - 1);
-		wnd_set_attrib(wnd, A_BOLD);
-		wnd_printf(wnd, "Enter name you want to search: ");
-		wnd_set_attrib(wnd, A_NORMAL);
-		wnd_printf(wnd, "%s", fb->m_search_str);
+		wnd_move(wnd, 0, 0, WND_HEIGHT(wnd) - 1);
+		wnd_set_attrib(wnd, WND_ATTRIB_BOLD);
+		wnd_printf(wnd, 0, 0, "Enter name you want to search: ");
+		wnd_set_attrib(wnd, WND_ATTRIB_NORMAL);
+		wnd_printf(wnd, 0, 0, "%s", fb->m_search_str);
 	}
-
-	/* Remove cursor */
-	wnd_move(wnd, WND_WIDTH(wnd) - 1, WND_HEIGHT(wnd) - 1);
+	return WND_MSG_RETCODE_OK;
 } /* End of 'fb_display' function */
 
 /* Handle key pressing */
-void fb_handle_key( wnd_t *wnd, dword data )
+wnd_msg_retcode_t fb_on_keydown( wnd_t *wnd, wnd_key_t *keycode )
 {
-	int key = (int)data, i;
+	int i;
 	browser_t *fb = (browser_t *)wnd;
 	char str[MAX_FILE_NAME];
+	int key = keycode->m_key;
 
-	if (fb == NULL)
-		return;
+	assert(fb);
 
 	/* Handle key in search mode */
 	if (fb->m_search_mode)
@@ -250,14 +248,14 @@ void fb_handle_key( wnd_t *wnd, dword data )
 			dont_exit = TRUE;
 		}
 		if (!dont_exit)
-			return;
+			return WND_MSG_RETCODE_OK;
 	}
 
 	switch (key)
 	{
 	/* Exit */
 	case 'q':
-		wnd_send_msg(wnd, WND_MSG_CLOSE, 0);
+		wnd_close(wnd);
 		break;
 
 	/* Move cursor */
@@ -271,11 +269,11 @@ void fb_handle_key( wnd_t *wnd, dword data )
 		break;
 	case 'd':
 	case KEY_NPAGE:
-		fb_move_cursor(fb, fb->m_height, TRUE);
+		fb_move_cursor(fb, FB_HEIGHT(fb), TRUE);
 		break;
 	case 'u':
 	case KEY_PPAGE:
-		fb_move_cursor(fb, -fb->m_height, TRUE);
+		fb_move_cursor(fb, -FB_HEIGHT(fb), TRUE);
 		break;
 	case KEY_HOME:
 		fb_move_cursor(fb, 0, FALSE);
@@ -333,7 +331,7 @@ void fb_handle_key( wnd_t *wnd, dword data )
 		break;
 	case '+':
 	case '-':
-		fb_select_pattern(fb, key == '+');
+		//fb_select_pattern(fb, key == '+');
 		break;
 
 	/* Show help */
@@ -341,72 +339,82 @@ void fb_handle_key( wnd_t *wnd, dword data )
 		fb_help(fb);
 		break;
 	}
+	wnd_invalidate(wnd);
+	return WND_MSG_RETCODE_OK;
 } /* End of 'fb_handle_key' function */
 
 /* Handle mouse left button */
-void fb_handle_mouse( wnd_t *wnd, dword data )
+wnd_msg_retcode_t fb_on_mouse_ldown( wnd_t *wnd, int x, int y, 
+		wnd_mouse_button_t btn, wnd_mouse_event_t type )
 {
 	int pos;
 	browser_t *fb = (browser_t *)wnd;
 	
 	/* Find item matching these coordinates */
-	pos = fb_find_item_by_mouse(fb, WND_MOUSE_X(data), WND_MOUSE_Y(data));
+	pos = fb_find_item_by_mouse(fb, x, y);
 	if (pos >= 0)
 	{
 		fb_move_cursor(fb, pos, FALSE);
 	}
-	wnd_send_msg(wnd, WND_MSG_DISPLAY, 0);
+	wnd_invalidate(wnd);
+	return WND_MSG_RETCODE_OK;
 } /* End of 'fb_handle_mouse' function */
 
 /* Handle mouse right button */
-void fb_handle_mouse_right( wnd_t *wnd, dword data )
+wnd_msg_retcode_t fb_on_mouse_rdown( wnd_t *wnd, int x, int y,
+		wnd_mouse_button_t btn, wnd_mouse_event_t type )
 {
 	int pos;
 	browser_t *fb = (browser_t *)wnd;
 	
 	/* Find item matching these coordinates */
-	pos = fb_find_item_by_mouse(fb, WND_MOUSE_X(data), WND_MOUSE_Y(data));
+	pos = fb_find_item_by_mouse(fb, x, y);
 	if (pos >= 0)
 	{
 		fb_change_sel(fb, pos);
 	}
-	wnd_send_msg(wnd, WND_MSG_DISPLAY, 0);
+	wnd_invalidate(wnd);
+	return WND_MSG_RETCODE_OK;
 } /* End of 'fb_handle_mouse_right' function */
 
 /* Handle mouse middle button */
-void fb_handle_mouse_mdl( wnd_t *wnd, dword data )
+wnd_msg_retcode_t fb_on_mouse_mdown( wnd_t *wnd, int x, int y,
+		wnd_mouse_button_t btn, wnd_mouse_event_t type )
 {
 	int pos;
 	browser_t *fb = (browser_t *)wnd;
 	
 	/* Find item matching these coordinates */
-	pos = fb_find_item_by_mouse(fb, WND_MOUSE_X(data), WND_MOUSE_Y(data));
+	pos = fb_find_item_by_mouse(fb, x, y);
 	if (pos >= 0)
 	{
 		fb->m_cursor = pos;
-		fb->m_scrolled = pos - fb->m_height / 2;
-		if (fb->m_scrolled + fb->m_height > fb->m_num_files)
-			fb->m_scrolled = fb->m_num_files - fb->m_height;
+		fb->m_scrolled = pos - FB_HEIGHT(fb) / 2;
+		if (fb->m_scrolled + FB_HEIGHT(fb) > fb->m_num_files)
+			fb->m_scrolled = fb->m_num_files - FB_HEIGHT(fb);
 		if (fb->m_scrolled < 0)
 			fb->m_scrolled = 0;
 	}
-	wnd_send_msg(wnd, WND_MSG_DISPLAY, 0);
+	wnd_invalidate(wnd);
+	return WND_MSG_RETCODE_OK;
 } /* End of 'fb_handle_mouse_mdl' function */
 
 /* Handle mouse left button double click */
-void fb_handle_mouse_dbl( wnd_t *wnd, dword data )
+wnd_msg_retcode_t fb_on_mouse_ldouble( wnd_t *wnd, int x, int y,
+		wnd_mouse_button_t btn, wnd_mouse_event_t type )
 {
 	int pos;
 	browser_t *fb = (browser_t *)wnd;
 	
 	/* Find item matching these coordinates */
-	pos = fb_find_item_by_mouse(fb, WND_MOUSE_X(data), WND_MOUSE_Y(data));
+	pos = fb_find_item_by_mouse(fb, x, y);
 	if (pos >= 0)
 	{
 		fb_move_cursor(fb, pos, FALSE);
 		fb_go_to_dir(fb);
 	}
-	wnd_send_msg(wnd, WND_MSG_DISPLAY, 0);
+	wnd_invalidate(wnd);
+	return WND_MSG_RETCODE_OK;
 } /* End of 'fb_handle_mouse_dbl' function */
 
 /* Move cursor to a specified position */
@@ -414,8 +422,7 @@ void fb_move_cursor( browser_t *fb, int pos, bool_t rel )
 {
 	int was_cursor;
 
-	if (fb == NULL)
-		return;
+	assert(fb);
 
 	/* Move cursor */
 	was_cursor = fb->m_cursor;
@@ -427,11 +434,11 @@ void fb_move_cursor( browser_t *fb, int pos, bool_t rel )
 
 	/* Scroll */
 	if (fb->m_cursor < fb->m_scrolled || 
-			fb->m_cursor >= fb->m_scrolled + fb->m_height)
+			fb->m_cursor >= fb->m_scrolled + FB_HEIGHT(fb))
 	{
 		fb->m_scrolled += (fb->m_cursor - was_cursor);
-		if (fb->m_scrolled >= fb->m_num_files - fb->m_height)
-			fb->m_scrolled = fb->m_num_files - fb->m_height;
+		if (fb->m_scrolled >= fb->m_num_files - FB_HEIGHT(fb))
+			fb->m_scrolled = fb->m_num_files - FB_HEIGHT(fb);
 		if (fb->m_scrolled < 0)
 			fb->m_scrolled = 0;
 	}
@@ -444,8 +451,7 @@ void fb_load_files( browser_t *fb )
 	int i;
 	char pattern[MAX_FILE_NAME];
 
-	if (fb == NULL)
-		return;
+	assert(fb);
 
 	/* Free current files list */
 	fb_free_files(fb);
@@ -609,6 +615,7 @@ void fb_add2plist( browser_t *fb )
 	plist_set_free(set);
 } /* End of 'fb_add2plist' function */
 
+#if 0
 /* Select/deselect files matching a pattern */
 void fb_select_pattern( browser_t *fb, bool_t sel )
 {
@@ -650,6 +657,7 @@ void fb_select_pattern( browser_t *fb, bool_t sel )
 		}
 	free(pattern);
 } /* End of 'fb_select_pattern' function */
+#endif
 
 /* Find a browser item by the mouse coordinates */
 int fb_find_item_by_mouse( browser_t *fb, int x, int y )
@@ -738,7 +746,7 @@ void fb_print_header( browser_t *fb )
 
 	for ( i = 0; i < FB_COL_NUM; i ++ )
 		fb_print_info_col(fb, i, NULL);
-	wnd_printf(wnd, "\n");
+	wnd_printf(wnd, 0, 0, "\n");
 } /* End of 'fb_print_header' function */
 
 /* Print file */
@@ -748,7 +756,7 @@ void fb_print_file( browser_t *fb, struct browser_list_item *item )
 
 	/* If we are not in info mode - print file name */
 	if (!fb->m_info_mode || item->m_info == NULL)
-		wnd_printf(wnd, "%s", item->m_name);
+		wnd_printf(wnd, 0, 0, "%s", item->m_name);
 	/* Print file info */
 	else
 	{
@@ -760,10 +768,9 @@ void fb_print_file( browser_t *fb, struct browser_list_item *item )
 } /* End of 'fb_print_file' function */
 
 /* Print info column */
-void fb_print_info_col( browser_t *fb, int id, 
-							struct browser_list_item *item )
+void fb_print_info_col( browser_t *fb, int id, struct browser_list_item *item )
 {
-	int size, next_size = 0, i;
+	int size, next_size = 0, i, right;
 	wnd_t *wnd = WND_OBJ(fb);
 	song_info_t *info;
 
@@ -782,78 +789,68 @@ void fb_print_info_col( browser_t *fb, int id,
 	if (item != NULL)
 		info = item->m_info;
 	
+	right = WND_OBJ(fb)->m_cursor_x + size;
 	switch (id)
 	{
 	case FB_COL_FILENAME:
 		if (item == NULL)
-			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, _("File name"));
+			wnd_printf(wnd, 0, right, _("File name"));
 		else
-			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, "%s", 
-					item->m_name);
+			wnd_printf(wnd, 0, right, "%s", item->m_name);
 		break;
 	case FB_COL_TITLE:
 		if (item == NULL)
-			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, _("Title"));
+			wnd_printf(wnd, 0, right, _("Title"));
 		else
-			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, "%s", 
-					info->m_name);
+			wnd_printf(wnd, 0, right, "%s", info->m_name);
 		break;
 	case FB_COL_ARTIST:
 		if (item == NULL)
-			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, _("Artist"));
+			wnd_printf(wnd, 0, right, _("Artist"));
 		else
-			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, "%s", 
-					info->m_artist);
+			wnd_printf(wnd, 0, right, "%s", info->m_artist);
 		break;
 	case FB_COL_ALBUM:
 		if (item == NULL)
-			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, _("Album"));
+			wnd_printf(wnd, 0, right, _("Album"));
 		else
-			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, "%s", 
-					info->m_album);
+			wnd_printf(wnd, 0, right, "%s", info->m_album);
 		break;
 	case FB_COL_YEAR:
 		if (item == NULL)
-			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, _("Year"));
+			wnd_printf(wnd, 0, right, _("Year"));
 		else
-			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, "%s", 
-					info->m_year);
+			wnd_printf(wnd, 0, right, "%s", info->m_year);
 		break;
 	case FB_COL_GENRE:
 		if (item == NULL)
-			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, _("Genre"));
+			wnd_printf(wnd, 0, right, _("Genre"));
 		else
-			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, "%s", 
-					info->m_genre);
+			wnd_printf(wnd, 0, right, "%s", info->m_genre);
 		break;
 	case FB_COL_TRACK:
 		if (item == NULL)
-			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, _("Track"));
+			wnd_printf(wnd, 0, right, _("Track"));
 		else
-			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, "%s", 
-					info->m_genre);
+			wnd_printf(wnd, 0, right, "%s", info->m_genre);
 		break;
 	case FB_COL_TIME:
 		if (item == NULL)
-			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, _("Time"));
+			wnd_printf(wnd, 0, right, _("Time"));
 		else
-			wnd_printf_bound(wnd, size, WND_PRINT_FILL_REST, "%d:%02d", 
+			wnd_printf(wnd, 0, right, "%d:%02d", 
 					item->m_len / 60, item->m_len % 60);
 		break;
 	}
+	wnd_move(wnd, WND_MOVE_ADVANCE, right, WND_MOVE_DONT_CHANGE);
 	if (next_size > 0)
-		wnd_print_char(wnd, ACS_VLINE);
+		wnd_putchar(wnd, 0, ACS_VLINE);
 } /* End of 'fb_print_info_col' function */
 
 /* Show help screen */
 void fb_help( browser_t *fb )
 {
-	help_screen_t *h;
-
-	h = help_new(WND_OBJ(fb), HELP_BROWSER, 0, 0, WND_WIDTH(fb), 
-			WND_HEIGHT(fb));
-	wnd_run(h);
-	wnd_destroy(h);
+	help_new(WND_OBJ(fb), HELP_BROWSER);
 } /* End of 'fb_help' function */
 
 /* Replace files in playlist with selected files  */

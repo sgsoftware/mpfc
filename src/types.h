@@ -27,6 +27,7 @@
 #ifndef __SG_MPFC_TYPES_H__
 #define __SG_MPFC_TYPES_H__
 
+#include <assert.h>
 #include <libintl.h>
 #include "config.h"
 

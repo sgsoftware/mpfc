@@ -1,12 +1,13 @@
 /******************************************************************
- * Copyright (C) 2003 by SG Software.
+ * Copyright (C) 2004 by SG Software.
  ******************************************************************/
 
-/* FILE NAME   : label.h
- * PURPOSE     : SG MPFC. Interface for label functions.
+/* FILE NAME   : wnd_root.h
+ * PURPOSE     : MPFC Window Library. Interface for root window
+ *               handlers.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 31.08.2003
- * NOTE        : Module prefix 'label'.
+ * LAST UPDATE : 24.07.2004
+ * NOTE        : Module prefix 'wnd_root'.
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 
@@ -24,42 +25,28 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef __SG_MPFC_LABEL_H__
-#define __SG_MPFC_LABEL_H__
+#ifndef __SG_MPFC_WND_ROOT_H__
+#define __SG_MPFC_WND_ROOT_H__
 
 #include "types.h"
-#include "window.h"
 
-/* Label type */
-typedef struct
-{
-	/* Common window object */
-	wnd_t m_wnd;
+/* Further declarations */
+struct tag_wnd_t;
+enum wnd_msg_retcode_t;
 
-	/* Label text */
-	char *m_text;
-} label_t;
+/* WND_MSG_KEYDOWN message handler */
+wnd_msg_retcode_t wnd_root_on_key( struct tag_wnd_t *wnd, wnd_key_t *keycode );
 
-/* Create a new label */
-label_t *label_new( wnd_t *parent, int x, int y, int w, int h, char *text );
+/* WND_MSG_DISPLAY message handler */
+wnd_msg_retcode_t wnd_root_on_display( struct tag_wnd_t *wnd );
 
-/* Initialize label */
-bool_t label_init( label_t *l, wnd_t *parent, int x, int y, int w, int h, 
-		char *text );
+/* WND_MSG_CLOSE message handler */
+wnd_msg_retcode_t wnd_root_on_close( struct tag_wnd_t *wnd );
 
-/* Destroy label */
-void label_destroy( wnd_t *wnd );
-
-/* Set label text */
-void label_set_text( label_t *l, char *text );
-
-/* Label display function */
-void label_display( wnd_t *wnd, dword data );
-
-/* Label key handler function */
-void label_handle_key( wnd_t *wnd, dword data );
+/* Root window destructor */
+void wnd_root_destructor( struct tag_wnd_t *wnd );
 
 #endif
 
-/* End of 'label.h' file */
+/* End of 'wnd_root.h' file */
 

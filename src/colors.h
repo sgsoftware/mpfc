@@ -29,7 +29,7 @@
 #define __SG_MPFC_COLORS_H__
 
 #include "types.h"
-#include "window.h"
+#include "wnd.h"
 
 /* Element color type */
 typedef struct tag_colors_el_t

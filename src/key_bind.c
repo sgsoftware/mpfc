@@ -271,6 +271,7 @@ int kbind_check_buf( void )
 /* Read key bindings from configuration */
 void kbind_read_from_cfg( void )
 {
+#if 0
 	int i;
 
 	/* Read all variables starting with 'kbind_' */
@@ -280,6 +281,7 @@ void kbind_read_from_cfg( void )
 		if (action >= 0)
 			kbind_set_var(action, cfg_list->m_vars[i].m_val);
 	}
+#endif
 } /* End of 'kbind_read_from_cfg' function */
 
 /* Convert variable name to action ID */

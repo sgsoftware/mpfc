@@ -5,7 +5,7 @@
 /* FILE NAME   : eqwnd.c
  * PURPOSE     : SG MPFC. Equalizer window functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 11.08.2003
+ * LAST UPDATE : 5.08.2004
  * NOTE        : Module prefix 'eqwnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -29,14 +29,14 @@
 #include "cfg.h"
 #include "error.h"
 #include "eqwnd.h"
-#include "file_input.h"
+//#include "file_input.h"
 #include "help_screen.h"
 #include "player.h"
-#include "window.h"
+#include "wnd.h"
 #include "util.h"
 
 /* Create a new equalizer window */
-eq_wnd_t *eqwnd_new( wnd_t *parent, int x, int y, int w, int h )
+eq_wnd_t *eqwnd_new( wnd_t *parent )
 {
 	eq_wnd_t *eq;
 
@@ -49,7 +49,7 @@ eq_wnd_t *eqwnd_new( wnd_t *parent, int x, int y, int w, int h )
 	}
 
 	/* Initialize equalizer window */
-	if (!eqwnd_init(eq, parent, x, y, w, h))
+	if (!eqwnd_construct(eq, parent))
 	{
 		free(eq);
 		return NULL;
@@ -58,48 +58,35 @@ eq_wnd_t *eqwnd_new( wnd_t *parent, int x, int y, int w, int h )
 } /* End of 'eqwnd_new' function */
 
 /* Initialize equalizer window */
-bool_t eqwnd_init( eq_wnd_t *eq, wnd_t *parent, int x, int y, int w, int h )
+bool_t eqwnd_construct( eq_wnd_t *eq, wnd_t *parent )
 {
 	wnd_t *wnd = (wnd_t *)eq;
 
 	/* Initialize window part */
-	if (!wnd_init(wnd, parent, x, y, w, h))
+	if (!wnd_construct(wnd, _("MPFC Equalizer"), parent, 0, 0, 0, 0,
+				WND_FLAG_FULL_BORDER | WND_FLAG_MAXIMIZED))
 		return FALSE;
 
 	/* Register handlers */
-	wnd_register_handler(wnd, WND_MSG_DISPLAY, eqwnd_display);
-	wnd_register_handler(wnd, WND_MSG_KEYDOWN, eqwnd_handle_key);
-	wnd_register_handler(wnd, WND_MSG_MOUSE_LEFT_CLICK, eqwnd_handle_mouse);
+	wnd_msg_add_handler(&wnd->m_on_display, eqwnd_on_display);
+	wnd_msg_add_handler(&wnd->m_on_keydown, eqwnd_on_keydown);
+	wnd_msg_add_handler(&wnd->m_on_mouse_ldown, eqwnd_on_mouse_ldown);
 
 	/* Set fields */
+	wnd->m_cursor_hidden = TRUE;
 	eq->m_pos = 0;
-	WND_OBJ(eq)->m_flags |= (WND_INITIALIZED);
 	return TRUE;
 } /* End of 'eqwnd_init' function */
 
-/* Destroy equalizer window */
-void eqwnd_free( wnd_t *wnd )
-{
-	wnd_destroy(wnd);
-} /* End of 'eqwnd_free' function */
-
 /* Handle display message */
-void eqwnd_display( wnd_t *wnd, dword data )
+wnd_msg_retcode_t eqwnd_on_display( wnd_t *wnd )
 {
-	char *title = _("MPFC Equalizer");
 	eq_wnd_t *eq = (eq_wnd_t *)wnd;
 	int i;
 	int x;
 	char *str[EQWND_NUM_BANDS] = {"PREAMP", "60HZ", "170HZ", "310HZ", "600HZ",
 						"1KHZ", "3KHZ", "6KHZ", "12KHZ", "14KHZ", "16KHZ"};
 	
-	/* Print title */
-	wnd_clear(wnd, FALSE);
-	wnd_move(wnd, (WND_WIDTH(wnd) - strlen(title)) / 2, 0);
-	wnd_set_attrib(wnd, A_BOLD);
-	wnd_printf(wnd, "%s\n\n", title);
-	wnd_set_attrib(wnd, A_NORMAL);
-
 	/* Display bands sliders */
 	for ( i = 0, x = 3; i < EQWND_NUM_BANDS; i ++ )
 	{
@@ -108,69 +95,71 @@ void eqwnd_display( wnd_t *wnd, dword data )
 
 		eqwnd_get_var_name(i, name);
 		val = cfg_get_var_float(cfg_list, name);
-		x += eqwnd_display_slider(wnd, x, 2, 22,
+		x += eqwnd_display_slider(wnd, x, 1, 20,
 				(i == eq->m_pos), val, str[i]);
 		if (i == 0)
 		{
-			wnd_move(wnd, x, 2);
-			wnd_printf(wnd, "+20 dB");
-			wnd_move(wnd, x, 12);
-			wnd_printf(wnd, "0 dB");
-			wnd_move(wnd, x, 22);
-			wnd_printf(wnd, "-20 dB");
+			wnd_move(wnd, 0, x, 2);
+			wnd_printf(wnd, 0, 0, "+20 dB");
+			wnd_move(wnd, 0, x, 12);
+			wnd_printf(wnd, 0, 0, "0 dB");
+			wnd_move(wnd, 0, x, 22);
+			wnd_printf(wnd, 0, 0, "-20 dB");
 			x += 10;
 		}
 	}
-
-	/* Remove cursor */
-	wnd_move(wnd, WND_WIDTH(wnd) - 1, WND_HEIGHT(wnd) - 1);
+	return WND_MSG_RETCODE_OK;
 } /* End of 'eqwnd_display' function */
 
 /* Handle key message */
-void eqwnd_handle_key( wnd_t *wnd, dword data )
+wnd_msg_retcode_t eqwnd_on_keydown( wnd_t *wnd, wnd_key_t *keycode )
 {
 	eq_wnd_t *eq = (eq_wnd_t *)wnd;
-	int key = (int)data;
 
-	switch (key)
+	switch (keycode->m_key)
 	{
 	case 'q':
-	case 27:
+	case KEY_ESCAPE:
 		/* Save parameters */
 		eqwnd_save_params();
 
 		/* Close window */
-		wnd_send_msg(wnd, WND_MSG_CLOSE, 0);
+		wnd_close(wnd);
 		break;
 	case 'h':
 	case KEY_LEFT:
 		eq->m_pos --;
 		if (eq->m_pos < 0)
 			eq->m_pos = 10;
+		wnd_invalidate(wnd);
 		break;
 	case 'l':
 	case KEY_RIGHT:
 		eq->m_pos ++;
 		if (eq->m_pos > 10)
 			eq->m_pos = 0;
+		wnd_invalidate(wnd);
 		break;
 	case 'j':
 	case KEY_DOWN:
 		eqwnd_set_var(eq->m_pos, -2., TRUE);
 		player_eq_changed = TRUE;
+		wnd_invalidate(wnd);
 		break;
 	case 'k':
 	case KEY_UP:
 		eqwnd_set_var(eq->m_pos, 2., TRUE);
 		player_eq_changed = TRUE;
+		wnd_invalidate(wnd);
 		break;
 	case 'p':
-		eqwnd_load_eqf_dlg();
+		//eqwnd_load_eqf_dlg();
 		break;
 	case '?':
 		eqwnd_help(eq);
 		break;
 	}
+	return WND_MSG_RETCODE_OK;
 } /* End of 'eqwnd_handle_key' function */
 
 /* Display slider */
@@ -184,23 +173,23 @@ int eqwnd_display_slider( wnd_t *wnd, int x, int start_y, int end_y,
 	pos = eqwnd_val2pos(val, h);
 	for ( i = 0; i <= h; i ++ )
 	{
-		wnd_move(wnd, x, i + start_y);
+		wnd_move(wnd, 0, x, i + start_y);
 		if (i == pos)
 		{
-			wnd_print_char(wnd, ACS_BLOCK);
-			wnd_print_char(wnd, ACS_BLOCK);
+			wnd_putchar(wnd, 0, ACS_BLOCK);
+			wnd_putchar(wnd, 0, ACS_BLOCK);
 		}
 		else
 		{
-			wnd_print_char(wnd, ACS_VLINE);
-			wnd_print_char(wnd, ACS_VLINE);
+			wnd_putchar(wnd, 0, ACS_VLINE);
+			wnd_putchar(wnd, 0, ACS_VLINE);
 		}
 	}
-	wnd_move(wnd, x - 1, end_y + 1);
+	wnd_move(wnd, 0, x - 1, end_y + 1);
 	if (hl)
-		wnd_set_attrib(wnd, A_BOLD);
-	wnd_printf(wnd, "%s", str);
-	wnd_set_attrib(wnd, A_NORMAL);
+		wnd_set_attrib(wnd, WND_ATTRIB_BOLD);
+	wnd_printf(wnd, 0, 0, "%s", str);
+	wnd_set_attrib(wnd, 0);
 	return 6;
 } /* End of 'eqwnd_display_slider' function */
 
@@ -245,6 +234,7 @@ void eqwnd_save_params( void )
 	player_save_cfg_vars(cfg_list, str);
 } /* End of 'eqwnd_save_params' function */
 
+#if 0
 /* Process load preset from EQF file dialog */
 void eqwnd_load_eqf_dlg( void )
 {
@@ -266,6 +256,7 @@ void eqwnd_load_eqf_dlg( void )
 		wnd_destroy(fin);
 	}
 } /* End of 'eqwnd_load_eqf_dlg' function */
+#endif
 
 /* Load a Winamp EQF file */
 void eqwnd_load_eqf( char *filename )
@@ -314,25 +305,28 @@ void eqwnd_load_eqf( char *filename )
 } /* End of 'eqwnd_load_eqf' function */
 
 /* Handle mouse left button click */
-void eqwnd_handle_mouse( wnd_t *wnd, dword data )
+wnd_msg_retcode_t eqwnd_on_mouse_ldown( wnd_t *wnd, int x, int y,
+		wnd_mouse_button_t btn, wnd_mouse_event_t type )
 {
-	int mx = WND_MOUSE_X(data), my = WND_MOUSE_Y(data), i;
+	int i;
 	eq_wnd_t *eq = (eq_wnd_t *)wnd;
 
 	/* Check if this point is inside any of the band sliders */
 	for ( i = 0; i < EQWND_NUM_BANDS; i ++ )
 	{
-		int x, y, w, h;
+		int sx, sy, sw, sh;
 
-		eqwnd_get_slider_pos(i, &x, &y, &w, &h);
-		if (mx >= x && my >= y && mx <= x + w && my <= y + h)
+		eqwnd_get_slider_pos(i, &sx, &sy, &sw, &sh);
+		if (x >= sx && y >= sy && x <= sx + sw && y <= sy + sh)
 		{
 			eq->m_pos = i;
-			eqwnd_set_var(i, eqwnd_pos2val(my - y, h), FALSE);
+			eqwnd_set_var(i, eqwnd_pos2val(y - sy, sh), FALSE);
+			wnd_invalidate(wnd);
 			break;
 		}
 	}
-} /* End of 'eqwnd_handle_mouse' function */
+	return WND_MSG_RETCODE_OK;
+} /* End of 'eqwnd_on_mouse_ldown' function */
 
 /* Get equalizer band slider position */
 void eqwnd_get_slider_pos( int band, int *x, int *y, int *w, int *h )
@@ -340,9 +334,9 @@ void eqwnd_get_slider_pos( int band, int *x, int *y, int *w, int *h )
 	*x = 2 + band * 6;
 	if (band > 0)
 		(*x) += 10;
-	*y = 2;
+	*y = 1;
 	*w = 6;
-	*h = 20;
+	*h = 19;
 } /* End of 'eqwnd_get_slider_pos' function */
 
 /* Convert band value to position */
@@ -360,11 +354,7 @@ float eqwnd_pos2val( int pos, int height )
 /* Show help screen */
 void eqwnd_help( eq_wnd_t *eq )
 {
-	help_screen_t *h;
-
-	h = help_new(WND_OBJ(eq), HELP_EQWND, 0, 0, WND_WIDTH(eq), WND_HEIGHT(eq));
-	wnd_run(h);
-	wnd_destroy(h);
+	help_new(WND_OBJ(eq), HELP_EQWND);
 } /* End of 'eqwnd_help' function */
 
 /* End of 'eqwnd.c' file */

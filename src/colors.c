@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. User interface elements colors handling 
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 20.01.2004
+ * LAST UPDATE : 5.08.2004
  * NOTE        : Module prefix 'colors'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -29,7 +29,7 @@
 #include "types.h"
 #include "cfg.h"
 #include "colors.h"
-#include "window.h"
+#include "wnd.h"
 
 /* Elements colors array */
 colors_el_t col_elements[COL_NUM_ELEMENTS];
@@ -38,36 +38,56 @@ colors_el_t col_elements[COL_NUM_ELEMENTS];
 void col_init( void )
 {
 	/* Initialize colors with default values */
-	col_set_el(COL_EL_PLIST_TITLE, COLOR_WHITE, COLOR_BLACK, 0);
-	col_set_el(COL_EL_PLIST_TITLE_CUR, COLOR_RED, COLOR_BLACK, A_BOLD);
-	col_set_el(COL_EL_PLIST_TITLE_SEL, COLOR_WHITE, COLOR_BLUE, A_BOLD);
-	col_set_el(COL_EL_PLIST_TITLE_CUR_SEL, COLOR_RED, COLOR_BLUE, A_BOLD);
-	col_set_el(COL_EL_CUR_TITLE, COLOR_YELLOW, COLOR_BLACK, A_BOLD);
-	col_set_el(COL_EL_CUR_TIME, COLOR_GREEN, COLOR_BLACK, A_BOLD);
-	col_set_el(COL_EL_AUDIO_PARAMS, COLOR_GREEN, COLOR_BLACK, A_BOLD);
-	col_set_el(COL_EL_PLIST_TIME, COLOR_GREEN, COLOR_BLACK, A_BOLD);
-	col_set_el(COL_EL_ABOUT, COLOR_GREEN, COLOR_BLACK, A_BOLD);
-	col_set_el(COL_EL_SLIDER, COLOR_CYAN, COLOR_BLACK, A_BOLD);
-	col_set_el(COL_EL_PLAY_MODES, COLOR_GREEN, COLOR_BLACK, A_BOLD);
-	col_set_el(COL_EL_STATUS, COLOR_RED, COLOR_BLACK, 0);
-	col_set_el(COL_EL_HELP_TITLE, COLOR_GREEN, COLOR_BLACK, A_BOLD);
-	col_set_el(COL_EL_HELP_STRINGS, COLOR_WHITE, COLOR_BLACK, 0);
-	col_set_el(COL_EL_DLG_TITLE, COLOR_GREEN, COLOR_BLACK, A_BOLD);
-	col_set_el(COL_EL_DLG_ITEM_TITLE, COLOR_WHITE, COLOR_BLACK, A_BOLD);
-	col_set_el(COL_EL_DLG_ITEM_CONTENT, COLOR_WHITE, COLOR_BLACK, 0);
-	col_set_el(COL_EL_DLG_ITEM_GRAYED, COLOR_BLACK, COLOR_BLACK, A_BOLD);
-	col_set_el(COL_EL_LBOX_CUR_FOCUSED, COLOR_WHITE, COLOR_BLUE, A_BOLD);
-	col_set_el(COL_EL_LBOX_CUR, COLOR_WHITE, COLOR_GREEN, A_BOLD);
-	col_set_el(COL_EL_BTN_FOCUSED, COLOR_WHITE, COLOR_BLUE, A_BOLD);
-	col_set_el(COL_EL_BTN, COLOR_WHITE, COLOR_GREEN, A_BOLD);
-	col_set_el(COL_EL_FB_FILE, COLOR_WHITE, COLOR_BLACK, 0);
-	col_set_el(COL_EL_FB_FILE_HL, COLOR_WHITE, COLOR_BLUE, 0);
-	col_set_el(COL_EL_FB_DIR, COLOR_GREEN, COLOR_BLACK, 0);
-	col_set_el(COL_EL_FB_DIR_HL, COLOR_GREEN, COLOR_BLUE, 0);
-	col_set_el(COL_EL_FB_SEL, COLOR_YELLOW, COLOR_BLACK, A_BOLD);
-	col_set_el(COL_EL_FB_SEL_HL, COLOR_YELLOW, COLOR_BLUE, A_BOLD);
-	col_set_el(COL_EL_FB_TITLE, COLOR_GREEN, COLOR_BLACK, A_BOLD);
-	col_set_el(COL_EL_DEFAULT, COLOR_WHITE, COLOR_BLACK, 0);
+	col_set_el(COL_EL_PLIST_TITLE, WND_COLOR_WHITE, WND_COLOR_BLACK, 0);
+	col_set_el(COL_EL_PLIST_TITLE_CUR, WND_COLOR_RED, WND_COLOR_BLACK, 
+			WND_ATTRIB_BOLD);
+	col_set_el(COL_EL_PLIST_TITLE_SEL, WND_COLOR_WHITE, WND_COLOR_BLUE, 
+			WND_ATTRIB_BOLD);
+	col_set_el(COL_EL_PLIST_TITLE_CUR_SEL, WND_COLOR_RED, WND_COLOR_BLUE, 
+			WND_ATTRIB_BOLD);
+	col_set_el(COL_EL_CUR_TITLE, WND_COLOR_YELLOW, WND_COLOR_BLACK, 
+			WND_ATTRIB_BOLD);
+	col_set_el(COL_EL_CUR_TIME, WND_COLOR_GREEN, WND_COLOR_BLACK, 
+			WND_ATTRIB_BOLD);
+	col_set_el(COL_EL_AUDIO_PARAMS, WND_COLOR_GREEN, WND_COLOR_BLACK, 
+			WND_ATTRIB_BOLD);
+	col_set_el(COL_EL_PLIST_TIME, WND_COLOR_GREEN, WND_COLOR_BLACK, 
+			WND_ATTRIB_BOLD);
+	col_set_el(COL_EL_ABOUT, WND_COLOR_GREEN, WND_COLOR_BLACK, 
+			WND_ATTRIB_BOLD);
+	col_set_el(COL_EL_SLIDER, WND_COLOR_CYAN, WND_COLOR_BLACK, 
+			WND_ATTRIB_BOLD);
+	col_set_el(COL_EL_PLAY_MODES, WND_COLOR_GREEN, WND_COLOR_BLACK, 
+			WND_ATTRIB_BOLD);
+	col_set_el(COL_EL_STATUS, WND_COLOR_RED, WND_COLOR_BLACK, 0);
+	col_set_el(COL_EL_HELP_TITLE, WND_COLOR_GREEN, WND_COLOR_BLACK, 
+			WND_ATTRIB_BOLD);
+	col_set_el(COL_EL_HELP_STRINGS, WND_COLOR_WHITE, WND_COLOR_BLACK, 0);
+	col_set_el(COL_EL_DLG_TITLE, WND_COLOR_GREEN, WND_COLOR_BLACK, 
+			WND_ATTRIB_BOLD);
+	col_set_el(COL_EL_DLG_ITEM_TITLE, WND_COLOR_WHITE, WND_COLOR_BLACK, 
+			WND_ATTRIB_BOLD);
+	col_set_el(COL_EL_DLG_ITEM_CONTENT, WND_COLOR_WHITE, WND_COLOR_BLACK, 0);
+	col_set_el(COL_EL_DLG_ITEM_GRAYED, WND_COLOR_BLACK, WND_COLOR_BLACK, 
+			WND_ATTRIB_BOLD);
+	col_set_el(COL_EL_LBOX_CUR_FOCUSED, WND_COLOR_WHITE, WND_COLOR_BLUE, 
+			WND_ATTRIB_BOLD);
+	col_set_el(COL_EL_LBOX_CUR, WND_COLOR_WHITE, WND_COLOR_GREEN, 
+			WND_ATTRIB_BOLD);
+	col_set_el(COL_EL_BTN_FOCUSED, WND_COLOR_WHITE, WND_COLOR_BLUE, 
+			WND_ATTRIB_BOLD);
+	col_set_el(COL_EL_BTN, WND_COLOR_WHITE, WND_COLOR_GREEN, WND_ATTRIB_BOLD);
+	col_set_el(COL_EL_FB_FILE, WND_COLOR_WHITE, WND_COLOR_BLACK, 0);
+	col_set_el(COL_EL_FB_FILE_HL, WND_COLOR_WHITE, WND_COLOR_BLUE, 0);
+	col_set_el(COL_EL_FB_DIR, WND_COLOR_GREEN, WND_COLOR_BLACK, 0);
+	col_set_el(COL_EL_FB_DIR_HL, WND_COLOR_GREEN, WND_COLOR_BLUE, 0);
+	col_set_el(COL_EL_FB_SEL, WND_COLOR_YELLOW, WND_COLOR_BLACK, 
+			WND_ATTRIB_BOLD);
+	col_set_el(COL_EL_FB_SEL_HL, WND_COLOR_YELLOW, WND_COLOR_BLUE, 
+			WND_ATTRIB_BOLD);
+	col_set_el(COL_EL_FB_TITLE, WND_COLOR_GREEN, WND_COLOR_BLACK, 
+			WND_ATTRIB_BOLD);
+	col_set_el(COL_EL_DEFAULT, WND_COLOR_WHITE, WND_COLOR_BLACK, 0);
 
 	/* Load configuration */
 	col_load_cfg();
@@ -82,19 +102,20 @@ void col_set_el( int el, int fg, int bg, int attr )
 	col_elements[el].m_fg = fg;
 	col_elements[el].m_bg = bg;
 	col_elements[el].m_attr = attr;
-	col_elements[el].m_pair = wnd_init_pair(fg, bg);
 } /* End of 'col_set_el' function */
 
 /* Set color */
 void col_set_color( wnd_t *wnd, int el )
 {
-	wnd_set_attrib(wnd, col_elements[el].m_attr | 
-			COLOR_PAIR(col_elements[el].m_pair));
+	wnd_set_attrib(wnd, col_elements[el].m_attr);
+	wnd_set_fg_color(wnd, col_elements[el].m_fg);
+	wnd_set_bg_color(wnd, col_elements[el].m_bg);
 } /* End of 'col_set_color' function */
 
 /* Load colors from configuration */
 void col_load_cfg( void )
 {
+#if 0
 	int i;
 
 	/* Read all variables starting with 'col_el_' */
@@ -104,6 +125,7 @@ void col_load_cfg( void )
 		if (el >= 0)
 			col_set_var(el, cfg_list->m_vars[i].m_val);
 	}
+#endif
 } /* End of 'col_load_cfg' function */
 
 /* Convert variable name to element ID */
@@ -177,8 +199,8 @@ void col_set_var( int el, char *val )
 	if (el < 0 || el >= COL_NUM_ELEMENTS)
 		return;
 
-	for ( i = 0, j = 0, k = 0, fg = COLOR_WHITE, bg = COLOR_BLACK, attr = 0;; 
-			i ++ )
+	for ( i = 0, j = 0, k = 0, fg = WND_COLOR_WHITE, 
+			bg = WND_COLOR_BLACK, attr = 0;; i ++ )
 	{
 		if (val[i] == ':' || val[i] == '\0')
 		{
@@ -187,27 +209,27 @@ void col_set_var( int el, char *val )
 			{
 				int col;
 				if (!strcmp(str, "black"))
-					col = COLOR_BLACK;
+					col = WND_COLOR_BLACK;
 				else if (!strcmp(str, "red"))
-					col = COLOR_RED;
+					col = WND_COLOR_RED;
 				else if (!strcmp(str, "green"))
-					col = COLOR_GREEN;
+					col = WND_COLOR_GREEN;
 				else if (!strcmp(str, "yellow"))
-					col = COLOR_YELLOW;
+					col = WND_COLOR_YELLOW;
 				else if (!strcmp(str, "blue"))
-					col = COLOR_BLUE;
+					col = WND_COLOR_BLUE;
 				else if (!strcmp(str, "magenta"))
-					col = COLOR_MAGENTA;
+					col = WND_COLOR_MAGENTA;
 				else if (!strcmp(str, "cyan"))
-					col = COLOR_CYAN;
+					col = WND_COLOR_CYAN;
 				else 
-					col = COLOR_WHITE;
+					col = WND_COLOR_WHITE;
 				(k == 0) ? (fg = col) : (bg = col);
 			}
 			else if (k == 2)
 			{
 				if (!strcmp(str, "bold"))
-					attr = A_BOLD;
+					attr = WND_ATTRIB_BOLD;
 				else
 					attr = 0;
 			}
