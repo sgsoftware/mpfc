@@ -299,5 +299,39 @@ char *util_get_home_dir( char *user )
 	return dir;
 } /* End of 'util_get_home_dir' function */
 
+/* Concatenate multiple strings */
+char *util_strcat( char *first, ... )
+{
+	va_list ap;
+	int len = 0, pos = 0;
+	char *ret, *str;
+
+	/* Calculate resulting string length */
+	va_start(ap, first);
+	str = first;
+	while (str != NULL)
+	{
+		len += strlen(str);
+		str = va_arg(ap, char *);
+	}
+	va_end(ap);
+
+	/* Build string */
+	ret = (char *)malloc(len + 1);
+	if (ret == NULL)
+		return strdup("");
+	va_start(ap, first);
+	str = first;
+	while (str != NULL)
+	{
+		for ( ; (*str) != 0; str ++ )
+			ret[pos ++] = *str;
+		str = va_arg(ap, char *);
+	}
+	va_end(ap);
+	ret[pos] = 0;
+	return ret;
+} /* End of 'util_strcat' function */
+
 /* End of 'util.c' file */
 

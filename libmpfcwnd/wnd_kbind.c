@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Key bindings management 
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 29.09.2004
+ * LAST UPDATE : 4.10.2004
  * NOTE        : Module prefix 'wnd_kbind'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -30,6 +30,113 @@
 #include "types.h"
 #include "wnd.h"
 #include "wnd_kbind.h"
+
+/* Keys symbolic names */
+static struct
+{
+	char *m_str;
+	wnd_key_t m_key;
+} wnd_kbind_names[] = { 
+		{ "space", ' ' },
+		{ "enter", '\n' },
+		{ "return", '\n' },
+		{ "tab", '\t' },
+		{ "escape", KEY_ESCAPE },
+		{ "down", KEY_DOWN },
+		{ "up", KEY_UP },
+		{ "left", KEY_LEFT },
+		{ "right", KEY_RIGHT },
+		{ "home", KEY_HOME },
+		{ "backspace", KEY_BACKSPACE },
+		{ "f0", KEY_F0 },
+		{ "dl", KEY_DL },
+		{ "il", KEY_IL },
+		{ "dc", KEY_DC },
+		{ "del", KEY_DC },
+		{ "delete", KEY_DC },
+		{ "ic", KEY_IC },
+		{ "insert", KEY_IC },
+		{ "ins", KEY_IC },
+		{ "eic", KEY_EIC },
+		{ "clear", KEY_CLEAR },
+		{ "eos", KEY_EOS },
+		{ "eol", KEY_EOL },
+		{ "sf", KEY_SF },
+		{ "sr", KEY_SR },
+		{ "npage", KEY_NPAGE },
+		{ "pagedown", KEY_NPAGE },
+		{ "ppage", KEY_PPAGE },
+		{ "pageup", KEY_PPAGE },
+		{ "stab", KEY_STAB },
+		{ "ctab", KEY_CTAB },
+		{ "catab", KEY_CATAB },
+		{ "print", KEY_PRINT },
+		{ "ll", KEY_LL },
+		{ "a1", KEY_A1 },
+		{ "a3", KEY_A3 },
+		{ "b2", KEY_B2 },
+		{ "c1", KEY_C1 },
+		{ "c3", KEY_C3 },
+		{ "btab", KEY_BTAB },
+		{ "beg", KEY_BEG },
+		{ "cancel", KEY_CANCEL },
+		{ "close", KEY_CLOSE },
+		{ "command", KEY_COMMAND },
+		{ "copy", KEY_COPY },
+		{ "create", KEY_CREATE },
+		{ "end", KEY_END },
+		{ "exit", KEY_EXIT },
+		{ "find", KEY_FIND },
+		{ "help", KEY_HELP },
+		{ "mark", KEY_MARK },
+		{ "message", KEY_MESSAGE },
+		{ "move", KEY_MOVE },
+		{ "next", KEY_NEXT },
+		{ "open", KEY_OPEN },
+		{ "options", KEY_OPTIONS },
+		{ "previous", KEY_PREVIOUS },
+		{ "redo", KEY_REDO },
+		{ "reference", KEY_REFERENCE },
+		{ "refresh", KEY_REFRESH },
+		{ "replace", KEY_REPLACE },
+		{ "restart", KEY_RESTART },
+		{ "resume", KEY_RESUME },
+		{ "save", KEY_SAVE },
+		{ "sbeg", KEY_SBEG },
+		{ "scancel", KEY_SCANCEL },
+		{ "scommand", KEY_SCOMMAND },
+		{ "scopy", KEY_SCOPY },
+		{ "screate", KEY_SCREATE },
+		{ "sdc", KEY_SDC },
+		{ "delete", KEY_SDC },
+		{ "sdl", KEY_SDL },
+		{ "select", KEY_SELECT },
+		{ "send", KEY_SEND },
+		{ "seol", KEY_SEOL },
+		{ "sexit", KEY_SEXIT },
+		{ "sfind", KEY_SFIND },
+		{ "shelp", KEY_SHELP },
+		{ "shome", KEY_SHOME },
+		{ "sic", KEY_SIC },
+		{ "sinsert", KEY_SIC },
+		{ "sleft", KEY_SLEFT },
+		{ "smessage", KEY_SMESSAGE },
+		{ "smove", KEY_SMOVE },
+		{ "snext", KEY_SNEXT },
+		{ "soptions", KEY_SOPTIONS },
+		{ "sprevious", KEY_SPREVIOUS },
+		{ "sprint", KEY_SPRINT },
+		{ "sredo", KEY_SREDO },
+		{ "sreplace", KEY_SREPLACE },
+		{ "sright", KEY_SRIGHT },
+		{ "srsume", KEY_SRSUME },
+		{ "ssave", KEY_SSAVE },
+		{ "ssuspend", KEY_SSUSPEND },
+		{ "sundo", KEY_SUNDO },
+		{ "suspend", KEY_SUSPEND },
+		{ "undo", KEY_UNDO } };
+static int wnd_kbind_num_names = sizeof(wnd_kbind_names) /
+	sizeof(*wnd_kbind_names);
 
 /* Initialize kbind module */
 wnd_kbind_data_t *wnd_kbind_init( wnd_global_data_t *global )
@@ -145,6 +252,12 @@ int wnd_kbind_check_buf_in_node( wnd_kbind_data_t *kb, wnd_t *wnd,
 				if (key != kb->m_buf[i] || key == 0)
 				{
 					not_matches = TRUE;
+					if ((*val) == ';')
+						break;
+					while (val[0] != 0 && !(val[0] != '\\' && val[1] == ';'))
+						val ++;
+					if (val[0] != 0)
+						val ++;
 					break;
 				}
 			}
@@ -153,7 +266,8 @@ int wnd_kbind_check_buf_in_node( wnd_kbind_data_t *kb, wnd_t *wnd,
 				/* Test next list item */
 				if ((*val) == ';')
 				{
-					val ++;
+					while ((*val) == ';')
+						val ++;
 					continue;
 				}
 				else
@@ -185,30 +299,19 @@ wnd_key_t wnd_kbind_value_next_key( char **val )
 	/* Special symbol in angle brackets */
 	else if ((*value) == '<')
 	{
-		struct
-		{
-			char *m_str;
-			wnd_key_t m_key;
-		} keys[] = { 
-			{"Left", KEY_LEFT}, {"Right", KEY_RIGHT},
-			{"Up", KEY_UP}, {"Down", KEY_DOWN}, {"Home", KEY_HOME},
-			{"End", KEY_END}, {"PageUp", KEY_PPAGE}, {"PageDown", KEY_NPAGE},
-			{"Enter", '\n'}, {"Return", '\n'}, {"Escape", KEY_ESCAPE}, 
-			{"Backspace", KEY_BACKSPACE}, {"Space", ' '}, {"Tab", '\t'},
-			{"Del", KEY_DC}, {"Insert", KEY_IC} };
-		int i, count;
+		int i;
 
 		/* One key */
 		value ++;
-		count = sizeof(keys) / sizeof(keys[0]);
-		for ( i = 0; i < count; i ++ )
+		for ( i = 0; i < wnd_kbind_num_names; i ++ )
 		{
-			if (!strncasecmp(value, keys[i].m_str, strlen(keys[i].m_str)))
-				ret = keys[i].m_key;
+			if (!strncasecmp(value, wnd_kbind_names[i].m_str, 
+						strlen(wnd_kbind_names[i].m_str)))
+				ret = wnd_kbind_names[i].m_key;
 		}
 
-		/* Control or Alt combination */
-		if (i == count)
+		/* Control or Alt combination or function key */
+		if (i == wnd_kbind_num_names)
 		{
 			if (!strncasecmp(value, "Ctrl-", 5))
 			{
@@ -221,6 +324,19 @@ wnd_key_t wnd_kbind_value_next_key( char **val )
 				value = strchr(value, '-');
 				value ++;
 				ret = WND_KEY_WITH_ALT(*value);
+			}
+			else if ((value[0] == 'f' || value[0] == 'F') &&
+					isdigit(value[1]))
+			{
+				int i = 1;
+				int index = 0;
+				while (isdigit(value[i]))
+				{
+					index *= 10;
+					index += (value[i] - '0');
+					i ++;
+				}
+				ret = KEY_F(index);
 			}
 		}
 		value = strchr(value, '>');

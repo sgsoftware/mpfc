@@ -102,9 +102,13 @@ wnd_msg_retcode_t filebox_on_action( wnd_t *wnd, char *action )
 	/* Do completion */
 	if (!strcasecmp(action, "complete"))
 	{
+		util_log("got complete\n");
 		/* Free if something has changed */
 		if (EDITBOX_OBJ(wnd)->m_state_changed)
+		{
+			util_log("freeing\n");
 			filebox_free_names(fb);
+		}
 
 		/* Insert next name */
 		filebox_insert_next(fb);
@@ -284,6 +288,7 @@ void filebox_glob_handler( vfs_file_t *file, void *data )
 	strcpy(item->m_name, file->m_short_name);
 	if (S_ISDIR(file->m_stat.st_mode))
 		strcat(item->m_name, "/");
+	util_log("adding %s to the list\n", item->m_name);
 
 	/* It's the first name */
 	if (fb->m_names == NULL)

@@ -67,6 +67,9 @@ size_t file_read( void *buf, size_t size, size_t nmemb, file_t *f );
 /* Write to file */
 size_t file_write( void *buf, size_t size, size_t nmemb, file_t *f );
 
+/* Write line to file */
+void file_puts( char *s, file_t *f );
+
 /* Get line from file */
 char *file_gets( char *s, int size, file_t *f );
 

@@ -981,11 +981,11 @@ void mp3_set_eq( void )
 	
 	for ( i = 0; i < 32; i ++ )
 	{
-		char name[20];
+		char name[256];
 		float val;
 		
-		sprintf(name, "eq-band%i", map[i] + 1);
-		val = cfg_get_var_float(pmng_get_cfg(mp3_pmng), "eq-preamp") + 
+		snprintf(name, sizeof(name), "equalizer.band%d", map[i] + 1);
+		val = cfg_get_var_float(pmng_get_cfg(mp3_pmng), "equalizer.preamp") + 
 			cfg_get_var_float(pmng_get_cfg(mp3_pmng), name);
 		if (val > 18.)
 			val = 18.;
@@ -1000,7 +1000,7 @@ static void mp3_apply_eq( void )
 	unsigned int nch, ch, ns, s, sb;
 
 	/* Do nothing if equalizer is disabled */
-	if (cfg_get_var_int(pmng_get_cfg(mp3_pmng), "equalizer-off"))
+	if (!cfg_get_var_bool(pmng_get_cfg(mp3_pmng), "equalizer.enabled"))
 		return;
 
 	nch = MAD_NCHANNELS(&mp3_frame.header);

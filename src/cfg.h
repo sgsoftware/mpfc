@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for configuration handling
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 29.09.2004
+ * LAST UPDATE : 6.10.2004
  * NOTE        : Module prefix 'cfg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -28,6 +28,7 @@
 #ifndef __SG_MPFC_CFG_H__
 #define __SG_MPFC_CFG_H__
 
+#include <stdio.h>
 #include "types.h"
 
 /* Node flags */
@@ -64,6 +65,14 @@ struct tag_cfg_node_t;
 typedef bool_t (*cfg_var_handler_t)( struct tag_cfg_node_t *var, char *value,
 		void *data );
 
+/* Variable operation type */
+typedef enum
+{
+	CFG_VAR_OP_SET = 0,
+	CFG_VAR_OP_ADD,
+	CFG_VAR_OP_REM
+} cfg_var_op_t;
+
 /* Configuration tree node */
 typedef struct tag_cfg_node_t
 {
@@ -89,6 +98,14 @@ typedef struct tag_cfg_node_t
 			 * whenever variable value is changed) */
 			cfg_var_handler_t m_handler;
 			void *m_handler_data;
+
+			/* Variable operations list */
+			struct cfg_var_op_list_t
+			{
+				cfg_var_op_t m_op;
+				char *m_arg;
+				struct cfg_var_op_list_t *m_next;
+			} *m_operations;
 		} m_var;
 
 		/* Data for list */
@@ -136,11 +153,24 @@ cfg_node_t *cfg_new_node( cfg_node_t *parent, char *name, dword flags );
 /* Insert a node into the list */
 void cfg_insert_node( cfg_node_t *list, cfg_node_t *node );
 
+/* Copy node contents to another node */
+void cfg_copy_node( cfg_node_t *dest, cfg_node_t *src );
+
 /* Free node */
 void cfg_free_node( cfg_node_t *node, bool_t recursively );
 
+/* Free variable operations list */
+void cfg_var_free_operations( cfg_node_t *node );
+
 /* Search for the node */
 cfg_node_t *cfg_search_node( cfg_node_t *parent, char *name );
+
+/* Apply operation to variable value */
+char *cfg_var_apply_op( cfg_node_t *node, char *value, cfg_var_op_t op );
+
+/* Full version of variable value setting */
+void cfg_set_var_full( cfg_node_t *parent, char *name, char *val, 
+		cfg_var_op_t op );
 
 /* Set variable value */
 void cfg_set_var( cfg_node_t *parent, char *name, char *val );
@@ -209,6 +239,19 @@ cfg_list_iterator_t cfg_list_begin_iteration( cfg_node_t *list );
 
 /* Make an iteration */
 cfg_node_t *cfg_list_iterate( cfg_list_iterator_t *iter );
+
+/*
+ * Configuration files manipulation functions
+ */
+
+/* Read configuration file */
+void cfg_rcfile_read( cfg_node_t *list, char *name );
+
+/* Read one line from the configuration file */
+void cfg_rcfile_parse_line( cfg_node_t *list, char *str );
+
+/* Save a node to file */
+void cfg_rcfile_save_node( FILE *fd, cfg_node_t *node, char *prefix );
 
 #endif
 

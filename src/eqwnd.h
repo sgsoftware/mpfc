@@ -30,9 +30,6 @@
 #include "types.h"
 #include "wnd.h"
 
-/* Number of bands (including preamp) */
-#define EQWND_NUM_BANDS 11
-
 /* Equalizer window type */
 typedef struct 
 {
@@ -40,8 +37,14 @@ typedef struct
 	wnd_t m_wnd;
 
 	/* Cursor position */
-	int m_pos;
+	int m_pos, m_scroll;
+
+	/* Currently selected band value */
+	float m_cur_value;
 } eq_wnd_t;
+
+/* Convert window object to equalizer window type */
+#define EQWND_OBJ(wnd) ((eq_wnd_t *)wnd)
 
 /* Create a new equalizer window */
 eq_wnd_t *eqwnd_new( wnd_t *parent );
@@ -60,29 +63,12 @@ wnd_msg_retcode_t eqwnd_on_mouse_ldown( wnd_t *wnd, int x, int y,
 		wnd_mouse_button_t btn, wnd_mouse_event_t type );
 
 /* Display slider */
-int eqwnd_display_slider( wnd_t *wnd, int x, int start_y, int end_y,
-							bool_t hl, float val, char *str );
-
-/* Get equalizer variable name */
-void eqwnd_get_var_name( int pos, char *name );
-
-/* Set equalizer variable value */
-void eqwnd_set_var( int pos, float val, bool_t rel );
-
-/* Save equalizer parameters */
-void eqwnd_save_params( void );
-
-/* Launch load preset from EQF file dialog */
-void eqwnd_load_eqf_dlg( void );
-
-/* Handle 'ok_clicked' for EQF loading dialog */
-wnd_msg_retcode_t eqwnd_on_load( wnd_t *wnd );
-
-/* Load a Winamp EQF file */
-void eqwnd_load_eqf( char *filename );
+int eqwnd_display_slider( eq_wnd_t *eq, int x, bool_t hl, float val, 
+		char *str );
 
 /* Get equalizer band slider position */
-void eqwnd_get_slider_pos( int band, int *x, int *y, int *w, int *h );
+void eqwnd_get_slider_pos( eq_wnd_t *eq, int band, int *x, int *y, int *w, 
+		int *h );
 
 /* Convert band value to position */
 int eqwnd_val2pos( float value, int height );
@@ -98,6 +84,24 @@ wnd_class_t *eqwnd_class_init( wnd_global_data_t *global );
 
 /* Set equalizer window class default styles */
 void eqwnd_class_set_default_styles( cfg_node_t *list );
+
+/* Get equlizer band value */
+float eqwnd_get_band( int band );
+
+/* Set equalizer band value */
+void eqwnd_set_band( int band, float val );
+
+/* Launch load preset from EQF file dialog */
+void eqwnd_load_eqf_dlg( void );
+
+/* Handle 'ok_clicked' for EQF loading dialog */
+wnd_msg_retcode_t eqwnd_on_load( wnd_t *wnd );
+
+/* Load a Winamp EQF file */
+void eqwnd_load_eqf( char *filename );
+
+/* Scroll window if current band is not visible */
+void eqwnd_scroll( eq_wnd_t *eq );
 
 #endif
 

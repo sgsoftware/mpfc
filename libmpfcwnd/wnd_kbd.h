@@ -105,6 +105,9 @@ void wnd_kbd_init_seq( wnd_kbd_data_t *data );
 /* Add a sequence to the list */
 void wnd_kbd_add_seq( wnd_kbd_data_t *data, char *seq, int code );
 
+/* Get terminfo entry value */
+char *wnd_kbd_ti_val( cfg_node_t *list, char *name );
+
 /* Uninitialize keyboard management system */
 void wnd_kbd_free( wnd_kbd_data_t *data );
 

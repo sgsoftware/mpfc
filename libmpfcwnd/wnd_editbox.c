@@ -6,7 +6,7 @@
  * PURPOSE     : MPFC Window Library. Edit box functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 13.08.2004
+ * LAST UPDATE : 5.10.2004
  * NOTE        : Module prefix 'editbox'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -212,6 +212,7 @@ wnd_msg_retcode_t editbox_on_keydown( wnd_t *wnd, wnd_key_t key )
 	if (key >= ' ' && key <= 0xFF)
 	{
 		editbox_addch(eb, key);
+		eb->m_state_changed = TRUE;
 		wnd_msg_send(WND_OBJ(eb), "changed", editbox_changed_new());
 		wnd_invalidate(wnd);
 	}
@@ -268,6 +269,29 @@ wnd_msg_retcode_t editbox_on_action( wnd_t *wnd, char *action )
 	else if (!strcasecmp(action, "move_to_start"))
 	{
 		editbox_move(eb, 0);
+	}
+	/* Move cursor one word left */
+	else if (!strcasecmp(action, "word_left"))
+	{
+		int cursor = eb->m_cursor - 1;
+		char *text = EDITBOX_TEXT(eb);
+		while (cursor >= 0 && !isalnum(text[cursor]))
+			cursor --;
+		while (cursor >= 0 && isalnum(text[cursor]))
+			cursor --;
+		cursor ++;
+		editbox_move(eb, cursor);
+	}
+	/* Move cursor one word right */
+	else if (!strcasecmp(action, "word_right"))
+	{
+		int cursor = eb->m_cursor + 1, len = EDITBOX_LEN(eb);
+		char *text = EDITBOX_TEXT(eb);
+		while (cursor <= len && !isalnum(text[cursor]))
+			cursor ++;
+		while (cursor <= len && isalnum(text[cursor]))
+			cursor ++;
+		editbox_move(eb, cursor);
 	}
 	/* Move cursor to text end */
 	else if (!strcasecmp(action, "move_to_end"))
@@ -418,8 +442,8 @@ void editbox_class_set_default_styles( cfg_node_t *list )
 	/* Set kbinds */
 	cfg_set_var(list, "kbind.move_left", "<Left>;<Ctrl-b>");
 	cfg_set_var(list, "kbind.move_right", "<Right>;<Ctrl-f>");
-	cfg_set_var(list, "kbind.word_left", "<Alt-b>");
-	cfg_set_var(list, "kbind.word_right", "<Alt-f>");
+	cfg_set_var(list, "kbind.word_left", "<Alt-b>;<SLeft>");
+	cfg_set_var(list, "kbind.word_right", "<Alt-f>;<SRight>");
 	cfg_set_var(list, "kbind.del_left", "<Backspace>");
 	cfg_set_var(list, "kbind.del_right", "<Del>;<Ctrl-d>");
 	cfg_set_var(list, "kbind.kill_to_start", "<Ctrl-u>");

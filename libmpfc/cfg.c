@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Configuration handling functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 26.09.2004
+ * LAST UPDATE : 6.10.2004
  * NOTE        : Module prefix 'cfg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -32,6 +32,7 @@
 #include <string.h>
 #include "types.h"
 #include "cfg.h"
+#include "util.h"
 
 /* Create a new configuration list */
 cfg_node_t *cfg_new_list( cfg_node_t *parent, char *name, 
@@ -127,6 +128,7 @@ cfg_node_t *cfg_new_node( cfg_node_t *parent, char *name, dword flags )
 	node = (cfg_node_t *)malloc(sizeof(cfg_node_t));
 	if (node == NULL)
 		return node;
+	memset(node, 0, sizeof(*node));
 
 	/* Set fields */
 	node->m_name = strdup(real_name);
@@ -146,6 +148,7 @@ void cfg_free_node( cfg_node_t *node, bool_t recursively )
 	/* Free variable data */
 	if (CFG_NODE_IS_VAR(node))
 	{
+		cfg_var_free_operations(node);
 		if (CFG_VAR(node)->m_value != NULL)
 			free(CFG_VAR(node)->m_value);
 	}
@@ -162,6 +165,7 @@ void cfg_free_node( cfg_node_t *node, bool_t recursively )
 				next = item->m_next;
 				if (recursively)
 					cfg_free_node(item->m_node, recursively);
+				free(item);
 				item = next;
 			}
 		}
@@ -171,6 +175,22 @@ void cfg_free_node( cfg_node_t *node, bool_t recursively )
 	/* Free node itself */
 	free(node);
 } /* End of 'cfg_free_node' function */
+
+/* Free variable operations list */
+void cfg_var_free_operations( cfg_node_t *node )
+{
+	struct cfg_var_op_list_t *opl, *next;
+	assert(CFG_NODE_IS_VAR(node));
+
+	for ( opl = CFG_VAR(node)->m_operations; opl != NULL; )
+	{
+		next = opl->m_next;
+		free(opl->m_arg);
+		free(opl);
+		opl = next;
+	}
+	CFG_VAR(node)->m_operations = NULL;
+} /* End of 'cfg_var_free_operations' function */
 
 /* Insert a node into the list */
 void cfg_insert_node( cfg_node_t *list, cfg_node_t *node )
@@ -183,27 +203,15 @@ void cfg_insert_node( cfg_node_t *list, cfg_node_t *node )
 	assert(node->m_name);
 	assert(CFG_NODE_IS_LIST(list));
 	
-	/* Calculate hash for this node */
+	/* Search for this node in the list */
 	hash = cfg_calc_hash(node->m_name, CFG_LIST(list)->m_hash_size);
-
-	/* Check whether this node is also created */
 	for ( item = CFG_LIST(list)->m_children[hash]; item != NULL; 
 			item = item->m_next )
 	{
-		/* Replace node */
-		if (!strcmp(item->m_node->m_name, node->m_name))
+		/* Copy existing node to the new node and free it */
+		if (!strcmp(node->m_name, item->m_node->m_name))
 		{
-			struct cfg_list_data_t *l = CFG_LIST(item->m_node);
-			struct cfg_list_hash_item_t *i;
-			int h;
-
-			/* Copy nodes */
-			for ( h = 0; h < l->m_hash_size; h ++ )
-			{
-				for ( i = l->m_children[h]; i != NULL; i = i->m_next )
-					cfg_insert_node(node, i->m_node);
-			}
-			cfg_free_node(item->m_node, FALSE);
+			cfg_copy_node(node, item->m_node);
 			item->m_node = node;
 			return;
 		}
@@ -239,13 +247,58 @@ cfg_node_t *cfg_search_node( cfg_node_t *parent, char *name )
 	return node;
 } /* End of 'cfg_search_node' function */
 
-/* Set variable value */
-void cfg_set_var( cfg_node_t *parent, char *name, char *value )
+/* Apply operation to variable value */
+char *cfg_var_apply_op( cfg_node_t *node, char *value, cfg_var_op_t op )
+{
+	/* Simply set variable value */
+	if (op == CFG_VAR_OP_SET)
+		return value;
+	/* Append new value */
+	else if (op == CFG_VAR_OP_ADD)
+	{
+		char *existing_value = (node == NULL ? NULL : CFG_VAR(node)->m_value);
+		if (existing_value != NULL)
+			return util_strcat(existing_value, ";", value, NULL);
+		else
+			return value;
+	}
+	/* Remove some value */
+	else if (op == CFG_VAR_OP_REM)
+	{
+		char *existing_value = (node == NULL ? NULL : CFG_VAR(node)->m_value);
+		if (existing_value != NULL)
+		{
+			char *ret = strdup(existing_value);
+			int len = strlen(value);
+			char *sub = strstr(ret, value);
+			if (sub != NULL)
+			{
+				if (sub[len] == ';')
+					len ++;
+				memmove(sub, &sub[len], strlen(sub) - len + 1);
+			}
+			return ret;
+		}
+		else
+			return strdup("");
+	}
+	return NULL;
+} /* End of 'cfg_var_apply_op' function */
+
+/* Full version of variable value setting */
+void cfg_set_var_full( cfg_node_t *parent, char *name, char *value, 
+		cfg_var_op_t op )
 {
 	cfg_node_t *node;
+	char *orig_value;
+	struct cfg_var_op_list_t *opl, *last;
 	
 	/* Search for this node */
 	node = cfg_search_node(parent, name);
+
+	/* Construct new value */
+	orig_value = value;
+	value = cfg_var_apply_op(node, value, op);
 
 	/* Change value */
 	if (node != NULL && CFG_NODE_IS_VAR(node))
@@ -253,12 +306,48 @@ void cfg_set_var( cfg_node_t *parent, char *name, char *value )
 		if (!cfg_call_var_handler(FALSE, node, value))
 			return;
 		free(CFG_VAR(node)->m_value);
-		CFG_VAR(node)->m_value = (value == NULL ? NULL : strdup(value));
+		if (value == NULL)
+			CFG_VAR(node)->m_value = NULL;
+		else
+			CFG_VAR(node)->m_value = ((value == orig_value) ? strdup(value) :
+					value);
 		cfg_call_var_handler(TRUE, node, value);
 	}
 	/* Create node if not found */
 	else if (node == NULL)
-		cfg_new_var(parent, name, 0, value, NULL);
+		node = cfg_new_var(parent, name, 0, value, NULL);
+
+	/* Create operations list item */
+	opl = (struct cfg_var_op_list_t *)malloc(sizeof(*opl));
+	opl->m_arg = strdup(orig_value);
+	opl->m_op = op;
+	opl->m_next = NULL;
+	if (opl == NULL)
+		return;
+
+	/* Insert list item */
+	if (op == CFG_VAR_OP_ADD || op == CFG_VAR_OP_REM)
+	{
+		if (CFG_VAR(node)->m_operations == NULL)
+			CFG_VAR(node)->m_operations = opl;
+		else
+		{
+			for ( last = CFG_VAR(node)->m_operations; last->m_next != NULL;
+					last = last->m_next );
+			last->m_next = opl;
+		}
+	}
+	else
+	{
+		cfg_var_free_operations(node);
+		CFG_VAR(node)->m_operations = opl;
+	}
+} /* End of 'cfg_set_var_full' function */
+
+/* Set variable value */
+void cfg_set_var( cfg_node_t *parent, char *name, char *value )
+{
+	cfg_set_var_full(parent, name, value, CFG_VAR_OP_SET);
 } /* End of 'cfg_set_var' function */
 
 /* Set variable integer value */
@@ -457,6 +546,88 @@ cfg_node_t *cfg_list_iterate( cfg_list_iterator_t *iter )
 	iter->m_cur_node = iter->m_cur_node->m_next;
 	return node;
 } /* End of 'cfg_list_iterate' function */
+
+/* Copy node contents to another node */
+void cfg_copy_node( cfg_node_t *dest, cfg_node_t *src )
+{
+	struct cfg_list_data_t *sl, *dl;
+	int hash;
+	struct cfg_list_hash_item_t *item;
+	assert(dest);
+	assert(src);
+
+	/* Variables case is trivial */
+	if (CFG_NODE_IS_VAR(src))
+	{
+		struct cfg_var_data_t *dv, *sv;
+		struct cfg_var_op_list_t *opl;
+
+		/* Copy data */
+		assert(CFG_NODE_IS_VAR(dest));
+		dv = CFG_VAR(dest);
+		sv = CFG_VAR(src);
+		dv->m_handler = sv->m_handler;
+		dv->m_handler_data = sv->m_handler_data;
+
+		/* Construct value */
+		for ( opl = sv->m_operations; opl != NULL; opl = opl->m_next )
+		{
+			char *new_value = cfg_var_apply_op(dest, opl->m_arg, opl->m_op);
+			if (dv->m_value != NULL)
+				free(dv->m_value);
+			dv->m_value = (new_value == opl->m_arg ? strdup(new_value) : 
+					new_value);
+		}
+		cfg_free_node(src, FALSE);
+		return;
+	}
+
+	/* Go through every source list item */
+	assert(CFG_NODE_IS_LIST(src));
+	sl = CFG_LIST(src);
+	dl = CFG_LIST(dest);
+	for ( hash = 0; hash < sl->m_hash_size; hash ++ )
+	{
+		for ( item = sl->m_children[hash]; item != NULL; item = item->m_next )
+		{
+			cfg_node_t *node = item->m_node;
+			struct cfg_list_hash_item_t *i, *prev = NULL;
+
+			/* Find corresponding destination item */
+			int h = cfg_calc_hash(node->m_name, dl->m_hash_size);
+			for ( i = dl->m_children[h]; i != NULL; prev = i, i = i->m_next )
+			{
+				/* Copy this node recursively */
+				if (!strcmp(node->m_name, i->m_node->m_name))
+				{
+					cfg_copy_node(i->m_node, node);
+					break;
+				}
+			}
+
+			/* If not found simply insert */
+			if (i == NULL)
+			{
+				struct cfg_list_hash_item_t *new_item;
+
+				/* Create hash list item */
+				new_item = (struct cfg_list_hash_item_t *)malloc(
+						sizeof(*new_item));
+				if (new_item == NULL)
+					continue;
+				new_item->m_node = node;
+				new_item->m_next = NULL;
+
+				/* Attach it */
+				if (prev == NULL)
+					dl->m_children[h] = new_item;
+				else
+					prev->m_next = new_item;
+			}
+		}
+	}
+	cfg_free_node(src, FALSE);
+} /* End of 'cfg_copy_node' function */
 
 /* End of 'cfg.c' file */
 

@@ -440,6 +440,12 @@ char *fhttp_get_field( char *header, int size, char *field )
 	return strndup(s1 + len, s2 - s1 - len);
 } /* End of 'fhttp_get_field' function */
 
+/* Write a line to file */
+void fhttp_puts( char *s, file_t *f )
+{
+	file_write(s, strlen(s), 1, f);
+} /* End of 'fhttp_puts' function */
+
 /* Get line from file */
 char *fhttp_gets( char *s, int size, file_t *f )
 {

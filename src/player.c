@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG MPFC. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 22.09.2004
+ * LAST UPDATE : 2.10.2004
  * NOTE        : Module prefix 'player'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -60,6 +60,7 @@
 #include "wnd_filebox.h"
 #include "wnd_label.h"
 #include "wnd_radio.h"
+#include "wnd_root.h"
 
 /*****
  *
@@ -147,6 +148,7 @@ pmng_t *player_pmng = NULL;
 
 /* User configuration file name */
 char player_cfg_file[MAX_FILE_NAME] = "";
+char player_cfg_autosave_file[MAX_FILE_NAME] = "";
 
 /* Previous file browser session directory name */
 char player_fb_dir[MAX_FILE_NAME] = "";
@@ -194,7 +196,9 @@ bool_t player_init( int argc, char *argv[] )
 	
 	/* Initialize configuration */
 	snprintf(player_cfg_file, sizeof(player_cfg_file), 
-			"%s/.mpfcrc", getenv("HOME"));
+			"%s/.mpfc/mpfcrc", getenv("HOME"));
+	snprintf(player_cfg_autosave_file, sizeof(player_cfg_autosave_file), 
+			"%s/.mpfc/autosave", getenv("HOME"));
 	if (!player_init_cfg())
 	{
 		fprintf(stderr, _("Unable to initialize configuration"));
@@ -212,7 +216,7 @@ bool_t player_init( int argc, char *argv[] )
 	str_time = ctime(&t);
 	logger_message(player_log, LOGGER_MSG_STATUS, LOGGER_LEVEL_LOW, 
 			_("MPFC %s Log\n%s"), VERSION, str_time);
-	free(str_time);
+//	free(str_time);
 
 	/* Parse command line */
 	if (!player_parse_cmd_line(argc, argv))
@@ -276,7 +280,7 @@ bool_t player_init( int argc, char *argv[] )
 
 	/* Load saved play list if files list is empty */
 	if (!player_num_files)
-		plist_add(player_plist, "~/mpfc.m3u");
+		plist_add(player_plist, "~/.mpfc/list.m3u");
 
 	/* Initialize history lists */
 	for ( i = 0; i < PLAYER_NUM_HIST_LISTS; i ++ )
@@ -382,8 +386,7 @@ void player_deinit( wnd_t *wnd_root )
 	cfg_set_var_int(cfg_list, "player-status", player_status);
 	cfg_set_var_int(cfg_list, "player-start", player_start + 1);
 	cfg_set_var_int(cfg_list, "player-end", player_end + 1);
-	player_save_cfg_vars(cfg_list, "cur-song;cur-time;player-status;"
-			"player-start;player-end");
+	player_save_cfg();
 	
 	/* End playing thread */
 	logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
@@ -439,7 +442,7 @@ void player_deinit( wnd_t *wnd_root )
 		{
 			logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
 					"Saving play list");
-			plist_save(player_plist, "~/mpfc.m3u");
+			plist_save(player_plist, "~/.mpfc/list.m3u");
 		}
 		
 		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEBUG,
@@ -563,6 +566,7 @@ bool_t player_init_cfg( void )
 	cfg_set_var_int(cfg_list, "save-playlist-on-exit", 1);
 	cfg_set_var_int(cfg_list, "play-from-stop", 1);
 	cfg_set_var(cfg_list, "lib-dir", LIBDIR"/mpfc");
+	cfg_set_var_bool(cfg_list, "equalizer.enable-on-change", TRUE);
 	cfg_set_var_int(cfg_list, "echo-delay", 500);
 	cfg_set_var_int(cfg_list, "echo-volume", 50);
 	cfg_set_var_int(cfg_list, "echo-feedback", 50);
@@ -576,172 +580,40 @@ bool_t player_init_cfg( void )
 	cfg_set_var_int(cfg_list, "fb-track-len", 0);
 	cfg_set_var_int(cfg_list, "fb-time-len", 5);
 
-	/* Read rc file from home directory and from current directory */
-	player_read_rcfile(cfg_list, SYSCONFDIR"/mpfcrc");
-	player_read_rcfile(cfg_list, player_cfg_file);
-	player_read_rcfile(cfg_list, ".mpfcrc");
+	/* Read configuration files */
+	cfg_rcfile_read(cfg_list, player_cfg_autosave_file);
+	cfg_rcfile_read(cfg_list, SYSCONFDIR"/mpfcrc");
+	cfg_rcfile_read(cfg_list, player_cfg_file);
+	cfg_rcfile_read(cfg_list, ".mpfcrc");
 	return TRUE;
 } /* End of 'player_init_cfg' function */
 
-/* Read configuration file */
-void player_read_rcfile( cfg_node_t *list, char *name )
-{
-	file_t *fd;
-
-	assert(list);
-	assert(name);
-
-	/* Try to open file */
-	fd = file_open(name, "rt", NULL);
-	if (fd == NULL)
-		return;
-
-	/* Read */
-	while (!file_eof(fd))
-	{
-		str_t *str;
-		
-		/* Read line */
-		str = file_get_str(fd);
-
-		/* Parse this line */
-		player_parse_cfg_line(list, STR_TO_CPTR(str));
-		str_free(str);
-	}
-
-	/* Close file */
-	file_close(fd);
-} /* End of 'player_read_rcfile' function */
-
-/* Read one line from the configuration file */
-#define player_is_whitespace(c)	((c) <= 0x20)	
-void player_parse_cfg_line( cfg_node_t *list, char *str )
-{
-	int i, j, len;
-	char *name, *val;
-
-	assert(list);
-	assert(str);
-	
-	/* If string begins with '#' - it is comment */
-	if (str[0] == '#')
-		return;
-
-	/* Skip white space */
-	len = strlen(str);
-	for ( i = 0; i < len && player_is_whitespace(str[i]); i ++ );
-
-	/* Read until next white space */
-	for ( j = i; j < len && str[j] != '=' && 
-			!player_is_whitespace(str[j]); j ++ );
-	if (player_is_whitespace(str[j]) || str[j] == '=')
-		j --;
-
-	/* Extract variable name */
-	name = (char *)malloc(j - i + 2);
-	memcpy(name, &str[i], j - i + 1);
-	name[j - i + 1] = 0;
-
-	/* Read '=' sign */
-	for ( ; j < len && str[j] != '='; j ++ );
-
-	/* Variable has no value - let it be "1" */
-	if (j == len)
-	{
-		cfg_set_var(list, name, "1");
-		free(name);
-	}
-	/* Read value */
-	else
-	{
-		/* Get value begin */
-		for ( i = j + 1; i < len && player_is_whitespace(str[i]); i ++ );
-
-		/* Get value end */
-		for ( j = i; j < len && !player_is_whitespace(str[j]); j ++ );
-		if (player_is_whitespace(str[j]))
-			j --;
-
-		/* Extract value and set it */
-		val = (char *)malloc(j - i + 2);
-		memcpy(val, &str[i], j - i + 1);
-		val[j - i + 1] = 0;
-		cfg_set_var(list, name, val);
-		free(name);
-		free(val);
-	}
-} /* End of 'player_parse_cfg_line' function */
-
-/* Save variables to main configuration file */
-void player_save_cfg_vars( cfg_list_t *list, char *vars )
-{
-	char *name;
-	cfg_node_t *tlist;
-	int i, j;
-	
-	if (list == NULL)
-		return;
-
-	/* Initialize variables with initial values */
-	tlist = cfg_new_list(NULL, "root", NULL, 0, 0);
-
-	/* Read rc file */
-	player_read_rcfile(tlist, player_cfg_file);
-
-	/* Update variables */
-	for ( i = 0, j = 0;; i ++ )
-	{
-		/* End of variable name */
-		if (vars[i] == ';' || vars[i] == '\0')
-		{
-			name = strndup(&vars[j], i - j);
-			j = i + 1;
-			cfg_set_var(tlist, name, cfg_get_var(list, name));
-			free(name);
-			if (!vars[i])
-				break;
-		}
-	}
-
-	/* Save temporary list to configuration file */
-	player_save_cfg_list(tlist, player_cfg_file);
-
-	/* Free temporary list */
-	cfg_free_node(tlist, TRUE);
-} /* End of 'player_save_cfg_vars' function */
-
-/* Save configuration list */
-void player_save_cfg_list( cfg_node_t *list, char *fname )
+/* Save some variables to file */
+void player_save_cfg( void )
 {
 	FILE *fd;
-	int i;
-	cfg_node_t *node;
-
-	assert(list);
-	assert(CFG_NODE_IS_LIST(list));
+	char *names[] = 
+	{ 
+		"cur-song", "cur-time", "player-status", "player-start", "player-end",
+		"equalizer"
+	};
+	int num_vars = sizeof(names) / sizeof(*names), i;
 
 	/* Open file */
-	fd = fopen(fname, "wt");
+	fd = fopen(player_cfg_autosave_file, "wt");
 	if (fd == NULL)
 		return;
 
-	/* Write variables */
-	for ( i = 0; i < CFG_LIST(list)->m_hash_size; i ++ )
+	/* Save the vars */
+	for ( i = 0; i < num_vars; i ++ )
 	{
-		struct cfg_list_hash_item_t *item;
-		for ( item = CFG_LIST(list)->m_children[i];
-				item != NULL; item = item->m_next )
-		{
-			node = item->m_node;
-			if ((node->m_flags & CFG_NODE_VAR) && 
-					!(node->m_flags & CFG_NODE_RUNTIME))
-				fprintf(fd, "%s=%s\n", node->m_name, CFG_VAR_VALUE(node));
-		}
+		cfg_node_t *node = cfg_search_node(cfg_list, names[i]);
+		if (node == NULL)
+			continue;
+		cfg_rcfile_save_node(fd, node, NULL);
 	}
-
-	/* Close file */
 	fclose(fd);
-} /* End of 'player_save_cfg_list' function */
+} /* End of 'player_save_cfg' function */
 
 /* Signal handler */
 void player_handle_signal( int signum )
@@ -817,6 +689,16 @@ wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action )
 		plist_move(player_plist, (player_repval == 0) ? 
 				-PLIST_HEIGHT : 
 				-PLIST_HEIGHT * player_repval, TRUE);
+	}
+	/* Move cursor to play list begin */
+	else if (!strcasecmp(action, "move_to_begin"))
+	{
+		plist_move(player_plist, 0, FALSE);
+	}
+	/* Move cursor to play list end */
+	else if (!strcasecmp(action, "move_to_end"))
+	{
+		plist_move(player_plist, player_plist->m_len - 1, FALSE);
 	}
 	/* Move cursor to any position */
 	else if (!strcasecmp(action, "move"))
@@ -2183,6 +2065,7 @@ void player_var_mini_manager( void )
 {
 	dialog_t *dlg;
 	editbox_t *eb;
+	button_t *btn;
 
 	dlg = dialog_new(wnd_root, _("Mini variables manager"));
 	eb = editbox_new_with_label(WND_OBJ(dlg->m_vbox), _("&Name: "),
@@ -2191,7 +2074,10 @@ void player_var_mini_manager( void )
 	eb = editbox_new_with_label(WND_OBJ(dlg->m_vbox), _("&Value: "),
 			"value", "", 'v', PLAYER_EB_WIDTH);
 	eb->m_history = player_hist_lists[PLAYER_HIST_LIST_VAR_VAL];
+	btn = button_new(WND_OBJ(dlg->m_hbox), _("Vie&w current value"),
+			"", 'w');
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_mini_var);
+	wnd_msg_add_handler(WND_OBJ(btn), "clicked", player_on_mini_var_view);
 	dialog_arrange_children(dlg);
 } /* End of 'player_var_mini_manager' function */
 
@@ -2607,6 +2493,20 @@ wnd_msg_retcode_t player_on_mini_var( wnd_t *wnd )
 	return WND_MSG_RETCODE_OK;
 } /* End of 'player_on_mini_var' function */
 
+/* Handle 'clicked' for mini variables manager view value button */
+wnd_msg_retcode_t player_on_mini_var_view( wnd_t *wnd )
+{
+	char *value;
+	editbox_t *eb_value = (editbox_t *)dialog_find_item(
+			DIALOG_OBJ(DLGITEM_OBJ(wnd)->m_dialog), "value");
+	editbox_t *eb_name = (editbox_t *)dialog_find_item(
+			DIALOG_OBJ(DLGITEM_OBJ(wnd)->m_dialog), "name");
+	assert(eb_value && eb_name);
+	value = cfg_get_var(cfg_list, EDITBOX_TEXT(eb_name));
+	editbox_set_text(eb_value, value == NULL ? "" : value);
+	return WND_MSG_RETCODE_OK;
+} /* End of 'player_on_mini_var_view' function */
+
 /* Handle 'keydown' for repeat value dialog edit box */
 wnd_msg_retcode_t player_repval_on_keydown( wnd_t *wnd, wnd_key_t key )
 {
@@ -2719,7 +2619,7 @@ bool_t player_handle_color_scheme( cfg_node_t *node, char *value,
 	/* Read configuration from respective file */
 	snprintf(fname, sizeof(fname), "%s/.mpfc/colors/%s", 
 			getenv("HOME"), cfg_get_var(cfg_list, node->m_name));
-	player_read_rcfile(cfg_list, fname);
+	cfg_rcfile_read(cfg_list, fname);
 	return TRUE;
 } /* End of 'player_handle_color_scheme' function */
 
@@ -2732,7 +2632,7 @@ bool_t player_handle_kbind_scheme( cfg_node_t *node, char *value,
 	/* Read configuration from respective file */
 	snprintf(fname, sizeof(fname), "%s/.mpfc/kbinds/%s", 
 			getenv("HOME"), cfg_get_var(cfg_list, node->m_name));
-	player_read_rcfile(cfg_list, fname);
+	cfg_rcfile_read(cfg_list, fname);
 	return TRUE;
 } /* End of 'player_handle_kbind_scheme' function */
 
@@ -2777,6 +2677,8 @@ void player_class_set_default_styles( cfg_node_t *list )
 	cfg_set_var(list, "kbind.move_up", "k;<Ctrl-p>;<Up>");
 	cfg_set_var(list, "kbind.screen_down", "d;<Ctrl-v>;<PageDown>");
 	cfg_set_var(list, "kbind.screen_up", "u;<Alt-v>;<PageUp>");
+	cfg_set_var(list, "kbind.move_to_begin", "<Home>;gg;<Ctrl-a>");
+	cfg_set_var(list, "kbind.move_to_end", "<End>;<Ctrl-e>");
 	cfg_set_var(list, "kbind.move", "G");
 	cfg_set_var(list, "kbind.start_play", "<Return>");
 	cfg_set_var(list, "kbind.play", "x");
@@ -2786,7 +2688,7 @@ void player_class_set_default_styles( cfg_node_t *list )
 	cfg_set_var(list, "kbind.prev", "z");
 	cfg_set_var(list, "kbind.time_fw", "\\>;lt");
 	cfg_set_var(list, "kbind.time_bw", "\\<;ht");
-	cfg_set_var(list, "kbind.time_move", "t");
+	cfg_set_var(list, "kbind.time_move", "gt");
 	cfg_set_var(list, "kbind.vol_fw", "+;lv");
 	cfg_set_var(list, "kbind.vol_bw", "-;hv");
 	cfg_set_var(list, "kbind.bal_fw", "[;lb");

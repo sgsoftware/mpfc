@@ -74,6 +74,9 @@ size_t fhttp_read( void *buf, size_t size, size_t nmemb, file_t *f );
 /* Write to file */
 size_t fhttp_write( void *buf, size_t size, size_t nmemb, file_t *f );
 
+/* Write a line to file */
+void fhttp_puts( char *s, file_t *f );
+
 /* Get line from file */
 char *fhttp_gets( char *s, int size, file_t *f );
 

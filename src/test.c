@@ -28,6 +28,7 @@
 #include "types.h"
 #include "player.h"
 #include "test.h"
+#include "wnd_root.h"
 
 /* Test thread data */
 pthread_t test_pid;

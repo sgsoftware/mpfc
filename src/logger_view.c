@@ -247,7 +247,7 @@ void logview_class_set_default_styles( cfg_node_t *list )
 	cfg_set_var(list, "kbind.scroll_up", "k;<Up>;<Ctrl-p>");
 	cfg_set_var(list, "kbind.scroll_down", "j;<Down>;<Ctrl-n>");
 	cfg_set_var(list, "kbind.screen_up", "u;<PageUp>;<Alt-v>");
-	cfg_set_var(list, "kbind.screen_down", "d;<PageDown>;<Ctrl-v>");
+	cfg_set_var(list, "kbind.screen_down", "<Space>;d;<PageDown>;<Ctrl-v>");
 	cfg_set_var(list, "kbind.scroll_to_start", "g;<Ctrl-a>;<Home>");
 	cfg_set_var(list, "kbind.scroll_to_end", "G;<Ctrl-e>;<End>");
 } /* End of 'logview_class_set_default_styles' function */

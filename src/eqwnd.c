@@ -5,7 +5,7 @@
 /* FILE NAME   : eqwnd.c
  * PURPOSE     : SG MPFC. Equalizer window functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.08.2004
+ * LAST UPDATE : 3.10.2004
  * NOTE        : Module prefix 'eqwnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -24,6 +24,7 @@
  * MA 02111-1307, USA.
  */
 
+#include <math.h>
 #include <stdlib.h>
 #include "types.h"
 #include "cfg.h"
@@ -37,6 +38,16 @@
 #include "wnd_hbox.h"
 #include "wnd_label.h"
 #include "wnd_filebox.h"
+
+/* Equalizer window parameters */
+#define EQWND_SLIDER_START(eq)	0
+#define EQWND_SLIDER_SIZE(eq) 	(WND_HEIGHT(eq) - 1)
+#define EQWND_SLIDER_END(eq)	(EQWND_SLIDER_START(eq) + \
+		EQWND_SLIDER_SIZE(eq) - 1)
+#define EQWND_SLIDER_CENTER(eq)	((EQWND_SLIDER_START(eq) + \
+			EQWND_SLIDER_END(eq)) / 2)
+#define EQWND_SLIDER_WIDTH(eq)	6
+#define EQWND_NUM_BANDS			11
 
 /* Create a new equalizer window */
 eq_wnd_t *eqwnd_new( wnd_t *parent )
@@ -78,6 +89,7 @@ bool_t eqwnd_construct( eq_wnd_t *eq, wnd_t *parent )
 	/* Set fields */
 	wnd->m_cursor_hidden = TRUE;
 	eq->m_pos = 0;
+	eq->m_cur_value = eqwnd_get_band(eq->m_pos);
 	return TRUE;
 } /* End of 'eqwnd_init' function */
 
@@ -85,29 +97,27 @@ bool_t eqwnd_construct( eq_wnd_t *eq, wnd_t *parent )
 wnd_msg_retcode_t eqwnd_on_display( wnd_t *wnd )
 {
 	eq_wnd_t *eq = (eq_wnd_t *)wnd;
-	int i;
+	int i, start_y = 0;
 	int x;
 	char *str[EQWND_NUM_BANDS] = {"PREAMP", "60HZ", "170HZ", "310HZ", "600HZ",
 						"1KHZ", "3KHZ", "6KHZ", "12KHZ", "14KHZ", "16KHZ"};
 	
 	/* Display bands sliders */
-	for ( i = 0, x = 3; i < EQWND_NUM_BANDS; i ++ )
+	eqwnd_scroll(eq);
+	for ( i = eq->m_scroll, x = 3; i < EQWND_NUM_BANDS; i ++ )
 	{
-		char name[20];
 		float val;
 
-		eqwnd_get_var_name(i, name);
-		val = cfg_get_var_float(cfg_list, name);
-		x += eqwnd_display_slider(wnd, x, 1, 20,
-				(i == eq->m_pos), val, str[i]);
+		val = eqwnd_get_band(i);
+		x += eqwnd_display_slider(eq, x, (i == eq->m_pos), val, str[i]);
 		if (i == 0)
 		{
 			wnd_apply_style(wnd, "label-style");
-			wnd_move(wnd, 0, x, 2);
+			wnd_move(wnd, 0, x, EQWND_SLIDER_START(eq));
 			wnd_printf(wnd, 0, 0, "+20 dB");
-			wnd_move(wnd, 0, x, 12);
-			wnd_printf(wnd, 0, 0, "0 dB");
-			wnd_move(wnd, 0, x, 22);
+			wnd_move(wnd, 0, x, EQWND_SLIDER_CENTER(eq));
+			wnd_printf(wnd, 0, 0, "  0 dB");
+			wnd_move(wnd, 0, x, EQWND_SLIDER_END(eq));
 			wnd_printf(wnd, 0, 0, "-20 dB");
 			x += 10;
 		}
@@ -122,35 +132,37 @@ wnd_msg_retcode_t eqwnd_on_action( wnd_t *wnd, char *action )
 
 	if (!strcasecmp(action, "quit"))
 	{
-		/* Save parameters */
-		eqwnd_save_params();
-
-		/* Close window */
 		wnd_close(wnd);
 	}
 	else if (!strcasecmp(action, "move_left"))
 	{
 		eq->m_pos --;
 		if (eq->m_pos < 0)
-			eq->m_pos = 10;
+			eq->m_pos = EQWND_NUM_BANDS - 1;
+		eq->m_cur_value = eqwnd_get_band(eq->m_pos);
 		wnd_invalidate(wnd);
 	}
 	else if (!strcasecmp(action, "move_right"))
 	{
 		eq->m_pos ++;
-		if (eq->m_pos > 10)
+		if (eq->m_pos >= EQWND_NUM_BANDS)
 			eq->m_pos = 0;
+		eq->m_cur_value = eqwnd_get_band(eq->m_pos);
 		wnd_invalidate(wnd);
 	}
 	else if (!strcasecmp(action, "decrease"))
 	{
-		eqwnd_set_var(eq->m_pos, -2., TRUE);
+		eqwnd_set_band(eq->m_pos, eq->m_cur_value - 
+				(40. / (EQWND_SLIDER_SIZE(eq) - 1)));
+		eq->m_cur_value = eqwnd_get_band(eq->m_pos);
 		player_eq_changed = TRUE;
 		wnd_invalidate(wnd);
 	}
 	else if (!strcasecmp(action, "increase"))
 	{
-		eqwnd_set_var(eq->m_pos, 2., TRUE);
+		eqwnd_set_band(eq->m_pos, eq->m_cur_value + 
+				(40. / (EQWND_SLIDER_SIZE(eq) - 1)));
+		eq->m_cur_value = eqwnd_get_band(eq->m_pos);
 		player_eq_changed = TRUE;
 		wnd_invalidate(wnd);
 	}
@@ -162,22 +174,24 @@ wnd_msg_retcode_t eqwnd_on_action( wnd_t *wnd, char *action )
 	{
 		eqwnd_help(eq);
 	}
+	if (player_eq_changed && 
+			cfg_get_var_bool(cfg_list, "equalizer.enable-on-change"))
+		cfg_set_var_bool(cfg_list, "equalizer.enabled", TRUE);
 	return WND_MSG_RETCODE_OK;
 } /* End of 'eqwnd_handle_key' function */
 
 /* Display slider */
-int eqwnd_display_slider( wnd_t *wnd, int x, int start_y, int end_y,
-							bool_t hl, float val, char *str )
+int eqwnd_display_slider( eq_wnd_t *eq, int x, bool_t hl, float val, char *str )
 {
-	int pos, i;
-	int h;
+	wnd_t *wnd = WND_OBJ(eq);
+	int pos, i, y;
 	
 	wnd_apply_style(wnd, hl ? "focus-band-style" : "band-style");
-	h = end_y - start_y;
-	pos = eqwnd_val2pos(val, h);
-	for ( i = 0; i <= h; i ++ )
+	pos = eqwnd_val2pos(val, EQWND_SLIDER_SIZE(eq));
+	for ( y = EQWND_SLIDER_START(eq), i = 0; y <= EQWND_SLIDER_END(eq); 
+			y ++, i ++ )
 	{
-		wnd_move(wnd, 0, x, i + start_y);
+		wnd_move(wnd, 0, x, y);
 		if (i == pos)
 		{
 			wnd_putchar(wnd, 0, ACS_BLOCK);
@@ -189,52 +203,11 @@ int eqwnd_display_slider( wnd_t *wnd, int x, int start_y, int end_y,
 			wnd_putchar(wnd, 0, ACS_VLINE);
 		}
 	}
-	wnd_move(wnd, 0, x - 1, end_y + 1);
+	wnd_move(wnd, 0, x - 1, EQWND_SLIDER_END(eq) + 1);
 	wnd_apply_style(wnd, hl ? "focus-label-style" : "label-style");
 	wnd_printf(wnd, 0, 0, "%s", str);
-	return 6;
+	return EQWND_SLIDER_WIDTH(eq);
 } /* End of 'eqwnd_display_slider' function */
-
-/* Set equalizer variable value */
-void eqwnd_set_var( int pos, float val, bool_t rel )
-{
-	char str[20];
-	float cur_val;
-
-	/* Get variable name using slider position */
-	eqwnd_get_var_name(pos, str);
-
-	/* Update value */
-	if (rel)
-	{
-		cur_val = cfg_get_var_float(cfg_list, str);
-		cur_val += val;
-	}
-	else
-		cur_val = val;
-	if (cur_val < -20.)
-		cur_val = -20.;
-	else if (cur_val > 20.)
-		cur_val = 20.;
-	cfg_set_var_float(cfg_list, str, cur_val);
-} /* End of 'eqwnd_set_var' function */
-
-/* Get equalizer variable name */
-void eqwnd_get_var_name( int pos, char *name )
-{
-	if (pos == 0)
-		strcpy(name, "eq-preamp");
-	else
-		sprintf(name, "eq-band%i", pos);
-} /* End of 'eqwnd_get_var_name' function */
-
-/* Save equalizer parameters */
-void eqwnd_save_params( void )
-{
-	char *str = "eq-preamp;eq-band1;eq-band2;eq-band3;eq-band4;eq-band5;"
-				"eq-band6;eq-band7;eq-band8;eq-band9;eq-band10";
-	player_save_cfg_vars(cfg_list, str);
-} /* End of 'eqwnd_save_params' function */
 
 /* Launch load preset from EQF file dialog */
 void eqwnd_load_eqf_dlg( void )
@@ -285,14 +258,10 @@ void eqwnd_load_eqf( char *filename )
 			return;
 		}
 
-		cfg_set_var_float(cfg_list, "eq-preamp", 
-				20.0 - ((bands[10] * 40.0) / 63.0));
+		eqwnd_set_band(0, 20.0 - ((bands[10] * 40.0) / 63.0));
 		for ( i = 0; i < 10; i ++ )
 		{
-			char str[20];
-			sprintf(str, "eq-band%i", i + 1);
-			cfg_set_var_float(cfg_list, str, 
-					20.0 - ((bands[i] * 40.0) / 64.0));
+			eqwnd_set_band(i + 1, 20.0 - ((bands[i] * 40.0) / 64.0));
 		}
 	}
 
@@ -307,19 +276,20 @@ void eqwnd_load_eqf( char *filename )
 wnd_msg_retcode_t eqwnd_on_mouse_ldown( wnd_t *wnd, int x, int y,
 		wnd_mouse_button_t btn, wnd_mouse_event_t type )
 {
-	int i;
+	int band;
 	eq_wnd_t *eq = (eq_wnd_t *)wnd;
 
 	/* Check if this point is inside any of the band sliders */
-	for ( i = 0; i < EQWND_NUM_BANDS; i ++ )
+	for ( band = 0; band < EQWND_NUM_BANDS; band ++ )
 	{
 		int sx, sy, sw, sh;
 
-		eqwnd_get_slider_pos(i, &sx, &sy, &sw, &sh);
+		eqwnd_get_slider_pos(eq, band, &sx, &sy, &sw, &sh);
 		if (x >= sx && y >= sy && x <= sx + sw && y <= sy + sh)
 		{
-			eq->m_pos = i;
-			eqwnd_set_var(i, eqwnd_pos2val(y - sy, sh), FALSE);
+			eq->m_pos = band;
+			eq->m_cur_value = eqwnd_pos2val(y - sy, sh);
+			eqwnd_set_band(band, eq->m_cur_value);
 			wnd_invalidate(wnd);
 			break;
 		}
@@ -328,26 +298,27 @@ wnd_msg_retcode_t eqwnd_on_mouse_ldown( wnd_t *wnd, int x, int y,
 } /* End of 'eqwnd_on_mouse_ldown' function */
 
 /* Get equalizer band slider position */
-void eqwnd_get_slider_pos( int band, int *x, int *y, int *w, int *h )
+void eqwnd_get_slider_pos( eq_wnd_t *eq, int band, int *x, int *y, int *w, 
+		int *h )
 {
-	*x = 2 + band * 6;
-	if (band > 0)
+	*x = 2 + (band - eq->m_scroll) * EQWND_SLIDER_WIDTH(eq);
+	if (band > 0 && eq->m_scroll == 0)
 		(*x) += 10;
-	*y = 1;
-	*w = 6;
-	*h = 19;
+	*y = EQWND_SLIDER_START(eq);
+	*w = EQWND_SLIDER_WIDTH(eq);
+	*h = EQWND_SLIDER_SIZE(eq);
 } /* End of 'eqwnd_get_slider_pos' function */
 
 /* Convert band value to position */
 int eqwnd_val2pos( float val, int height )
 {
-	return ((-val) + 20.) * height / 40.;
+	return rintf(((-val) + 20.) * (height - 1) / 40.);
 } /* End of 'eqwnd_val2pos' function */
 
 /* Convert position to band value */
 float eqwnd_pos2val( int pos, int height )
 {
-	return 20. - (pos * 40. / height);
+	return 20. - (pos * 40. / (height - 1));
 } /* End of 'eqwnd_pos2val' function */
 
 /* Show help screen */
@@ -381,6 +352,52 @@ void eqwnd_class_set_default_styles( cfg_node_t *list )
 	cfg_set_var(list, "kbind.load_eqf", "p");
 	cfg_set_var(list, "kbind.help", "?");
 } /* End of 'eqwnd_class_set_default_styles' function */
+
+/* Get equlizer band value */
+float eqwnd_get_band( int band )
+{
+	char var_name[256];
+
+	if (band == 0)
+		snprintf(var_name, sizeof(var_name), "equalizer.preamp");
+	else
+		snprintf(var_name, sizeof(var_name), "equalizer.band%d", band);
+	return cfg_get_var_float(cfg_list, var_name);
+} /* End of 'eqwnd_get_band' function */
+
+/* Set equalizer band value */
+void eqwnd_set_band( int band, float val )
+{
+	char var_name[256];
+
+	/* Clip value */
+	if (val < -20.)
+		val = -20.;
+	else if (val > 20.)
+		val = 20.;
+
+	if (band == 0)
+		snprintf(var_name, sizeof(var_name), "equalizer.preamp");
+	else
+		snprintf(var_name, sizeof(var_name), "equalizer.band%d", band);
+	cfg_set_var_float(cfg_list, var_name, val);
+} /* End of 'eqwnd_set_band' function */
+
+/* Scroll window if current band is not visible */
+void eqwnd_scroll( eq_wnd_t *eq )
+{
+	for ( ; eq->m_scroll >= 0 && eq->m_scroll < EQWND_NUM_BANDS - 1; )
+	{
+		int x, y, w, h;
+		eqwnd_get_slider_pos(eq, eq->m_pos, &x, &y, &w, &h);
+		if (x < 0)
+			eq->m_scroll --;
+		else if (x >= WND_WIDTH(eq))
+			eq->m_scroll ++;
+		else
+			break;
+	}
+} /* End of 'eqwnd_scroll' function */
 
 /* End of 'eqwnd.c' file */
 

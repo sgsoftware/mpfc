@@ -544,7 +544,7 @@ void wnd_draw_decorations( wnd_t *wnd )
 	assert(wnd->m_title);
 
 	/* Save window state */
-	wnd_push_state(wnd, WND_STATE_COLOR | WND_STATE_ATTRIB | WND_STATE_CURSOR);
+	wnd_push_state(wnd, WND_STATE_COLOR | WND_STATE_CURSOR);
 
 	/* Display border */
 	if (WND_FLAGS(wnd) & WND_FLAG_BORDER)
@@ -558,10 +558,10 @@ void wnd_draw_decorations( wnd_t *wnd )
 		
 		/* Print top border */
 		wnd_move(wnd, WND_MOVE_ABSOLUTE, 0, 0);
-		wnd_putc(wnd, ACS_ULCORNER);
+		wnd_putc(wnd, wnd->m_height > 1 ? ACS_ULCORNER : ACS_LTEE);
 		for ( i = 1; i < wnd->m_width - 1; i ++ )
 			wnd_putc(wnd, ACS_HLINE);
-		wnd_putc(wnd, ACS_URCORNER);
+		wnd_putc(wnd, wnd->m_height > 1 ? ACS_URCORNER : ACS_RTEE);
 		
 		/* Print caption */
 		if (WND_FLAGS(wnd) & WND_FLAG_CAPTION)
@@ -591,11 +591,14 @@ void wnd_draw_decorations( wnd_t *wnd )
 		}
 
 		/* Print bottom border */
-		wnd_move(wnd, WND_MOVE_ABSOLUTE, 0, wnd->m_height - 1);
-		wnd_putc(wnd, ACS_LLCORNER);
-		for ( i = 1; i < wnd->m_width - 1; i ++ )
-			wnd_putc(wnd, ACS_HLINE);
-		wnd_putc(wnd, ACS_LRCORNER);
+		if (wnd->m_height > 1)
+		{
+			wnd_move(wnd, WND_MOVE_ABSOLUTE, 0, wnd->m_height - 1);
+			wnd_putc(wnd, ACS_LLCORNER);
+			for ( i = 1; i < wnd->m_width - 1; i ++ )
+				wnd_putc(wnd, ACS_HLINE);
+			wnd_putc(wnd, ACS_LRCORNER);
+		}
 
 		/* Print maximize and close boxes */
 		if (WND_FLAGS(wnd) & WND_FLAG_MAX_BOX)
@@ -990,17 +993,19 @@ void wnd_sync_screen( wnd_t *wnd )
 	struct wnd_display_buf_symbol_t *pos;
 	int x = 0, y = 0;
 	wnd_t *wnd_focus;
+	static bool_t prev_cursor_state = TRUE;
 
 	/* Clear screen if buffer is dirty */
 	if (buf->m_dirty)
 		clear();
 
 	/* Copy buffer to screen */
+	move(0, 0);
 	wnd_display_buf_lock(buf);
 	for ( pos = buf->m_data;; pos ++ )
 	{
 		/* Set symbol */
-		mvaddch(y, x, pos->m_attr | pos->m_char);
+		addch(pos->m_attr | pos->m_char);
 
 		/* Move to next symbol */
 		if (x >= buf->m_width - 1)
@@ -1018,10 +1023,24 @@ void wnd_sync_screen( wnd_t *wnd )
 	/* Synchronize cursor */
 	wnd_focus = WND_FOCUS(wnd);
 	if (wnd_focus->m_cursor_hidden || !wnd_cursor_in_client(wnd_focus))
+	{
 		move(LINES - 1, COLS - 1);
+		if (prev_cursor_state)
+		{
+			curs_set(0);
+			prev_cursor_state = FALSE;
+		}
+	}
 	else
+	{
 		move(WND_CLIENT2SCREEN_Y(wnd_focus, wnd_focus->m_cursor_y),
 				WND_CLIENT2SCREEN_X(wnd_focus, wnd_focus->m_cursor_x));
+		if (!prev_cursor_state)
+		{
+			curs_set(1);
+			prev_cursor_state = TRUE;
+		}
+	}
 
 	/* Refresh screen */
 	refresh();
@@ -1135,6 +1154,10 @@ wnd_msg_retcode_t wnd_repos_on_key( wnd_t *wnd, wnd_key_t key )
 	}
 	else
 		not_changed = TRUE;
+	if (w < 1)
+		w = 1;
+	if (h < 1)
+		h = 1;
 
 	/* Unmaximize window */
 	if (WND_FLAGS(real_wnd) & WND_FLAG_MAXIMIZED)

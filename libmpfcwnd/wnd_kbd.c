@@ -62,6 +62,7 @@ wnd_kbd_data_t *wnd_kbd_init( wnd_t *wnd_root )
 void wnd_kbd_init_seq( wnd_kbd_data_t *data )
 {
 	int i;
+	cfg_list_t *list = WND_ROOT_CFG(data->m_wnd_root);
 
 	/* Initialize sequences */
 	data->m_seq = NULL;
@@ -73,30 +74,155 @@ void wnd_kbd_init_seq( wnd_kbd_data_t *data )
 		char str[3] = {'\033', (char)i, 0};
 		wnd_kbd_add_seq(data, str, WND_KEY_WITH_ALT(i));
 	}
-	wnd_kbd_add_seq(data, tgetstr("kr", NULL), KEY_RIGHT);
-	wnd_kbd_add_seq(data, tgetstr("kl", NULL), KEY_LEFT);
-	wnd_kbd_add_seq(data, tgetstr("ku", NULL), KEY_UP);
-	wnd_kbd_add_seq(data, tgetstr("kd", NULL), KEY_DOWN);
-	wnd_kbd_add_seq(data, tgetstr("kb", NULL), KEY_BACKSPACE);
-	wnd_kbd_add_seq(data, tgetstr("kD", NULL), KEY_DC);
-	wnd_kbd_add_seq(data, tgetstr("kh", NULL), KEY_HOME);
-	wnd_kbd_add_seq(data, tgetstr("@7", NULL), KEY_END);
-	wnd_kbd_add_seq(data, tgetstr("kI", NULL), KEY_IC);
-	wnd_kbd_add_seq(data, tgetstr("kN", NULL), KEY_NPAGE);
-	wnd_kbd_add_seq(data, tgetstr("kP", NULL), KEY_PPAGE);
-	wnd_kbd_add_seq(data, tgetstr("k0", NULL), KEY_F0);
-	wnd_kbd_add_seq(data, tgetstr("k1", NULL), KEY_F(1));
-	wnd_kbd_add_seq(data, tgetstr("k2", NULL), KEY_F(2));
-	wnd_kbd_add_seq(data, tgetstr("k3", NULL), KEY_F(3));
-	wnd_kbd_add_seq(data, tgetstr("k4", NULL), KEY_F(4));
-	wnd_kbd_add_seq(data, tgetstr("k5", NULL), KEY_F(5));
-	wnd_kbd_add_seq(data, tgetstr("k6", NULL), KEY_F(6));
-	wnd_kbd_add_seq(data, tgetstr("k7", NULL), KEY_F(7));
-	wnd_kbd_add_seq(data, tgetstr("k8", NULL), KEY_F(8));
-	wnd_kbd_add_seq(data, tgetstr("k9", NULL), KEY_F(9));
-	wnd_kbd_add_seq(data, tgetstr("k;", NULL), KEY_F(10));
-	wnd_kbd_add_seq(data, tgetstr("F1", NULL), KEY_F(11));
-	wnd_kbd_add_seq(data, tgetstr("F2", NULL), KEY_F(12));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "K1"), KEY_A1);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "K3"), KEY_A3);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "K2"), KEY_B2);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "kb"), KEY_BACKSPACE);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "@1"), KEY_BEG);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "kB"), KEY_BTAB);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "K4"), KEY_C1);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "K5"), KEY_C3);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "@2"), KEY_CANCEL);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "ka"), KEY_CATAB);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "kC"), KEY_CLEAR);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "@3"), KEY_CLOSE);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "@4"), KEY_COMMAND);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "@5"), KEY_COPY);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "@6"), KEY_CREATE);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "kt"), KEY_CTAB);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "kD"), KEY_DC);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "kL"), KEY_DL);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "kd"), KEY_DOWN);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "kM"), KEY_EIC);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "@7"), KEY_END);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "@8"), KEY_ENTER);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "kE"), KEY_EOL);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "kS"), KEY_EOS);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "@9"), KEY_EXIT);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "k0"), KEY_F0);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "k1"), KEY_F(1));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "k;"), KEY_F(10));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "F1"), KEY_F(11));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "F2"), KEY_F(12));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "F3"), KEY_F(13));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "F4"), KEY_F(14));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "F5"), KEY_F(15));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "F6"), KEY_F(16));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "F7"), KEY_F(17));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "F8"), KEY_F(18));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "F9"), KEY_F(19));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "k2"), KEY_F(2));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "FA"), KEY_F(20));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "FB"), KEY_F(21));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "FC"), KEY_F(22));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "FD"), KEY_F(23));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "FE"), KEY_F(24));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "FF"), KEY_F(25));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "FG"), KEY_F(26));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "FH"), KEY_F(27));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "FI"), KEY_F(28));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "FJ"), KEY_F(29));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "k3"), KEY_F(3));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "FK"), KEY_F(30));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "FL"), KEY_F(31));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "FM"), KEY_F(32));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "FN"), KEY_F(33));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "FO"), KEY_F(34));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "FP"), KEY_F(35));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "FQ"), KEY_F(36));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "FR"), KEY_F(37));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "FS"), KEY_F(38));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "FT"), KEY_F(39));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "k4"), KEY_F(4));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "FU"), KEY_F(40));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "FV"), KEY_F(41));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "FW"), KEY_F(42));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "FX"), KEY_F(43));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "FY"), KEY_F(44));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "FZ"), KEY_F(45));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "Fa"), KEY_F(46));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "Fb"), KEY_F(47));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "Fc"), KEY_F(48));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "Fd"), KEY_F(49));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "k5"), KEY_F(5));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "Fe"), KEY_F(50));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "Ff"), KEY_F(51));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "Fg"), KEY_F(52));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "Fh"), KEY_F(53));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "Fi"), KEY_F(54));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "Fj"), KEY_F(55));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "Fk"), KEY_F(56));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "Fl"), KEY_F(57));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "Fm"), KEY_F(58));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "Fn"), KEY_F(59));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "k6"), KEY_F(6));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "Fo"), KEY_F(60));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "Fp"), KEY_F(61));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "Fq"), KEY_F(62));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "Fr"), KEY_F(63));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "k7"), KEY_F(7));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "k8"), KEY_F(8));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "k9"), KEY_F(9));
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "@0"), KEY_FIND);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "%1"), KEY_HELP);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "kh"), KEY_HOME);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "kI"), KEY_IC);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "kA"), KEY_IL);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "kl"), KEY_LEFT);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "kH"), KEY_LL);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "%2"), KEY_MARK);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "%3"), KEY_MESSAGE);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "%4"), KEY_MOVE);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "%5"), KEY_NEXT);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "kN"), KEY_NPAGE);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "%6"), KEY_OPEN);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "%7"), KEY_OPTIONS);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "kP"), KEY_PPAGE);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "%8"), KEY_PREVIOUS);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "%9"), KEY_PRINT);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "%0"), KEY_REDO);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "&1"), KEY_REFERENCE);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "&2"), KEY_REFRESH);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "&3"), KEY_REPLACE);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "&4"), KEY_RESTART);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "&5"), KEY_RESUME);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "kr"), KEY_RIGHT);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "&6"), KEY_SAVE);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "&9"), KEY_SBEG);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "&0"), KEY_SCANCEL);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "*1"), KEY_SCOMMAND);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "*2"), KEY_SCOPY);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "*3"), KEY_SCREATE);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "*4"), KEY_SDC);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "*5"), KEY_SDL);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "*6"), KEY_SELECT);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "*7"), KEY_SEND);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "*8"), KEY_SEOL);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "*9"), KEY_SEXIT);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "kF"), KEY_SF);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "*0"), KEY_SFIND);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "#1"), KEY_SHELP);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "#2"), KEY_SHOME);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "#3"), KEY_SIC);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "#4"), KEY_SLEFT);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "%a"), KEY_SMESSAGE);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "%b"), KEY_SMOVE);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "%c"), KEY_SNEXT);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "%d"), KEY_SOPTIONS);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "%e"), KEY_SPREVIOUS);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "%f"), KEY_SPRINT);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "kR"), KEY_SR);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "%g"), KEY_SREDO);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "%h"), KEY_SREPLACE);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "%i"), KEY_SRIGHT);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "%j"), KEY_SRSUME);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "!1"), KEY_SSAVE);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "!2"), KEY_SSUSPEND);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "kT"), KEY_STAB);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "!3"), KEY_SUNDO);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "&7"), KEY_SUSPEND);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "&8"), KEY_UNDO);
+	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "ku"), KEY_UP);
 } /* End of 'wnd_kbd_init_seq' function */
 
 /* Add a sequence to the list */
@@ -308,6 +434,25 @@ void wnd_kbd_rem_from_buf( char *buf, int pos, int *len )
 	memmove(buf, &buf[pos], (*len) - pos);
 	(*len) -= pos;
 } /* End of 'wnd_kbd_rem_from_buf' function */
+
+/* Get terminfo entry value */
+char *wnd_kbd_ti_val( cfg_node_t *list, char *name )
+{
+	char *var_name;
+
+	/* Look up configuration for this entry first */
+	var_name = util_strcat("ti.", name, NULL);
+	if (var_name != NULL)
+	{
+		char *val = cfg_get_var(list, var_name);
+		if (val != NULL)
+			return val;
+		free(var_name);
+	}
+
+	/* Look up terminfo */
+	return tgetstr(name, NULL);
+} /* End of 'wnd_kbd_ti_val' function */
 
 /* End of 'wnd_kbd.c' file */
 

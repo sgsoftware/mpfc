@@ -294,8 +294,8 @@ wnd_class_t *combo_class_init( wnd_global_data_t *global )
 /* Set combo box class default styles */
 void combo_class_set_default_styles( cfg_node_t *list )
 {
-	cfg_set_var(list, "list-color", "white:green");
-	cfg_set_var(list, "focus-list-color", "white:blue");
+	cfg_set_var(list, "list-style", "white:green");
+	cfg_set_var(list, "focus-list-style", "white:blue");
 
 	/* Set kbinds */
 	cfg_set_var(list, "kbind.move_down", "<Down>;<Ctrl-n>");

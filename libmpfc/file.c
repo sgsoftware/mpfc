@@ -187,6 +187,21 @@ char *file_get_content_type( file_t *f )
 	}
 } /* End of 'file_get_content_type' function */
 
+/* Write line to file */
+void file_puts( char *s, file_t *f )
+{
+	if (f == NULL)
+		return;
+	
+	switch (f->m_type)
+	{
+	case FILE_TYPE_REGULAR:
+		return freg_puts(s, f);
+	case FILE_TYPE_HTTP:
+		return fhttp_puts(s, f);
+	}
+} /* End of 'file_puts' function */
+
 /* Get line from file */
 char *file_gets( char *s, int size, file_t *f )
 {
@@ -200,6 +215,7 @@ char *file_gets( char *s, int size, file_t *f )
 	case FILE_TYPE_HTTP:
 		return fhttp_gets(s, size, f);
 	}
+	return NULL;
 } /* End of 'file_gets' function */
 
 /* Check for end of file */

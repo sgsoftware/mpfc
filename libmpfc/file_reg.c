@@ -115,6 +115,13 @@ long freg_tell( file_t *f )
 		return 0;
 } /* End of 'freg_tell' function */
 
+/* Write a line to file */
+void freg_puts( char *s, file_t *f )
+{
+	FREG_GET_DATA(data, f);
+	fputs(s, data->m_fd);
+} /* End of 'freg_puts' function */
+
 /* Get line from file */
 char *freg_gets( char *s, int size, file_t *f )
 {

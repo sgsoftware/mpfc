@@ -51,6 +51,9 @@ size_t freg_read( void *buf, size_t size, size_t nmemb, file_t *f );
 /* Write to file */
 size_t freg_write( void *buf, size_t size, size_t nmemb, file_t *f );
 
+/* Write a line to file */
+void freg_puts( char *s, file_t *f );
+
 /* Get line from file */
 char *freg_gets( char *s, int size, file_t *f );
 

@@ -132,20 +132,11 @@ bool_t player_run( void );
 /* Initialize configuration */
 bool_t player_init_cfg( void );
 
-/* Read configuration file */
-void player_read_rcfile( cfg_node_t *list, char *name );
-
-/* Read one line from the configuration file */
-void player_parse_cfg_line( cfg_node_t *list, char *str );
-
-/* Save variables to main configuration file */
-void player_save_cfg_vars( cfg_node_t *list, char *vars );
-
-/* Save configuration list */
-void player_save_cfg_list( cfg_node_t *list, char *fname );
-
 /* Parse program command line */
 bool_t player_parse_cmd_line( int argc, char *argv[] );
+
+/* Save configuration */
+void player_save_cfg( void );
 
 /***
  * Message handlers
@@ -320,6 +311,9 @@ wnd_msg_retcode_t player_on_info_reload( wnd_t *wnd );
 
 /* Handle 'ok_clicked' for mini variables manager */
 wnd_msg_retcode_t player_on_mini_var( wnd_t *wnd );
+
+/* Handle 'clicked' for mini variables manager view value button */
+wnd_msg_retcode_t player_on_mini_var_view( wnd_t *wnd );
 
 /* Handle 'keydown' for repeat value dialog edit box */
 wnd_msg_retcode_t player_repval_on_keydown( wnd_t *wnd, wnd_key_t key );
