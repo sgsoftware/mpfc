@@ -837,7 +837,6 @@ void plist_display( plist_t *pl, wnd_t *wnd )
 	PLIST_GET_SEL(pl, start, end);
 
 	/* Display each song */
-	wnd_move(wnd, 0, pl->m_start_pos);
 	for ( i = 0, j = pl->m_scrolled; i < pl->m_height; i ++, j ++ )
 	{
 		int attrib;
@@ -858,23 +857,21 @@ void plist_display( plist_t *pl, wnd_t *wnd )
 				col_set_color(wnd, COL_EL_PLIST_TITLE);
 		}
 		
-		/* Print song title or blank line (if we are after end of list) */
+		/* Print song title */
 		if (j < pl->m_len)
 		{
 			song_t *s = pl->m_list[j];
 			char len[10];
 			int x;
 			
+			wnd_advance(wnd, 0, pl->m_start_pos + i);
 			wnd_printf_bound(wnd, wnd->m_width - 13, WND_PRINT_ELLIPSES, 
 					"%i. %s", j + 1, STR_TO_CPTR(s->m_title));
 			sprintf(len, "%i:%02i", s->m_len / 60, s->m_len % 60);
-			x = wnd->m_width - strlen(len) - 1;
-			while (wnd_getx(wnd) != x)
-				wnd_printf(wnd, " ");
-			wnd_printf(wnd, "%s\n", len);
+			wnd_advance(wnd, wnd->m_width - strlen(len) - 1, 
+					pl->m_start_pos + i);
+			wnd_printf(wnd, "%s", len);
 		}
-		else
-			wnd_printf(wnd, "\n");
 	}
 	col_set_color(wnd, COL_EL_DEFAULT);
 //	wnd_set_attrib(wnd, A_NORMAL);
@@ -892,8 +889,9 @@ void plist_display( plist_t *pl, wnd_t *wnd )
 			(end >= 0 && pl->m_len > 0) ? end - start + 1 : 0, pl->m_len,
 			s_time / 3600, (s_time % 3600) / 60, s_time % 60,
 			l_time / 3600, (l_time % 3600) / 60, l_time % 60);
-	wnd_move(wnd, wnd->m_width - strlen(time_text) - 1, wnd_gety(wnd));
-	wnd_printf(wnd, "%s\n", time_text);
+	wnd_advance(wnd, wnd->m_width - strlen(time_text) - 1, 
+			pl->m_start_pos + pl->m_height);
+	wnd_printf(wnd, "%s", time_text);
 	col_set_color(wnd, COL_EL_DEFAULT);
 } /* End of 'plist_display' function */
 

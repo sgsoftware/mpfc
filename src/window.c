@@ -542,6 +542,7 @@ void wnd_display( wnd_t *wnd )
 	wnd_t *child, *focus_child;
 	wnd_msg_handler display = wnd->m_msg_handlers[WND_MSG_DISPLAY];
 	int i;
+	bool_t is_dialog;
 
 	/* Don't display window if it is not initialized yet */
 	if (!(wnd->m_flags & WND_INITIALIZED))
@@ -562,13 +563,20 @@ void wnd_display( wnd_t *wnd )
 	focus_child = wnd_find_focus_branch(wnd);
 
 	/* Display window children */
+	is_dialog = wnd->m_flags & WND_DIALOG;
 	child = wnd->m_child;
+	if (is_dialog)
+		wnd_move(wnd, 1, 1);
 	while (child != NULL)
 	{
-		if (child != focus_child)
-			wnd_display(child);
+//		if (child != focus_child)
+		if (is_dialog)
+			wnd_advance(wnd, child->m_sx - wnd->m_sx, child->m_sy - wnd->m_sy);
+		wnd_display(child);
 		child = child->m_next;
 	}
+	if (is_dialog)
+		wnd_advance(wnd, wnd->m_width - 2, wnd->m_height - 2);
 	if (focus_child != NULL)
 		wnd_display(focus_child);
 
@@ -1002,6 +1010,43 @@ void wnd_printf_bound( wnd_t *wnd, int len, dword flags, char *format, ... )
 		n ++;
 	}
 } /* End of 'wnd_printf_bound' function */
+
+/* Advance cursor (move it with clearing space) */
+void wnd_advance( wnd_t *wnd, int x, int y )
+{
+	int cur_x, cur_y;
+	bool_t till_end = FALSE;
+	
+	if (wnd == NULL)
+		return;
+
+	/* Fix position */
+	if (x < 0)
+		x = 0;
+	else if (x >= wnd->m_width)
+	{
+		x = wnd->m_width - 1;
+		till_end = TRUE;
+	}
+	if (y < 0)
+		y = 0;
+	else if (y >= wnd->m_height)
+		y = wnd->m_height - 1;
+
+	/* If position is before current - simply move without clearing anything */
+	cur_x = wnd_getx(wnd);
+	cur_y = wnd_gety(wnd);
+	if (y < cur_y || (y == cur_y && x < cur_x))
+		wnd_move(wnd, x, y);
+
+	/* Print spaces until reaching specified position */
+	while (wnd_gety(wnd) < y)
+		waddch(wnd->m_wnd, '\n');
+	while (wnd_getx(wnd) < x)
+		waddch(wnd->m_wnd, ' ');
+	if (till_end)
+		waddch(wnd->m_wnd, ' ');
+} /* End of 'wnd_advance' function */
 
 /* End of 'window.c' file */
 

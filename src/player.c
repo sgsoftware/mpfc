@@ -484,48 +484,83 @@ void player_display( wnd_t *wnd, dword data )
 	char aparams[256];
 
 	/* Clear the screen */
-	wnd_clear(wnd, FALSE);
+	//wnd_clear(wnd, FALSE);
 	
 	/* Display head */
 	wnd_move(wnd, 0, 0);
 	if (player_plist->m_cur_song == -1)
 	{
+		/* Print about */
+		wnd_advance(wnd, 0, 0);
 		col_set_color(wnd, COL_EL_ABOUT);
-		wnd_printf(wnd, _("SG Software Media Player For Console\n"
-				"version %s\n"), VERSION);
+		wnd_printf(wnd, _("SG Software Media Player For Console"));
 		col_set_color(wnd, COL_EL_DEFAULT);
+		
+		/* Print shuffle mode */
+		if (cfg_get_var_int(cfg_list, "shuffle-play"))
+		{
+			wnd_advance(wnd, wnd->m_width - 13, 0);
+			col_set_color(wnd, COL_EL_PLAY_MODES);
+			wnd_printf(wnd, "Shuffle");
+			col_set_color(wnd, COL_EL_DEFAULT);
+		}
+
+		/* Print version */
+		wnd_advance(wnd, 0, 1);
+		col_set_color(wnd, COL_EL_ABOUT);
+		wnd_printf(wnd, _("version %s"), VERSION);
+		col_set_color(wnd, COL_EL_DEFAULT);
+		
+		/* Print loop mode */
+		if (cfg_get_var_int(cfg_list, "loop-play"))
+		{
+			wnd_advance(wnd, wnd->m_width - 5, 0);
+			col_set_color(wnd, COL_EL_PLAY_MODES);
+			wnd_printf(wnd, "Loop");
+			col_set_color(wnd, COL_EL_DEFAULT);
+		}
 	}
 	else
 	{
 		int t;
 		bool_t show_rem;
 		
+		/* Print current song title */
 		s = player_plist->m_list[player_plist->m_cur_song];
+		wnd_advance(wnd, 0, 0);
 		col_set_color(wnd, COL_EL_CUR_TITLE);
-		wnd_printf_bound(wnd, wnd->m_width - 1, WND_PRINT_ELLIPSES, "%s\n", 
+		wnd_printf_bound(wnd, wnd->m_width - 1, WND_PRINT_ELLIPSES, "%s", 
 				STR_TO_CPTR(s->m_title));
-		col_set_color(wnd, COL_EL_CUR_TIME);
+		col_set_color(wnd, COL_EL_DEFAULT);
+
+		/* Print shuffle mode */
+		if (cfg_get_var_int(cfg_list, "shuffle-play"))
+		{
+			wnd_advance(wnd, wnd->m_width - 13, 0);
+			col_set_color(wnd, COL_EL_PLAY_MODES);
+			wnd_printf(wnd, "Shuffle");
+			col_set_color(wnd, COL_EL_DEFAULT);
+		}
+
+		/* Print current time */
 		t = (show_rem = cfg_get_var_int(cfg_list, "show-time-remaining")) ? 
 			s->m_len - player_cur_time : player_cur_time;
+		wnd_advance(wnd, 0, 1);
+		col_set_color(wnd, COL_EL_CUR_TIME);
 		wnd_printf(wnd, "%s%i:%02i/%i:%02i\n", 
 				show_rem ? "-" : "", t / 60, t % 60,
 				s->m_len / 60, s->m_len % 60);
 		col_set_color(wnd, COL_EL_DEFAULT);
-	}
 
-	/* Display play modes */
-	col_set_color(wnd, COL_EL_PLAY_MODES);
-	if (cfg_get_var_int(cfg_list, "shuffle-play"))
-	{
-		wnd_move(wnd, wnd->m_width - 13, 0);
-		wnd_printf(wnd, "Shuffle");
+		/* Print loop mode */
+		if (cfg_get_var_int(cfg_list, "loop-play"))
+		{
+			wnd_advance(wnd, wnd->m_width - 5, 0);
+			col_set_color(wnd, COL_EL_PLAY_MODES);
+			wnd_printf(wnd, "Loop");
+			col_set_color(wnd, COL_EL_DEFAULT);
+		}
 	}
-	if (cfg_get_var_int(cfg_list, "loop-play"))
-	{
-		wnd_move(wnd, wnd->m_width - 5, 0);
-		wnd_printf(wnd, "Loop");
-	}
-	col_set_color(wnd, COL_EL_DEFAULT);
 
 	/* Display current audio parameters */
 	strcpy(aparams, "");
@@ -536,17 +571,17 @@ void player_display( wnd_t *wnd, dword data )
 	if (player_stereo)
 		sprintf(aparams, "%s%s", aparams, 
 				(player_stereo == PLAYER_STEREO) ? "stereo" : "mono");
-	col_set_color(wnd, COL_EL_AUDIO_PARAMS);
-	wnd_move(wnd, PLAYER_SLIDER_BAL_X - strlen(aparams) - 1, 
+	wnd_advance(wnd, PLAYER_SLIDER_BAL_X - strlen(aparams) - 1, 
 			PLAYER_SLIDER_BAL_Y);
-	wnd_printf(wnd, "%s\n", aparams);
+	col_set_color(wnd, COL_EL_AUDIO_PARAMS);
+	wnd_printf(wnd, "%s", aparams);
 	col_set_color(wnd, COL_EL_DEFAULT);
 
 	/* Display different slidebars */
-	player_display_slider(wnd, PLAYER_SLIDER_TIME_X, PLAYER_SLIDER_TIME_Y, 
-			PLAYER_SLIDER_TIME_W, player_cur_time, (s == NULL) ? 0 : s->m_len);
 	player_display_slider(wnd, PLAYER_SLIDER_BAL_X, PLAYER_SLIDER_BAL_Y,
 			PLAYER_SLIDER_BAL_W, player_balance, 100.);
+	player_display_slider(wnd, PLAYER_SLIDER_TIME_X, PLAYER_SLIDER_TIME_Y, 
+			PLAYER_SLIDER_TIME_W, player_cur_time, (s == NULL) ? 0 : s->m_len);
 	player_display_slider(wnd, PLAYER_SLIDER_VOL_X, PLAYER_SLIDER_VOL_Y,
 			PLAYER_SLIDER_VOL_W, player_volume, 100.);
 	
@@ -556,6 +591,7 @@ void player_display( wnd_t *wnd, dword data )
 	/* Print message */
 	if (player_msg != NULL)
 	{
+		wnd_advance(wnd, 0, wnd->m_height - 1);
 		col_set_color(wnd, COL_EL_STATUS);
 		wnd_printf(wnd, "%s", player_msg);
 		col_set_color(wnd, COL_EL_DEFAULT);
@@ -563,7 +599,7 @@ void player_display( wnd_t *wnd, dword data )
 
 	/* Hide cursor */
 	col_set_color(wnd, COL_EL_DEFAULT);
-	wnd_move(wnd, wnd->m_width - 1, wnd->m_height - 1);
+	wnd_advance(wnd, wnd->m_width, wnd->m_height);
 } /* End of 'player_display' function */
 
 /* Key handler function for command repeat value edit box */
@@ -1335,9 +1371,9 @@ void player_display_slider( wnd_t *wnd, int x, int y, int width,
 {
 	int i, slider_pos;
 	
-	col_set_color(wnd, COL_EL_SLIDER);
-	wnd_move(wnd, x, y);
+	wnd_advance(wnd, x, y);
 	slider_pos = (range) ? (pos * width / range) : 0;
+	col_set_color(wnd, COL_EL_SLIDER);
 	for ( i = 0; i <= width; i ++ )
 	{
 		if (i == slider_pos)

@@ -116,27 +116,25 @@ void dlg_display( wnd_t *wnd, dword data )
 	wnd_printf(wnd, " %s ", dlg->m_caption);
 	col_set_color(wnd, COL_EL_DEFAULT);
 	wnd_set_attrib(wnd, A_BOLD);
-	for ( i = wnd_getx(wnd); i < wnd->m_width - 2; i ++ )
+	for ( i = wnd_getx(wnd); i < wnd->m_width - 1; i ++ )
 		wnd_print_char(wnd, ACS_HLINE);
 	wnd_print_char(wnd, ACS_URCORNER);
-	wnd_print_char(wnd, '\n');
 
 	/* Print other lines */
 	for ( i = 1; i < wnd->m_height - 1; i ++ )
 	{
+		wnd_move(wnd, 0, i);
 		wnd_print_char(wnd, ACS_VLINE);
-		for ( j = 1; j < wnd->m_width - 2; j ++ )
-			wnd_print_char(wnd, ' ');
+		wnd_move(wnd, wnd->m_width - 1, i);
 		wnd_print_char(wnd, ACS_VLINE);
-		wnd_print_char(wnd, '\n');
 	}
 
 	/* Print last line */
+	wnd_move(wnd, 0, wnd->m_height - 1);
 	wnd_print_char(wnd, ACS_LLCORNER);
-	for ( i = 1; i < wnd->m_width - 2; i ++ )
+	for ( i = 1; i < wnd->m_width - 1; i ++ )
 		wnd_print_char(wnd, ACS_HLINE);
 	wnd_print_char(wnd, ACS_LRCORNER);
-	wnd_print_char(wnd, '\n');
 } /* End of 'dlg_display' function */
 
 /* Dialog box key handler function  */

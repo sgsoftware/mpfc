@@ -160,29 +160,32 @@ void help_display( wnd_t *wnd, dword data )
 {
 	help_screen_t *h = (help_screen_t *)wnd;
 	char *title = _("MPFC Default Key Bindings");
-	int i;
+	int i, j;
 	
 	/* Print title */
-	wnd_clear(wnd, FALSE);
+	//wnd_clear(wnd, FALSE);
+	wnd_move(wnd, 0, 0);
+	wnd_advance(wnd, (wnd->m_width - strlen(title)) / 2, 0);
 	col_set_color(wnd, COL_EL_HELP_TITLE);
-	wnd_move(wnd, (wnd->m_width - strlen(title)) / 2, 0);
 	wnd_printf(wnd, "%s\n\n", title);
 	col_set_color(wnd, COL_EL_DEFAULT);
 
 	/* Print keys */
 	col_set_color(wnd, COL_EL_HELP_STRINGS);
-	for ( i = h->m_screen_size * h->m_screen; 
+	for ( i = h->m_screen_size * h->m_screen, j = 1; 
 			i < h->m_num_items && i < h->m_screen_size * (h->m_screen + 1);
-	   		i ++ )  
-		wnd_printf(wnd, "%s\n", h->m_items[i]);
+	   		i ++, j ++ )  
+	{
+		wnd_advance(wnd, 0, j);
+		wnd_printf(wnd, "%s", h->m_items[i]);
+	}
 	col_set_color(wnd, COL_EL_DEFAULT);
 
-	wnd_move(wnd, 0, wnd->m_height - 1);
 	col_set_color(wnd, COL_EL_STATUS);
+	wnd_advance(wnd, 0, wnd->m_height - 1);
 	wnd_printf(wnd, _("Press <Space> to see next screen and <q> to exit\n"));
 	col_set_color(wnd, COL_EL_DEFAULT);
-	
-	wnd_move(wnd, wnd->m_width - 1, wnd->m_height - 1);
+	wnd_advance(wnd, wnd->m_width, wnd->m_height);
 } /* End of 'help_display' function */
 
 /* Handle key message */

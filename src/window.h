@@ -175,6 +175,9 @@ bool_t wnd_get_msg( void *wnd, dword *id, dword *data );
 /* Move cursor to a specified location */
 void wnd_move( wnd_t *wnd, int x, int y );
 
+/* Advance cursor (move it with clearing space) */
+void wnd_advance( wnd_t *wnd, int x, int y );
+
 /* Get cursor X coordinate */
 int wnd_getx( wnd_t *wnd );
 
