@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG Konsamp. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 3.05.2003
+ * LAST UPDATE : 24.05.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -41,6 +41,7 @@
 #include "player.h"
 #include "plist.h"
 #include "pmng.h"
+#include "sat.h"
 #include "util.h"
 
 /* Files for player to play */
@@ -78,6 +79,9 @@ int player_cur_time = 0;
 /* Player status */
 int player_status = PLAYER_STATUS_STOPPED;
 
+/* Current volume */
+int player_volume = 0;
+
 /* Initialize player */
 bool player_init( int argc, char *argv[] )
 {
@@ -105,6 +109,9 @@ bool player_init( int argc, char *argv[] )
 	/* Initialize plugin manager */
 	pmng_init();
 
+	/* Initialize song adder thread */
+	sat_init();
+
 	/* Create a play list and add files to it */
 	player_plist = plist_new(3, wnd_root->m_height - 6);
 	if (player_plist == NULL)
@@ -117,6 +124,12 @@ bool player_init( int argc, char *argv[] )
 	/* Initialize playing thread */
 	pthread_create(&player_tid, NULL, player_thread, NULL);
 
+	/* Get volume */
+	if (pmng_cur_out != NULL && pmng_cur_out->m_fl.m_get_volume != NULL)
+		player_volume = pmng_cur_out->m_fl.m_get_volume();
+	else
+		player_volume = 0;
+
 	/* Exit */
 	return TRUE;
 } /* End of 'player_init' function */
@@ -125,6 +138,7 @@ bool player_init( int argc, char *argv[] )
 void player_deinit( void )
 {
 	/* End playing thread */
+	sat_free();
 	player_end_track = TRUE;
 	player_end_thread = TRUE;
 	pthread_join(player_tid, NULL);
@@ -191,7 +205,7 @@ bool player_parse_cmd_line( int argc, char *argv[] )
 		}
 		
 		/* Set respective variable */
-		cfg_set_var(name, val);
+		cfg_set_var(cfg_list, name, val);
 	}
 
 	/* Get file names from command line */
@@ -261,6 +275,14 @@ void player_handle_key( wnd_t *wnd, dword data )
 		break;
 	case 'g':
 		player_seek((player_repval == 0) ? 0 : player_repval, FALSE);
+		break;
+
+	/* Increase/decrease volume */
+	case '+':
+		player_set_vol((player_repval == 0) ? 5 : 5 * player_repval, TRUE);
+		break;
+	case '-':
+		player_set_vol((player_repval == 0) ? -5 : -5 * player_repval, TRUE);
 		break;
 
 	/* Centrize view */
@@ -396,9 +418,7 @@ void player_handle_key( wnd_t *wnd, dword data )
 			{
 				player_repval = atoi(ebox->m_text);
 				dont_change_repval = TRUE;
-				
-				if (ebox->m_last_key >= 'A' && ebox->m_last_key <= 'z')
-					player_handle_key(wnd, ebox->m_last_key);
+				player_handle_key(wnd, ebox->m_last_key);
 			}
 			
 			/* Destroy edit box */
@@ -421,7 +441,7 @@ void player_handle_mouse_click( wnd_t *wnd, dword data )
 /* Display player function */
 void player_display( wnd_t *wnd, dword data )
 {
-	int i, song_time_len = wnd_root->m_width - 15, slider_pos;
+	int i;
 	song_t *s = NULL;
 	
 	/* Clear the screen */
@@ -441,17 +461,10 @@ void player_display( wnd_t *wnd, dword data )
 	}
 
 	/* Display different slidebars */
-	wnd_move(wnd, 0, 2);
-	slider_pos = (s == NULL || !s->m_len) ? 0 : 
-		(player_cur_time * song_time_len / s->m_len);
-	for ( i = 0; i < song_time_len; i ++ )
-	{
-		if (i == slider_pos)
-			wnd_printf(wnd, "O");
-		else
-			wnd_printf(wnd, "=");
-	}
-	wnd_printf(wnd, "\n");
+	player_display_slider(wnd, 0, 2, wnd->m_width - 24, 
+			player_cur_time, (s == NULL) ? 0 : s->m_len);
+	player_display_slider(wnd, wnd->m_width - 22, 2, 20, 
+			player_volume, 100.);
 	
 	/* Display play list */
 	plist_display(player_plist, wnd);
@@ -511,19 +524,13 @@ void player_seek( int sec, bool rel )
 
 	s = player_plist->m_list[player_plist->m_cur_song];
 
-	(rel) ? (new_time = player_cur_time + sec) : (new_time = sec);
+	new_time = (rel ? (player_cur_time + sec) : sec);
 	if (new_time < 0)
-	{
-		sec = ((rel) ? -player_cur_time : 0);
 		new_time = 0;
-	}
 	else if (new_time > s->m_len)
-	{
-		sec = ((rel) ? s->m_len - player_cur_time : s->m_len);
 		new_time = s->m_len;
-	}
-	
-	s->m_inp->m_fl.m_seek(new_time - player_cur_time);
+
+	s->m_inp->m_fl.m_seek(new_time);
 	player_cur_time = new_time;
 	wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
 } /* End of 'player_seek' function */
@@ -559,7 +566,8 @@ void *player_thread( void *arg )
 	while (!player_end_thread)
 	{
 		song_t *s;
-		int ch, freq, bits;
+		int ch, freq;
+		dword fmt;
 		inp_func_list_t ifl;
 		outp_func_list_t ofl;
 		song_info_t si;
@@ -576,22 +584,26 @@ void *player_thread( void *arg )
 		s = player_plist->m_list[player_plist->m_cur_song];
 		player_status = PLAYER_STATUS_PLAYING;
 		player_end_track = FALSE;
-		wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
 	
 		/* Get song length and information at first */
 		ifl = s->m_inp->m_fl;
-		s->m_len = ifl.m_get_len(s->m_file_name);
+		if (cfg_get_var_int(cfg_list, "update_song_len_on_play"))
+			s->m_len = ifl.m_get_len(s->m_file_name);
 		song_update_info(s);
 
 		/* Start playing */
 		if (!ifl.m_start(s->m_file_name))
 		{
 			player_next_track();
+			error_set_code(ERROR_UNKNOWN_FILE_TYPE);
+			strcpy(player_msg, error_text);
+			wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
 			continue;
 		}
 
 		/* Start output plugin */
-		if (pmng_cur_out == NULL || (!cfg_get_var_int("silent_mode") && 
+		if (pmng_cur_out == NULL || 
+				(!cfg_get_var_int(cfg_list, "silent_mode") && 
 					!pmng_cur_out->m_fl.m_start()))
 		{
 			strcpy(player_msg, "Unable to initialize output plugin");
@@ -604,13 +616,14 @@ void *player_thread( void *arg )
 		ofl = pmng_cur_out->m_fl;
 
 		/* Set audio parameters */
-		ifl.m_get_audio_params(&ch, &freq, &bits);
+		ifl.m_get_audio_params(&ch, &freq, &fmt);
 		ofl.m_set_channels(2);
 		ofl.m_set_freq(freq);
-		ofl.m_set_bits(bits);
+		ofl.m_set_fmt(fmt);
 
 		/* Start timer thread */
 		pthread_create(&player_timer_tid, NULL, player_timer_func, 0);
+		wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
 	
 		/* Play */
 		while (!player_end_track)
@@ -623,6 +636,23 @@ void *player_thread( void *arg )
 			{
 				if (size = ifl.m_get_stream(buf, size))
 				{
+					int new_ch, new_freq;
+					dword new_fmt;
+					
+					/* Update audio parameters if they have changed */
+					ifl.m_get_audio_params(&new_ch, &new_freq, &new_fmt);
+					if (ch != new_ch || freq != new_freq || fmt != new_fmt)
+					{
+						ch = new_ch;
+						freq = new_freq;
+						fmt = new_fmt;
+						
+						ofl.m_flush();
+						ofl.m_set_channels(2);
+						ofl.m_set_freq(freq);
+						ofl.m_set_fmt(fmt);
+					}
+					
 					ofl.m_play(buf, size);
 				}
 				else
@@ -634,6 +664,9 @@ void *player_thread( void *arg )
 			/* Sleep a little */
 			util_delay(0, 100000L);
 		}
+
+		/* Wait until we really stop playing */
+		ofl.m_flush();
 
 		/* Stop timer thread */
 		player_stop_timer();
@@ -720,15 +753,7 @@ void player_add_dialog( void )
 
 		/* Add file if enter was pressed */
 		if (fin->m_box.m_last_key == '\n')
-		{
-			int was = player_plist->m_len;
-			
-			if (plist_add(player_plist, fin->m_box.m_text))
-			{
-				sprintf(player_msg, _("Added %i songs"), 
-						player_plist->m_len - was);
-			}
-		}
+			plist_add(player_plist, fin->m_box.m_text);
 
 		/* Destroy edit box */
 		wnd_destroy(fin);
@@ -853,7 +878,7 @@ void player_info_dialog( void )
 	int i;
 
 	/* Get song object */
-	if (player_plist->m_sel_end < 0)
+	if (player_plist->m_sel_end < 0 || !player_plist->m_len)
 		return;
 	else
 		s = player_plist->m_list[player_plist->m_sel_end];
@@ -867,8 +892,8 @@ void player_info_dialog( void )
 
 	/* Create info dialog */
 	dlg = dlg_new(wnd_root, 2, 2, wnd_root->m_width - 4, 20, 
-			cfg_get_var_int("info_editor_show_full_name") ? s->m_file_name :
-				util_get_file_short_name(s->m_file_name));
+			cfg_get_var_int(cfg_list, "info_editor_show_full_name") ? 
+			s->m_file_name : util_get_file_short_name(s->m_file_name));
 	name = ebox_new((wnd_t *)dlg, 2, 1, wnd_root->m_width - 10, 1, 
 			30, "Song name: ", s->m_info->m_name);
 	artist = ebox_new((wnd_t *)dlg, 2, 2, wnd_root->m_width - 10, 1, 
@@ -882,7 +907,7 @@ void player_info_dialog( void )
 	genre = lbox_new((wnd_t *)dlg, 2, 6, wnd_root->m_width - 10, 13,
 			"Genre: ");
 	glist = s->m_inp->m_fl.m_glist;
-	for ( i = 0; i < glist->m_size; i ++ )
+	for ( i = 0; glist != NULL && i < glist->m_size; i ++ )
 		lbox_add(genre, glist->m_list[i].m_name);
 	lbox_move_cursor(genre, FALSE, 
 			(s->m_info->m_genre == GENRE_ID_UNKNOWN) ? -1 : 
@@ -932,6 +957,45 @@ void player_next_track( void )
 	else
 		player_play();
 } /* End of 'player_next_track' function */
+
+/* Handle non-digit key (place it to buffer) */
+void player_handle_non_digit( int key )
+{
+} /* End of 'player_handle_non_digit' function */
+
+/* Execute key action */
+void player_exec_key_action( void )
+{
+} /* End of 'player_exec_key_action' function */
+
+/* Set volume */
+void player_set_vol( int vol, bool rel )
+{
+	player_volume = (rel) ? player_volume + vol : vol;
+	if (player_volume < 0)
+		player_volume = 0;
+	else if (player_volume > 100)
+		player_volume = 100;
+	if (pmng_cur_out != NULL && pmng_cur_out->m_fl.m_set_volume != NULL)
+		pmng_cur_out->m_fl.m_set_volume(player_volume);
+} /* End of 'player_set_vol' function */
+
+/* Display slider */
+void player_display_slider( wnd_t *wnd, int x, int y, int width, 
+		int pos, int range )
+{
+	int i, slider_pos;
+	
+	wnd_move(wnd, x, y);
+	slider_pos = (range) ? (pos * width / range) : 0;
+	for ( i = 0; i <= width; i ++ )
+	{
+		if (i == slider_pos)
+			wnd_printf(wnd, "O");
+		else 
+			wnd_printf(wnd, "=");
+	}
+} /* End of 'player_display_slider' function */
 
 /* End of 'player.c' file */
 

@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. File input edit box functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 23.04.2003
+ * LAST UPDATE : 17.05.2003
  * NOTE        : Module prexix 'fin'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -273,14 +273,15 @@ void fin_paste( file_input_box_t *box )
 void fin_rebuild_list( file_input_box_t *box )
 {
 	FILE *fd;
-	char str[256];
+	char str[256], fname[256];
 	fin_list_t *l = NULL;
 	
 	/* Free existing list */
 	fin_free_list(box);
 
 	/* Open pipe to 'ls' command and add each file it prints */
-	sprintf(str, "ls %s -p 2>/dev/null", box->m_cur_path);
+	util_escape_fname(fname, box->m_cur_path);
+	sprintf(str, "ls %s -p 2>/dev/null", fname);
 	fd = popen(str, "r");
 	while (fd != NULL)
 	{

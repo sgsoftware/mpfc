@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Interface fort play list manipulation
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 3.05.2003
+ * LAST UPDATE : 13.05.2003
  * NOTE        : Module prefix 'plist'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -28,6 +28,7 @@
 #ifndef __SG_KONSAMP_PLIST_H__
 #define __SG_KONSAMP_PLIST_H__
 
+#include <pthread.h>
 #include "types.h"
 #include "song.h"
 #include "window.h"
@@ -55,6 +56,9 @@ typedef struct
 
 	/* Songs list */
 	song_t **m_list;
+
+	/* Mutex for synchronization play list operations */
+	pthread_mutex_t m_mutex;
 } plist_t;
 
 /* Sort criterias */
@@ -80,6 +84,9 @@ bool plist_add_song( plist_t *pl, char *filename, char *title, int len );
 /* Add a play list file to play list */
 bool plist_add_list( plist_t *pl, char *filename );
 
+/* Low level song adding */
+bool __plist_add_song( plist_t *pl, char *filename, char *title, int len );
+
 /* Save play list */
 bool plist_save( plist_t *pl, char *filename );
 
@@ -100,6 +107,12 @@ void plist_centrize( plist_t *pl );
 
 /* Display play list */
 void plist_display( plist_t *pl, wnd_t *wnd );
+
+/* Lock play list */
+void plist_lock( plist_t *pl );
+
+/* Unlock play list */
+void plist_unlock( plist_t *pl );
 
 #endif
 

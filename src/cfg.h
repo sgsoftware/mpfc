@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for configuration handling
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 29.04.2003
+ * LAST UPDATE : 12.05.2003
  * NOTE        : Module prefix 'cfg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -40,9 +40,16 @@ typedef struct tag_cfg_var_t
 	char m_val[256];
 } cfg_var_t;
 
-/* Variables list */
-extern cfg_var_t *cfg_vars;
-extern int cfg_num_vars;
+/* Variables list type */
+typedef struct tag_cfg_var_list_t
+{
+	/* Variables list */
+	cfg_var_t *m_vars;
+	int m_num_vars;
+} cfg_list_t;
+
+/* Global variables list */
+extern cfg_list_t *cfg_list;
 
 /* Initialize configuration */
 void cfg_init( void );
@@ -60,22 +67,22 @@ void cfg_read_rcfile( char *name );
 void cfg_parse_line( char *str );
 
 /* Add variable */
-void cfg_new_var( char *name, char *val );
+void cfg_new_var( cfg_list_t *list, char *name, char *val );
 
 /* Search for variable and return its index (or negative on failure) */
-int cfg_search_var( char *name );
+int cfg_search_var( cfg_list_t *list, char *name );
 
 /* Set variable value */
-void cfg_set_var( char *name, char *val );
+void cfg_set_var( cfg_list_t *list, char *name, char *val );
 
 /* Set variable integer value */
-void cfg_set_var_int( char *name, int val );
+void cfg_set_var_int( cfg_list_t *list, char *name, int val );
 
 /* Get variable value */
-char *cfg_get_var( char *name );
+char *cfg_get_var( cfg_list_t *list, char *name );
 
 /* Get variable integer value */
-int cfg_get_var_int( char *name );
+int cfg_get_var_int( cfg_list_t *list, char *name );
 
 #endif
 

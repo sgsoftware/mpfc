@@ -5,7 +5,7 @@
 /* FILE NAME   : player.h
  * PURPOSE     : SG Konsamp. Interface for main player functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 28.04.2003
+ * LAST UPDATE : 25.05.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -68,6 +68,9 @@ void player_repval_handle_key( wnd_t *wnd, dword data );
 /* Seek song */
 void player_seek( int sec, bool rel );
 
+/* Set volume */
+void player_set_vol( int vol, bool rel );
+
 /* Play song */
 void player_play( void );
 
@@ -112,6 +115,16 @@ void player_help_handle_key( wnd_t *wnd, dword data );
 
 /* Start next track */
 void player_next_track( void );
+
+/* Handle non-digit key (place it to buffer) */
+void player_handle_non_digit( int key );
+
+/* Execute key action */
+void player_exec_key_action( void );
+
+/* Display slider */
+void player_display_slider( wnd_t *wnd, int x, int y, int width, 
+	   int pos, int range );
 
 #endif
 

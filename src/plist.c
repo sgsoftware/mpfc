@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Play list manipulation
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 3.05.2003
+ * LAST UPDATE : 13.05.2003
  * NOTE        : Module prefix 'plist'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -25,11 +25,13 @@
  * MA 02111-1307, USA.
  */
 
+#include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "types.h"
 #include "error.h"
 #include "plist.h"
+#include "sat.h"
 #include "song.h"
 #include "util.h"
 #include "window.h"
@@ -66,6 +68,7 @@ plist_t *plist_new( int start_pos, int height )
 	pl->m_visual = FALSE;
 	pl->m_len = 0;
 	pl->m_list = NULL;
+	pthread_mutex_init(&pl->m_mutex, NULL);
 	return pl;
 } /* End of 'plist_new' function */
 
@@ -78,11 +81,14 @@ void plist_free( plist_t *pl )
 		{
 			int i;
 			
+			plist_lock(pl);
 			for ( i = 0; i < pl->m_len; i ++ )
 				song_free(pl->m_list[i]);
 			free(pl->m_list);
+			plist_unlock(pl);
 		}
 		
+		pthread_mutex_destroy(&pl->m_mutex);
 		free(pl);
 	}
 } /* End of 'plist_free' function */
@@ -112,16 +118,7 @@ bool plist_add( plist_t *pl, char *filename )
 	}
 
 	/* Check some symbols in path to respective using escapes */
-	for ( i = 0; i < strlen(fname); i ++ )
-	{
-		if (fname[i] == ' ' || fname[i] == '(' || fname[i] == ')' ||
-				fname[i] == '\'' || fname[i] == '\"' || fname[i] == '!' ||
-        fname[i] == '&')
-		{
-			memmove(&fname[i + 1], &fname[i], strlen(fname) - i + 1);
-			fname[i ++] = '\\';
-		}
-	}
+	util_escape_fname(fname, fname);
 
 	/* Find */
 	sprintf(str, "find %s 2>/dev/null | grep -i \"\\.[{mp3}{m3u}{wav}]\"", 
@@ -161,43 +158,8 @@ bool plist_add_one_file( plist_t *pl, char *filename )
 /* Add a song to play list */
 bool plist_add_song( plist_t *pl, char *filename, char *title, int len )
 {
-	song_t *song;
-	int was_len;
-	
-	PLIST_ASSERT_RET(pl, FALSE);
-	
-	/* Try to reallocate memory for play list */
-	was_len = pl->m_len;
-	if (pl->m_list == NULL)
-	{
-		pl->m_list = (song_t **)malloc(sizeof(song_t *));
-	}
-	else
-	{
-		pl->m_list = (song_t **)realloc(pl->m_list,
-				sizeof(song_t *) * (pl->m_len + 1));
-	}
-	if (pl->m_list == NULL)
-	{
-		pl->m_len = 0;
-		error_set_code(ERROR_NO_MEMORY);
-		return FALSE;
-	}
-
-	/* Initialize new song and add it to list */
-	song = song_new(filename, title, len);
-	if (song == NULL)
-		return FALSE;
-	pl->m_list[pl->m_len ++] = song;
-
-	/* If list was empty - put cursor to the first song */
-	if (!was_len)
-	{
-		pl->m_sel_start = pl->m_sel_end = 0;
-		pl->m_visual = FALSE;
-	}
-	
-	return TRUE;
+	/* Shedule song for adding */
+	sat_push(pl, filename, title, len);
 } /* End of 'plist_add_song' function */
 
 /* Add a play list file to play list */
@@ -259,6 +221,61 @@ bool plist_add_list( plist_t *pl, char *filename )
 	return TRUE;
 } /* End of 'plist_add_list' function */
 
+/* Low level song adding */
+bool __plist_add_song( plist_t *pl, char *filename, char *title, int len )
+{
+	song_t *song;
+	int was_len;
+	
+	PLIST_ASSERT_RET(pl, FALSE);
+
+	/* Lock play list */
+	plist_lock(pl);
+
+	/* Try to reallocate memory for play list */
+	was_len = pl->m_len;
+	if (pl->m_list == NULL)
+	{
+		pl->m_list = (song_t **)malloc(sizeof(song_t *));
+	}
+	else
+	{
+		pl->m_list = (song_t **)realloc(pl->m_list,
+				sizeof(song_t *) * (pl->m_len + 1));
+	}
+	if (pl->m_list == NULL)
+	{
+		pl->m_len = 0;
+		error_set_code(ERROR_NO_MEMORY);
+		plist_unlock(pl);
+		return FALSE;
+	}
+
+	/* Initialize new song and add it to list */
+	song = song_new(filename, title, len);
+	if (song == NULL)
+	{
+		plist_unlock(pl);
+		return FALSE;
+	}
+	pl->m_list[pl->m_len ++] = song;
+
+	/* If list was empty - put cursor to the first song */
+	if (!was_len)
+	{
+		pl->m_sel_start = pl->m_sel_end = 0;
+		pl->m_visual = FALSE;
+	}
+
+	/* Unlock play list */
+	plist_unlock(pl);
+
+	/* Update screen */
+	wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
+	
+	return TRUE;
+} /* End of '__plist_add_song' function */
+
 /* Save play list */
 bool plist_save( plist_t *pl, char *filename )
 {
@@ -296,6 +313,9 @@ void plist_sort( plist_t *pl, bool global, int criteria )
 	
 	PLIST_ASSERT(pl);
 
+	/* Lock play list */
+	plist_lock(pl);
+	
 	/* Get sort start and end */
 	if (global)
 		start = 0, end = pl->m_len - 1;
@@ -370,6 +390,9 @@ void plist_sort( plist_t *pl, bool global, int criteria )
 				break;
 			}
 	}
+
+	/* Unlock play list */
+	plist_unlock(pl);
 } /* End of 'plist_sort' function */
 
 /* Remove selected songs from play list */
@@ -385,6 +408,9 @@ void plist_rem( plist_t *pl )
 	/* Check if we have anything to delete */
 	if (!pl->m_len)
 		return;
+
+	/* Unlock play list */
+	plist_lock(pl);
 
 	/* Shift songs list and reallocate memory */
 	cur = (pl->m_cur_song >= start && pl->m_cur_song <= end);
@@ -420,6 +446,9 @@ void plist_rem( plist_t *pl )
 		pl->m_cur_song = pl->m_sel_start;
 	else if (pl->m_cur_song > end)
 		pl->m_cur_song -= (end - start + 1);
+
+	/* Unlock play list */
+	plist_unlock(pl);
 } /* End of 'plist_rem' function */
 
 /* Search for string */
@@ -568,6 +597,18 @@ void plist_display( plist_t *pl, wnd_t *wnd )
 	wnd_move(wnd, wnd->m_width - strlen(time_text) - 1, wnd_gety(wnd));
 	wnd_printf(wnd, "%s\n", time_text);
 } /* End of 'plist_display' function */
+
+/* Lock play list */
+void plist_lock( plist_t *pl )
+{
+	pthread_mutex_lock(&pl->m_mutex);
+} /* End of 'plist_lock' function */
+
+/* Unlock play list */
+void plist_unlock( plist_t *pl )
+{
+	pthread_mutex_unlock(&pl->m_mutex);
+} /* End of 'plist_unlock' function */
 
 /* End of 'plist.c' file */
 

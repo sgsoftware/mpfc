@@ -2,12 +2,12 @@
  * Copyright (C) 2003 by SG Software.
  ******************************************************************/
 
-/* FILE NAME   : util.h
- * PURPOSE     : SG Konsamp. Interface for different utility
+/* FILE NAME   : sat.h
+ * PURPOSE     : SG MPFC. Interface for song adder thread
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 22.05.2003
- * NOTE        : Module prefix 'util'.
+ * LAST UPDATE : 12.05.2003
+ * NOTE        : Module prefix 'sat'.
  *
  * This program is free software; you can redistribute it and/or 
  * modify it under the terms of the GNU General Public License 
@@ -25,30 +25,40 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef __SG_KONSAMP_UTIL_H__
-#define __SG_KONSAMP_UTIL_H__
+#ifndef __SG_MPFC_SAT_H__
+#define __SG_MPFC_SAT_H__
 
 #include "types.h"
+#include "plist.h"
 
-/* Write message to log file */
-void util_log( char *format, ... );
+/* SAT queue type */
+typedef struct tag_sat_queue_t
+{
+	plist_t *m_pl;
+	char m_file_name[256];
+	char m_title[256];
+	int m_len;
+	bool m_has_title;
+	struct tag_sat_queue_t *m_next;
+} sat_queue_t;
 
-/* Search for a substring */
-bool util_search_str( char *ptext, char *text );
+/* Initialize SAT module */
+bool sat_init( void );
 
-/* Get file extension */
-char *util_get_ext( char *name );
+/* Uninitialize SAT module */
+void sat_free( void );
 
-/* Delay */
-void util_delay( long s, long ns );
+/* Push file name to queue */
+void sat_push( plist_t *pl, char *filename, char *title, int len );
 
-/* Get file name without full path */
-char *util_get_file_short_name( char *name );
+/* Pop file name from queue */
+char *sat_pop( plist_t **pl, char *filename, char *title, int *has_title, 
+		int *len );
 
-/* Convert file name to the one with escaped special symbols */
-char *util_escape_fname( char *out, char *in );
+/* Song adder thread function */
+void *sat_thread( void *arg );
 
 #endif
 
-/* End of 'util.h' file */
+/* End of 'sat.h' file */
 

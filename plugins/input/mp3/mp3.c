@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. MP3 input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 23.04.2003
+ * LAST UPDATE : 3.07.2003
  * NOTE        : Module prefix 'mp3'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -25,30 +25,51 @@
  * MA 02111-1307, USA.
  */
 
-#include <smpeg/smpeg.h>
-#include <SDL/SDL_audio.h>
+#include <mad.h>
+#include <stdio.h>
 #include <string.h>
+#include <sys/soundcard.h>
 #include "types.h"
-#include "error.h"
+#include "cfg.h"
 #include "genre_list.h"
 #include "inp.h"
 #include "mp3.h"
 #include "song_info.h"
+#include "util.h"
 
-/* Currently playing song SMPEG object */
-SMPEG *mp3_smpeg = NULL;
+#define MP3_IN_BUF_SIZE (5*8192)
+
+/* libmad structures */
+struct mad_stream mp3_stream;
+struct mad_frame mp3_frame;
+struct mad_synth mp3_synth;
+mad_timer_t mp3_timer;
+
+/* Input buffer */
+byte mp3_in_buf[MP3_IN_BUF_SIZE];
+
+/* Currently opened file */
+FILE *mp3_fd = NULL;
+
+/* Decoded frames counter */
+dword mp3_frame_count = 0;
+
+/* Samples pointer */
+dword mp3_samples = 0;
 
 /* Current seek value */
-int mp3_seek_val = 0;
+int mp3_seek_val = -1;
 
 /* Current song audio parameters */
-int mp3_channels = 0, mp3_freq = 0, mp3_bits = 0;
+int mp3_channels = 0, mp3_freq = 0, mp3_bitrate = 0;
+dword mp3_fmt = 0;
 
 /* Current file name */
 char mp3_file_name[128] = "";
 
 /* ID3 tag scheduled for saving */
 char mp3_tag[128];
+bool mp3_tag_present = TRUE;
 
 /* Current song information */
 song_info_t mp3_cur_info;
@@ -59,36 +80,38 @@ bool mp3_need_save = FALSE;
 /* Genres list */
 genre_list_t *mp3_glist = NULL;
 
+/* Current song length */
+int mp3_len = 0;
+
+/* This is pointer to global variables list */
+cfg_list_t *mp3_var_list = NULL;
+
 /* Start play function */
 bool mp3_start( char *filename )
 {
-	SMPEG_Info info;
-	SDL_AudioSpec as;
-
 	/* Remember tag */
-	mp3_get_info(filename, &mp3_cur_info);
+	mp3_tag_present = mp3_get_info(filename, &mp3_cur_info);
+	//mp3_len = mp3_get_len(filename);
 
-	/* Initialize SMPEG object */
-	mp3_smpeg = SMPEG_new(filename, &info, SDL_FALSE);
-	if (mp3_smpeg == NULL || SMPEG_error(mp3_smpeg) != NULL)
-	{
-		if (mp3_smpeg != NULL)
-		{
-//			SMPEG_delete(mp3_smpeg);
-			mp3_smpeg = NULL;
-		}
-		strcpy(mp3_file_name, "");
+	/* Open file */
+	mp3_fd = fopen(filename, "rb");
+	if (mp3_fd == NULL)
 		return FALSE;
-	}
-	SMPEG_wantedSpec(mp3_smpeg, &as);
-	SMPEG_enablevideo(mp3_smpeg, SDL_FALSE);
-	SMPEG_play(mp3_smpeg);
+	
+	/* Initialize libmad structures */
+	mp3_frame_count = 0;
+	mad_stream_init(&mp3_stream);
+	mad_frame_init(&mp3_frame);
+	mad_synth_init(&mp3_synth);
+	mad_timer_reset(&mp3_timer);
 
 	/* Save song parameters */
-	mp3_channels = as.channels;
-	mp3_freq = as.freq;
-	mp3_bits = (as.format == AUDIO_U8 || as.format == AUDIO_S8) ? 8 : 16;
-	mp3_seek_val = 0;
+	mp3_channels = 2;
+	mp3_freq = 44100;
+	mp3_fmt = AFMT_S16_LE;
+	mp3_samples = 0;
+	mp3_seek_val = -1;
+	mp3_bitrate = 0;
 	strcpy(mp3_file_name, filename);
 	return TRUE;
 } /* End of 'mp3_start' function */
@@ -96,11 +119,12 @@ bool mp3_start( char *filename )
 /* End playing function */
 void mp3_end( void )
 {
-	/* Destroy SMPEG object */
-	if (mp3_smpeg != NULL)
+	if (mp3_fd != NULL)
 	{
-		SMPEG_delete(mp3_smpeg);
-		mp3_smpeg = NULL;
+		mad_synth_finish(&mp3_synth);
+		mad_frame_finish(&mp3_frame);
+		mad_stream_finish(&mp3_stream);
+		fclose(mp3_fd);
 
 		/* Save tag */
 		if (mp3_need_save)
@@ -110,6 +134,7 @@ void mp3_end( void )
 		}
 		
 		strcpy(mp3_file_name, "");
+		mp3_len = 0;
 	}
 } /* End of 'mp3_end' function */
 
@@ -119,23 +144,160 @@ void mp3_get_formats( char *buf )
 	strcpy(buf, "mp3");
 } /* End of 'mp3_get_formats' function */
 
-/* Get song length */
+/* Correct though long version of get_len function */
+int mp3_get_len_correct( char *filename )
+{
+	struct mad_stream stream;
+	struct mad_header header;
+	mad_timer_t timer;
+	unsigned char buffer[8192];
+	unsigned int buflen = 0;
+	FILE *fd;
+	int i = 0;
+
+	/* Check if we want to get current song length */
+	if (!strcmp(filename, mp3_file_name))
+		return mp3_len;
+	
+	/* Open file */
+	fd = fopen(filename, "rb");
+	if (fd == NULL)
+		return 0;
+
+	/* Initialize our structures */
+	mad_stream_init(&stream);
+	mad_header_init(&header);
+	timer = mad_timer_zero;
+
+	/* Scan file */
+	for ( ;; )
+	{
+		/* Read data */
+		if (buflen < sizeof(buffer))
+		{
+			dword bytes;
+			
+			bytes = fread(buffer + buflen, 1, sizeof(buffer) - buflen, fd);
+			if (bytes <= 0)
+				break;
+			buflen += bytes;
+		}
+
+		/* Pipe data to MAD stream */
+		mad_stream_buffer(&stream, buffer, buflen);
+
+		/* Decode frame header */
+		mad_header_decode(&header, &stream);
+
+		/* Increase length */
+		mad_timer_add(&timer, header.duration);
+
+		/* Move rest data (not decoded) to buffer start */
+		memmove(buffer, stream.next_frame, &buffer[buflen] - stream.next_frame);
+		buflen -= stream.next_frame - &buffer[0];
+	} 
+
+	/* Finish process */
+	mad_header_finish(&header);
+	mad_stream_finish(&stream);
+
+	/* Close file */
+	fclose(fd);
+
+	/* Return */
+	return mad_timer_count(timer, MAD_UNITS_SECONDS);
+} /* End of 'mp3_get_len_correct' function */
+
+/* Quick though not very correct version of get_len function */
+int mp3_get_len_quick( char *filename )
+{
+	struct mad_stream stream;
+	struct mad_header header;
+	unsigned char buffer[8192];
+	unsigned int buflen = 0, file_size = 0, bitrate = 0;
+	FILE *fd;
+	int i = 0;
+
+	/* Check if we want to get current song length */
+	if (!strcmp(filename, mp3_file_name))
+		return mp3_len;
+	
+	/* Open file */
+	fd = fopen(filename, "rb");
+	if (fd == NULL)
+		return 0;
+
+	/* Initialize our structures */
+	mad_stream_init(&stream);
+	mad_header_init(&header);
+
+	/* Find first frame with non-zero bitrate */
+	for ( ;; )
+	{
+		/* Read data */
+		if (buflen < sizeof(buffer))
+		{
+			dword bytes;
+			
+			bytes = fread(buffer + buflen, 1, sizeof(buffer) - buflen, fd);
+			if (bytes <= 0)
+				break;
+			buflen += bytes;
+		}
+
+		/* Pipe data to MAD stream */
+		mad_stream_buffer(&stream, buffer, buflen);
+
+		/* Decode frame header */
+		mad_header_decode(&header, &stream);
+
+		/* Check bitrate */
+		if (header.bitrate)
+		{
+			bitrate = header.bitrate;
+			break;
+		}
+
+		/* Move rest data (not decoded) to buffer start */
+		memmove(buffer, stream.next_frame, &buffer[buflen] - stream.next_frame);
+		buflen -= stream.next_frame - &buffer[0];
+	} 
+
+	/* Finish process */
+	mad_header_finish(&header);
+	mad_stream_finish(&stream);
+
+	/* Get total file size */
+	fseek(fd, 0, SEEK_END);
+	file_size = ftell(fd);
+
+	/* Close file */
+	fclose(fd);
+
+	/* Calculate song length */
+	return (bitrate ? ((float)file_size / bitrate) * 8 : 0);
+} /* End of 'mp3_get_len_quick' function */
+
+/* Get length */
 int mp3_get_len( char *filename )
 {
-	SMPEG *smpeg;
-	SMPEG_Info info;
-
-	smpeg = SMPEG_new(filename, &info, SDL_FALSE);
-	if (smpeg == NULL || SMPEG_error(smpeg) != NULL)
-	{
-/*		if (smpeg != NULL)
-			SMPEG_delete(smpeg);*/
-		return 0;
-	}
-	SMPEG_getinfo(smpeg, &info);
-	SMPEG_delete(smpeg);
-	return info.total_time;
+	/* See what user wants */
+	if (cfg_get_var_int(mp3_var_list, "mp3_quick_get_len"))
+		return mp3_get_len_quick(filename);
+	else
+		return mp3_get_len_correct(filename);
 } /* End of 'mp3_get_len' function */
+
+/* Convert MAD fixed point sample to 16-bit */
+short mp3_mad_fixed_to_short( mad_fixed_t sample )
+{
+	sample += (1L << (MAD_F_FRACBITS - 16));
+	if (sample >= MAD_F_ONE)
+		sample = MAD_F_ONE - 1;
+	else if (sample < -MAD_F_ONE)
+		sample = -MAD_F_ONE;
+	return(sample >> (MAD_F_FRACBITS + 1 - 16));
+} /* End of 'mp3_mad_fixed_to_short' function */
 
 /* Save ID3 tag */
 void mp3_save_tag( char *filename, char *tag )
@@ -185,6 +347,7 @@ void mp3_save_info( char *filename, song_info_t *info )
 	if (!strcmp(filename, mp3_file_name))
 	{
 		mp3_need_save = TRUE;
+		mp3_tag_present = TRUE;
 		memcpy(mp3_tag, id3_tag, 128);
 		memcpy(&mp3_cur_info, info, sizeof(song_info_t));
 	}
@@ -202,21 +365,32 @@ bool mp3_get_info( char *filename, song_info_t *info )
 	/* Return temporary tag if we request for current playing song tag */
 	if (!strcmp(filename, mp3_file_name))
 	{
-		memcpy(info, &mp3_cur_info, sizeof(song_info_t));
-		return TRUE;
+		if (mp3_tag_present)
+		{
+			memcpy(info, &mp3_cur_info, sizeof(song_info_t));
+			return TRUE;
+		}
+		else
+			return FALSE;
 	}
 
 	/* Read ID3 tag */
 	fd = fopen(filename, "rb");
 	if (fd == NULL)
+	{
+		memset(info, 0, sizeof(*info));
 		return FALSE;
+	}
 	fseek(fd, -128, SEEK_END);
 	fread(id3_tag, sizeof(id3_tag), 1, fd);
 	fclose(fd);
 
 	/* Parse tag */
 	if (id3_tag[0] != 'T' || id3_tag[1] != 'A' || id3_tag[2] != 'G')
+	{
+		memset(info, 0, sizeof(*info));
 		return FALSE;
+	}
 	strncpy(info->m_name, &id3_tag[3], 30);
 	for ( i = 29; i >= 0 && info->m_name[i] == ' '; i -- );
 	info->m_name[i + 1] = 0;
@@ -240,37 +414,115 @@ bool mp3_get_info( char *filename, song_info_t *info )
 /* Get stream function */
 int mp3_get_stream( void *buf, int size )
 {
-	if (mp3_smpeg != NULL)
+	int len = 0;
+	byte *out_ptr = (byte *)buf;
+	
+	if (mp3_fd == NULL)
+		return 0;
+
+	/* Decode frame if samples counter is zero */
+	if (!mp3_samples)
 	{
-		if (mp3_seek_val)
+		struct mad_header head;
+
+		/* Seek */
+		if (mp3_seek_val != -1)
 		{
-			SMPEG_skip(mp3_smpeg, mp3_seek_val);
-			mp3_seek_val = 0;
+			fseek(mp3_fd, mp3_seek_val * mp3_bitrate / 8, SEEK_SET);
+			mp3_seek_val = -1;
 		}
-		
-		memset(buf, 0, size);
-		size = SMPEG_playAudio(mp3_smpeg, (Uint8 *)buf, size);
+
+		/* Fill input buffer */
+		if (mp3_stream.buffer == NULL || mp3_stream.error == MAD_ERROR_BUFLEN)
+		{
+			int read_size, remaining;
+			byte *read_start;
+
+			/* Prepare input buffer */
+			if (mp3_stream.next_frame != NULL)
+			{
+				remaining = mp3_stream.bufend - mp3_stream.next_frame;
+				memmove(mp3_in_buf, mp3_stream.next_frame, remaining);
+				read_start = mp3_in_buf + remaining;
+				read_size = MP3_IN_BUF_SIZE - remaining;
+			}
+			else
+			{
+				read_size = MP3_IN_BUF_SIZE;
+				read_start = mp3_in_buf;
+				remaining = 0;
+			}
+
+			/* Fill buffer */
+			read_size = fread(read_start, 1, read_size, mp3_fd);
+			if (read_size <= 0)
+				return 0;
+	
+			/* Pipe new buffer to libmad's stream decoder facility */
+			mad_stream_buffer(&mp3_stream, mp3_in_buf, read_size + remaining);
+			mp3_stream.error = 0;
+		}
+
+		/* Decode frame */
+		if (mad_frame_decode(&mp3_frame, &mp3_stream))
+			return mp3_get_stream(buf, size);
+
+		/* Update file information */
+		head = mp3_frame.header;
+		mp3_freq = head.samplerate;
+		mp3_fmt = AFMT_S16_LE;
+		mp3_channels = (head.mode == MAD_MODE_SINGLE_CHANNEL) ? 1 : 2;
+		mp3_bitrate = mp3_frame.header.bitrate;
+
+		/* Accounting */
+		mp3_frame_count ++;
+		mad_timer_add(&mp3_timer, mp3_frame.header.duration);
+
+		/* Synthesize PCM samples */
+		mad_synth_frame(&mp3_synth, &mp3_frame);
 	}
-	else
-		size = 0;
-	return size;
+
+	/* Convert libmad's samples from fixed point format */
+	for ( ;mp3_samples < mp3_synth.pcm.length && len < size; mp3_samples ++ )
+	{
+		short sample;
+
+		/* Left channel */
+		sample = mp3_mad_fixed_to_short(mp3_synth.pcm.samples[0][mp3_samples]);
+		*(out_ptr ++) = sample & 0xFF;
+		*(out_ptr ++) = sample >> 8;
+		len += 2;
+
+		/* Right channel */
+		if (MAD_NCHANNELS(&mp3_frame.header) == 2)
+			sample = mp3_mad_fixed_to_short(
+					mp3_synth.pcm.samples[1][mp3_samples]);
+		*(out_ptr ++) = sample & 0xFF;
+		*(out_ptr ++) = sample >> 8;
+		len += 2;
+	}
+
+	if (mp3_samples >= mp3_synth.pcm.length)
+		mp3_samples = 0;
+
+	return len;
 } /* End of 'mp3_get_stream' function */
 
 /* Seek song */
 void mp3_seek( int shift )
 {
-	if (mp3_smpeg != NULL)
+	if (mp3_fd != NULL)
 	{
-		mp3_seek_val += shift;
+		mp3_seek_val = shift;
 	}
 } /* End of 'mp3_seek' function */
 
 /* Get audio parameters */
-void mp3_get_audio_params( int *ch, int *freq, int *bits )
+void mp3_get_audio_params( int *ch, int *freq, dword *fmt )
 {
 	*ch = mp3_channels;
 	*freq = mp3_freq;
-	*bits = mp3_bits;
+	*fmt = mp3_fmt;
 } /* End of 'mp3_get_audio_params' function */
 
 /* Initialize genres list */
@@ -459,6 +711,12 @@ void _fini( void )
 {
 	glist_free(mp3_glist);
 } /* End of '_fini' function */
+
+/* Save variables list */
+void inp_set_vars( cfg_list_t *list )
+{
+	mp3_var_list = list;
+} /* End of 'inp_set_vars' function */
 
 /* End of 'mp3.c' file */
 

@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Different utility functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 3.05.2003
+ * LAST UPDATE : 22.05.2003
  * NOTE        : Module prefix 'util'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -31,6 +31,12 @@
 #include <time.h>
 #include "types.h"
 #include "util.h"
+
+/* Check that file name symbol is special */
+#define UTIL_FNAME_IS_SPECIAL(sym) \
+	((sym) == ' ' || (sym) == '\t' || (sym) == '\'' || (sym) == '\"' || \
+	 (sym) == '(' || (sym) == ')' || \
+	 (sym) == '!' || (sym) == '&' || (sym) == '\\')
 
 /* Write message to log file */
 void util_log( char *format, ... )
@@ -109,6 +115,22 @@ char *util_get_file_short_name( char *name )
 	for ( i = strlen(name) - 1; i >= 0 && name[i] != '/'; i -- );
 	return (i >= 0) ? &name[i + 1] : name;
 } /* End of 'util_get_file_short_name' function */
+
+/* Convert file name to the one with escaped special symbols */
+char *util_escape_fname( char *out, char *in )
+{
+	int i, j, len;
+	char in_name[256];
+	
+	len = strlen(in);
+	strcpy(in_name, in);
+	for ( i = j = 0; i <= len; i ++ )
+	{
+		if (UTIL_FNAME_IS_SPECIAL(in_name[i]))
+			out[j ++] = '\\';
+		out[j ++] = in_name[i];
+	}
+} /* End of 'util_escape_fname' function */
 
 /* End of 'util.c' file */
 

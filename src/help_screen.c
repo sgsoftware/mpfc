@@ -5,7 +5,7 @@
 /* FILE NAME   : help_screen.c
  * PURPOSE     : SG MPFC. Help screen functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 28.04.2003
+ * LAST UPDATE : 25.05.2003
  * NOTE        : Module prefix 'help'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -92,6 +92,8 @@ bool help_init( help_screen_t *help, wnd_t *parent, int x, int y,
 	help_add(help, _("h:\t\t Scroll song 10 seconds up"));
 	help_add(help, _("l:\t\t Scroll song 10 seconds down"));
 	help_add(help, _("<Number>g:\t Go to <Number>th second in song"));
+	help_add(help, _("+:\t\t Increase volume"));
+	help_add(help, _("-:\t\t Decrease volume"));
 	help_add(help, _("i:\t\t Song info editor"));
 	help_add(help, _("a:\t\t Add songs"));
 	help_add(help, _("r:\t\t Remove songs"));

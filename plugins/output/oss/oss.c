@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. OSS output plugin functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.03.2003
+ * LAST UPDATE : 10.05.2003
  * NOTE        : Module prefix 'oss'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -92,16 +92,50 @@ void oss_set_freq( int freq )
 } /* End of 'oss_set_freq' function */
 
 /* Set playing format */
-void oss_set_bits( int bits )
+void oss_set_fmt( int fmt )
 {
-	int fmt;
-	
 	if (oss_fd == -1)
 		return;
 
-	fmt = (bits == 8) ? AFMT_S8 : AFMT_S16_LE;
 	ioctl(oss_fd, SNDCTL_DSP_SETFMT, &fmt);
 } /* End of 'oss_set_bits' function */
+
+/* Flush function */
+void oss_flush( void )
+{
+	if (oss_fd == -1)
+		return;
+
+	ioctl(oss_fd, SNDCTL_DSP_SYNC, 0);
+} /* End of 'oss_flush' function */
+
+/* Set volume */
+void oss_set_volume( int vol )
+{
+	int fd;
+	word v;
+
+	fd = open("/dev/mixer", O_WRONLY);
+	if (fd < 0)
+		return;
+	v = vol | (vol << 8);
+	ioctl(fd, SOUND_MIXER_WRITE_PCM, &v);
+	close(fd);
+} /* End of 'oss_set_volume' function */
+
+/* Get volume */
+int oss_get_volume( void )
+{
+	int fd;
+	word v;
+
+	fd = open("/dev/mixer", O_RDONLY);
+	if (fd < 0)
+		return 0;
+	ioctl(fd, SOUND_MIXER_READ_PCM, &v);
+	close(fd);
+	return v & 0xFF;
+} /* End of 'oss_get_volume' function */
 
 /* Get function list */
 void outp_get_func_list( outp_func_list_t *fl )
@@ -111,7 +145,10 @@ void outp_get_func_list( outp_func_list_t *fl )
 	fl->m_play = oss_play;
 	fl->m_set_channels = oss_set_channels;
 	fl->m_set_freq = oss_set_freq;
-	fl->m_set_bits = oss_set_bits;
+	fl->m_set_fmt = oss_set_fmt;
+	fl->m_flush = oss_flush;
+	fl->m_set_volume = oss_set_volume;
+	fl->m_get_volume = oss_get_volume;
 } /* End of 'outp_get_func_list' function */
 
 /* End of 'oss.c' file */

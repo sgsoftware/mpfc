@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Interface for errors management 
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.03.2003
+ * LAST UPDATE : 4.05.2003
  * NOTE        : Module prefix 'error'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -39,6 +39,9 @@
 #define ERROR_INVALID_CMD_LINE_PARAMS	5
 #define ERROR_IN_PLUGIN_ERROR			6
 #define ERROR_OUT_PLUGIN_ERROR			7
+
+/* Last error description */
+extern char error_text[80];
 
 /* Get last error value */
 dword error_get_last( void );

@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Interface for output plugin management
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.03.2003
+ * LAST UPDATE : 25.05.2003
  * NOTE        : Module prefix 'outp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -46,10 +46,17 @@ typedef struct
 	void (*m_set_freq)( int freq );
 
 	/* Set format function */
-	void (*m_set_bits)( int bits );
+	void (*m_set_fmt)( dword fmt );
 	
 	/* Play stream function */
 	void (*m_play)( void *buf, int size );
+
+	/* Flush function */
+	void (*m_flush)( void );
+
+	/* Set/get volume */
+	void (*m_set_volume)( int vol );
+	int (*m_get_volume)( void );
 } outp_func_list_t;
 
 /* Output plugin type */

@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "types.h"
+#include "cfg.h"
 #include "inp.h"
 #include "outp.h"
 #include "pmng.h"
@@ -53,11 +54,12 @@ bool pmng_init( void )
 	char str[256];
 	
 	/* Initialize input plugins */ 
-	if (cfg_get_var_int("plugins_search_subdirs"))
-		sprintf(str, "find %s/input/ 2>/dev/null | grep \"\\.so\"", 
-				cfg_get_var("lib_dir"));
+	if (cfg_get_var_int(cfg_list, "plugins_search_subdirs"))
+		sprintf(str, "find %s/input/ 2>/dev/null | grep \"\\.so$\"", 
+				cfg_get_var(cfg_list, "lib_dir"));
 	else
-		sprintf(str, "ls %s/input/*.so 2>/dev/null", cfg_get_var("lib_dir"));
+		sprintf(str, "ls %s/input/*.so 2>/dev/null", 
+				cfg_get_var(cfg_list, "lib_dir"));
 	fd = popen(str, "r");
 	if (fd == NULL)
 		return FALSE;
@@ -66,7 +68,8 @@ bool pmng_init( void )
 		char name[256];
 		
 		fgets(name, 256, fd);
-		name[strlen(name) - 1] = 0;
+		if (name[strlen(name) - 1] == '\n')
+			name[strlen(name) - 1] = 0;
 		ip = inp_init(name);
 		if (ip != NULL)
 			pmng_add_in(ip);
@@ -74,11 +77,12 @@ bool pmng_init( void )
 	pclose(fd);
 
 	/* Initialize output plugins */ 
-	if (cfg_get_var_int("plugins_search_subdirs"))
-		sprintf(str, "find %s/output/ 2>/dev/null | grep \"\\.so\"", 
-				cfg_get_var("lib_dir"));
+	if (cfg_get_var_int(cfg_list, "plugins_search_subdirs"))
+		sprintf(str, "find %s/output/ 2>/dev/null | grep \"\\.so$\"", 
+				cfg_get_var(cfg_list, "lib_dir"));
 	else
-		sprintf(str, "ls %s/output/*.so 2>/dev/null", cfg_get_var("lib_dir"));
+		sprintf(str, "ls %s/output/*.so 2>/dev/null", 
+				cfg_get_var(cfg_list, "lib_dir"));
 	fd = popen(str, "r");
 	if (fd == NULL)
 		return FALSE;
@@ -87,7 +91,9 @@ bool pmng_init( void )
 		char name[256];
 		
 		fgets(name, 256, fd);
-		name[strlen(name) - 1] = 0;
+
+		if (name[strlen(name) - 1] == '\n')
+			name[strlen(name) - 1] = 0;
 		op = outp_init(name);
 		if (op != NULL)
 		{
@@ -105,7 +111,7 @@ bool pmng_init( void )
 				continue;
 			memcpy(str1, &name[j + 1], i - j - 1);
 			str1[i - j - 1] = 0;
-			sprintf(str2, "lib%s", cfg_get_var("output_plugin"));
+			sprintf(str2, "lib%s", cfg_get_var(cfg_list, "output_plugin"));
 			if (!strcmp(str1, str2))
 				pmng_cur_out = op;
 		}

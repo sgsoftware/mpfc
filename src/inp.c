@@ -28,6 +28,7 @@
 #include <dlfcn.h>
 #include <stdlib.h>
 #include "types.h"
+#include "cfg.h"
 #include "error.h"
 #include "inp.h"
 #include "song.h"
@@ -37,6 +38,7 @@ in_plugin_t *inp_init( char *name )
 {
 	in_plugin_t *p;
 	void (*fl)( inp_func_list_t * );
+	void (*set_vars)( cfg_list_t * );
 
 	/* Try to allocate memory for plugin object */
 	p = (in_plugin_t *)malloc(sizeof(in_plugin_t));
@@ -64,6 +66,10 @@ in_plugin_t *inp_init( char *name )
 		return NULL;
 	}
 	fl(&p->m_fl);
+
+	if ((set_vars = dlsym(p->m_lib_handler, "inp_set_vars")) != NULL)
+		set_vars(cfg_list);
+		
 	return p;
 } /* End of 'inp_init' function */
 

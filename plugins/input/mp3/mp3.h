@@ -49,7 +49,7 @@ int mp3_get_stream( void *buf, int size );
 void mp3_seek( int shift );
 
 /* Get audio parameters */
-void mp3_get_audio_params( int *ch, int *freq, int *bits );
+void mp3_get_audio_params( int *ch, int *freq, dword *fmt );
 
 /* Get functions list */
 void inp_get_func_list( inp_func_list_t *fl );
