@@ -236,9 +236,6 @@ void *player_thread( void *arg );
 /* Launch song adding dialog box */
 void player_add_dialog( void );
 
-/* Launch add object dialog */
-void player_add_obj_dialog( void );
-
 /* Launch save play list dialog */
 void player_save_dialog( void );
 
@@ -287,9 +284,6 @@ void player_test_dialog( void );
 
 /* Handle 'ok_clicked' for add songs dialog */
 wnd_msg_retcode_t player_on_add( wnd_t *wnd );
-
-/* Handle 'ok_clicked' for add object dialog */
-wnd_msg_retcode_t player_on_add_obj( wnd_t *wnd );
 
 /* Handle 'ok_clicked' for save dialog */
 wnd_msg_retcode_t player_on_save( wnd_t *wnd );

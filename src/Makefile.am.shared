@@ -9,7 +9,8 @@ mpfc_SOURCES = main.c types.h player.c player.h \
 EXTRA_DIST = .mpfcrc
 
 localedir = $(datadir)/locale
-DEFS = -DLOCALEDIR=\"$(localedir)\" -DLIBDIR=\"$(libdir)\" @DEFS@
+DEFS = -DLOCALEDIR=\"$(localedir)\" -DLIBDIR=\"$(libdir)\" \
+	   -DSYSCONFDIR=\"$(sysconfdir)\" @DEFS@
 INCLUDES = -I$(top_builddir)/libmpfcwnd/
 mpfc_LDADD = @PTHREAD_LIBS@ @DL_LIBS@ \
 			 $(top_builddir)/libmpfc/libmpfc.la \

@@ -586,7 +586,7 @@ bool_t player_init_cfg( void )
 	cfg_set_var_int(cfg_list, "fb-time-len", 5);
 
 	/* Read rc file from home directory and from current directory */
-	player_read_rcfile(cfg_list, "/etc/mpfcrc");
+	player_read_rcfile(cfg_list, SYSCONFDIR"/mpfcrc");
 	player_read_rcfile(cfg_list, player_cfg_file);
 	player_read_rcfile(cfg_list, ".mpfcrc");
 	return TRUE;
@@ -789,6 +789,7 @@ void player_handle_action( int action )
 {
 	int was_pos;
 	int was_song, was_time;
+	bool_t long_jump = FALSE;
 
 	/* Clear message string */
 	player_msg = NULL;
@@ -830,6 +831,7 @@ void player_handle_action( int action )
 	case KBIND_MOVE:
 		plist_move(player_plist, (player_repval == 0) ? 
 				player_plist->m_len - 1 : player_repval - 1, FALSE);
+		long_jump = TRUE;
 		break;
 
 	/* Seek song */
@@ -862,6 +864,7 @@ void player_handle_action( int action )
 	/* Centrize view */
 	case KBIND_CENTRIZE:
 		plist_centrize(player_plist, -1);
+		long_jump = TRUE;
 		break;
 
 	/* Enter visual mode */
@@ -927,11 +930,6 @@ void player_handle_action( int action )
 		player_add_dialog();
 		break;
 
-	/* Add an object */
-	case KBIND_ADD_OBJ:
-		player_add_obj_dialog();
-		break;
-
 	/* Save play list */
 	case KBIND_SAVE:
 		player_save_dialog();
@@ -975,6 +973,7 @@ void player_handle_action( int action )
 			logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
 					_("String `%s' found at position %d"), player_search_string,
 					player_plist->m_sel_end);
+		long_jump = TRUE;
 		break;
 
 	/* Show equalizer dialog */
@@ -1167,7 +1166,7 @@ void player_handle_action( int action )
 	player_repval = 0;
 
 	/* Save last position */
-	if (player_plist->m_sel_end != was_pos)
+	if (long_jump && (player_plist->m_sel_end != was_pos))
 		player_last_pos = was_pos;
 
 	/* Save last time */
@@ -1920,20 +1919,6 @@ void player_add_dialog( void )
 	dialog_arrange_children(dlg);
 } /* End of 'player_add_dialog' function */
 
-/* Display object adding dialog box */
-void player_add_obj_dialog( void )
-{
-	dialog_t *dlg;
-	editbox_t *eb;
-
-	dlg = dialog_new(wnd_root, _("Add object"));
-	eb = editbox_new_with_label(WND_OBJ(dlg->m_vbox), _("Object &name: "),
-			"name", "", 'n', 50);
-	eb->m_history = player_hist_lists[PLAYER_HIST_LIST_ADD_OBJ];
-	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_add_obj);
-	dialog_arrange_children(dlg);
-} /* End of 'player_add_obj_dialog' function */
-
 /* Display saving dialog box */
 void player_save_dialog( void )
 {
@@ -2358,15 +2343,6 @@ wnd_msg_retcode_t player_on_add( wnd_t *wnd )
 	return WND_MSG_RETCODE_OK;
 } /* End of 'player_on_add' function */
 
-/* Handle 'ok_clicked' for add object dialog */
-wnd_msg_retcode_t player_on_add_obj( wnd_t *wnd )
-{
-	editbox_t *eb = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "name"));
-	assert(eb);
-	plist_add_obj(player_plist, EDITBOX_TEXT(eb), NULL, -1);
-	return WND_MSG_RETCODE_OK;
-} /* End of 'player_on_add_obj' function */
-
 /* Handle 'ok_clicked' for save dialog */
 wnd_msg_retcode_t player_on_save( wnd_t *wnd )
 {
@@ -2598,6 +2574,7 @@ wnd_msg_retcode_t player_on_info_cb_clicked( wnd_t *wnd )
 wnd_msg_retcode_t player_on_search( wnd_t *wnd )
 {
 	editbox_t *eb = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "string"));
+	int was_pos = player_plist->m_sel_end;
 	assert(eb);
 	player_set_search_string(EDITBOX_TEXT(eb));
 	player_search_criteria = PLIST_SEARCH_TITLE;
@@ -2610,6 +2587,8 @@ wnd_msg_retcode_t player_on_search( wnd_t *wnd )
 		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
 				_("String `%s' found at position %d"), player_search_string,
 				player_plist->m_sel_end);
+	if (was_pos != player_plist->m_sel_end)
+		player_last_pos = was_pos;
 	return WND_MSG_RETCODE_OK;
 } /* End of 'player_on_search' function */
 
@@ -2618,6 +2597,7 @@ wnd_msg_retcode_t player_on_adv_search( wnd_t *wnd )
 {
 	dialog_t *dlg = DIALOG_OBJ(wnd);
 	editbox_t *eb = EDITBOX_OBJ(dialog_find_item(dlg, "string"));
+	int was_pos = player_plist->m_sel_end;
 	assert(eb);
 	player_set_search_string(EDITBOX_TEXT(eb));
 
@@ -2649,6 +2629,8 @@ wnd_msg_retcode_t player_on_adv_search( wnd_t *wnd )
 		logger_message(player_log, LOGGER_MSG_NORMAL, LOGGER_LEVEL_DEFAULT,
 				_("String `%s' found at position %d"), player_search_string,
 				player_plist->m_sel_end);
+	if (was_pos != player_plist->m_sel_end)
+		player_last_pos = was_pos;
 	return WND_MSG_RETCODE_OK;
 } /* End of 'player_on_adv_search' function */
 
@@ -2863,7 +2845,9 @@ void player_go_back( void )
 {
 	if (player_last_pos >= 0)
 	{
+		int was_pos = player_plist->m_sel_end;
 		plist_move(player_plist, player_last_pos, FALSE);
+		player_last_pos = was_pos;
 	}
 } /* End of 'player_go_back' function */
 
