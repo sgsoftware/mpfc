@@ -364,29 +364,40 @@ void wnd_main( wnd_t *wnd_root )
 		}
 
 		/* Check if screen size is changed */
-		winsz.ws_col = winsz.ws_row = 0;
-		ioctl(0, TIOCGWINSZ, &winsz);
-		if (winsz.ws_col != was_width || winsz.ws_row != was_height)
+		for ( ;; )
 		{
-			struct wnd_display_buf_t *buf = &WND_DISPLAY_BUF(wnd_root);
-			int size;
+			winsz.ws_col = winsz.ws_row = 0;
+			ioctl(0, TIOCGWINSZ, &winsz);
+			if (winsz.ws_col != was_width || winsz.ws_row != was_height)
+			{
+				struct wnd_display_buf_t *buf = &WND_DISPLAY_BUF(wnd_root);
+				int i, size;
 
-			/* Rearrange all the windows */
-			was_width = winsz.ws_col;
-			was_height = winsz.ws_row;
-			wnd_repos(wnd_root, 0, 0, winsz.ws_col, winsz.ws_row);
-			resizeterm(winsz.ws_row, winsz.ws_col);
+				/* Rearrange all the windows */
+				was_width = winsz.ws_col;
+				was_height = winsz.ws_row;
+				resizeterm(winsz.ws_row, winsz.ws_col);
 
-			/* Reallocate display buffer */
-			wnd_display_buf_lock(buf);
-			buf->m_dirty = TRUE;
-			buf->m_width = wnd_root->m_width;
-			buf->m_height = wnd_root->m_height;
-			free(buf->m_data);
-			size = buf->m_width * buf->m_height * sizeof(*buf->m_data);
-			buf->m_data = (struct wnd_display_buf_symbol_t *)malloc(size);
-			memset(buf->m_data, 0, size);
-			wnd_display_buf_unlock(buf);
+				/* Reallocate display buffer */
+				wnd_display_buf_lock(buf);
+				buf->m_dirty = TRUE;
+				buf->m_width = COLS;
+				buf->m_height = LINES;
+				free(buf->m_data);
+				size = buf->m_width * buf->m_height;
+				buf->m_data = (struct wnd_display_buf_symbol_t *)malloc(size * 
+						sizeof(*buf->m_data));
+				for ( i = 0; i < size; i ++ )
+				{
+					buf->m_data[i].m_char = ' ';
+					buf->m_data[i].m_attr = 0;
+					buf->m_data[i].m_wnd = NULL;
+				}
+				wnd_display_buf_unlock(buf);
+				wnd_repos(wnd_root, 0, 0, COLS, LINES);
+			}
+			else
+				break;
 		}
 
 		/* Get message from queue */
