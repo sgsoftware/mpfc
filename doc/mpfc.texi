@@ -740,7 +740,11 @@ Here is description for standard MPFC plugins.
 
 @node OSS, Disk Writer, Output, Output
 @subsection OSS
-OSS is a standard output plugin that you should use to listen music.
+OSS is a standard output plugin that you should use to listen music. 
+The DSP device this plugins uses by default is @file{/dev/dsp} and then
+@file{/dev/dsp1}. You can change it with variable ``oss-device'' where you
+enumarate the devices separated by commas. First MPFC looks for the first
+device in this list, if it failed then for the second and so on.
 
 @node Disk Writer,, OSS, Output
 @subsection Disk Writer
