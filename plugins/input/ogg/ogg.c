@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Ogg Vorbis input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 31.01.2004
+ * LAST UPDATE : 27.08.2004
  * NOTE        : Module prefix 'ogg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -80,17 +80,19 @@ static pthread_mutex_t ogg_mutex;
 /* Message printer */
 pmng_print_msg_t ogg_print_msg = NULL;
 
-/* Start playing */
-bool_t ogg_start( char *filename )
+/* Start playing with an opened file descriptor */
+bool_t ogg_start_with_fd( char *filename, file_t *fd )
 {
-	file_t *fd;
 	vorbis_comment *comment;
 	int i;
 
 	/* Open file */
-	fd = file_open(filename, "rb", ogg_print_msg);
 	if (fd == NULL)
-		return FALSE;
+	{
+		fd = file_open(filename, "rb", ogg_print_msg);
+		if (fd == NULL)
+			return FALSE;
+	}
 	if (ov_open_callbacks(fd, &ogg_vf, NULL, 0, ogg_callbacks) < 0)
 	{
 		file_close(fd);
@@ -109,6 +111,12 @@ bool_t ogg_start( char *filename )
 	ogg_info = NULL;
 	util_strncpy(ogg_filename, filename, sizeof(ogg_filename));
 	return TRUE;
+} /* End of 'ogg_start_with_fd' function */
+
+/* Start playing */
+bool_t ogg_start( char *filename )
+{
+	return ogg_start_with_fd(filename, NULL);
 } /* End of 'ogg_start' function */
 
 /* End playing */

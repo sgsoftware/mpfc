@@ -1320,7 +1320,7 @@ void player_seek( int sec, bool_t rel )
 	else if (new_time > s->m_len)
 		new_time = s->m_len;
 
-	inp_seek(song_get_inp(s), new_time);
+	inp_seek(song_get_inp(s, NULL), new_time);
 	player_cur_time = new_time;
 	wnd_invalidate(player_wnd);
 } /* End of 'player_seek' function */
@@ -1552,6 +1552,7 @@ void *player_thread( void *arg )
 		int was_pfreq, was_pbr, was_pstereo;
 		int disp_count;
 		dword in_flags, out_flags;
+		file_t *fd;
 
 		/* Skip to next iteration if there is nothing to play */
 		if (player_plist->m_cur_song < 0 || 
@@ -1567,8 +1568,8 @@ void *player_thread( void *arg )
 		player_end_track = FALSE;
 	
 		/* Start playing */
-		inp = song_get_inp(s);
-		if (!inp_start(inp, s->m_file_name))
+		inp = song_get_inp(s, &fd);
+		if (!inp_start(inp, s->m_file_name, fd))
 		{
 			player_next_track();
 			error_set_code(ERROR_UNKNOWN_FILE_TYPE);

@@ -2,11 +2,11 @@
  * Copyright (C) 2003 - 2004 by SG Software.
  ******************************************************************/
 
-/* FILE NAME   : inp.c
+/* FILE NAME   : plugin_input.c
  * PURPOSE     : SG MPFC. Input plugin management functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.02.2004
+ * LAST UPDATE : 27.08.2004
  * NOTE        : Module prefix 'inp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -93,9 +93,13 @@ void inp_free( in_plugin_t *p )
 } /* End of 'inp_free' function */
 
 /* Start playing function */
-bool_t inp_start( in_plugin_t *p, char *filename )
+bool_t inp_start( in_plugin_t *p, char *filename, file_t *fd )
 {
-	if (p != NULL && (p->m_fl.m_start != NULL))
+	if (p == NULL)
+		return FALSE;
+	if (p->m_fl.m_start_with_fd != NULL)
+		return p->m_fl.m_start_with_fd(filename, fd);
+	else if (p->m_fl.m_start != NULL)
 		return p->m_fl.m_start(filename);
 	return FALSE;
 } /* End of 'inp_start' function */

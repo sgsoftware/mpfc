@@ -29,6 +29,7 @@
 #define __SG_MPFC_SONG_H__
 
 #include "types.h"
+#include "file.h"
 #include "mystring.h"
 #include "song_info.h"
 
@@ -63,6 +64,9 @@ typedef struct
 	/* Song object references counter */
 	int m_ref_count;
 
+	/* Default title (used when no info is found) */
+	char *m_default_title;
+
 	/* Input plugin being used to play this song */
 	struct tag_in_plugin_t *m_inp;
 } song_t;
@@ -83,7 +87,7 @@ void song_update_info( song_t *song );
 void song_update_title( song_t *song );
 
 /* Get input plugin */
-struct tag_in_plugin_t *song_get_inp( song_t *song );
+struct tag_in_plugin_t *song_get_inp( song_t *song, file_t **fd );
 
 #endif
 

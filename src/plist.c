@@ -271,6 +271,14 @@ int plist_add_pls( plist_t *pl, char *filename )
 	file_t *fd;
 	int num = 0;
 	char str[1024];
+	int num_entries;
+	struct pls_entry_t
+	{
+		char *name;
+		char *title;
+		int len;
+	} *entries;
+	int i;
 
 	/* Try to open file */
 	fd = file_open(filename, "rt", NULL);
@@ -288,6 +296,8 @@ int plist_add_pls( plist_t *pl, char *filename )
 		file_close(fd);
 		return 0;
 	}
+
+	/* Read number of entries */
 	file_gets(str, sizeof(str), fd);
 	util_del_nl(str, str);
 	if (strncasecmp(str, "numberofentries=", 16))
@@ -295,30 +305,114 @@ int plist_add_pls( plist_t *pl, char *filename )
 		file_close(fd);
 		return 0;
 	}
+	num_entries = atoi(strchr(str, '=') + 1);
+
+	/* Allocate memory for play list entries */
+	entries = (struct pls_entry_t *)malloc(sizeof(*entries) * num_entries);
+	if (entries == NULL)
+	{
+		file_close(fd);
+		return 0;
+	}
+	memset(entries, 0, sizeof(*entries) * num_entries);
 
 	/* Read data */
 	while (!file_eof(fd))
 	{
-		char *s;
+		char *value;
+		enum
+		{
+			FILE_NAME,
+			TITLE,
+			LENGTH
+		} type;
+		int index;
+		char *s = str;
 		
+		/* Read line */
 		file_gets(str, sizeof(str), fd);
 		util_del_nl(str, str);
-		s = strchr(str, '=');
-		if (s == NULL)
-			s = str;
+
+		/* Determine line type */
+		if (!strncasecmp(s, "File", 4))
+		{
+			s += 4;
+			type = FILE_NAME;
+		}
+		else if (!strncasecmp(s, "Title", 5))
+		{
+			s += 5;
+			type = TITLE;
+		}
+		else if (!strncasecmp(s, "Length", 6))
+		{
+			s += 6;
+			type = LENGTH;
+		}
+		else
+		{
+			continue;
+		}
+
+		/* Extract index */
+		index = 0;
+		while (isdigit(*s))
+		{
+			index *= 10;
+			index += ((*s) - '0');
+			s ++;
+		}
+		index --;
+		if (index >= num_entries)
+			continue;
+
+		/* Extract value */
+		if ((*s) != '=')
+			continue;
 		else
 			s ++;
+		value = strdup(s);
 
-		/* Check if this is an object */
-		if (plist_is_obj(str))
-			num += plist_add_obj(pl, s, NULL, -1);
-		/* Add song */
-		else
-			num += plist_add_song(pl, s, NULL, 0, -1);
+		/* Save entry */
+		if (type == FILE_NAME)
+			entries[index].name = value;
+		else if (type == TITLE)
+			entries[index].title = value;
+		else 
+		{
+			entries[index].len = atoi(value);
+			free(value);
+		}
 	}
 
 	/* Close file */
 	file_close(fd);
+
+	/* Add the value to the play list */
+	for ( i = 0; i < num_entries; i ++ )
+	{
+		char *name = entries[i].name;
+		char *title = entries[i].title;
+		int len = entries[i].len;
+
+		if (name != NULL)
+		{
+			/* Check if this is an object */
+			if (plist_is_obj(str))
+				num += plist_add_obj(pl, name, title, -1);
+			/* Add song */
+			else
+				num += plist_add_song(pl, name, title, len < 0 ? 0 : len, -1);
+
+			/* Free this entry */
+			free(name);
+			if (title != NULL)
+				free(title);
+		}
+		else if (title != NULL)
+			free(title);
+	}
+	free(entries);
 	return num;
 } /* End of 'plist_add_pls' function */
 

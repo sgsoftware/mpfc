@@ -166,7 +166,8 @@ void *iwt_thread( void *arg )
 		if ((song = iwt_pop()) != NULL)
 		{
 			player_print_msg(_("Saving info to file %s"), song->m_file_name);
-			inp_save_info(song_get_inp(song), song->m_file_name, song->m_info);
+			inp_save_info(song_get_inp(song, NULL), 
+					song->m_file_name, song->m_info);
 			song_update_info(song);
 			song_free(song);
 			player_print_msg(_("Saved"));

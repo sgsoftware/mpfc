@@ -107,17 +107,22 @@ void (*mp3_print_msg)( char *fmt, ... );
 
 /* Get song information */
 static song_info_t *mp3_read_info( char *filename, int *len, int *nf );
-	
-/* Start play function */
-bool_t mp3_start( char *filename )
+
+/* Start play with an opened file descriptor */
+bool_t mp3_start_with_fd( char *filename, file_t *fd )
 {
 	/* Remember tag */
 	mp3_cur_info = mp3_read_info(filename, &mp3_len, &mp3_total_num_frames);
 
 	/* Open file */
-	mp3_fd = file_open(filename, "rb", mp3_print_msg);
-	if (mp3_fd == NULL)
-		return FALSE;
+	if (fd == NULL)
+	{
+		mp3_fd = file_open(filename, "rb", mp3_print_msg);
+		if (mp3_fd == NULL)
+			return FALSE;
+	}
+	else
+		mp3_fd = fd;
 	
 	/* Initialize libmad structures */
 	mp3_frame_count = 0;
@@ -140,8 +145,14 @@ bool_t mp3_start( char *filename )
 	/* Read song parameters */
 	memset(&mp3_head, 0, sizeof(mp3_head));
 	mp3_read_song_params();
-	file_set_min_buf_size(mp3_fd, mp3_bitrate);
+	file_set_min_buf_size(mp3_fd, mp3_bitrate >> 3);
 	return TRUE;
+} /* End of 'mp3_start_with_fd' function */
+	
+/* Start play function */
+bool_t mp3_start( char *filename )
+{
+	return mp3_start_with_fd(filename, NULL);
 } /* End of 'mp3_start' function */
 
 /* End playing function */
@@ -927,6 +938,7 @@ static void mp3_remove_tag( char *filename )
 void inp_get_func_list( inp_func_list_t *fl )
 {
 	fl->m_start = mp3_start;
+	fl->m_start_with_fd = mp3_start_with_fd;
 	fl->m_end = mp3_end;
 	fl->m_get_stream = mp3_get_stream;
 	fl->m_get_info = mp3_get_info;

@@ -61,6 +61,7 @@ song_t *song_new( char *filename, char *title, int len )
 		error_set_code(ERROR_NO_MEMORY);
 		return NULL;
 	}
+	memset(song, 0, sizeof(*song));
 
 	/* Set song fields */
 	song->m_ref_count = 0;
@@ -77,7 +78,10 @@ song_t *song_new( char *filename, char *title, int len )
 	if (title == NULL)
 		song_update_title(song);
 	else
+	{
 		song->m_title = str_new(title);
+		song->m_default_title = strdup(title);
+	}
 	return song_add_ref(song);
 } /* End of 'song_new' function */
 
@@ -207,22 +211,26 @@ void song_update_title( song_t *song )
 } /* End of 'song_get_title_from_info' function */
 
 /* Get input plugin */
-in_plugin_t *song_get_inp( song_t *song )
+in_plugin_t *song_get_inp( song_t *song, file_t **fd )
 {
 	/* Do nothing if we already no plugin */
 	if (song->m_inp != NULL)
 		return song->m_inp;
 
 	/* Choose appropriate input plugin */
-	song->m_inp = pmng_search_format(player_pmng, song->m_file_ext);
+	if (*song->m_file_ext)
+		song->m_inp = pmng_search_format(player_pmng, song->m_file_ext);
 	if (song->m_inp == NULL)
 	{
-		file_t *fd = file_open(song->m_file_name, "rb", player_print_msg);
-		if (fd == NULL)
+		file_t *cfd = file_open(song->m_file_name, "rb", player_print_msg);
+		if (cfd == NULL)
 			return NULL;
 		song->m_inp = pmng_search_content_type(player_pmng,
-				file_get_content_type(fd));
-		file_close(fd);
+				file_get_content_type(cfd));
+		if (fd != NULL)
+			(*fd) = cfd;
+		else
+			file_close(cfd);
 	}
 	return song->m_inp;
 } /* End of 'song_get_inp' function */

@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. File library http files managament 
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 5.02.2004
+ * LAST UPDATE : 27.08.2004
  * NOTE        : Module prefix 'fhttp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -291,8 +291,8 @@ size_t fhttp_write( void *buf, size_t size, size_t nmemb, file_t *f )
 /* Seek file */
 int fhttp_seek( file_t *f, long offset, int whence )
 {
-	fhttp_close(f);
-	fhttp_open(f, "");
+//	fhttp_close(f);
+//	fhttp_open(f, "");
 	return offset;
 } /* End of 'fhttp_seek' function */
 
@@ -414,11 +414,11 @@ char *fhttp_get_field( char *header, int size, char *field )
 	int len;
 
 	len = snprintf(str, sizeof(str), "\r\n%s: ", field);
-	s1 = strstr(header, str);
+	s1 = strcasestr(header, str);
 	if (s1 == NULL)
 	{
 		len = snprintf(str, sizeof(str), "\r\n%s:", field);
-		s1 = strstr(header, str);
+		s1 = strcasestr(header, str);
 		if (s1 == NULL)
 			return NULL;
 	}
