@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG Konsamp. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 24.05.2003
+ * LAST UPDATE : 3.07.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -318,6 +318,8 @@ void player_handle_key( wnd_t *wnd, dword data )
 
 	/* Play song */
 	case '\n':
+		if (!player_plist->m_len)
+			break;
 		player_plist->m_cur_song = player_plist->m_sel_end;
 		player_play();
 		break;
@@ -400,6 +402,7 @@ void player_handle_key( wnd_t *wnd, dword data )
 	case '7':
 	case '8':
 	case '9':
+	case '0':
 		/* Create edit box */
 		str[0] = key;
 		str[1] = 0;
