@@ -5,7 +5,7 @@
 /* FILE NAME   : eqwnd.c
  * PURPOSE     : SG MPFC. Equalizer window functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 12.07.2003
+ * LAST UPDATE : 26.07.2003
  * NOTE        : Module prefix 'eqwnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -26,10 +26,13 @@
 
 #include <stdlib.h>
 #include "types.h"
+#include "cfg.h"
 #include "error.h"
 #include "eqwnd.h"
+#include "file_input.h"
 #include "player.h"
 #include "window.h"
+#include "util.h"
 
 /* Create a new equalizer window */
 eq_wnd_t *eqwnd_new( wnd_t *parent, int x, int y, int w, int h )
@@ -98,7 +101,11 @@ void eqwnd_display( wnd_t *wnd, dword data )
 	/* Display bands sliders */
 	for ( i = 0, x = 3; i < 11; i ++ )
 	{
-		float val = (i == 0) ? player_eq_preamp : player_eq_bands[i - 1];
+		char name[20];
+		float val;
+
+		eqwnd_get_var_name(i, name);
+		val = cfg_get_var_float(cfg_list, name);
 		x += eqwnd_display_slider(wnd, x, 2, 22,
 				(i == eq->m_pos), val, str[i]);
 		if (i == 0)
@@ -127,6 +134,10 @@ void eqwnd_handle_key( wnd_t *wnd, dword data )
 	{
 	case 'q':
 	case 27:
+		/* Save parameters */
+		eqwnd_save_params();
+
+		/* Close window */
 		wnd_send_msg(wnd, WND_MSG_CLOSE, 0);
 		break;
 	case 'h':
@@ -143,35 +154,16 @@ void eqwnd_handle_key( wnd_t *wnd, dword data )
 		break;
 	case 'j':
 	case KEY_DOWN:
-		if (eq->m_pos == 0)
-		{
-			player_eq_preamp -= 2.;
-			if (player_eq_preamp < -20.)
-				player_eq_preamp = -20.;
-		}
-		else
-		{
-			player_eq_bands[eq->m_pos - 1] -= 2.;
-			if (player_eq_bands[eq->m_pos - 1] < -20.)
-				player_eq_bands[eq->m_pos - 1] = -20.;
-		}
+		eqwnd_set_var(eq->m_pos, -2.);
 		player_eq_changed = TRUE;
 		break;
 	case 'k':
 	case KEY_UP:
-		if (eq->m_pos == 0)
-		{
-			player_eq_preamp += 2.;
-			if (player_eq_preamp > 20.)
-				player_eq_preamp = 20.;
-		}
-		else
-		{
-			player_eq_bands[eq->m_pos - 1] += 2.;
-			if (player_eq_bands[eq->m_pos - 1] > 20.)
-				player_eq_bands[eq->m_pos - 1] = 20.;
-		}
+		eqwnd_set_var(eq->m_pos, 2.);
 		player_eq_changed = TRUE;
+		break;
+	case 'p':
+		eqwnd_load_eqf_dlg();
 		break;
 	}
 } /* End of 'eqwnd_handle_key' function */
@@ -206,6 +198,110 @@ int eqwnd_display_slider( wnd_t *wnd, int x, int start_y, int end_y,
 	wnd_set_attrib(wnd, A_NORMAL);
 	return 6;
 } /* End of 'eqwnd_display_slider' function */
+
+/* Set equalizer variable value */
+void eqwnd_set_var( int pos, float val )
+{
+	char str[20];
+	float cur_val;
+
+	/* Get variable name using slider position */
+	eqwnd_get_var_name(pos, str);
+
+	/* Update value */
+	cur_val = cfg_get_var_float(cfg_list, str);
+	cur_val += val;
+	if (cur_val < -20.)
+		cur_val = -20.;
+	else if (cur_val > 20.)
+		cur_val = 20.;
+	cfg_set_var_float(cfg_list, str, cur_val);
+} /* End of 'eqwnd_set_var' function */
+
+/* Get equalizer variable name */
+void eqwnd_get_var_name( int pos, char *name )
+{
+	if (pos == 0)
+		strcpy(name, "eq_preamp");
+	else
+		sprintf(name, "eq_band%i", pos);
+} /* End of 'eqwnd_get_var_name' function */
+
+/* Save equalizer parameters */
+void eqwnd_save_params( void )
+{
+	char *str = "eq_preamp;eq_band1;eq_band2;eq_band3;eq_band4;eq_band5;"
+				"eq_band6;eq_band7;eq_band8;eq_band9;eq_band10";
+	cfg_save_vars(cfg_list, str);
+} /* End of 'eqwnd_save_params' function */
+
+/* Process load preset from EQF file dialog */
+void eqwnd_load_eqf_dlg( void )
+{
+	file_input_box_t *fin;
+
+	/* Create edit box for path input */
+	fin = fin_new(wnd_root, 0, wnd_root->m_height - 1, 
+			wnd_root->m_width, _("Load preset from a Winamp EQF file: "));
+	if (fin != NULL)
+	{
+		/* Run message loop */
+		wnd_run(fin);
+
+		/* Add file if enter was pressed */
+		if (fin->m_box.m_last_key == '\n')
+			eqwnd_load_eqf(fin->m_box.m_text);
+
+		/* Destroy edit box */
+		wnd_destroy(fin);
+	}
+} /* End of 'eqwnd_load_eqf_dlg' function */
+
+/* Load a Winamp EQF file */
+void eqwnd_load_eqf( char *filename )
+{
+	FILE *fd;
+	char header[31];
+	byte bands[11];
+	int i;
+
+	/* Open file */
+	fd = util_fopen(filename, "rb");
+	if (fd == NULL)
+		return;
+
+	/* Read data */
+	fread(header, 1, 31, fd);
+	if (!strncmp(header, "Winamp EQ library file v1.1", 27))
+	{
+		if (fseek(fd, 257, SEEK_CUR) == -1)	/* Skip name */
+		{
+			fclose(fd);
+			return;
+		}
+		if (fread(bands, 1, 11, fd) != 11)
+		{
+			fclose(fd);
+			return;
+		}
+
+		cfg_set_var_float(cfg_list, "eq_preamp", 
+				20.0 - ((bands[10] * 40.0) / 63.0));
+		for ( i = 0; i < 10; i ++ )
+		{
+			char str[20];
+			sprintf(str, "eq_band%i", i + 1);
+			cfg_set_var_float(cfg_list, str, 
+					20.0 - ((bands[i] * 40.0) / 64.0));
+		}
+	}
+
+	/* Close file */
+	fclose(fd);
+
+	/* Report about changing */
+	player_eq_changed = TRUE;
+} /* End of 'eqwnd_load_eqf' function */
 
 /* End of 'eqwnd.c' file */
 

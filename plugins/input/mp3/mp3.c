@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. MP3 input plugin functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 12.07.2003
+ * LAST UPDATE : 26.07.2003
  * NOTE        : Module prefix 'mp3'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -895,7 +895,7 @@ void inp_set_vars( cfg_list_t *list )
 } /* End of 'inp_set_vars' function */
 
 /* Set equalizer parameters */
-void mp3_set_eq( float preamp, float bands[10] )
+void mp3_set_eq( void )
 {
 	byte map[32] = { 0, 1, 2, 3, 4, 5, 6, 6, 7, 7, 7, 7, 8, 8, 8,
   						8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9, 9, 
@@ -904,7 +904,12 @@ void mp3_set_eq( float preamp, float bands[10] )
 	
 	for ( i = 0; i < 32; i ++ )
 	{
-		float val = preamp + bands[map[i]];
+		char name[20];
+		float val;
+		
+		sprintf(name, "eq_band%i", map[i] + 1);
+		val = cfg_get_var_float(mp3_var_list, "eq_preamp") + 
+			cfg_get_var_float(mp3_var_list, name);
 		if (val > 18.)
 			val = 18.;
 		val = pow(10., val / 20.);

@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG Konsamp. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 12.07.2003
+ * LAST UPDATE : 26.07.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -83,9 +83,7 @@ int player_status = PLAYER_STATUS_STOPPED;
 /* Current volume */
 int player_volume = 0;
 
-/* Equalizer information */
-float player_eq_preamp = 0.;
-float player_eq_bands[10];
+/* Has equalizer value changed */
 bool player_eq_changed = FALSE;
 
 /* Initialize player */
@@ -134,9 +132,6 @@ bool player_init( int argc, char *argv[] )
 	player_volume = outp_get_volume(pmng_cur_out);
 
 	/* Initialize equalizer */
-	player_eq_preamp = 0.;
-	for ( i = 0; i < 10; i ++ )
-		player_eq_bands[i] = 0.;
 	player_eq_changed = FALSE;
 
 	/* Exit */
@@ -468,7 +463,7 @@ void player_display( wnd_t *wnd, dword data )
 	wnd_move(wnd, 0, 0);
 	if (player_plist->m_cur_song == -1)
 		wnd_printf(wnd, "SG Software Media Player For Console\n"
-				"version 0.1\n");
+				"version 0.1.1\n");
 	else
 	{
 		char title[80];
@@ -644,7 +639,7 @@ void *player_thread( void *arg )
 		outp_set_fmt(pmng_cur_out, fmt);
 
 		/* Set equalizer */
-		inp_set_eq(s->m_inp, player_eq_preamp, player_eq_bands);
+		inp_set_eq(s->m_inp);
 
 		/* Start timer thread */
 		pthread_create(&player_timer_tid, NULL, player_timer_func, 0);
@@ -663,7 +658,7 @@ void *player_thread( void *arg )
 				if (player_eq_changed)
 				{
 					player_eq_changed = FALSE;
-					inp_set_eq(s->m_inp, player_eq_preamp, player_eq_bands);
+					inp_set_eq(s->m_inp);
 				}
 				
 				/* Get stream from input plugin */

@@ -5,7 +5,7 @@
 /* FILE NAME   : eqwnd.h
  * PURPOSE     : SG MPFC. Interface for equalizer window functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 12.07.2003
+ * LAST UPDATE : 26.07.2003
  * NOTE        : Module prefix 'eqwnd'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -58,6 +58,21 @@ void eqwnd_handle_key( wnd_t *wnd, dword data );
 /* Display slider */
 int eqwnd_display_slider( wnd_t *wnd, int x, int start_y, int end_y,
 							bool hl, float val, char *str );
+
+/* Get equalizer variable name */
+void eqwnd_get_var_name( int pos, char *name );
+
+/* Set equalizer variable value */
+void eqwnd_set_var( int pos, float val );
+
+/* Save equalizer parameters */
+void eqwnd_save_params( void );
+
+/* Process load preset from EQF file dialog */
+void eqwnd_load_eqf_dlg( void );
+
+/* Load a Winamp EQF file */
+void eqwnd_load_eqf( char *filename );
 
 #endif
 

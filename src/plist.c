@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Play list manipulation
  *               functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 6.07.2003
+ * LAST UPDATE : 26.07.2003
  * NOTE        : Module prefix 'plist'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -285,7 +285,7 @@ bool plist_save( plist_t *pl, char *filename )
 	PLIST_ASSERT_RET(pl, FALSE);
 	
 	/* Try to create file */
-	fd = fopen(filename, "wt");
+	fd = util_fopen(filename, "wt");
 	if (fd == NULL)
 	{
 		error_set_code(ERROR_NO_SUCH_FILE);

@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Interface for configuration handling
  *               functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 12.05.2003
+ * LAST UPDATE : 26.07.2003
  * NOTE        : Module prefix 'cfg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -57,14 +57,20 @@ void cfg_init( void );
 /* Uninitialize configuration */
 void cfg_free( void );
 
+/* Free configuration list */
+void cfg_free_list( cfg_list_t *list );
+
+/* Save list */
+void cfg_save_list( cfg_list_t *list, char *fname );
+
 /* Initialize variables with default values */
 void cfg_init_default( void );
 
 /* Read configuration file */
-void cfg_read_rcfile( char *name );
+void cfg_read_rcfile( cfg_list_t *list, char *name );
 
 /* Parse one line from configuration file */
-void cfg_parse_line( char *str );
+void cfg_parse_line( cfg_list_t *list, char *str );
 
 /* Add variable */
 void cfg_new_var( cfg_list_t *list, char *name, char *val );
@@ -78,11 +84,20 @@ void cfg_set_var( cfg_list_t *list, char *name, char *val );
 /* Set variable integer value */
 void cfg_set_var_int( cfg_list_t *list, char *name, int val );
 
+/* Set variable integer float */
+void cfg_set_var_float( cfg_list_t *list, char *name, float val );
+
 /* Get variable value */
 char *cfg_get_var( cfg_list_t *list, char *name );
 
 /* Get variable integer value */
 int cfg_get_var_int( cfg_list_t *list, char *name );
+
+/* Get variable float value */
+float cfg_get_var_float( cfg_list_t *list, char *name );
+
+/* Save variables to main configuration file */
+void cfg_save_vars( cfg_list_t *list, char *vars );
 
 #endif
 

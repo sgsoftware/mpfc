@@ -61,7 +61,7 @@ void mp3_decode_frame( void );
 void mp3_save_tag( char *filename, byte *tag, int tag_size );
 
 /* Set equalizer parameters */
-void mp3_set_eq( float preamp, float bands[10] );
+void mp3_set_eq( void );
 
 /* Apply equalizer to frame */
 void mp3_apply_eq( void );

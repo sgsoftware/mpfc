@@ -6,7 +6,7 @@
  * PURPOSE     : SG MPFC. Configuration handling functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 12.05.2003
+ * LAST UPDATE : 26.07.2003
  * NOTE        : Module prefix 'cfg'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -40,7 +40,7 @@ cfg_list_t *cfg_list;
 /* Initialize configuration */
 void cfg_init( void )
 {
-	char str[256], *home_dir;
+	char str[256];
 	int i;
 	
 	/* Initialize variables with initial values */
@@ -53,21 +53,16 @@ void cfg_init( void )
 
 	/* Read rc file from home directory and from current directory */
 	sprintf(str, "%s/.mpfcrc", getenv("HOME"));
-	cfg_read_rcfile(str);
-	cfg_read_rcfile("./.mpfcrc");
+	cfg_read_rcfile(cfg_list, str);
+	cfg_read_rcfile(cfg_list, "./.mpfcrc");
 } /* End of 'cfg_init' function */
 
 /* Uninitialize configuration */
 void cfg_free( void )
 {
 	/* Free memory */
-	if (cfg_list != NULL)
-	{
-		if (cfg_list->m_vars != NULL)
-			free(cfg_list->m_vars);
-		free(cfg_list);
-		cfg_list = NULL;
-	}
+	cfg_free_list(cfg_list);
+	cfg_list = NULL;
 } /* End of 'cfg_free' function */
 
 /* Initialize variables with default values */
@@ -82,9 +77,12 @@ void cfg_init_default( void )
 } /* End of 'cfg_init_default' function */
 
 /* Read configuration file */
-void cfg_read_rcfile( char *name )
+void cfg_read_rcfile( cfg_list_t *list, char *name )
 {
 	FILE *fd;
+
+	if (list == NULL)
+		return;
 
 	/* Try to open file */
 	fd = fopen(name, "rt");
@@ -100,7 +98,7 @@ void cfg_read_rcfile( char *name )
 		fgets(str, sizeof(str), fd);
 
 		/* Parse this line */
-		cfg_parse_line(str);
+		cfg_parse_line(list, str);
 	}
 
 	/* Close file */
@@ -108,10 +106,13 @@ void cfg_read_rcfile( char *name )
 } /* End of 'cfg_read_rcfile' function */
 
 /* Parse one line from configuration file */
-void cfg_parse_line( char *str )
+void cfg_parse_line( cfg_list_t *list, char *str )
 {
 	int i, j, len;
 	char name[80], val[256];
+
+	if (list == NULL)
+		return;
 	
 	/* If string begins with '#' - it is comment */
 	if (str[0] == '#')
@@ -136,7 +137,7 @@ void cfg_parse_line( char *str )
 	/* Variable has no value - let it be "1" */
 	if (j == len)
 	{
-		cfg_set_var(cfg_list, name, "1");
+		cfg_set_var(list, name, "1");
 	}
 	/* Read value */
 	else
@@ -152,7 +153,7 @@ void cfg_parse_line( char *str )
 		/* Extract value and set it */
 		memcpy(val, &str[i], j - i + 1);
 		val[j - i + 1] = 0;
-		cfg_set_var(cfg_list, name, val);
+		cfg_set_var(list, name, val);
 	}
 } /* End of 'cfg_parse_line' function */
 
@@ -235,6 +236,99 @@ int cfg_get_var_int( cfg_list_t *list, char *name )
 {
 	return atoi(cfg_get_var(list, name));
 } /* End of 'cfg_get_var_int' function */
+
+/* Set variable integer float */
+void cfg_set_var_float( cfg_list_t *list, char *name, float val )
+{
+	char str[80];
+
+	if (list == NULL)
+		return;
+
+	sprintf(str, "%f", val);
+	cfg_set_var(list, name, str);
+} /* End of 'cfg_set_var_float' function */
+
+/* Get variable float value */
+float cfg_get_var_float( cfg_list_t *list, char *name )
+{
+	return atof(cfg_get_var(list, name));
+} /* End of 'cfg_get_var_float' function */
+
+/* Save variables to main configuration file */
+void cfg_save_vars( cfg_list_t *list, char *vars )
+{
+	char fname[256], name[80];
+	cfg_list_t *tlist;
+	int i, j;
+	
+	if (list == NULL)
+		return;
+
+	/* Initialize variables with initial values */
+	tlist = (cfg_list_t *)malloc(sizeof(cfg_list_t));
+	tlist->m_vars = NULL;
+	tlist->m_num_vars = 0;
+
+	/* Read rc file */
+	sprintf(fname, "%s/.mpfcrc", getenv("HOME"));
+	cfg_read_rcfile(tlist, fname);
+
+	/* Update variables */
+	for ( i = 0, j = 0;; i ++ )
+	{
+		/* End of variable name */
+		if (vars[i] == ';' || vars[i] == '\0')
+		{
+			name[j] = 0;
+			j = 0;
+			cfg_set_var(tlist, name, cfg_get_var(list, name));
+			if (!vars[i])
+				break;
+		}
+		else
+			name[j ++] = vars[i];
+	}
+
+	/* Save temporary list to configuration file */
+	cfg_save_list(tlist, fname);
+
+	/* Free temporary list */
+	cfg_free_list(tlist);
+} /* End of 'cfg_save_vars' function */
+
+/* Free configuration list */
+void cfg_free_list( cfg_list_t *list )
+{
+	if (list != NULL)
+	{
+		if (list->m_vars != NULL)
+			free(list->m_vars);
+		free(list);
+	}
+} /* End of 'cfg_free_list' function */
+
+/* Save list */
+void cfg_save_list( cfg_list_t *list, char *fname )
+{
+	FILE *fd;
+	int i;
+
+	if (list == NULL)
+		return;
+
+	/* Open file */
+	fd = fopen(fname, "wt");
+	if (fd == NULL)
+		return;
+
+	/* Write variables */
+	for ( i = 0; i < list->m_num_vars; i ++ )
+		fprintf(fd, "%s=%s\n", list->m_vars[i].m_name, list->m_vars[i].m_val);
+
+	/* Close file */
+	fclose(fd);
+} /* End of 'cfg_save_list' function */
 
 /* End of 'cfg.c' file */
 

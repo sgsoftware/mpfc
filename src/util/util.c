@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Different utility functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 22.05.2003
+ * LAST UPDATE : 26.07.2003
  * NOTE        : Module prefix 'util'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -131,6 +131,18 @@ char *util_escape_fname( char *out, char *in )
 		out[j ++] = in_name[i];
 	}
 } /* End of 'util_escape_fname' function */
+
+/* Open a file expanding home directories */
+FILE *util_fopen( char *filename, char *flags )
+{
+	char fname[256];
+	
+	if (filename[0] == '~' && filename[1] == '/')
+		sprintf(fname, "%s/%s", getenv("HOME"), &filename[2]);
+	else
+		strcpy(fname, filename);
+	return fopen(fname, flags);
+} /* End of 'util_fopen' function */
 
 /* End of 'util.c' file */
 

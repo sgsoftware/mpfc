@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Input plugin management functions
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 12.07.2003
+ * LAST UPDATE : 26.07.2003
  * NOTE        : Module prefix 'inp'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -153,10 +153,10 @@ void inp_get_audio_params( in_plugin_t *p, int *channels,
 } /* End of 'inp_get_audio_params' function */
 
 /* Set equalizer parameters */
-void inp_set_eq( in_plugin_t *p, float preamp, float bands[10] )
+void inp_set_eq( in_plugin_t *p )
 {
 	if (p != NULL && (p->m_fl.m_set_eq != NULL))
-		p->m_fl.m_set_eq(preamp, bands);
+		p->m_fl.m_set_eq();
 } /* End of 'inp_set_eq' function */
 
 /* Get genre list */
