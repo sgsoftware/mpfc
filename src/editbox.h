@@ -5,7 +5,7 @@
 /* FILE NAME   : editbox.h
  * PURPOSE     : SG Konsamp. Interface for edit box functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 23.04.2003
+ * LAST UPDATE : 6.08.2003
  * NOTE        : Module prefix 'ebox'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -28,6 +28,7 @@
 #define __SG_KONSAMP_EDIT_BOX_H__
 
 #include "types.h"
+#include "history.h"
 #include "window.h"
 
 /* Edit box type */
@@ -43,6 +44,15 @@ typedef struct
 	char m_text[256];
 	int m_len;
 
+	/* History list associated with this edit box */
+	hist_list_t *m_hist_list;
+
+	/* Text before changing with history */
+	char m_text_before_hist[256];
+
+	/* Whether text was changed after using history */
+	bool m_changed;
+	
 	/* Last pressed key */
 	int m_last_key;
 
@@ -84,6 +94,12 @@ void ebox_move( editbox_t *box, bool rel, int offset );
 
 /* Set new cursor position */
 void ebox_set_cursor( editbox_t *box, int new_pos );
+
+/* Handle history moving */
+void ebox_hist_move( editbox_t *box, bool up );
+
+/* Save history information */
+void ebox_hist_save( editbox_t *box, int key );
 
 #endif
 

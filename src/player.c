@@ -5,7 +5,7 @@
 /* FILE NAME   : player.c
  * PURPOSE     : SG MPFC. Main player functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 4.08.2003
+ * LAST UPDATE : 6.08.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -38,6 +38,7 @@
 #include "error.h"
 #include "file_input.h"
 #include "help_screen.h"
+#include "history.h"
 #include "key_bind.h"
 #include "listbox.h"
 #include "menu.h"
@@ -92,6 +93,9 @@ bool player_eq_changed = FALSE;
 char player_objects[10][256];
 int player_num_obj = 0;
 
+/* Edit boxes history lists */
+hist_list_t *player_hist_lists[PLAYER_NUM_HIST_LISTS];
+
 /* Initialize player */
 bool player_init( int argc, char *argv[] )
 {
@@ -143,6 +147,10 @@ bool player_init( int argc, char *argv[] )
 	if (!player_num_files && !player_num_obj)
 		plist_add(player_plist, "~/mpfc.m3u");
 
+	/* Initialize history lists */
+	for ( i = 0; i < PLAYER_NUM_HIST_LISTS; i ++ )
+		player_hist_lists[i] = hist_list_new();
+
 	/* Initialize playing thread */
 	pthread_create(&player_tid, NULL, player_thread, NULL);
 
@@ -159,6 +167,8 @@ bool player_init( int argc, char *argv[] )
 /* Unitialize player */
 void player_deinit( void )
 {
+	int i;
+	
 	/* End playing thread */
 	sat_free();
 	player_end_track = TRUE;
@@ -172,6 +182,10 @@ void player_deinit( void )
 
 	/* Uninitialize key bindings */
 	kbind_free();
+
+	/* Uninitialize history lists */
+	for ( i = 0; i < PLAYER_NUM_HIST_LISTS; i ++ )
+		hist_list_free(player_hist_lists[i]);
 	
 	/* Destroy screen window */
 	wnd_destroy(wnd_root);
@@ -633,6 +647,9 @@ void player_add_dialog( void )
 			wnd_root->m_width, _("Enter file (or directory) name: "));
 	if (fin != NULL)
 	{
+		((editbox_t *)fin)->m_hist_list = 
+			player_hist_lists[PLAYER_HIST_LIST_ADD];
+
 		/* Run message loop */
 		wnd_run(fin);
 
@@ -655,6 +672,9 @@ void player_save_dialog( void )
 			_("Enter file name: "));
 	if (fin != NULL)
 	{
+		((editbox_t *)fin)->m_hist_list = 
+			player_hist_lists[PLAYER_HIST_LIST_SAVE];
+
 		/* Run message loop */
 		wnd_run(fin);
 
@@ -735,6 +755,8 @@ void player_search_dialog( void )
 	/* Display edit box for entering search text */
 	ebox = ebox_new(wnd_root, 0, wnd_root->m_height - 1, wnd_root->m_width,
 			1, 256, _("Enter search string: "), "");
+	ebox->m_hist_list = 
+		player_hist_lists[PLAYER_HIST_LIST_SEARCH];
 	if (ebox != NULL)
 	{
 		wnd_run(ebox);
@@ -935,6 +957,7 @@ void player_var_manager( void )
 			wnd_root->m_width, 1, 256, _("Enter variable name: "), "");
 	if (ebox == NULL)
 		return;
+	ebox->m_hist_list = player_hist_lists[PLAYER_HIST_LIST_VAR_NAME];
 
 	/* Run message loop */
 	wnd_run(ebox);
@@ -953,6 +976,8 @@ void player_var_manager( void )
 			wnd_root->m_width, 1, 256, _("Enter variable value: "), "");
 	if (ebox == NULL)
 		return;
+	ebox->m_hist_list = 
+		player_hist_lists[PLAYER_HIST_LIST_VAR_VAL];
 	wnd_run(ebox);
 	if (ebox->m_last_key != '\n')
 	{
@@ -963,7 +988,6 @@ void player_var_manager( void )
 	wnd_destroy(ebox);
 
 	/* Set variable value */
-	util_log("Setting %s to %s\n", name, val);
 	cfg_set_var(cfg_list, name, val);
 } /* End of 'player_var_manager' function */
 
@@ -977,6 +1001,8 @@ void player_add_obj_dialog( void )
 			wnd_root->m_width, 1, 256, _("Enter object name: "), "");
 	if (ebox != NULL)
 	{
+		ebox->m_hist_list = player_hist_lists[PLAYER_HIST_LIST_ADD_OBJ];
+		
 		/* Run message loop */
 		wnd_run(ebox);
 

@@ -5,7 +5,7 @@
 /* FILE NAME   : editbox.c
  * PURPOSE     : SG Konsamp. Edit box functions implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 4.08.2003
+ * LAST UPDATE : 6.08.2003
  * NOTE        : Module prefix 'ebox'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -31,6 +31,7 @@
 #include "dlgbox.h"
 #include "editbox.h"
 #include "error.h"
+#include "history.h"
 #include "window.h"
 #include "util.h"
 
@@ -79,6 +80,9 @@ bool ebox_init( editbox_t *wnd, wnd_t *parent, int x, int y, int width,
 	wnd->m_last_key = 0;
 	wnd->m_max_len = max_len;
 	wnd->m_scrolled = 0;
+	wnd->m_hist_list = NULL;
+	wnd->m_changed = FALSE;
+	strcpy(wnd->m_text_before_hist, wnd->m_text);
 	((wnd_t *)wnd)->m_wnd_destroy = ebox_destroy;
 	return TRUE;
 } /* End of 'ebox_init' function */
@@ -130,6 +134,11 @@ void ebox_handle_key( wnd_t *wnd, dword data )
 		ebox_move(box, FALSE, 0);
 	else if (key == KEY_END)
 		ebox_move(box, FALSE, box->m_len);
+	/* History stuff */
+	else if (key == KEY_UP)
+		ebox_hist_move(box, TRUE);
+	else if (key == KEY_DOWN)
+		ebox_hist_move(box, FALSE);
 	/* Delete character */
 	else if (key == KEY_BACKSPACE)
 		ebox_del(box, box->m_cursor - 1);
@@ -138,7 +147,11 @@ void ebox_handle_key( wnd_t *wnd, dword data )
 	/* Common dialog box item actions */
 	else DLG_ITEM_HANDLE_COMMON(wnd, key)
 	else if (key == '\n' || key == 27)
+	{
+		/* Save content to history list */
+		ebox_hist_save(box, key);
 		wnd_send_msg(wnd, WND_MSG_CLOSE, 0);
+	}
 } /* End of 'ebox_handle_key' function */
 
 /* Add a character to edit box */
@@ -147,10 +160,12 @@ void ebox_add( editbox_t *box, char c )
 	if (box->m_len >= box->m_max_len)
 		return;
 	
-	memmove(&box->m_text[box->m_cursor + 1], &box->m_text[box->m_cursor],
+	memmove(&box->m_text[box->m_cursor + 1], 
+			&box->m_text[box->m_cursor],
 			box->m_len - box->m_cursor + 1);
 	box->m_text[box->m_cursor] = c;
 	box->m_len ++;
+	box->m_changed = TRUE;
 	ebox_set_cursor(box, box->m_cursor + 1);
 } /* End of 'ebox_add' function */
 
@@ -163,6 +178,7 @@ void ebox_del( editbox_t *box, int index )
 				box->m_len - index);
 		ebox_set_cursor(box, index);
 		box->m_len --;
+		box->m_changed = TRUE;
 	}
 } /* End of 'ebox_del' function */
 
@@ -195,6 +211,51 @@ void ebox_set_cursor( editbox_t *box, int new_pos )
 	else if (box->m_scrolled >= box->m_len)
 		box->m_scrolled = box->m_len - 1;
 } /* End of 'ebox_set_cursor' function */
+
+/* Handle history moving */
+void ebox_hist_move( editbox_t *box, bool up )
+{
+	hist_list_t *l;
+	
+	if ((l = box->m_hist_list) != NULL && l->m_tail != NULL)
+	{
+		if (up)
+		{
+			if (l->m_cur == NULL)
+			{
+				l->m_cur = l->m_tail;
+				strcpy(box->m_text_before_hist, box->m_text);
+			}
+			else if (l->m_cur->m_prev != NULL)
+				l->m_cur = l->m_cur->m_prev;
+			else
+				return;
+		}
+		else
+		{
+			if (l->m_cur == NULL)
+				return;
+			else
+				l->m_cur = l->m_cur->m_next;
+		}
+		if (l->m_cur != NULL)
+			strcpy(box->m_text, l->m_cur->m_text);
+		else if (!up)
+			strcpy(box->m_text, box->m_text_before_hist);
+		box->m_len = strlen(box->m_text);
+		box->m_changed = FALSE;
+		ebox_move(box, FALSE, strlen(box->m_text));
+	}
+} /* End of 'ebox_hist_move' function */
+
+/* Save history information */
+void ebox_hist_save( editbox_t *box, int key )
+{
+	if (key == '\n' && box->m_hist_list != NULL && box->m_changed &&
+			strlen(box->m_text))
+		hist_add_item(box->m_hist_list, box->m_text);
+	box->m_hist_list->m_cur = NULL;
+} /* End of 'ebox_hist_save' function */
 
 /* End of 'editbox.c' file */
 

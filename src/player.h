@@ -3,9 +3,9 @@
  ******************************************************************/
 
 /* FILE NAME   : player.h
- * PURPOSE     : SG Konsamp. Interface for main player functions.
+ * PURPOSE     : SG MPFC. Interface for main player functions.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 27.07.2003
+ * LAST UPDATE : 6.08.2003
  * NOTE        : None.
  *
  * This program is free software; you can redistribute it and/or 
@@ -38,9 +38,16 @@
 #define PLAYER_STATUS_PAUSED	1
 #define PLAYER_STATUS_STOPPED	2
 
+/* History lists stuff */
+#define PLAYER_HIST_LIST_ADD  		0
+#define PLAYER_HIST_LIST_ADD_OBJ 	1
+#define PLAYER_HIST_LIST_SAVE		2
+#define PLAYER_HIST_LIST_VAR_NAME	3
+#define PLAYER_HIST_LIST_VAR_VAL	4
+#define PLAYER_HIST_LIST_SEARCH		5
+#define PLAYER_NUM_HIST_LISTS 		6
+
 /* Equalizer information */
-extern float player_eq_preamp;
-extern float player_eq_bands[10];
 extern bool player_eq_changed;
 
 /* Initialize player */

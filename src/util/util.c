@@ -6,7 +6,7 @@
  * PURPOSE     : SG Konsamp. Different utility functions 
  *               implementation.
  * PROGRAMMER  : Sergey Galanov
- * LAST UPDATE : 27.07.2003
+ * LAST UPDATE : 5.08.2003
  * NOTE        : Module prefix 'util'.
  *
  * This program is free software; you can redistribute it and/or 
@@ -35,7 +35,7 @@
 /* Check that file name symbol is special */
 #define UTIL_FNAME_IS_SPECIAL(sym) \
 	((sym) == ' ' || (sym) == '\t' || (sym) == '\'' || (sym) == '\"' || \
-	 (sym) == '(' || (sym) == ')' || \
+	 (sym) == '(' || (sym) == ')' || (sym) == ';' || \
 	 (sym) == '!' || (sym) == '&' || (sym) == '\\')
 
 /* Write message to log file */
