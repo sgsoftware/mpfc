@@ -23,7 +23,7 @@ mpfc_SOURCES = main.c types.h error.h error.c player.c player.h \
 					plist.c plist.h song.c song.h util.h \
 					cfg.h song_info.h sat.c sat.h key_bind.c key_bind.h \
 					colors.c colors.h history.c history.h undo.c undo.h \
-					finder.h iwt.c iwt.h help_screen.h help_screen.c \
+					iwt.c iwt.h help_screen.h help_screen.c \
 					eqwnd.c eqwnd.h browser.c browser.h test.c test.h \
 					$(WND_SOURCES)
 EXTRA_DIST = .mpfcrc

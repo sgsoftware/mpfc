@@ -2,4 +2,7 @@ SUBDIRS = doc intl m4 po libmpfc libmpfcwnd src plugins
 
 ACLOCAL_AMFLAGS = -I m4
 
+datadir = /etc
+data_DATA = mpfcrc
+
 EXTRA_DIST = config.rpath mkinstalldirs  config.rpath build_rcfile.pl

@@ -1,13 +1,13 @@
 \input texinfo @c -*-texinfo-*-
 @c %**start of header
 @setfilename mpfc.info
-@settitle MPFC 1.2
+@settitle MPFC 1.3.1
 @c %**end of header
 
 @copying
-This manual describes the SG Music Player For Linux Console, version 1.2.
+This manual describes the SG Music Player For Linux Console, version 1.3.1.
 
-Copyright @copyright{} 2003 SG Software.
+Copyright @copyright{} 2003-2004 SG Software.
 @end copying
 
 @titlepage
@@ -87,16 +87,23 @@ is a list of files you want to play. For example, to play file song.mp3 type:
 mpfc file.mp3
 @end example
 
-Files list may be empty, this means
+File list may be empty, this means
 you will either continue playing the previous play list (if the respective
 option is set), or start with an empty play list.
 
-To play an object (@pxref{Objects}) place @option{--obj} before its name. For example,
-to play an Audio-CD type:
+You may also specify a plugin that will be used for playing file. This notation
+with special plugins that play virtual files (e.g audiocd plugin) and also
+if file has non-standard extesion. For example:
 
 @example
-mpfc --obj audiocd
+mpfc audiocd://track0* mp3://some-file-with-no-mp3-extension audiocd://
 @end example
+
+First pattern in this list specifies all the Audio-CD tracks from 1 to 9,
+second is simply a hint for MPFC to use mp3 plugin, and the last means to
+add total Audio-CD.
+
+Note that ``objects'' system is no longer used.
 
 If you want to exit MPFC use command @kbd{q}.
 
@@ -284,11 +291,10 @@ you can switch back to normal mode (by entering this command one more time).
 
 @node Add/remove, File browser, Visual mode, Playlist management
 @subsection Add/remove
-There are three commands for add/remove purposes. To add song use @kbd{a} or 
-@kbd{A} command. The difference between them is that @kbd{a} adds a file (or
-directory) and @kbd{A} adds an object (@pxref{Objects}). After you enter any of
-these commands the edit box will appear where you are able to enter file or 
-object name. For files autocomplete is supported (by @kbd{@key{TAB}} key). 
+There are three commands for add/remove purposes. To add song use @kbd{a}.
+After you enter 
+this command the edit box will appear where you are able to enter file name.
+Name autocompletion is supported (by @kbd{@key{TAB}} key). 
 Note that MPFC allows you to play streaming audio. To do it place ``http://''
 in the beginning of file name.
 
@@ -422,7 +428,6 @@ information---@kbd{I}.
 @menu
 * Command execution::
 * History::
-* Objects::
 * Setting mouse parameters::
 @end menu
 
@@ -432,22 +437,14 @@ You are able to execute an external command when you are in MPFC. To do this
 use @kbd{!} command. You will be prompted for the command. After you finish
 press @kbd{@key{RET}} to return to MPFC.
 
-@node History, Objects, Command execution, Other features
+@node History, Setting mouse parameters, Command execution, Other features
 @subsection History
 Some edit boxes when you do input support history so that you can restore
 any of the strings you have entered there before. To jump between these
 strings press @kbd{@key{Up}} for going back and @kbd{@key{Down}} for going 
 forth.
 
-@node Objects, Setting mouse parameters, History, Other features
-@subsection Objects
-Some input plugins operate not with the real files but with ``virtual''
-files. These ``virtual'' files are called objects. For example, Audio CD 
-is such an object. To add object you should use not ``add file'' but
-``add object'' command. Note that one object may expand to many songs 
-(e.g. Audio CD expands to songs, each for one track).
-
-@node Setting mouse parameters,, Objects, Other features
+@node Setting mouse parameters,, History, Other features
 @subsection Setting mouse parameters
 MPFC tries to guess the type of mouse driver by the name of terminal it is
 running on. But it can do it wrong, so you may specify this type explicitly.
@@ -636,8 +633,6 @@ kbind-info: song info editor (i);
 @item
 kbind-add: add file (a);
 @item
-kbind-add-obj: add object (A);
-@item
 kbind-rem: remove songs (r);
 @item
 kbind-save: save playlist (s);
@@ -767,9 +762,12 @@ common output charset (@pxref{Charsets}).
 
 @node Audio CD, Radio, Common formats, Input
 @subsection Audio CD
-Audio CD plugin supports Audio CDs. This support is done through objects
-(@pxref{Objects}). To add a CD contents to playlist add object named 
-``audiocd''. The object name part has no meaning for this plugin.
+Audio CD plugin supports Audio CDs. Audio-CD uses a special virtual file
+system with files named @file{track01}, ..., @file{trackNN}, where ``NN'' is
+total number of tracks on the disc. To specify such a file you must put 
+plugin prefix (``audiocd://'' before the name). You may also use patterns
+(e.g. @file{audiocd://track0[4-7]}) or even put @file{audiocd://}---this
+means total CD.
 
 By default CD-ROM device is @file{/dev/cdrom}, but you can change this
 behaviour by setting ``audiocd-device'' variable.
@@ -793,9 +791,11 @@ Possible values are: ``blues'', ``classical'', ``country'', ``data'', ``folk'',
 @node Radio, Recorder, Audio CD, Input
 @subsection Radio
 MPFC has one special plugin for listening to radio. Note that to use it you
-must have radio card installed as a Video4Linux device. The name part of 
-the object name is the radio station frequency (in MHz). So full object 
-name has the following format: ``radio:<freq>'' (e.g. ``radio:91.5''). 
+must have radio card installed as a Video4Linux device. Just like 
+audiocd it uses virtual file system. File name is the radio station 
+frequency (in MHz). For example, to listen to station 91.5 MHz you enter
+file name @file{radio://91.5}. Note that wildcards patterns are not supported
+for this plugin.
 
 @node Recorder,, Radio, Input
 @subsection Recorder
@@ -806,10 +806,11 @@ stuff---it simply reads data that is playing now, so you may run any external
 program that plays audio-cd and run MPFC with this plugin. But of course it
 is much more useful to record audio from line-in or microphone.
 
-Recorder instance is an object with name part ``mic'' (for microphone souce), 
-``line'' (for line-in) and ``cd'' (for audio cd). To record audio you 
-create this object, set output plugin to the one you want to use (commonly
-``disk_writer'') and play this object.
+Recorder uses virtual file system. It supports the following virtual files:
+``mic'' (for microphone souce), ``line'' (for line-in) and ``cd'' 
+(for audio cd). To record audio you open this file 
+(e.g. @file{recorder://line}, set output plugin to the one you want to use 
+(commonly ``disk_writer'') and play this file.
 
 @node Output, Effect, Input, Plugins
 @section Output plugins

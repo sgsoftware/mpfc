@@ -34,7 +34,6 @@
 #include "colors.h"
 #include "error.h"
 #include "file.h"
-#include "finder.h"
 #include "inp.h"
 #include "player.h"
 #include "plist.h"

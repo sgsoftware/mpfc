@@ -144,7 +144,7 @@ str_t *rad_set_song_title( char *filename )
 {
 	str_t *str;
 	str = str_new("");
-	str_printf(str, "Radio at %.2f Hz", rad_name2freq(filename));
+	str_printf(str, "Radio at %.2f MHz", rad_name2freq(filename));
 	return str;
 } /* End of 'rad_set_song_title' function */
 
