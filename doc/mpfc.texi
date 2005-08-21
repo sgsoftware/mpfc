@@ -1,11 +1,11 @@
 \input texinfo @c -*-texinfo-*-
 @c %**start of header
 @setfilename mpfc.info
-@settitle MPFC 1.4-devel
+@settitle MPFC 1.3.6
 @c %**end of header
 
 @copying
-This manual describes the SG Music Player For Linux Console, version 1.4-devel
+This manual describes the SG Music Player For Linux Console, version 1.3.6
 
 Copyright @copyright{} 2003-2005 SG Software.
 @end copying
@@ -27,9 +27,9 @@ Copyright @copyright{} 2003-2005 SG Software.
 
 @ifinfo
 @node Top, Introduction, (dir), (dir)
-@top MPFC 1.4-devel
+@top MPFC 1.3.6
 
-This manual documents version 1.4-devel of SG MPFC, media player for Linux console.
+This manual documents version 1.3.6 of SG MPFC, media player for Linux console.
 
 Copyright @copyright{} 2003-2005 SG Software
 
