@@ -33,6 +33,9 @@ typedef struct
 	int m_stream_len;
 	byte *m_stream;
 
+	/* ID3V2 version */
+	int m_v2_version;
+
 	/* Frames info */
 	byte *m_frames_start, *m_cur_frame;
 } id3_tag_data_t;
@@ -122,6 +125,9 @@ typedef struct
 #define ID3_CONVERT_TO_SYNCHSAFE(num) \
 	((((num) & 0x7F) << 24) | (((num) & 0x3F80) << 9) | \
 	 (((num) & 0x1FC000) >> 6) | (((num) & 0xFE00000) >> 21))
+#define ID3_SWAP_BYTES(num) \
+	((((num) & 0xFF) << 24) | (((num) & 0xFF00) << 8) | \
+	 (((num) & 0xFF0000) >> 8) | (((num) & 0xFF000000) >> 24))
 
 /* Text encoding */
 #define ID3_LATIN1  0
@@ -191,6 +197,12 @@ void id3_rem_end_spaces( char *str, int len );
 
 /* Copy string to frame */
 void id3_copy2frame( id3_frame_t *f, byte **ptr, int size );
+
+/* Read a size */
+int id3_read_frame_size( char *buf, int v2_version );
+
+/* Write a size */
+void id3_write_frame_size( char *buf, int size, int v2_version );
 
 #endif
 

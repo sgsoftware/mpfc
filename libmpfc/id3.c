@@ -205,7 +205,7 @@ void id3_v1_read( id3_tag_data_t *tag, file_t *fd )
 void id3_v2_read( id3_tag_data_t *tag, file_t *fd )
 {
 	byte flags;
-	int real_size, ext_size;
+	int real_size, ext_size, v2_version;
 	byte header[ID3_HEADER_SIZE];
 
 	/* Seek to tag start */
@@ -213,6 +213,7 @@ void id3_v2_read( id3_tag_data_t *tag, file_t *fd )
 
 	/* Read header */
 	file_read(header, 1, ID3_HEADER_SIZE, fd);
+	tag->m_v2_version = *((char *)(header + 3));
 	flags = *(header + 5);
 	real_size = ID3_CONVERT_FROM_SYNCHSAFE(*(dword *)(header + 6));
 
@@ -232,8 +233,10 @@ void id3_v2_read( id3_tag_data_t *tag, file_t *fd )
 
 	/* Get extended header size */
 	if (flags & ID3_HAS_EXT_HEADER)
-		ext_size = ID3_CONVERT_FROM_SYNCHSAFE(
-				*(dword *)(tag->m_stream + ID3_HEADER_SIZE));
+	{
+		ext_size = ID3_CONVERT_FROM_SYNCHSAFE(*(dword *)(tag->m_stream + 
+						ID3_HEADER_SIZE));
+	}
 	else
 		ext_size = 0;
 
@@ -398,9 +401,8 @@ void id3_v2_next_frame( id3_tag_data_t *tag, id3_frame_t *frame )
 	memcpy(frame->m_name, tag->m_cur_frame, 4);
 	frame->m_name[4] = 0;
 	tag->m_cur_frame += 4;
-	size = *(dword *)tag->m_cur_frame;
+	size = id3_read_frame_size(tag->m_cur_frame, tag->m_v2_version);
 	tag->m_cur_frame += 4;
-	size = ID3_CONVERT_FROM_SYNCHSAFE(size);
 	flags = *(word *)tag->m_cur_frame;
 	tag->m_cur_frame += 2;
 
@@ -491,7 +493,7 @@ void id3_v2_set_frame( id3_tag_data_t *tag, char *name, char *val, char *cs )
 		
 		/* Read frame header */
 		id = p;
-		size = ID3_CONVERT_FROM_SYNCHSAFE(*(dword *)(p + 4));
+		size = id3_read_frame_size(p + 4, tag->m_v2_version);
 
 		/* Frames finished */
 		if (!ID3_IS_VALID_FRAME_NAME(id) || 
@@ -531,12 +533,12 @@ void id3_v2_set_frame( id3_tag_data_t *tag, char *name, char *val, char *cs )
 		/* Write */
 		memset(p, 0, new_size + 10);
 		memcpy(p, name, 4);
-		*(dword *)(p + 4) = ID3_CONVERT_TO_SYNCHSAFE(new_size);
+		id3_write_frame_size(p + 4, new_size, tag->m_v2_version);
 		if (cs != NULL && !strcasecmp(cs, "utf-8") && len > 0)
 			*(p + 10) = ID3_UTF8;
 		memcpy(p + 11, val, len);
-		*(dword *)(tag->m_stream + 6) = ID3_CONVERT_TO_SYNCHSAFE(
-				tag->m_stream_len - 
+		*(dword *)(tag->m_stream + 6) = 
+			ID3_CONVERT_TO_SYNCHSAFE(tag->m_stream_len - 
 				((ID3_GET_FLAGS(tag) & ID3_HAS_FOOTER) ? 20 : 10));
 	}
 	/* Create new frame */
@@ -553,12 +555,12 @@ void id3_v2_set_frame( id3_tag_data_t *tag, char *name, char *val, char *cs )
 		/* Write frame */
 		memset(p, 0, new_size + 10);
 		memcpy(p, name, 4);
-		*(dword *)(p + 4) = ID3_CONVERT_TO_SYNCHSAFE(new_size);
+		id3_write_frame_size(p + 4, new_size, tag->m_v2_version);
 		if (cs != NULL && !strcasecmp(cs, "utf-8") && len > 0)
 			*(p + 10) = ID3_UTF8;
 		memcpy(p + 11, val, len);
-		*(dword *)(tag->m_stream + 6) = ID3_CONVERT_TO_SYNCHSAFE(
-				tag->m_stream_len - 
+		*(dword *)(tag->m_stream + 6) = 
+			ID3_CONVERT_TO_SYNCHSAFE(tag->m_stream_len - 
 				((ID3_GET_FLAGS(tag) & ID3_HAS_FOOTER) ? 20 : 10));
 	}
 
@@ -640,8 +642,10 @@ void id3_remove( char *filename )
 	if (file_size >= 10 && !strncmp(buf, "ID3", 3))
 	{
 		dword size;
+		int v2_version;
 
 		/* Get ID3V2 size */
+		v2_version = *(char *)(buf + 3);
 		size = ID3_CONVERT_FROM_SYNCHSAFE(*(dword *)(buf + 6));
 
 		/* Calculate real size */
@@ -684,6 +688,28 @@ void id3_set_genre( id3_tag_t *tag, char *val, byte id, char *cs )
 	id3_v1_set_frame(&tag->m_v1, ID3_FRAME_GENRE, str);
 	id3_v2_set_frame(&tag->m_v2, ID3_FRAME_GENRE, val, cs);
 } /* End of 'id3_set_genre' function */
+
+/* Read frame size */
+int id3_read_frame_size( char *buf, int v2_version )
+{
+	if (buf == NULL)
+		return 0;
+	if (v2_version >= 4)
+		return ID3_CONVERT_FROM_SYNCHSAFE(*(dword *)buf);
+	else
+		return ID3_SWAP_BYTES(*(dword *)buf);
+} /* End of 'id3_frame_read_size' function */
+
+/* Write frame size */
+void id3_write_frame_size( char *buf, int size, int v2_version )
+{
+	if (buf == NULL)
+		return;
+	if (v2_version >= 4)
+		*(dword *)buf = ID3_CONVERT_TO_SYNCHSAFE(size);
+	else
+		*(dword *)buf = ID3_SWAP_BYTES(size);
+} /* End of 'id3_write_frame_size' function */
 
 /* End of 'id3.c' file */
 

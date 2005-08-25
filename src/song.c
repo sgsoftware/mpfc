@@ -115,7 +115,9 @@ void song_free( song_t *song )
 void song_update_info( song_t *song )
 {
 	if (song == NULL || (song->m_flags & SONG_INFO_WRITE))
+	{
 		return;
+	}
 
 	song_lock(song);
 	si_free(song->m_info);
@@ -215,13 +217,13 @@ void song_update_title( song_t *song )
 /* Write song info */
 void song_write_info( song_t *s )
 {
-	s->m_flags &= ~(SONG_INFO_READ | SONG_INFO_WRITE);
 	if (!inp_save_info(s->m_inp, s->m_file_name, s->m_info))
 	{
 		song_update_info(s);
 		logger_error(player_log, 0, _("Failed to save info to file %s"),
 				s->m_file_name);
 	}
+	s->m_flags &= ~(SONG_INFO_READ | SONG_INFO_WRITE);
 } /* End of 'song_write_info' function */
 
 /* Get input plugin */
