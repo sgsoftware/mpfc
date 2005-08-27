@@ -636,6 +636,8 @@ bool_t player_init_cfg( void )
 	cfg_set_var(cfg_list, "lib-dir", LIBDIR"/mpfc");
 	cfg_set_var_bool(cfg_list, "equalizer.enable-on-change", TRUE);
 	cfg_set_var_bool(cfg_list, "autosave-plugins-params", TRUE);
+	cfg_set_var_bool(cfg_list, "search-nocase", TRUE);
+	cfg_set_var_bool(cfg_list, "view-follows-cur-song", TRUE);
 
 	/* Read configuration files */
 	cfg_rcfile_read(cfg_list, player_cfg_autosave_file);
@@ -774,10 +776,15 @@ wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action )
 	{
 		player_seek((player_repval == 0) ? 10 : 10 * player_repval, TRUE);
 	}
-	/* Seek song backwards */
-	else if (!strcasecmp(action, "time_bw"))
+	/* Long seek song forward */
+	else if (!strcasecmp(action, "time_long_fw"))
 	{
-		player_seek((player_repval == 0) ? -10 : -10 * player_repval, TRUE);
+		player_seek((player_repval == 0) ? 60 : 60 * player_repval, TRUE);
+	}
+	/* Long seek song backwards */
+	else if (!strcasecmp(action, "time_long_bw"))
+	{
+		player_seek((player_repval == 0) ? -60 : -60 * player_repval, TRUE);
 	}
 	/* Seek to any position */
 	else if (!strcasecmp(action, "time_move"))
@@ -1408,6 +1415,14 @@ void player_play( int song, int start_time )
 	player_plist->m_cur_song = song;
 	player_cur_time = start_time;
 //	player_status = PLAYER_STATUS_PLAYING;
+
+	/* Move cursor to current song */
+	if (cfg_get_var_bool(cfg_list, "view-follows-cur-song") && 
+			(song < player_plist->m_scrolled ||
+			 song >= player_plist->m_scrolled + PLIST_HEIGHT))
+	{
+		plist_centrize(player_plist, -1);
+	}
 } /* End of 'player_play' function */
 
 /* End playing song */
@@ -3131,6 +3146,8 @@ void player_class_set_default_styles( cfg_node_t *list )
 	cfg_set_var(list, "kbind.prev", "z");
 	cfg_set_var(list, "kbind.time_fw", "\\>;lt");
 	cfg_set_var(list, "kbind.time_bw", "\\<;ht");
+	cfg_set_var(list, "kbind.time_long_fw", "<Right>;lT");
+	cfg_set_var(list, "kbind.time_long_bw", "<Left>;hT");
 	cfg_set_var(list, "kbind.time_move", "gt");
 	cfg_set_var(list, "kbind.vol_fw", "+;lv");
 	cfg_set_var(list, "kbind.vol_bw", "-;hv");

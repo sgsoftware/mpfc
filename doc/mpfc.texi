@@ -166,8 +166,8 @@ for the string.
 After doing search you can move to the next or previous match by using
 commands @kbd{n} and @kbd{N} respectively.
 
-To make search case-insensitive set variable ``search-nocase'' 
-(0 by default).
+To make search case-sensitive unset variable ``search-nocase'' 
+(it is 1 by default).
 
 @node Marks,, Search, Moving around
 @subsection Marks
@@ -758,6 +758,8 @@ Here is the list of available key bindings for various window classes.
 @item next: play next song (default is ``b'');
 @item time_fw: seek song forward (default is ``\>;lt'');
 @item time_bw: seek song backwards (default is ``\>;ht'');
+@item time_long_fw: seek song forward 1 minute (default is ``<Right>;lT'');
+@item time_long_bw: seek song backwards 1 minute (default is ``<Left>;hT'');
 @item time_move: seek to any position in the song (default is ``gt'');
 @item vol_fw: increase volume (default is ``+;lv'');
 @item vol_bw: decrease volume (default is ``-;hv'');
@@ -1029,9 +1031,10 @@ set---to ``yes''.
 
 @menu
 * Setting variables::
+* List of options::
 @end menu
 
-@node Setting variables,, Using Variables, Using Variables
+@node Setting variables, List of options, Using Variables, Using Variables
 @section Setting variables
 You may set a variable in three different places.
 
@@ -1114,6 +1117,49 @@ mpfc --lib-dir=/usr/local/lib/mpfc --output-plugin=oss --play-from-stop
 The third place is while running MPFC. It has a variable manager invoked
 by @kbd{o} command. There you set variable name, value and operation you
 want to perform, press ``OK'' button, and variable will be set.
+
+@node List of options,, Setting variables, Using Variables
+@section List of options
+
+Here is a list of MPFC configuration options. Note that plugin or
+window system specific options are not present here. Look for them in the
+respective sections of manual.
+
+@table @option
+@item autosave-plugins-params
+Automatically save plugins parameters (default is 1)
+@item charset-input
+Charset to use as input when reading songs information (@pxref{Charsets})
+@item convert-underscores2spaces
+Convert underscores to spaces in songs titles (default is 0)
+@item log-file
+Log file path
+@item log-level
+Log level (@pxref{Log})
+@item loop-play
+Turns on loop play mode (default is 0)
+@item play-from-stop
+At the beginning play from the point you stopped last time (default is 1)
+@item save-playlist-on-exit
+Save play list to @file{~/.mpfc/list.m3u} on exit (default is 1)
+@item search-nocase
+Make play list search case-insensitive (default is 1)
+@item show-time-remaining
+Show remaining song time instead of play time (default is 0)
+@item shuffle-play
+Turns on shuffle play mode (default is 0)
+@item silent-mode
+Don't use output plugin (default is 0)
+@item sort-on-load
+Sort play list after loading (default is 0)
+@item sort-on-load-type
+Type of sort on load (``sort-by-path-and-file'', ``sort-by-title'', 
+``sort-by-file-name'' or ``sort-by-path-and-track'')
+@item title-format
+Format of song title (@pxref{Song Info})
+@item view-follows-cur-song
+If current song escapes view, centrize it automatically (default is 1)
+@end table
 
 @node Plugins, Copying, Using Variables, Top
 @chapter Plugins usage
