@@ -156,6 +156,17 @@ void alsa_end ()
   }
 }
 
+static void xrun_recover(void)
+{
+	int err;
+
+	if (snd_pcm_state(handle) == SND_PCM_STATE_XRUN)
+	{
+		if ((err = snd_pcm_prepare(handle)) < 0)
+			logger_message(alsa_log, 0, "xrun_recover(): snd_pcm_prepare() failed.");
+	}
+}
+
 void alsa_play (void *buf, int size)
 {
   int written;
@@ -172,7 +183,12 @@ void alsa_play (void *buf, int size)
     err = snd_pcm_writei(handle, ((char *) buf) + written, fragments);
     if (err < 0) {
       if (err == -EAGAIN || err == -EINTR)
-	continue;
+		continue;
+	  else if (err == -EPIPE)
+	  {
+		  xrun_recover();
+		  continue;
+	  }
       logger_message(alsa_log, 0, "error %s", snd_strerror(err));
       break;
     }
