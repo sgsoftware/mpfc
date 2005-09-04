@@ -258,26 +258,53 @@ void alsa_flush ()
   snd_pcm_drain (handle);
 }
 
+static int alsa_get_mixer_element(snd_mixer_t **mix, snd_mixer_elem_t **elem)
+{
+  snd_mixer_selem_id_t *selem_id = NULL;
+
+  *mix = NULL;
+  *elem = NULL;
+
+  snd_mixer_open (mix, 0);
+  if (*mix == NULL) {
+    logger_message(alsa_log, 0, "snd_mixer_open() returned NULL");
+    goto error;
+  }
+  snd_mixer_attach (*mix, "default");
+  snd_mixer_selem_register (*mix, NULL, NULL);
+  snd_mixer_load (*mix);
+  snd_mixer_selem_id_alloca(&selem_id);
+  if (selem_id == NULL) {
+    logger_message(alsa_log, 0, "could not allocate selem_id");
+    goto error;
+  }
+  snd_mixer_selem_id_set_name(selem_id, "PCM");
+  if ((*elem = snd_mixer_find_selem(*mix, selem_id)) == NULL) {
+    logger_message(alsa_log, 0, "snd_mixer_find_selem returned NULL");
+    goto error;
+  }
+  return 0;
+
+ error:
+  if (*mix)
+    snd_mixer_close (*mix);
+  return -1;
+}
+
 void alsa_set_volume (int left, int right)
 {
-  snd_mixer_t* mix;
-  snd_mixer_elem_t* elem;
+  snd_mixer_t *mix;
+  snd_mixer_elem_t *elem;
   long scaled_left, scaled_right;
   long min, max;
   int err;
 
-  logger_message(alsa_log, 0, "in alsa_set_volume left = %d, right = %d",
-		  left, right);
-  err = snd_mixer_open (&mix, 0);
-  logger_message(alsa_log, 0, "snd_mixer_open returned %d", err);
-  err = snd_mixer_attach (mix, "default");
-  logger_message(alsa_log, 0, "snd_mixer_attach returned %d", err);
-  err = snd_mixer_selem_register (mix, NULL, NULL);
-  logger_message(alsa_log, 0, "snd_mixer_selem_register returned %d", err);
-  err = snd_mixer_load (mix);
-  logger_message(alsa_log, 0, "snd_mixer_load returned %d", err);
-  elem = snd_mixer_first_elem (mix);
-  logger_message(alsa_log, 0, "snd_mixer_first_elem returned %p", elem);
+
+  if (alsa_get_mixer_element(&mix, &elem)) {
+    logger_message(alsa_log, 0, "could not open alsa pcm element");
+    return;
+  }
+
   snd_mixer_selem_get_playback_volume_range(elem, &min, &max);
   if (max <= min)
   {
@@ -288,33 +315,39 @@ void alsa_set_volume (int left, int right)
   scaled_right = min + ((max - min) * right / 100);
   err = snd_mixer_selem_set_playback_volume (elem, SND_MIXER_SCHN_FRONT_LEFT,
 		  scaled_left);
-  logger_message(alsa_log, 0, "snd_mixer_selem_set_playback_volume returned %d", err);
+  if (err < 0)
+  {
+	  logger_message(alsa_log, 0, "snd_mixer_selem_set_playback_volume returned %d", err);
+	  return;
+  }
   err = snd_mixer_selem_set_playback_volume (elem, SND_MIXER_SCHN_FRONT_RIGHT,
 		  scaled_right);
-  logger_message(alsa_log, 0, "snd_mixer_selem_set_playback_volume returned %d", err);
+  if (err < 0)
+  {
+	  logger_message(alsa_log, 0, "snd_mixer_selem_set_playback_volume returned %d", err);
+	  return;
+  }
   err = snd_mixer_close (mix);
-  logger_message(alsa_log, 0, "snd_mixer_close returned %d", err);
-  logger_message(alsa_log, 0, "alsa_set_volume done");
+  if (err < 0)
+  {
+	  logger_message(alsa_log, 0, "snd_mixer_close returned %d", err);
+	  return;
+  }
 }
 
 void alsa_get_volume (int *left, int *right)
 {
-  snd_mixer_t* mix;
-  snd_mixer_elem_t* elem;
+  snd_mixer_t *mix;
+  snd_mixer_elem_t *elem;
   long min, max;
   int err;
 
-  logger_message(alsa_log, 0, "in alsa_get_volume");
-  err = snd_mixer_open (&mix, 0);
-  logger_message(alsa_log, 0, "snd_mixer_open returned %d", err);
-  err = snd_mixer_attach (mix, "default");
-  logger_message(alsa_log, 0, "snd_mixer_attach returned %d", err);
-  err = snd_mixer_selem_register (mix, NULL, NULL);
-  logger_message(alsa_log, 0, "snd_mixer_selem_register returned %d", err);
-  err = snd_mixer_load (mix);
-  logger_message(alsa_log, 0, "snd_mixer_load returned %d", err);
-  elem = snd_mixer_first_elem (mix);
-  logger_message(alsa_log, 0, "snd_mixer_first_elem returned %p", elem);
+
+  if (alsa_get_mixer_element(&mix, &elem)) {
+    logger_message(alsa_log, 0, "could not open alsa pcm element");
+    return;
+  }
+
   snd_mixer_selem_get_playback_volume_range(elem, &min, &max);
   if (max <= min)
   {
@@ -323,14 +356,16 @@ void alsa_get_volume (int *left, int *right)
   }
   err = snd_mixer_selem_get_playback_volume (elem, SND_MIXER_SCHN_FRONT_LEFT,
 		  (long *)left);
-  logger_message(alsa_log, 0, "snd_mixer_selem_get_playback_volume returned %d", err);
-  logger_message(alsa_log, 0, "(returned %d", err);
+  if (err < 0)
+  {
+	  logger_message(alsa_log, 0, "snd_mixer_selem_get_playback_volume returned %d", err);
+	  return;
+  }
   snd_mixer_selem_get_playback_volume (elem, SND_MIXER_SCHN_FRONT_RIGHT,
 		  (long *)right);
   (*left) = ((*left) - min) * 100 / (max - min);
   (*right) = ((*right) - min) * 100 / (max - min);
   snd_mixer_close (mix);
-  logger_message(alsa_log, 0, "alsa_get_volume finished");
 }
 
 bool_t alsa_open_dev( void )
