@@ -50,6 +50,13 @@ static logger_t *alsa_log = NULL;
 static snd_pcm_sframes_t alsa_buffer_size;
 static snd_pcm_sframes_t alsa_period_size;
 
+/* Mixer types table */
+static char *alsa_mixer_types_table[] = 
+{
+	"PCM", "Master", "PCM", "Line", "CD", "Mic"
+};
+static plugin_mixer_type_t alsa_mixer_type = PLUGIN_MIXER_DEFAULT;
+static char *alsa_mixer_type_name = "PCM";
 
 void alsa_end ();
 bool_t alsa_open_dev( void );
@@ -278,7 +285,7 @@ static int alsa_get_mixer_element(snd_mixer_t **mix, snd_mixer_elem_t **elem)
     logger_message(alsa_log, 0, "could not allocate selem_id");
     goto error;
   }
-  snd_mixer_selem_id_set_name(selem_id, "PCM");
+  snd_mixer_selem_id_set_name(selem_id, alsa_mixer_type_name);
   if ((*elem = snd_mixer_find_selem(*mix, selem_id)) == NULL) {
     logger_message(alsa_log, 0, "snd_mixer_find_selem returned NULL");
     goto error;
@@ -341,7 +348,7 @@ void alsa_get_volume (int *left, int *right)
   snd_mixer_elem_t *elem;
   long min, max;
   int err;
-
+  long scaled_left, scaled_right;
 
   if (alsa_get_mixer_element(&mix, &elem)) {
     logger_message(alsa_log, 0, "could not open alsa pcm element");
@@ -355,16 +362,16 @@ void alsa_get_volume (int *left, int *right)
 	  return;
   }
   err = snd_mixer_selem_get_playback_volume (elem, SND_MIXER_SCHN_FRONT_LEFT,
-		  (long *)left);
+		  &scaled_left);
   if (err < 0)
   {
 	  logger_message(alsa_log, 0, "snd_mixer_selem_get_playback_volume returned %d", err);
 	  return;
   }
   snd_mixer_selem_get_playback_volume (elem, SND_MIXER_SCHN_FRONT_RIGHT,
-		  (long *)right);
-  (*left) = ((*left) - min) * 100 / (max - min);
-  (*right) = ((*right) - min) * 100 / (max - min);
+		  &scaled_right);
+  (*left) = (scaled_left - min) * 100 / (max - min);
+  (*right) = (scaled_right - min) * 100 / (max - min);
   snd_mixer_close (mix);
 }
 
@@ -449,6 +456,15 @@ void alsa_configure( wnd_t *parent )
 	dialog_arrange_children(dlg);
 }
 
+/* Set mixer type */
+void alsa_set_mixer_type( plugin_mixer_type_t type )
+{
+	if (type >= (sizeof(alsa_mixer_types_table) / sizeof(*alsa_mixer_types_table)))
+		return;
+	alsa_mixer_type = type;
+	alsa_mixer_type_name = alsa_mixer_types_table[alsa_mixer_type];
+}
+
 void plugin_exchange_data (plugin_data_t *pd)
 {
   pd->m_desc = alsa_desc;
@@ -465,6 +481,7 @@ void plugin_exchange_data (plugin_data_t *pd)
   OUTP_DATA(pd)->m_resume = alsa_resume;
   OUTP_DATA(pd)->m_set_volume = alsa_set_volume;
   OUTP_DATA(pd)->m_get_volume = alsa_get_volume;
+  OUTP_DATA(pd)->m_set_mixer_type = alsa_set_mixer_type;
   alsa_pmng = pd->m_pmng;
   alsa_cfg = pd->m_cfg;
   alsa_log = pd->m_logger;

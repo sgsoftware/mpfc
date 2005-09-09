@@ -297,5 +297,14 @@ int inp_vfs_stat( in_plugin_t *p, char *name, struct stat *sb )
 		return EACCES;
 } /* End of 'inp_vfs_stat' function */
 
+/* Get mixer type */
+plugin_mixer_type_t inp_get_mixer_type( in_plugin_t *p )
+{
+	if (p != NULL && p->m_pd.m_get_mixer_type != NULL)
+		return p->m_pd.m_get_mixer_type();
+	else
+		return PLUGIN_MIXER_DEFAULT;
+} /* End of 'inp_get_mixer_type' function */
+
 /* End of 'inp.c' file */
 

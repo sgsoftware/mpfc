@@ -51,6 +51,10 @@ static char *oss_author = "Sergey E. Galanov <sgsoftware@mail.ru>";
 /* Configuration list */
 static cfg_node_t *oss_cfg = NULL;
 
+/* Mixer type */
+static int oss_mixer_type_read = SOUND_MIXER_READ_PCM;
+static int oss_mixer_type_write = SOUND_MIXER_WRITE_PCM;
+
 /* Start plugin */
 bool_t oss_start( void )
 {
@@ -135,7 +139,7 @@ void oss_set_volume( int left, int right )
 	if (fd < 0)
 		return;
 	v = right | (left << 8);
-	ioctl(fd, SOUND_MIXER_WRITE_VOLUME, &v);
+	ioctl(fd, oss_mixer_type_write, &v);
 	close(fd);
 } /* End of 'oss_set_volume' function */
 
@@ -148,7 +152,7 @@ void oss_get_volume( int *left, int *right )
 	fd = open("/dev/mixer", O_RDONLY);
 	if (fd < 0)
 		return;
-	ioctl(fd, SOUND_MIXER_READ_VOLUME, &v);
+	ioctl(fd, oss_mixer_type_read, &v);
 	close(fd);
 	*left = ((v >> 8) & 0xFF);
 	*right = (v & 0xFF);
@@ -176,6 +180,36 @@ void oss_configure( wnd_t *parent )
 	dialog_arrange_children(dlg);
 } /* End of 'oss_configure' function */
 
+/* Set mixer type */
+void oss_set_mixer_type( plugin_mixer_type_t type )
+{
+	if (type == PLUGIN_MIXER_DEFAULT || type == PLUGIN_MIXER_PCM)
+	{
+		oss_mixer_type_read = SOUND_MIXER_READ_PCM;
+		oss_mixer_type_write = SOUND_MIXER_WRITE_PCM;
+	}
+	else if (type == PLUGIN_MIXER_MASTER)
+	{
+		oss_mixer_type_read = SOUND_MIXER_READ_VOLUME;
+		oss_mixer_type_write = SOUND_MIXER_WRITE_VOLUME;
+	}
+	else if (type == PLUGIN_MIXER_CD)
+	{
+		oss_mixer_type_read = SOUND_MIXER_READ_CD;
+		oss_mixer_type_write = SOUND_MIXER_WRITE_CD;
+	}
+	else if (type == PLUGIN_MIXER_LINE)
+	{
+		oss_mixer_type_read = SOUND_MIXER_READ_LINE;
+		oss_mixer_type_write = SOUND_MIXER_WRITE_LINE;
+	}
+	else if (type == PLUGIN_MIXER_MIC)
+	{
+		oss_mixer_type_read = SOUND_MIXER_READ_MIC;
+		oss_mixer_type_write = SOUND_MIXER_WRITE_MIC;
+	}
+} /* End of 'oss_set_mixer_type' function */
+
 /* Exchange data with main program */
 void plugin_exchange_data( plugin_data_t *pd )
 {
@@ -191,6 +225,7 @@ void plugin_exchange_data( plugin_data_t *pd )
 	OUTP_DATA(pd)->m_flush = oss_flush;
 	OUTP_DATA(pd)->m_set_volume = oss_set_volume;
 	OUTP_DATA(pd)->m_get_volume = oss_get_volume;
+	OUTP_DATA(pd)->m_set_mixer_type = oss_set_mixer_type;
 	oss_pmng = pd->m_pmng;
 	oss_cfg = pd->m_cfg;
 } /* End of 'plugin_exchange_data' function */

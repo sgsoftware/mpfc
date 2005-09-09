@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: mpfc 1.3.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2005-08-29 00:33+0400\n"
+"POT-Creation-Date: 2005-09-09 19:50+0400\n"
 "PO-Revision-Date: 2003-02-13 09:15+0300\n"
 "Last-Translator: Sergey E. Galanov <sgsoftware@mail.ru>\n"
 "Language-Team: Russian <sgsoftware@mail.ru>\n"
@@ -82,35 +82,35 @@ msgstr "Нет детей\n"
 msgid "Cancel"
 msgstr "Отмена"
 
-#: plugins/input/audiocd/audiocd.c:562
+#: plugins/input/audiocd/audiocd.c:566
 msgid "Configure AudioCD plugin"
 msgstr "Конфигурация плагина AudioCD"
 
-#: plugins/input/audiocd/audiocd.c:563
+#: plugins/input/audiocd/audiocd.c:567
 msgid "CD &device: "
 msgstr "Устройство CD (&d): "
 
-#: plugins/input/audiocd/audiocd.c:565
+#: plugins/input/audiocd/audiocd.c:569
 msgid "CDDB parameters"
 msgstr "Параметры CDDB"
 
-#: plugins/input/audiocd/audiocd.c:566
+#: plugins/input/audiocd/audiocd.c:570
 msgid "&Host: "
 msgstr "Хост (&h): "
 
-#: plugins/input/audiocd/audiocd.c:568
+#: plugins/input/audiocd/audiocd.c:572
 msgid "&Email: "
 msgstr "&Email: "
 
-#: plugins/input/audiocd/audiocd.c:570
+#: plugins/input/audiocd/audiocd.c:574
 msgid "Disc c&ategory: "
 msgstr "Категория диска (&a): "
 
-#: plugins/input/audiocd/audiocd.c:611
+#: plugins/input/audiocd/audiocd.c:615
 msgid "Reload info from CDDB"
 msgstr "Загрузить информацию из CDDB"
 
-#: plugins/input/audiocd/audiocd.c:614
+#: plugins/input/audiocd/audiocd.c:618
 msgid "Submit info to CDDB"
 msgstr "Отправить информацию в CDDB"
 
@@ -383,11 +383,11 @@ msgstr ""
 "Байт/сек: %i\n"
 "Выравнивание блока: %i"
 
-#: plugins/output/alsa/alsa.c:410
+#: plugins/output/alsa/alsa.c:445
 msgid "Configure ALSA plugin"
 msgstr "Конфигурация плагина alsa"
 
-#: plugins/output/alsa/alsa.c:411 plugins/output/oss/oss.c:173
+#: plugins/output/alsa/alsa.c:446 plugins/output/oss/oss.c:173
 msgid "&Device: "
 msgstr "Устройство (&d): "
 

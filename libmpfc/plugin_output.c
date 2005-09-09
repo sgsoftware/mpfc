@@ -129,6 +129,13 @@ void outp_get_volume( out_plugin_t *p, int *left, int *right )
 		*left = *right = 0;
 } /* End of 'outp_get_volume' function */
 
+/* Set mixer type */
+void outp_set_mixer_type( out_plugin_t *p, plugin_mixer_type_t type )
+{
+	if (p != NULL && (p->m_pd.m_set_mixer_type != NULL))
+		p->m_pd.m_set_mixer_type(type);
+} /* End of 'out_set_mixer_type' function */
+
 /* Get plugin flags */
 dword outp_get_flags( out_plugin_t *p )
 {

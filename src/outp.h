@@ -65,8 +65,11 @@ typedef struct
 	/* Resume playint */
 	void (*m_resume)( void );
 
+	/* Set current mixer type */
+	void (*m_set_mixer_type)( plugin_mixer_type_t type );
+
 	/* Reserved data */
-	byte m_reserved[80];
+	byte m_reserved[76];
 
 	/* Flags */
 	dword m_flags;
@@ -127,6 +130,9 @@ void outp_set_volume( out_plugin_t *p, int left, int right );
 
 /* Get volume */
 void outp_get_volume( out_plugin_t *p, int *left, int *right );
+
+/* Set mixer type */
+void out_set_mixer_type( out_plugin_t *p, plugin_mixer_type_t type );
 
 /* Get plugin flags */
 dword outp_get_flags( out_plugin_t *p );

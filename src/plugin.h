@@ -42,6 +42,17 @@ typedef enum
 	PLUGIN_TYPE_ALL = 0xFFFFFF
 } plugin_type_t;
 
+/* Plugin mixer types */
+typedef enum
+{
+	PLUGIN_MIXER_DEFAULT,
+	PLUGIN_MIXER_MASTER,
+	PLUGIN_MIXER_PCM,
+	PLUGIN_MIXER_LINE,
+	PLUGIN_MIXER_CD,
+	PLUGIN_MIXER_MIC
+} plugin_mixer_type_t;
+
 /* Common plugin data for exchange with plugin */
 typedef struct
 {

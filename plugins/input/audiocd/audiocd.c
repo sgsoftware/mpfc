@@ -172,7 +172,7 @@ bool_t acd_start( char *filename )
 	
 	/* Open audio device */
 	return TRUE;
-} /* End of 'mp3_start' function */
+} /* End of 'acd_start' function */
 
 /* End playing function */
 void acd_end( void )
@@ -186,8 +186,10 @@ void acd_end( void )
 		return;
 
 	/* Stop playing */
-	if (strncmp(acd_next_song, "audiocd", 7))
+	if (strncmp(acd_next_song, "/track", 6))
 		ioctl(fd, CDROMSTOP, 0);
+	else
+		ioctl(fd, CDROMPAUSE, 0);
 
 	/* Close device */
 	close(fd);
@@ -534,6 +536,12 @@ int acd_stat( char *name, struct stat *sb )
 	return ENOENT;
 } /* End of 'acd_stat' function */
 
+/* Get plugin mixer type */
+plugin_mixer_type_t acd_get_mixer_type( void )
+{
+	return PLUGIN_MIXER_CD;
+} /* End of 'acd_get_mixer_type' function */
+
 /* Handle 'ok_clicked' message for configuration dialog */
 wnd_msg_retcode_t acd_on_configure( wnd_t *wnd )
 {
@@ -600,6 +608,7 @@ void plugin_exchange_data( plugin_data_t *pd )
 	INP_DATA(pd)->m_vfs_closedir = acd_closedir;
 	INP_DATA(pd)->m_vfs_readdir = acd_readdir;
 	INP_DATA(pd)->m_vfs_stat = acd_stat;
+	INP_DATA(pd)->m_get_mixer_type = acd_get_mixer_type;
 	acd_pmng = pd->m_pmng;
 	acd_log = pd->m_logger;
 	acd_cfg = pd->m_cfg;
@@ -663,7 +672,6 @@ void acd_load_tracks( int fd )
 		acd_tracks_info[i].m_end_min = entry.cdte_addr.msf.minute;
 		acd_tracks_info[i].m_end_sec = entry.cdte_addr.msf.second;
 		acd_tracks_info[i].m_end_frm = entry.cdte_addr.msf.frame;
-		acd_tracks_info[i].m_end_min = entry.cdte_addr.msf.minute;
 		acd_tracks_info[i].m_len = acd_get_trk_len(i);
 		acd_first_time = FALSE;
 

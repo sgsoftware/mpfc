@@ -129,8 +129,11 @@ typedef struct
 	/* Get file parameters */
 	int (*m_vfs_stat)( char *name, struct stat *sb );
 
+	/* Get type of mixer used by this plugin */
+	plugin_mixer_type_t (*m_get_mixer_type)( void );
+
 	/* Reserved */
-	byte m_reserved[52];
+	byte m_reserved[48];
 
 	/*
 	 * Data
@@ -237,6 +240,9 @@ char *inp_vfs_readdir( in_plugin_t *p, void *dir );
 
 /* Get file parameters */
 int inp_vfs_stat( in_plugin_t *p, char *name, struct stat *sb );
+
+/* Get mixer type */
+plugin_mixer_type_t inp_get_mixer_type( in_plugin_t *p );
 
 #endif
 

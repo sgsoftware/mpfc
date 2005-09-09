@@ -1668,6 +1668,10 @@ void *player_thread( void *arg )
 		no_outp = (in_flags & INP_OWN_OUT) || 
 			((in_flags & INP_OWN_SOUND) && !(out_flags & OUTP_NO_SOUND));
 
+		/* Set proper mixer type */
+		logger_debug(player_log, "Setting mixer type");
+		outp_set_mixer_type(player_pmng->m_cur_out, inp_get_mixer_type(inp));
+
 		/* Get song length and information */
 		logger_debug(player_log, "Updating song info");
 		song_update_info(s);
