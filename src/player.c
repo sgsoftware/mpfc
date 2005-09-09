@@ -1090,8 +1090,11 @@ wnd_msg_retcode_t player_on_mouse_ldown( wnd_t *wnd, int x, int y,
 	if (y >= player_plist->m_start_pos && 
 			y < player_plist->m_start_pos + PLIST_HEIGHT)
 	{
+		int was_pos = player_plist->m_sel_end;
 		plist_move(player_plist, y - player_plist->m_start_pos + 
 				player_plist->m_scrolled, FALSE);
+		if (was_pos != player_plist->m_sel_end)
+			player_last_pos = was_pos;
 		wnd_invalidate(wnd);
 	}
 	/* Set volume */
@@ -1136,8 +1139,11 @@ wnd_msg_retcode_t player_on_mouse_mdown( wnd_t *wnd, int x, int y,
 	if (y >= player_plist->m_start_pos && 
 			y < player_plist->m_start_pos + PLIST_HEIGHT)
 	{
+		int was_pos = player_plist->m_sel_end;
 		plist_centrize(player_plist, y - player_plist->m_start_pos + 
 				player_plist->m_scrolled);
+		if (was_pos != player_plist->m_sel_end)
+			player_last_pos = was_pos;
 		wnd_invalidate(wnd);
 	}
 	return WND_MSG_RETCODE_OK;
@@ -1421,7 +1427,10 @@ void player_play( int song, int start_time )
 			(song < player_plist->m_scrolled ||
 			 song >= player_plist->m_scrolled + PLIST_HEIGHT))
 	{
+		int was_pos = player_plist->m_sel_end;
 		plist_centrize(player_plist, -1);
+		if (was_pos != player_plist->m_sel_end)
+			player_last_pos = was_pos;
 	}
 } /* End of 'player_play' function */
 
