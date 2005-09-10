@@ -136,10 +136,10 @@ dword cddb_id( void )
 	struct acd_trk_info_t *toc = acd_tracks_info;
 
 	for ( i = 0, n = 0; i < acd_num_tracks; i ++ )
-		n += cddb_sum(toc[i].m_start_min * 60 + toc[i].m_start_sec);
-	t = toc[acd_num_tracks - 1].m_end_min * 60 + 
-		toc[acd_num_tracks - 1].m_end_sec - 
-			(toc[0].m_start_min * 60 + toc[0].m_start_sec);
+		n += cddb_sum(toc[i].m_start.minute * 60 + toc[i].m_start.second);
+	t = toc[acd_num_tracks - 1].m_end.minute * 60 + 
+		toc[acd_num_tracks - 1].m_end.second - 
+			(toc[0].m_start.minute * 60 + toc[0].m_start.second);
 	return ((n % 0xFF) << 24 | t << 8 | acd_num_tracks);
 } /* End of 'cddb_id' function */
 

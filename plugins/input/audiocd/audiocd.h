@@ -23,6 +23,7 @@
 #ifndef __SG_MPFC_AUDIOCD_H__
 #define __SG_MPFC_AUDIOCD_H__
 
+#include <linux/cdrom.h>
 #include "types.h"
 #include "logger.h"
 #include "mystring.h"
@@ -35,8 +36,8 @@
 /* Tracks information array */
 extern struct acd_trk_info_t
 {
-	int m_start_min, m_start_sec, m_start_frm;
-	int m_end_min, m_end_sec, m_end_frm;
+	struct cdrom_msf0 m_start;
+	struct cdrom_msf0 m_end;
 	int m_len;
 	int m_number;
 	char m_name[MAX_FILE_NAME];
@@ -57,15 +58,15 @@ typedef struct
 
 /* Get track start frame offset */
 #define acd_get_trk_offset(t) \
-	((acd_tracks_info[t].m_start_min * 60 + \
-				acd_tracks_info[t].m_start_sec) * 75 + \
-				acd_tracks_info[t].m_start_frm)
+	((acd_tracks_info[t].m_start.minute * 60 + \
+				acd_tracks_info[t].m_start.second) * 75 + \
+				acd_tracks_info[t].m_start.frame)
 
 /* Get disc length */
 #define acd_get_disc_len() \
-	(((acd_tracks_info[acd_num_tracks - 1].m_end_min * 60 + \
-				acd_tracks_info[acd_num_tracks - 1].m_end_sec) * 75 + \
-				acd_tracks_info[acd_num_tracks - 1].m_end_frm) / 75)
+	(((acd_tracks_info[acd_num_tracks - 1].m_end.minute * 60 + \
+				acd_tracks_info[acd_num_tracks - 1].m_end.second) * 75 + \
+				acd_tracks_info[acd_num_tracks - 1].m_end.frame) / 75)
 
 /* Logger */
 extern logger_t *acd_log;

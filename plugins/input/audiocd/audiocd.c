@@ -47,9 +47,12 @@
 
 /* Calculate track length */
 #define acd_get_trk_len(trk) \
-	((acd_tracks_info[trk].m_end_min * 60 + acd_tracks_info[trk].m_end_sec) - \
-	((acd_tracks_info[trk].m_start_min * 60 + \
-	  acd_tracks_info[trk].m_start_sec)))
+	((acd_tracks_info[trk].m_end.minute * 60 + acd_tracks_info[trk].m_end.second) - \
+	((acd_tracks_info[trk].m_start.minute * 60 + \
+	  acd_tracks_info[trk].m_start.second)))
+
+/* Get address in frames */
+#define ACD_LBA(msf)	(((msf).minute * 60 + (msf).second) * 75 + (msf).frame)
 
 /* Plugins manager */
 pmng_t *acd_pmng = NULL;
@@ -134,12 +137,12 @@ bool_t acd_start( char *filename )
 	acd_cur_track = track;
 
 	/* Start playing */
-	msf.cdmsf_min0 = acd_tracks_info[track].m_start_min;
-	msf.cdmsf_sec0 = acd_tracks_info[track].m_start_sec;
-	msf.cdmsf_frame0 = acd_tracks_info[track].m_start_frm;
-	msf.cdmsf_min1 = acd_tracks_info[track].m_end_min;
-	msf.cdmsf_sec1 = acd_tracks_info[track].m_end_sec;
-	msf.cdmsf_frame1 = acd_tracks_info[track].m_end_frm;
+	msf.cdmsf_min0 = acd_tracks_info[track].m_start.minute;
+	msf.cdmsf_sec0 = acd_tracks_info[track].m_start.second;
+	msf.cdmsf_frame0 = acd_tracks_info[track].m_start.frame;
+	msf.cdmsf_min1 = acd_tracks_info[track].m_end.minute;
+	msf.cdmsf_sec1 = acd_tracks_info[track].m_end.second;
+	msf.cdmsf_frame1 = acd_tracks_info[track].m_end.frame;
 	if (ioctl(fd, CDROMPLAYMSF, &msf) < 0)
 	{
 		close(fd);
@@ -186,10 +189,7 @@ void acd_end( void )
 		return;
 
 	/* Stop playing */
-	if (strncmp(acd_next_song, "/track", 6))
-		ioctl(fd, CDROMSTOP, 0);
-	else
-		ioctl(fd, CDROMPAUSE, 0);
+	ioctl(fd, CDROMPAUSE, 0);
 
 	/* Close device */
 	close(fd);
@@ -219,18 +219,24 @@ int acd_get_stream( void *buf, int size )
 {
 	int fd;
 	struct cdrom_subchnl info;
-	bool_t playing;
 
 	/* Check if we are playing now */
 	if ((fd = acd_prepare_cd()) < 0)
 		return 0;
 	info.cdsc_format = CDROM_MSF;
-	ioctl(fd, CDROMSUBCHNL, &info);
-	playing = (info.cdsc_audiostatus == CDROM_AUDIO_PLAY);
-	acd_time = info.cdsc_reladdr.msf.minute * 60 + 
-		info.cdsc_reladdr.msf.second;
+	if (ioctl(fd, CDROMSUBCHNL, &info) < 0)
+	{
+		close(fd);
+		return 0;
+	}
 	close(fd);
-	if (!playing)
+	if (info.cdsc_audiostatus == CDROM_AUDIO_COMPLETED ||
+			info.cdsc_audiostatus == CDROM_AUDIO_ERROR)
+		return 0;
+	acd_time = (ACD_LBA(info.cdsc_absaddr.msf) - 
+		ACD_LBA(acd_tracks_info[acd_cur_track].m_start)) / 75;
+	if (ACD_LBA(info.cdsc_absaddr.msf) >=
+			ACD_LBA(acd_tracks_info[acd_cur_track].m_end) - 20)
 		return 0;
 
 	/* Read audio data */
@@ -242,103 +248,6 @@ int acd_get_stream( void *buf, int size )
 	}
 	return size;
 } /* End of 'acd_get_stream' function */
-
-#if 0
-/* Initialize songs that respect to object */
-song_t **acd_init_obj_songs( char *name, int *num_songs )
-{
-	song_t **s = NULL;
-	int fd, i, j;
-	struct cdrom_tochdr toc;
-	struct cdrom_tocentry entry;
-	int track;
-
-	/* Get track number that we want to add */
-	if (!*name)
-		track = 0;
-	else if (strncmp(name, "track", 5))
-	{
-		*num_songs = 0;
-		return NULL;
-	}
-	else
-		track = atoi(&name[5]);
-
-	/* Open cdrom device */
-	(*num_songs) = 0;
-	if ((fd = acd_prepare_cd()) < 0)
-		return NULL;
-
-	/* Free CDDB data */
-	cddb_free();
-
-	/* Read tracks information */
-	if (acd_first_time || ioctl(fd, CDROM_MEDIA_CHANGED, 0))
-	{
-		ioctl(fd, CDROMREADTOCHDR, &toc);
-		acd_num_tracks = toc.cdth_trk1 - toc.cdth_trk0 + 1;
-		entry.cdte_format = CDROM_MSF;
-		for ( i = 0; i < acd_num_tracks; i ++ )
-		{
-			entry.cdte_track = i + toc.cdth_trk0;
-			ioctl(fd, CDROMREADTOCENTRY, &entry);
-			acd_tracks_info[i].m_start_min = entry.cdte_addr.msf.minute;
-			acd_tracks_info[i].m_start_sec = entry.cdte_addr.msf.second;
-			acd_tracks_info[i].m_start_frm = entry.cdte_addr.msf.frame;
-			acd_tracks_info[i].m_data = entry.cdte_ctrl & CDROM_DATA_TRACK;
-			acd_tracks_info[i].m_number = i + toc.cdth_trk0;
-		}
-		for ( i = 0; i < acd_num_tracks - 1; i ++ )
-		{
-			acd_tracks_info[i].m_end_min = acd_tracks_info[i + 1].m_start_min;
-			acd_tracks_info[i].m_end_sec = acd_tracks_info[i + 1].m_start_sec;
-			acd_tracks_info[i].m_end_frm = acd_tracks_info[i + 1].m_start_frm;
-			acd_tracks_info[i].m_len = acd_get_trk_len(i);
-		}
-		entry.cdte_track = CDROM_LEADOUT;
-		ioctl(fd, CDROMREADTOCENTRY, &entry);
-		acd_tracks_info[i].m_end_min = entry.cdte_addr.msf.minute;
-		acd_tracks_info[i].m_end_sec = entry.cdte_addr.msf.second;
-		acd_tracks_info[i].m_end_frm = entry.cdte_addr.msf.frame;
-		acd_tracks_info[i].m_end_min = entry.cdte_addr.msf.minute;
-		acd_tracks_info[i].m_len = acd_get_trk_len(i);
-		acd_first_time = FALSE;
-	}
-
-	/* Determine number of songs */
-	for ( i = 0; i < acd_num_tracks; i ++ )
-		if (!acd_tracks_info[i].m_data && (!track || i == track - 1))
-			(*num_songs) ++;
-			
-	/* Return nothing if no tracks are about to be added */
-	if (!(*num_songs) || (track && (track < 0 || track > acd_num_tracks)))
-		return NULL;
-
-	/* Initialize songs */
-	s = (song_t **)malloc((*num_songs) * sizeof(song_t *));
-	for ( i = !track ? 0 : track - 1, j = 0; i < acd_num_tracks; i ++ )
-	{
-		song_t *song;
-			
-		if (acd_tracks_info[i].m_data)
-			continue;
-		s[j ++] = song = (song_t *)malloc(sizeof(song_t));
-		memset(song, 0, sizeof(*song));
-		snprintf(song->m_file_name, sizeof(song->m_file_name),
-				"audiocd:track%02d", acd_tracks_info[i].m_number);
-		song->m_title = acd_set_song_title(song->m_file_name);
-		song->m_len = acd_tracks_info[i].m_len;
-		song->m_ref_count = 1;
-
-		if (track)
-			break;
-	}
-
-	/* Close device */
-	close(fd);
-	return s;
-} /* End of 'acd_init_obj_songs' function */
-#endif
 
 /* Pause */
 void acd_pause( void )
@@ -393,14 +302,14 @@ void acd_seek( int shift )
 	/* Start playing from new position */
 	if ((fd = acd_prepare_cd()) < 0)
 		return;
-	shift = acd_tracks_info[acd_cur_track].m_start_min * 60 + 
-		acd_tracks_info[acd_cur_track].m_start_sec + shift;
+	shift = acd_tracks_info[acd_cur_track].m_start.minute * 60 + 
+		acd_tracks_info[acd_cur_track].m_start.second + shift;
 	msf.cdmsf_min0 = shift / 60;
 	msf.cdmsf_sec0 = shift % 60;
 	msf.cdmsf_frame0 = 0;
-	msf.cdmsf_min1 = acd_tracks_info[acd_cur_track].m_end_min;
-	msf.cdmsf_sec1 = acd_tracks_info[acd_cur_track].m_end_sec;
-	msf.cdmsf_frame1 = acd_tracks_info[acd_cur_track].m_end_frm;
+	msf.cdmsf_min1 = acd_tracks_info[acd_cur_track].m_end.minute;
+	msf.cdmsf_sec1 = acd_tracks_info[acd_cur_track].m_end.second;
+	msf.cdmsf_frame1 = acd_tracks_info[acd_cur_track].m_end.frame;
 	if (ioctl(fd, CDROMPLAYMSF, &msf) < 0)
 	{
 		close(fd);
@@ -652,9 +561,7 @@ void acd_load_tracks( int fd )
 		{
 			entry.cdte_track = i + toc.cdth_trk0;
 			ioctl(fd, CDROMREADTOCENTRY, &entry);
-			acd_tracks_info[i].m_start_min = entry.cdte_addr.msf.minute;
-			acd_tracks_info[i].m_start_sec = entry.cdte_addr.msf.second;
-			acd_tracks_info[i].m_start_frm = entry.cdte_addr.msf.frame;
+			acd_tracks_info[i].m_start = entry.cdte_addr.msf;
 			acd_tracks_info[i].m_data = entry.cdte_ctrl & CDROM_DATA_TRACK;
 			acd_tracks_info[i].m_number = i + toc.cdth_trk0;
 			snprintf(acd_tracks_info[i].m_name, 
@@ -662,16 +569,12 @@ void acd_load_tracks( int fd )
 		}
 		for ( i = 0; i < acd_num_tracks - 1; i ++ )
 		{
-			acd_tracks_info[i].m_end_min = acd_tracks_info[i + 1].m_start_min;
-			acd_tracks_info[i].m_end_sec = acd_tracks_info[i + 1].m_start_sec;
-			acd_tracks_info[i].m_end_frm = acd_tracks_info[i + 1].m_start_frm;
+			acd_tracks_info[i].m_end = acd_tracks_info[i + 1].m_start;
 			acd_tracks_info[i].m_len = acd_get_trk_len(i);
 		}
 		entry.cdte_track = CDROM_LEADOUT;
 		ioctl(fd, CDROMREADTOCENTRY, &entry);
-		acd_tracks_info[i].m_end_min = entry.cdte_addr.msf.minute;
-		acd_tracks_info[i].m_end_sec = entry.cdte_addr.msf.second;
-		acd_tracks_info[i].m_end_frm = entry.cdte_addr.msf.frame;
+		acd_tracks_info[i].m_end = entry.cdte_addr.msf;
 		acd_tracks_info[i].m_len = acd_get_trk_len(i);
 		acd_first_time = FALSE;
 
