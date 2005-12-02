@@ -24,6 +24,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <inttypes.h>
 #define __USE_GNU
 #include <string.h>
 #include "types.h"
@@ -354,6 +355,14 @@ void cfg_set_var_int( cfg_node_t *parent, char *name, int val )
 	cfg_set_var(parent, name, str);
 } /* End of 'cfg_set_var_int' function */
 
+/* Set variable pointer value */
+void cfg_set_var_ptr( cfg_node_t *parent, char *name, void *val )
+{
+	char str[32];
+	snprintf(str, sizeof(str), "%p", val);
+	cfg_set_var(parent, name, str);
+} /* End of 'cfg_set_var_ptr' function */
+
 /* Set variable integer float */
 void cfg_set_var_float( cfg_node_t *parent, char *name, float val )
 {
@@ -380,6 +389,17 @@ int cfg_get_var_int( cfg_node_t *parent, char *name )
 	char *str = cfg_get_var(parent, name);
 	return (str == NULL) ? 0 : atoi(str);
 } /* End of 'cfg_get_var_int' function */
+
+/* Get variable pointer value */
+void *cfg_get_var_ptr( cfg_node_t *parent, char *name )
+{
+	void *value;
+	char *str = cfg_get_var(parent, name);
+	if (str == NULL)
+		return NULL;
+	sscanf(str, "%p", &value);
+	return value;
+} /* End of 'cfg_get_var_ptr' function */
 
 /* Get variable float value */
 float cfg_get_var_float( cfg_node_t *parent, char *name )

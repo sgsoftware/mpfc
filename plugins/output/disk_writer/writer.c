@@ -92,6 +92,7 @@ bool_t dw_prepare_file( void )
 	/* Leave space for header */
 	file_seek(dw_fd, DW_HEAD_SIZE, SEEK_SET);
 	dw_file_size = DW_HEAD_SIZE;
+	return TRUE;
 } /* End of 'dw_prepare_file' function */
 
 /* Finish work with a file */

@@ -176,6 +176,9 @@ void cfg_set_var_int( cfg_node_t *parent, char *name, int val );
 /* Set variable integer float */
 void cfg_set_var_float( cfg_node_t *parent, char *name, float val );
 
+/* Set variable pointer value */
+void cfg_set_var_ptr( cfg_node_t *parent, char *name, void *val );
+
 /* Get variable value */
 char *cfg_get_var( cfg_node_t *parent, char *name );
 
@@ -185,17 +188,16 @@ int cfg_get_var_int( cfg_node_t *parent, char *name );
 /* Get variable float value */
 float cfg_get_var_float( cfg_node_t *parent, char *name );
 
+/* Get variable pointer value */
+void *cfg_get_var_ptr( cfg_node_t *parent, char *name );
+
 /* Set variable's handler */
 void cfg_set_var_handler( cfg_node_t *parent, char *name, 
 		cfg_var_handler_t handler, void *handler_data );
 
 /* Setters/getters for some other types */
-#define cfg_set_var_ptr(parent, name, val)	\
-	(cfg_set_var_int(parent, name, (int)val))
 #define cfg_set_var_bool(parent, name, val)	\
 	(cfg_set_var_int(parent, name, (int)val))
-#define cfg_get_var_ptr(parent, name)	\
-	((void *)cfg_get_var_int(parent, name))
 #define cfg_get_var_bool(parent, name)	\
 	((bool_t)cfg_get_var_int(parent, name))
 

@@ -80,7 +80,7 @@ void test_wndlib_perfomance( void )
 	for ( i = 0; i < player_plist->m_len && (!test_stop_job); i ++ )
 	{
 		wnd_msg_send(player_wnd, "user", 
-				wnd_msg_user_new(PLAYER_MSG_INFO, (void *)i));
+				wnd_msg_user_new(PLAYER_MSG_INFO, (void *)((intptr_t)i)));
 	}
 
 	/* Now execute some cycles of focus changing */
@@ -88,7 +88,7 @@ void test_wndlib_perfomance( void )
 	{
 		for ( j = 0; j < (player_plist->m_len + 3) && (!test_stop_job); j ++ )
 			wnd_msg_send(player_wnd, "user", 
-					wnd_msg_user_new(PLAYER_MSG_NEXT_FOCUS, (void *)i));
+					wnd_msg_user_new(PLAYER_MSG_NEXT_FOCUS, (void *)((intptr_t)i)));
 	}
 } /* End of 'test_wndlib_perfomance' function */
 

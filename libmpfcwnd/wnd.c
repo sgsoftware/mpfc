@@ -92,6 +92,8 @@ wnd_t *wnd_init( cfg_node_t *cfg_list, logger_t *log )
 	global->m_display_buf.m_data = db_data;
 	pthread_mutex_init(&global->m_display_buf.m_mutex, NULL);
 
+	logger_debug(log, "Initializing window system of size %dx%d", COLS, LINES);
+
 	/* Initialize configuration */
 	cfg_wnd = cfg_new_list(cfg_list, "windows", NULL,
 			CFG_NODE_MEDIUM_LIST | CFG_NODE_RUNTIME, 0);

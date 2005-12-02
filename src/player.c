@@ -1175,7 +1175,7 @@ wnd_msg_retcode_t player_on_user( wnd_t *wnd, int id, void *data )
 	switch (id)
 	{
 	case PLAYER_MSG_INFO:
-		plist_move(player_plist, (int)data, FALSE);
+		plist_move(player_plist, (int)((intptr_t)data), FALSE);
 		player_info_dialog();
 		break;
 	case PLAYER_MSG_NEXT_FOCUS:
@@ -1397,6 +1397,7 @@ void player_seek( int sec, bool_t rel )
 	inp_seek(song_get_inp(s, NULL), new_time);
 	player_cur_time = new_time;
 	wnd_invalidate(player_wnd);
+	logger_debug(player_log, "after player_seek timer is %d", player_cur_time);
 } /* End of 'player_seek' function */
 
 /* Play song */
@@ -1583,7 +1584,7 @@ void *player_timer_func( void *arg )
 	time_t t = time(NULL);
 
 	/* Start zero timer count */
-	player_cur_time = 0;
+//	player_cur_time = 0;
 
 	/* Timer loop */
 	while (!player_end_timer)
@@ -1606,6 +1607,8 @@ void *player_timer_func( void *arg )
 				{
 					player_cur_time += (new_t - t);
 					t = new_t;
+					logger_debug(player_log, "get_cur_time failed. setting time to %d", 
+							player_cur_time);
 					wnd_invalidate(player_wnd);
 				}
 			}
@@ -2505,7 +2508,8 @@ wnd_msg_retcode_t player_on_save( wnd_t *wnd )
 				_("Play list saved to %s"), EDITBOX_TEXT(eb));
 	else
 		logger_error(player_log, 1,
-				_("Unable to save play list to %s"), EDITBOX_TEXT(eb));
+				_("Unable to save play list to %s (try naming it as a .m3u file)"), 
+					EDITBOX_TEXT(eb));
 	return WND_MSG_RETCODE_OK;
 } /* End of 'player_on_save' function */
 
@@ -2631,16 +2635,25 @@ wnd_msg_retcode_t player_on_info( wnd_t *wnd )
 /* Handle 'close' for info dialog */
 void player_on_info_close( wnd_t *wnd )
 {
+	logger_debug(player_log, "in player_on_info_close");
+
 	/* Free songs list */
 	song_t **list = cfg_get_var_ptr(wnd->m_cfg_list, "songs_list");
+	logger_debug(player_log, "songs list is %p", list);
 	if (list != NULL)
 	{
 		int i;
 		int num_songs = cfg_get_var_int(wnd->m_cfg_list, "num_songs");
+		logger_debug(player_log, "number of songs is %d", num_songs);
 		for ( i = 0; i < num_songs; i ++ )
+		{
+			logger_debug(player_log, "freeing %p", list[i]);
 			song_free(list[i]);
+		}
+		logger_debug(player_log, "freeing list");
 		free(list);
 	}
+	logger_debug(player_log, "player_on_info_close done");
 } /* End of 'player_on_info_close' function */
 
 /* Handle 'clicked' for info dialog reload button */

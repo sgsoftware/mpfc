@@ -25,12 +25,13 @@
 
 #include <assert.h>
 #include <libintl.h>
+#include <stdint.h>
 #include "mpfc-config.h"
 
 /* Some useful types */
-typedef unsigned char byte;
-typedef unsigned short word;
-typedef unsigned long dword;
+typedef uint8_t byte;
+typedef uint16_t word;
+typedef uint32_t dword;
 
 /* Define boolean type and values for it */
 typedef byte bool_t;
