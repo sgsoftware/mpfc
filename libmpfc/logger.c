@@ -101,6 +101,7 @@ void logger_add_message_vararg( logger_t *log, logger_msg_type_t type,
 	struct logger_handler_t *h;
 	int n, size = 100;
 	char *text;
+	va_list ap_orig;
 
 	if (log == NULL)
 		return;
@@ -115,8 +116,10 @@ void logger_add_message_vararg( logger_t *log, logger_msg_type_t type,
 	text = (char *)malloc(size);
 	if (text == NULL)
 		return;
+	va_copy(ap_orig, ap);
 	for ( ;; )
 	{
+		va_copy(ap, ap_orig);
 		n = vsnprintf(text, size, format, ap);
 		if (n > -1 && n < size)
 			break;

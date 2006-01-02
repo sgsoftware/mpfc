@@ -18,6 +18,7 @@
  */
 
 #include <alsa/asoundlib.h>
+#include <alsa/error.h>
 #include <sys/soundcard.h>
 #include <stdarg.h>
 #include "types.h"

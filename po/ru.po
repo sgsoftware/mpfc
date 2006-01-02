@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: mpfc 1.3.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2005-11-26 01:41+0300\n"
+"POT-Creation-Date: 2005-12-06 11:22+0300\n"
 "PO-Revision-Date: 2003-02-13 09:15+0300\n"
 "Last-Translator: Sergey E. Galanov <sgsoftware@mail.ru>\n"
 "Language-Team: Russian <sgsoftware@mail.ru>\n"
@@ -74,7 +74,7 @@ msgstr "Не могу прочитать каталог %s"
 msgid "Unable to stat file %s"
 msgstr "Не могу получить информацию о файле %s"
 
-#: libmpfcwnd/wnd.c:741
+#: libmpfcwnd/wnd.c:743
 msgid "No children\n"
 msgstr "Нет детей\n"
 

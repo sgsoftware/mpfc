@@ -1742,12 +1742,14 @@ void *player_thread( void *arg )
 				}
 				
 				/* Get stream from input plugin */
+				logger_debug(player_log, "calling inp_get_stream(%d)", size);
 				if (size = inp_get_stream(inp, buf, size))
 				{
 					int new_ch, new_freq, new_br;
 					dword new_fmt;
 					
 					/* Get audio parameters */
+					logger_debug(player_log, "got stream of size %d", size);
 					inp_get_audio_params(inp, &new_ch, &new_freq, &new_fmt, 
 							&new_br);
 					was_pfreq = player_freq; was_pstereo = player_stereo;
@@ -1779,6 +1781,7 @@ void *player_thread( void *arg )
 							freq = new_freq;
 							fmt = new_fmt;
 						
+							logger_debug(player_log, "setting channels to %d", ch);
 							outp_flush(player_cur_outp);
 							outp_set_channels(player_cur_outp, ch);
 							outp_set_freq(player_cur_outp, freq);
