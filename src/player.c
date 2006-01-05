@@ -1386,6 +1386,8 @@ void player_seek( int sec, bool_t rel )
 		return;
 
 	s = player_plist->m_list[player_plist->m_cur_song];
+	if (s->m_redirect != NULL)
+		s = s->m_redirect;
 
 	new_time = (rel ? (player_cur_time + sec) : sec);
 	if (new_time < 0)
@@ -1394,7 +1396,7 @@ void player_seek( int sec, bool_t rel )
 		new_time = s->m_len;
 
 	player_save_time();
-	inp_seek(song_get_inp(s, NULL), new_time);
+	inp_seek(song_get_inp(s, NULL), player_translate_time(s, new_time, TRUE));
 	player_cur_time = new_time;
 	wnd_invalidate(player_wnd);
 	logger_debug(player_log, "after player_seek timer is %d", player_cur_time);
@@ -1582,6 +1584,7 @@ void player_stop_timer( void )
 void *player_timer_func( void *arg )
 {
 	time_t t = time(NULL);
+	song_t *s = (song_t *)arg;
 
 	/* Start zero timer count */
 //	player_cur_time = 0;
@@ -1612,10 +1615,14 @@ void *player_timer_func( void *arg )
 					wnd_invalidate(player_wnd);
 				}
 			}
-			else if (tm - player_cur_time)
+			else 
 			{
-				player_cur_time = tm;
-				wnd_invalidate(player_wnd);
+				tm = player_translate_time(s, tm, FALSE);
+				if (tm - player_cur_time)
+				{
+					player_cur_time = tm;
+					wnd_invalidate(player_wnd);
+				}
 			}
 		}
 		util_wait();
@@ -1627,6 +1634,14 @@ void *player_timer_func( void *arg )
 	return NULL;
 } /* End of 'player_timer_func' function */
 
+/* Translate projected song time to real time */
+int player_translate_time( song_t *s, int t, bool_t virtual2real )
+{
+	if (s == NULL || s->m_start_time < 0)
+		return t;
+	return (virtual2real ? s->m_start_time + t : t - s->m_start_time);
+} /* End of 'player_translate_time' function */
+
 /* Player thread function */
 void *player_thread( void *arg )
 {
@@ -1637,7 +1652,7 @@ void *player_thread( void *arg )
 	/* Main loop */
 	while (!player_end_thread)
 	{
-		song_t *s;
+		song_t *s, *song_played;
 		int ch = 0, freq = 0;
 		dword fmt = 0;
 		song_info_t si;
@@ -1657,6 +1672,7 @@ void *player_thread( void *arg )
 
 		/* Play track */
 		s = player_plist->m_list[player_plist->m_cur_song];
+		song_played = (s->m_redirect == NULL) ? s : s->m_redirect;
 		//player_status = PLAYER_STATUS_PLAYING;
 		player_end_track = FALSE;
 	
@@ -1665,16 +1681,17 @@ void *player_thread( void *arg )
 		/* Start playing */
 		logger_debug(player_log, "Starting input plugin");
 		inp = song_get_inp(s, &fd);
-		if (!inp_start(inp, s->m_file_name, fd))
+		if (!inp_start(inp, song_played->m_file_name, fd))
 		{
 			player_next_track();
 			logger_error(player_log, 0,
-					_("Input plugin for file %s failed"), s->m_file_name);
+					_("Input plugin for file %s failed"), song_played->m_file_name);
 			wnd_invalidate(player_wnd);
 			continue;
 		}
-		if (player_cur_time > 0)
-			inp_seek(inp, player_cur_time);
+		logger_debug(player_log, "start time is %d", song_played->m_start_time);
+		if (player_cur_time > 0 || song_played->m_start_time > -1)
+			inp_seek(inp, player_translate_time(song_played, player_cur_time, TRUE));
 		in_flags = inp_get_flags(inp);
 		out_flags = outp_get_flags(player_pmng->m_cur_out);
 		no_outp = (in_flags & INP_OWN_OUT) || 
@@ -1720,7 +1737,7 @@ void *player_thread( void *arg )
 
 		/* Start timer thread */
 		logger_debug(player_log, "Creating timer thread");
-		pthread_create(&player_timer_tid, NULL, player_timer_func, 0);
+		pthread_create(&player_timer_tid, NULL, player_timer_func, song_played);
 		//wnd_send_msg(wnd_root, WND_MSG_DISPLAY, 0);
 	
 		/* Play */
@@ -1794,6 +1811,17 @@ void *player_thread( void *arg )
 					
 						/* Send to output plugin */
 						outp_play(player_cur_outp, buf, size);
+
+						/* Check for end of projected song */
+						if (song_played->m_end_time > -1 && 
+								player_translate_time(song_played, player_cur_time, TRUE) >= 
+								song_played->m_end_time)
+						{
+							logger_debug(player_log, "stopping at time %d(%d).", 
+									player_cur_time,
+									player_translate_time(song_played, player_cur_time, TRUE));
+							break;
+						}
 					}
 					else
 						util_wait();

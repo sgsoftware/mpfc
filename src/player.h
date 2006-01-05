@@ -231,6 +231,9 @@ void player_stop_timer( void );
 /* Timer thread function */
 void *player_timer_func( void *arg );
 
+/* Translate projected song time to real time */
+int player_translate_time( song_t *s, int t, bool_t virtual2real );
+
 /* Player thread function */
 void *player_thread( void *arg );
 
@@ -431,6 +434,7 @@ void player_set_search_string( char *str );
 
 /* Save current song and time */
 void player_save_time( void );
+
 
 #endif
 

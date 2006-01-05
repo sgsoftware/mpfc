@@ -118,11 +118,11 @@ void pmng_autostart_general( pmng_t *pmng )
 } /* End of 'pmng_autostart_general' function */
 
 /* Search for input plugin supporting given format */
-in_plugin_t *pmng_search_format( pmng_t *pmng, char *format )
+in_plugin_t *pmng_search_format( pmng_t *pmng, char *filename, char *format )
 {
 	pmng_iterator_t iter;
 
-	if (pmng == NULL || !(*format))
+	if (pmng == NULL || (!(*filename) && !(*format)))
 		return NULL;
 
 	iter = pmng_start_iteration(pmng, PLUGIN_TYPE_INPUT);
@@ -135,6 +135,8 @@ in_plugin_t *pmng_search_format( pmng_t *pmng, char *format )
 		inp = INPUT_PLUGIN(pmng_iterate(&iter));
 		if (inp == NULL)
 			break;
+		if (inp_is_our_file(inp, filename))
+			return inp;
 		inp_get_formats(inp, formats, NULL);
 		for ( j = 0;; ext[k ++] = formats[j ++] )
 		{

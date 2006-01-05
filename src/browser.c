@@ -717,7 +717,7 @@ void fb_load_info( browser_t *fb )
 
 		/* Determine file type and its associated plugin */
 		ext = util_extension(item->m_name);
-		inp = pmng_search_format(player_pmng, ext);
+		inp = pmng_search_format(player_pmng, item->m_name, ext);
 		if (inp == NULL)
 			continue;
 
