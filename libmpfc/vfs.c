@@ -266,7 +266,7 @@ void vfs_visit_match( vfs_t *vfs, vfs_file_t *file, vfs_callback_t callback,
 
 		/* Visit children */
 		vfs_glob_list_sort(list);
-		vfs_visit_matches(vfs, file->m_inp, list, callback, data, 
+		vfs_visit_matches(vfs, /*file->m_inp*/NULL, list, callback, data, 
 				level + 1, max_level, flags);
 		vfs_glob_list_free(list);
 	}
@@ -301,6 +301,9 @@ void vfs_file_desc_init( vfs_t *vfs, vfs_file_t *file, char *full_name,
 	/* Find plugin from prefix */
 	else
 		inp = vfs_plugin_from_prefix(vfs, full_name, &file->m_name);
+	/* If there is no prefix - determine plugin from file name */
+	if (inp == NULL && vfs != NULL)
+		inp = pmng_search_format(vfs->m_pmng, file->m_name, file->m_extension);
 	file->m_inp = inp;
 
 	/* Get file parameters */

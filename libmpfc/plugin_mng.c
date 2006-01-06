@@ -125,6 +125,8 @@ in_plugin_t *pmng_search_format( pmng_t *pmng, char *filename, char *format )
 	if (pmng == NULL || (!(*filename) && !(*format)))
 		return NULL;
 
+	logger_debug(pmng->m_log, "pmng_search_format(%s, %s)", filename, format);
+
 	iter = pmng_start_iteration(pmng, PLUGIN_TYPE_INPUT);
 	for ( ;; )
 	{
@@ -136,7 +138,12 @@ in_plugin_t *pmng_search_format( pmng_t *pmng, char *filename, char *format )
 		if (inp == NULL)
 			break;
 		if (inp_is_our_file(inp, filename))
+		{
+			logger_debug(pmng->m_log, "is our file");
 			return inp;
+		}
+		if (!(*format))
+			continue;
 		inp_get_formats(inp, formats, NULL);
 		for ( j = 0;; ext[k ++] = formats[j ++] )
 		{
@@ -144,7 +151,10 @@ in_plugin_t *pmng_search_format( pmng_t *pmng, char *filename, char *format )
 			{
 				ext[k] = 0;
 				if (!strcasecmp(ext, format))
+				{
+					logger_debug(pmng->m_log, "extension matches");
 					return inp;
+				}
 				k = 0;
 			}
 			if (!formats[j])
