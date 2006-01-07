@@ -42,7 +42,7 @@ static int wav_seek_val = -1;
 /* Current song audio parameters */
 static int wav_channels = 0, wav_freq = 0, wav_avg_bps = 0;
 static dword wav_fmt = 0;
-static int wav_file_size = 0;
+static dword wav_file_size = 0;
 static int wav_block_align = 0;
 
 /* Song length */
@@ -60,13 +60,18 @@ static char *wav_desc = "WAV files playback plugin";
 /* Plugin author */
 static char *wav_author = "Sergey E. Galanov <sgsoftware@mail.ru>";
 
+/* Logger */
+static logger_t *wav_log = NULL;
+
 /* Start play function */
 bool_t wav_start( char *filename )
 {
 	char riff[4], riff_type[4];
-	long file_size;
+	dword file_size;
 	void *buf = NULL;
 	dword data_size = 0;
+
+	logger_debug(wav_log, "wav_start(%s)", filename);
 	
 	/* Try to open file */
 	wav_fd = file_open(filename, "rb", NULL);
@@ -76,25 +81,33 @@ bool_t wav_start( char *filename )
 
 	/* Read WAV file header */
 	file_read(riff, 1, sizeof(riff), wav_fd);
+	logger_debug(wav_log, "wav: riff is %c%c%c%c", riff[0], riff[1], 
+			riff[2], riff[3]);
 	file_read(&wav_file_size, 1, sizeof(file_size), wav_fd);
+	logger_debug(wav_log, "wav: file size is %d", wav_file_size);
 	file_read(riff_type, 1, sizeof(riff_type), wav_fd);
+	logger_debug(wav_log, "wav: riff_type is %c%c%c%c", riff_type[0], 
+			riff_type[1], riff_type[2], riff_type[3]);
 
 	/* Check file validity */
 	if (riff[0] != 'R' || riff[1] != 'I' || riff[2] != 'F' || riff[3] != 'F' ||
 			riff_type[0] != 'W' || riff_type[1] != 'A' ||
 			riff_type[2] != 'V' || riff_type[3] != 'E')
 	{
+		logger_error(wav_log, 0, "wav: RIFF header not found");
 		wav_end();
 		return FALSE;
 	}
 
 	/* Read chunks until 'data' */
 	while (!wav_read_next_chunk(wav_fd, (void **)(&buf), &data_size));
+	logger_debug(wav_log, "wav: data size if %d", data_size);
 
 	/* Check format */
 	if (!data_size || buf == NULL || 
 			!(WAV_FMT_GET_FORMAT(buf) == 1))
 	{
+		logger_error(wav_log, 0, "wav: invalid format");
 		free(buf);
 		wav_end();
 		return FALSE;
@@ -268,6 +281,7 @@ void plugin_exchange_data( plugin_data_t *pd )
 	INP_DATA(pd)->m_get_formats = wav_get_formats;
 	INP_DATA(pd)->m_get_cur_time = wav_get_cur_time;
 	INP_DATA(pd)->m_get_info = wav_get_info;
+	wav_log = pd->m_logger;
 } /* End of 'plugin_exchange_data' function */
 
 /* Read the next chunk. Returns TRUE when 'data' chunk is read */
@@ -275,7 +289,7 @@ static bool_t wav_read_next_chunk( file_t *fd, void **fmt_buf,
 										dword *data_size )
 {
 	char chunk_id[4];
-	long chunk_size;
+	dword chunk_size;
 	
 	if (fd == NULL || file_eof(fd))
 		return TRUE;
