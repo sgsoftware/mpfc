@@ -85,6 +85,33 @@ void outp_set_fmt( out_plugin_t *p, dword fmt )
 		p->m_pd.m_set_fmt(fmt);
 } /* End of 'outp_set_fmt' function */
 	
+/* Get real channels number */
+int outp_get_channels( out_plugin_t *p )
+{
+	if (p != NULL && (p->m_pd.m_get_channels != NULL))
+		return p->m_pd.m_get_channels();
+	else
+		return -1;
+} /* End of 'outp_get_channels' function */
+
+/* Get real frequenry */
+int outp_get_freq ( out_plugin_t *p )
+{
+	if (p != NULL && (p->m_pd.m_get_channels != NULL))
+		return p->m_pd.m_get_freq();
+	else
+		return -1;
+} /* End of 'outp_get_freq ' function */
+
+/* Get real format */
+dword outp_get_fmt( out_plugin_t *p )
+{
+	if (p != NULL && (p->m_pd.m_get_fmt != NULL))
+		return p->m_pd.m_get_fmt();
+	else
+		return 0xFFFFFFFF;
+} /* End of 'outp_get_fmt' function */
+
 /* Play stream function */
 void outp_play( out_plugin_t *p, void *buf, int size )
 {

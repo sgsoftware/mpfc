@@ -102,26 +102,56 @@ bool_t alsa_start ()
     return FALSE;
   }
 
+  logger_debug(alsa_log, "setting format to %d", alsa_fmt);
   err = snd_pcm_hw_params_set_format (handle, hwparams, alsa_fmt);
   if (err < 0) {
+	int i;
+	snd_pcm_format_t formats[] = { SND_PCM_FORMAT_S16_LE,
+									SND_PCM_FORMAT_S16_BE,
+									SND_PCM_FORMAT_U8 };
+
     logger_message(alsa_log, 0, "snd_pcm_hw_params_set_format with format %d returned %d", alsa_fmt, err);
-    alsa_end();
-    return FALSE;
+
+	alsa_fmt = -1;
+	for ( i = 0; i < sizeof(formats) / sizeof(*formats); i ++ )
+	{
+		if (snd_pcm_hw_params_set_format(handle, hwparams,
+					formats[i]) == 0)
+		{
+			alsa_fmt = formats[i];
+			if (alsa_fmt == SND_PCM_FORMAT_U8)
+				alsa_size = 1;
+			else
+				alsa_size = 2;
+			logger_message(alsa_log, 0, "format %d is suitable", alsa_fmt);
+			break;
+		}
+	}
+    
+	if (alsa_fmt == -1)
+	{
+		alsa_end();
+		return FALSE;
+	}
   }
 
-  err = snd_pcm_hw_params_set_channels (handle, hwparams, alsa_channels);
+  logger_debug(alsa_log, "setting channels to %d", alsa_channels);
+  err = snd_pcm_hw_params_set_channels_near (handle, hwparams, &alsa_channels);
+  logger_debug(alsa_log, "channels are set to %d", alsa_channels);
   if (err < 0) {
     logger_message(alsa_log, 0, "snd_pcm_hw_params_set_channels with channels %d returned %d", alsa_channels, err);
     alsa_end();
     return FALSE;
   }
 
+  logger_debug(alsa_log, "alsa_rate is %d", alsa_rate);
   err = snd_pcm_hw_params_set_rate_near (handle, hwparams, &alsa_rate, NULL);
   if (err < 0) {
     logger_message(alsa_log, 0, "snd_pcm_hw_params_set_rate_near with rate %d and returned %d", alsa_rate, err);
     alsa_end();
     return FALSE;
   }
+  logger_debug(alsa_log, "after set_rate_near alsa_rate is %d", alsa_rate);
 
   alsa_buffer_size = alsa_rate / 10;
   err = snd_pcm_hw_params_set_period_size_near(handle, hwparams, &alsa_buffer_size, NULL);
@@ -145,6 +175,12 @@ bool_t alsa_start ()
     return FALSE;
   }
 
+  {
+      int r, d;
+      snd_pcm_hw_params_get_rate_min(hwparams, &r, &d);
+      logger_debug(alsa_log, "minimal rate is %d, direction is %d", r, d);
+  }
+
   logger_message(alsa_log, 0, "ALSA init successful");
 
   alsa_paused = FALSE;
@@ -153,6 +189,7 @@ bool_t alsa_start ()
 
 void alsa_end ()
 {
+    logger_debug(alsa_log, "in begin of alsa_end alsa_rate is %d", alsa_rate);
   alsa_paused = FALSE;
   if (handle != NULL) {
       snd_pcm_close(handle);
@@ -162,6 +199,7 @@ void alsa_end ()
     snd_pcm_hw_params_free(hwparams);
     hwparams = NULL;
   }
+    logger_debug(alsa_log, "in end of alsa_end alsa_rate is %d", alsa_rate);
 }
 
 static void xrun_recover(void)
@@ -209,6 +247,7 @@ void alsa_set_channels (int channels)
   if (handle == NULL)
     return;
   alsa_channels = channels;
+  logger_debug(alsa_log, "in alsa_set_channels alsa_rate is %d", alsa_rate);
   alsa_end ();
   alsa_start ();
 }
@@ -218,6 +257,7 @@ void alsa_set_rate (int rate)
   if (handle == NULL)
     return;
   alsa_rate = rate;
+  logger_debug(alsa_log, "in alsa_set_rate alsa_rate is %d", alsa_rate);
   alsa_end ();
   alsa_start ();
 }
@@ -226,6 +266,7 @@ void alsa_set_fmt (dword fmt)
 {
   if (handle == NULL)
     return;
+  logger_debug(alsa_log, "in alsa_set_fmt begin alsa_rate is %d", alsa_rate);
   switch (fmt)
     {
       case AFMT_U8:
@@ -255,8 +296,40 @@ void alsa_set_fmt (dword fmt)
       default:
         return;
     }
+  logger_debug(alsa_log, "in alsa_set_fmt end alsa_rate is %d", alsa_rate);
   alsa_end ();
   alsa_start ();
+}
+
+int alsa_get_channels( void )
+{
+	return alsa_channels;
+}
+
+int alsa_get_freq( void )
+{
+	return alsa_rate;
+}
+
+dword alsa_get_fmt( void )
+{
+  logger_debug(alsa_log, "in alsa_get_fmt format is %d", alsa_fmt);
+  switch (alsa_fmt)
+    {
+      case SND_PCM_FORMAT_U8:
+        return AFMT_U8;
+      case SND_PCM_FORMAT_U16_LE:
+        return AFMT_U16_LE;
+      case SND_PCM_FORMAT_U16_BE:
+        return AFMT_U16_BE;
+      case SND_PCM_FORMAT_S8:
+        return AFMT_S8;
+      case SND_PCM_FORMAT_S16_LE:
+        return AFMT_S16_LE;
+      case SND_PCM_FORMAT_S16_BE:
+        return AFMT_S16_BE;
+    }
+  return 0xFFFFFFFF;
 }
 
 void alsa_flush ()
@@ -477,6 +550,9 @@ void plugin_exchange_data (plugin_data_t *pd)
   OUTP_DATA(pd)->m_set_channels = alsa_set_channels;
   OUTP_DATA(pd)->m_set_freq = alsa_set_rate;
   OUTP_DATA(pd)->m_set_fmt = alsa_set_fmt;
+  OUTP_DATA(pd)->m_get_channels = alsa_get_channels;
+  OUTP_DATA(pd)->m_get_freq = alsa_get_freq;
+  OUTP_DATA(pd)->m_get_fmt = alsa_get_fmt;
   OUTP_DATA(pd)->m_flush = alsa_flush;
   OUTP_DATA(pd)->m_pause = alsa_pause;
   OUTP_DATA(pd)->m_resume = alsa_resume;

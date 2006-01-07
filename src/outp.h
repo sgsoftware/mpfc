@@ -68,8 +68,17 @@ typedef struct
 	/* Set current mixer type */
 	void (*m_set_mixer_type)( plugin_mixer_type_t type );
 
+	/* Get real channels number */
+	int (*m_get_channels)( void );
+
+	/* Get real frequenry */
+	int (*m_get_freq )( void );
+
+	/* Get real format */
+	dword (*m_get_fmt)( void );
+
 	/* Reserved data */
-	byte m_reserved[76];
+	byte m_reserved[64];
 
 	/* Flags */
 	dword m_flags;
@@ -113,6 +122,15 @@ void outp_set_freq( out_plugin_t *p, int freq );
 /* Set format function */
 void outp_set_fmt( out_plugin_t *p, dword fmt );
 	
+/* Get real channels number */
+int outp_get_channels( out_plugin_t *p );
+
+/* Get real frequenry */
+int outp_get_freq ( out_plugin_t *p );
+
+/* Get real format */
+dword outp_get_fmt( out_plugin_t *p );
+
 /* Play stream function */
 void outp_play( out_plugin_t *p, void *buf, int size );
 

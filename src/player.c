@@ -57,6 +57,7 @@
 #include "wnd_multiview_dialog.h"
 #include "wnd_radio.h"
 #include "wnd_root.h"
+#include "xconvert.h"
 
 /*****
  *
@@ -1653,14 +1654,18 @@ void *player_thread( void *arg )
 	while (!player_end_thread)
 	{
 		song_t *s, *song_played;
-		int ch = 0, freq = 0;
-		dword fmt = 0;
+		int ch = 0, freq = 0, real_ch = 0, real_freq = 0;
+		dword fmt = 0, real_fmt = 0;
 		song_info_t si;
 		in_plugin_t *inp;
 		int was_pfreq, was_pbr, was_pstereo;
 		int disp_count;
 		dword in_flags, out_flags;
 		file_t *fd = NULL;
+		struct x_convert_buffers *convert_buf;
+		convert_func_t fmt_convert_func;
+		convert_channel_func_t chan_convert_func;
+		convert_freq_func_t freq_convert_func;
 
 		/* Skip to next iteration if there is nothing to play */
 		if (player_plist->m_cur_song < 0 || 
@@ -1729,6 +1734,9 @@ void *player_thread( void *arg )
 			outp_set_fmt(player_pmng->m_cur_out, fmt);
 		}*/
 
+		/* Create buffers for converting audio */
+		convert_buf = x_convert_buffers_new();
+
 		/* Save current input plugin */
 		player_inp = inp;
 
@@ -1745,7 +1753,7 @@ void *player_thread( void *arg )
 		logger_debug(player_log, "Going into track playing cycle");
 		while (!player_end_track)
 		{
-			byte buf[8192];
+			byte buf[8192], *data = buf;
 			int size = 8192;
 			struct timespec tv;
 
@@ -1769,6 +1777,9 @@ void *player_thread( void *arg )
 					logger_debug(player_log, "got stream of size %d", size);
 					inp_get_audio_params(inp, &new_ch, &new_freq, &new_fmt, 
 							&new_br);
+					logger_debug(player_log, 
+							"samplerate is %d, channels is %d, format is %d",
+							new_freq, new_ch, new_fmt);
 					was_pfreq = player_freq; was_pstereo = player_stereo;
 					was_pbr = player_bitrate;
 					player_freq = new_freq;
@@ -1798,19 +1809,55 @@ void *player_thread( void *arg )
 							freq = new_freq;
 							fmt = new_fmt;
 						
-							logger_debug(player_log, "setting channels to %d", ch);
 							outp_flush(player_cur_outp);
 							outp_set_channels(player_cur_outp, ch);
 							outp_set_freq(player_cur_outp, freq);
 							outp_set_fmt(player_cur_outp, fmt);
+
+							/* Set conversion functions */
+							fmt_convert_func = NULL;
+							chan_convert_func = NULL;
+							freq_convert_func = NULL;
+							real_fmt = outp_get_fmt(player_cur_outp);
+							if (real_fmt != 0xFFFFFFFF && real_fmt != fmt)
+								fmt_convert_func = x_convert_get_func(real_fmt, fmt);
+							real_ch = outp_get_channels(player_cur_outp);
+							if (real_ch >= 0 && real_ch != ch)
+								chan_convert_func = x_convert_get_channel_func(real_fmt,
+										real_ch, ch);
+							real_freq = outp_get_freq(player_cur_outp);
+							if (real_freq >= 0 && real_freq != freq)
+								freq_convert_func = 
+									x_convert_get_frequency_func(real_fmt, real_ch);
+
+							logger_debug(player_log, "ch = %d, fmt = %d, freq = %d", 
+									ch, fmt, freq);
+							logger_debug(player_log, "real ch = %d, fmt = %d, freq = %d", 
+									real_ch, real_fmt, real_freq);
 						}
 
 						/* Apply effects */
-						size = pmng_apply_effects(player_pmng, buf, size, 
+						size = pmng_apply_effects(player_pmng, data, size, 
 								fmt, freq, ch);
+
+						/* Convert audio */
+						logger_debug(player_log, "before conversion data is %p", data);
+						if (fmt_convert_func != NULL)
+							size = fmt_convert_func(convert_buf, (void **)(&data), size);
+						if (chan_convert_func != NULL)
+							size = chan_convert_func(convert_buf, (void **)(&data), size);
+						if (freq_convert_func != NULL)
+						{
+							logger_debug(player_log, 
+									"applying frequency conversion function with "
+									"freq = %d, real_freq = %d. buffer is", freq, real_freq);
+							size = freq_convert_func(convert_buf, (void **)(&data), size,
+									freq, real_freq);
+						}
+						logger_debug(player_log, "after conversion data is %p", data);
 					
 						/* Send to output plugin */
-						outp_play(player_cur_outp, buf, size);
+						outp_play(player_cur_outp, data, size);
 
 						/* Check for end of projected song */
 						if (song_played->m_end_time > -1 && 
@@ -1837,6 +1884,9 @@ void *player_thread( void *arg )
 			}
 		}
 		logger_debug(player_log, "End playing track");
+
+		/* Free convert buffers */
+		x_convert_buffers_destroy(convert_buf);
 
 		/* Wait until we really stop playing */
 		if (!no_outp)
