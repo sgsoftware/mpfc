@@ -170,7 +170,7 @@ void player_on_log_msg( logger_t *log, void *data,
 wnd_msg_retcode_t player_on_close( wnd_t *wnd );
 
 /* Handle action */
-wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action );
+wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action, int repval );
 
 /* Handle left-button click */
 wnd_msg_retcode_t player_on_mouse_ldown( wnd_t *wnd, int x, int y,
@@ -277,9 +277,6 @@ void player_advanced_search_dialog( void );
 /* Launch variables manager */
 void player_var_manager( void );
 
-/* Launch repeat value dialog */
-void player_repval_dialog( int dig );
-
 /* Launch test management dialog */
 void player_test_dialog( void );
 
@@ -337,9 +334,6 @@ wnd_msg_retcode_t player_on_var( wnd_t *wnd );
 
 /* Handle 'clicked' for variables manager view value button */
 wnd_msg_retcode_t player_on_var_view( wnd_t *wnd );
-
-/* Handle 'keydown' for repeat value dialog edit box */
-wnd_msg_retcode_t player_repval_on_keydown( wnd_t *wnd, wnd_key_t key );
 
 /* Handle 'ok_clicked' for repeat value dialog box */
 wnd_msg_retcode_t player_repval_on_ok( wnd_t *wnd );

@@ -74,7 +74,6 @@ plist_t *player_plist = NULL;
 
 /* Command repeat value */
 int player_repval = 0;
-int player_repval_last_key = 0;
 
 /* Search string and criteria */
 char *player_search_string = NULL;
@@ -706,11 +705,12 @@ wnd_msg_retcode_t player_on_close( wnd_t *wnd )
 } /* End of 'player_on_close' function */
 
 /* Handle action */
-wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action )
+wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action, int repval )
 {
 	int was_pos;
 	int was_song, was_time;
 	bool_t long_jump = FALSE;
+	int rp;
 
 	/* Clear message string */
 	player_msg = NULL;
@@ -718,6 +718,11 @@ wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action )
 	was_pos = player_plist->m_sel_end;
 	was_song = player_plist->m_cur_song;
 	was_time = player_cur_time;
+
+	if (repval > 0)
+		rp = repval;
+	else
+		rp = player_repval;
 
 	/* Exit MPFC */
 	if (!strcasecmp(action, "quit"))
@@ -732,28 +737,28 @@ wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action )
 	/* Move cursor down */
 	else if (!strcasecmp(action, "move_down"))
 	{
-		plist_move(player_plist, (player_repval == 0) ? 1 : player_repval, 
+		plist_move(player_plist, (rp == 0) ? 1 : rp, 
 				TRUE);
 	}
 	/* Move cursor up */
 	else if (!strcasecmp(action, "move_up"))
 	{
-		plist_move(player_plist, (player_repval == 0) ? -1 : -player_repval, 
+		plist_move(player_plist, (rp == 0) ? -1 : -rp, 
 				TRUE);
 	}
 	/* Move cursor screen down */
 	else if (!strcasecmp(action, "screen_down"))
 	{
-		plist_move(player_plist, (player_repval == 0) ? 
+		plist_move(player_plist, (rp == 0) ? 
 				PLIST_HEIGHT : 
-				PLIST_HEIGHT * player_repval, TRUE);
+				PLIST_HEIGHT * rp, TRUE);
 	}
 	/* Move cursor screen up */
 	else if (!strcasecmp(action, "screen_up"))
 	{
-		plist_move(player_plist, (player_repval == 0) ? 
+		plist_move(player_plist, (rp == 0) ? 
 				-PLIST_HEIGHT : 
-				-PLIST_HEIGHT * player_repval, TRUE);
+				-PLIST_HEIGHT * rp, TRUE);
 	}
 	/* Move cursor to play list begin */
 	else if (!strcasecmp(action, "move_to_begin"))
@@ -768,49 +773,49 @@ wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action )
 	/* Move cursor to any position */
 	else if (!strcasecmp(action, "move"))
 	{
-		plist_move(player_plist, (player_repval == 0) ? 
-				player_plist->m_len - 1 : player_repval - 1, FALSE);
+		plist_move(player_plist, (rp == 0) ? 
+				player_plist->m_len - 1 : rp - 1, FALSE);
 		long_jump = TRUE;
 	}
 	/* Seek song forward */
 	else if (!strcasecmp(action, "time_fw"))
 	{
-		player_seek((player_repval == 0) ? 10 : 10 * player_repval, TRUE);
+		player_seek((rp == 0) ? 10 : 10 * rp, TRUE);
 	}
 	/* Long seek song forward */
 	else if (!strcasecmp(action, "time_long_fw"))
 	{
-		player_seek((player_repval == 0) ? 60 : 60 * player_repval, TRUE);
+		player_seek((rp == 0) ? 60 : 60 * rp, TRUE);
 	}
 	/* Long seek song backwards */
 	else if (!strcasecmp(action, "time_long_bw"))
 	{
-		player_seek((player_repval == 0) ? -60 : -60 * player_repval, TRUE);
+		player_seek((rp == 0) ? -60 : -60 * rp, TRUE);
 	}
 	/* Seek to any position */
 	else if (!strcasecmp(action, "time_move"))
 	{
-		player_seek((player_repval == 0) ? 0 : player_repval, FALSE);
+		player_seek((rp == 0) ? 0 : rp, FALSE);
 	}
 	/* Increase volume */
 	else if (!strcasecmp(action, "vol_fw"))
 	{
-		player_set_vol((player_repval == 0) ? 5 : 5 * player_repval, TRUE);
+		player_set_vol((rp == 0) ? 5 : 5 * rp, TRUE);
 	}
 	/* Decrease volume */
 	else if (!strcasecmp(action, "vol_bw"))
 	{
-		player_set_vol((player_repval == 0) ? -5 : -5 * player_repval, TRUE);
+		player_set_vol((rp == 0) ? -5 : -5 * rp, TRUE);
 	}
 	/* Increase balance */
 	else if (!strcasecmp(action, "bal_fw"))
 	{
-		player_set_bal((player_repval == 0) ? 5 : 5 * player_repval, TRUE);
+		player_set_bal((rp == 0) ? 5 : 5 * rp, TRUE);
 	}
 	/* Decrease balance */
 	else if (!strcasecmp(action, "bal_bw"))
 	{
-		player_set_bal((player_repval == 0) ? -5 : -5 * player_repval, TRUE);
+		player_set_bal((rp == 0) ? -5 : -5 * rp, TRUE);
 	}
 	/* Centrize view */
 	else if (!strcasecmp(action, "centrize"))
@@ -870,12 +875,12 @@ wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action )
 	/* Go to next song */
 	else if (!strcasecmp(action, "next"))
 	{
-		player_skip_songs((player_repval) ? player_repval : 1, TRUE);
+		player_skip_songs((rp) ? rp : 1, TRUE);
 	}
 	/* Go to previous song */
 	else if (!strcasecmp(action, "prev"))
 	{
-		player_skip_songs(-((player_repval) ? player_repval : 1), TRUE);
+		player_skip_songs(-((rp) ? rp : 1), TRUE);
 	}
 	/* Add a file */
 	else if (!strcasecmp(action, "add"))
@@ -952,20 +957,20 @@ wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action )
 	/* Move play list down */
 	else if (!strcasecmp(action, "plist_down"))
 	{
-		plist_move_sel(player_plist, (player_repval == 0) ? 1 : player_repval, 
+		plist_move_sel(player_plist, (rp == 0) ? 1 : rp, 
 				TRUE);
 	}
 	/* Move play list up */
 	else if (!strcasecmp(action, "plist_up"))
 	{
-		plist_move_sel(player_plist, (player_repval == 0) ? -1 : 
-				-player_repval, TRUE);
+		plist_move_sel(player_plist, (rp == 0) ? -1 : 
+				-rp, TRUE);
 	}
 	/* Move play list */
 	else if (!strcasecmp(action, "plist_move"))
 	{
-		plist_move_sel(player_plist, (player_repval == 0) ? 
-				1 : player_repval - 1, FALSE);
+		plist_move_sel(player_plist, (rp == 0) ? 
+				1 : rp - 1, FALSE);
 	}
 	/* Undo */
 	else if (!strcasecmp(action, "undo"))
@@ -1061,7 +1066,7 @@ wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action )
 	{
 		char dig = action[4];
 		if (dig >= '0' && dig <= '9')
-			player_repval_dialog(dig - '0');
+			wnd_repval_new(wnd_root, player_repval_on_ok, dig - '0');
 	}
 
 	/* Flush repeat value */
@@ -1213,6 +1218,22 @@ wnd_msg_retcode_t player_on_command( wnd_t *wnd, char *cmd,
 		int track = cmd_next_int_param(params);
 		player_status = PLAYER_STATUS_PLAYING;
 		player_play(track, 0);
+	}
+	/* Simulate an action */
+	else if (!strcmp(cmd, "action"))
+	{
+		char *action;
+
+		logger_debug(player_log, "got command 'action'");
+		action = cmd_next_string_param(params);
+		logger_debug(player_log, "action is %s", action);
+		if (action != NULL)
+		{
+			int repval = cmd_next_int_param(params);
+			logger_debug(player_log, "repval is %d", repval);
+			wnd_msg_send(player_wnd, "action", wnd_msg_action_new(action, repval));
+			free(action);
+		}
 	}
 	return WND_MSG_RETCODE_OK;
 } /* End of 'player_on_command' function */
@@ -2329,28 +2350,6 @@ void player_info_reload_dialog( void )
 	dialog_arrange_children(dlg);
 } /* End of 'player_info_reload_dialog' function */
 
-/* Launch repeat value dialog */
-void player_repval_dialog( int dig )
-{
-	dialog_t *dlg;
-	hbox_t *hbox;
-	editbox_t *eb;
-	char text[2];
-	assert(dig >= 0 && dig <= 9);
-
-	dlg = dialog_new(wnd_root, _("Repeat value"));
-	hbox = hbox_new(WND_OBJ(dlg->m_vbox), NULL, 0);
-	label_new(WND_OBJ(hbox), _("Enter count &value for the next command: "),
-			NULL, 0);
-	text[0] = dig + '0';
-	text[1] = 0;
-	player_repval_last_key = 0;
-	eb = editbox_new(WND_OBJ(hbox), "count", text, 'v', 10);
-	wnd_msg_add_handler(WND_OBJ(eb), "keydown", player_repval_on_keydown);
-	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_repval_on_ok);
-	dialog_arrange_children(dlg);
-} /* End of 'player_repval_dialog' function */
-
 /* Launch test management dialog */
 void player_test_dialog( void )
 {
@@ -2922,35 +2921,17 @@ wnd_msg_retcode_t player_on_var_view( wnd_t *wnd )
 	return WND_MSG_RETCODE_OK;
 } /* End of 'player_on_var_view' function */
 
-/* Handle 'keydown' for repeat value dialog edit box */
-wnd_msg_retcode_t player_repval_on_keydown( wnd_t *wnd, wnd_key_t key )
-{
-	/* Let only digits be entered */
-	if ((key >= ' ' && key < '0') || (key > '9' && key <= 0xFF))
-	{
-		player_repval_last_key = key;
-		wnd_msg_send(DLGITEM_OBJ(wnd)->m_dialog, "ok_clicked", 
-				dialog_msg_ok_new());
-		return WND_MSG_RETCODE_STOP;
-	}
-	else if (key == KEY_BACKSPACE && EDITBOX_OBJ(wnd)->m_cursor == 0)
-	{
-		wnd_msg_send(DLGITEM_OBJ(wnd)->m_dialog, "cancel_clicked",
-				dialog_msg_cancel_new());
-		return WND_MSG_RETCODE_STOP;
-	}
-	return WND_MSG_RETCODE_OK;
-} /* End of 'player_repval_on_keydown' function */
-
 /* Handle 'ok_clicked' for repeat value dialog box */
 wnd_msg_retcode_t player_repval_on_ok( wnd_t *wnd )
 {
+	int last_key;
+
 	/* Get count */
 	player_repval = 
 		atoi(EDITBOX_TEXT(dialog_find_item(DIALOG_OBJ(wnd), "count")));
-	if (player_repval_last_key != 0)
-		wnd_msg_send(player_wnd, "keydown", 
-				wnd_msg_keydown_new(player_repval_last_key));
+	last_key = cfg_get_var_int(WND_OBJ(wnd)->m_cfg_list, "last-key");
+	if (last_key != 0)
+		wnd_msg_send(player_wnd, "keydown", wnd_msg_keydown_new(last_key));
 	return WND_MSG_RETCODE_OK;
 } /* End of 'player_repval_on_ok' function */
 

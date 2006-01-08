@@ -182,7 +182,7 @@ void wnd_kbind_key2buf( wnd_t *wnd, wnd_key_t key )
 	case WND_KBIND_START:
 		break;
 	default:
-		wnd_msg_send(wnd, "action", wnd_msg_action_new(action));
+		wnd_msg_send(wnd, "action", wnd_msg_action_new(action, 0));
 		break;
 	}
 } /* End of 'wnd_kbind_key2buf' function */

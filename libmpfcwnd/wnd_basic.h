@@ -109,10 +109,11 @@ wnd_msg_retcode_t wnd_basic_callback_key( wnd_t *wnd,
 typedef struct
 {
 	char *m_action;
+	int m_repval;
 } wnd_msg_action_t;
 
 /* Create data for action message */
-wnd_msg_data_t wnd_msg_action_new( char *action );
+wnd_msg_data_t wnd_msg_action_new( char *action, int repval );
 
 /* Action message data destructor */
 void wnd_msg_action_free( void *data );
@@ -123,7 +124,7 @@ wnd_msg_retcode_t wnd_basic_callback_action( wnd_t *wnd,
 
 /* Convert handler pointer to the proper type */
 #define WND_MSG_ACTION_HANDLER(h)	\
-	((wnd_msg_retcode_t (*)(wnd_t *, char *))(h->m_func))
+	((wnd_msg_retcode_t (*)(wnd_t *, char *, int))(h->m_func))
 
 /*
  * Parent reposition message

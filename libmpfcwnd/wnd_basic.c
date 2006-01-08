@@ -198,13 +198,14 @@ wnd_msg_retcode_t wnd_basic_callback_key( wnd_t *wnd,
 } /* End of 'wnd_basic_callback_key' function */
 
 /* Create data for action message */
-wnd_msg_data_t wnd_msg_action_new( char *action )
+wnd_msg_data_t wnd_msg_action_new( char *action, int repval )
 {
 	wnd_msg_data_t msg_data;
 	wnd_msg_action_t *data;
 
 	data = (wnd_msg_action_t *)malloc(sizeof(*data));
 	data->m_action = strdup(action);
+	data->m_repval = repval;
 	msg_data.m_data = data;
 	msg_data.m_destructor = wnd_msg_action_free;
 	return msg_data;
@@ -222,7 +223,7 @@ wnd_msg_retcode_t wnd_basic_callback_action( wnd_t *wnd,
 		wnd_msg_handler_t *handler, wnd_msg_data_t *msg_data )
 {
 	wnd_msg_action_t *d = (wnd_msg_action_t *)(msg_data->m_data);
-	return WND_MSG_ACTION_HANDLER(handler)(wnd, d->m_action);
+	return WND_MSG_ACTION_HANDLER(handler)(wnd, d->m_action, d->m_repval);
 } /* End of 'wnd_basic_callback_action' function */
 
 /* Create data for parent reposition message */
