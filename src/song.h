@@ -27,63 +27,10 @@
 #include "types.h"
 #include "file.h"
 #include "inp.h"
+#include "main_types.h"
 #include "mystring.h"
 #include "song_info.h"
 #include "vfs.h"
-
-/* Declare this type */
-struct tag_in_plugin_t;
-
-/* Song flags */
-typedef enum
-{
-	SONG_SCHEDULE = 1 << 0,
-	SONG_INFO_READ = 1 << 1,
-	SONG_INFO_WRITE = 1 << 2
-} song_flags_t;
-
-/* Song type */
-typedef struct tag_song_t
-{
-	/* Song title */
-	str_t *m_title;
-
-	/* Song full name (i.e. with plugin prefix if it was specified) */
-	char *m_full_name;
-
-	/* File name without plugin prefix. This is used for the most part */
-	char *m_file_name;
-
-	/* Short name and file extension */
-	char *m_short_name, *m_file_ext;
-
-	/* Song length */
-	int m_len;
-
-	/* Song start and end (for projected songs) */
-	int m_start_time, m_end_time;
-
-	/* Song information */
-	song_info_t *m_info;
-
-	/* Flags */
-	song_flags_t m_flags;
-
-	/* Song object references counter */
-	int m_ref_count;
-
-	/* Default title (used when no info is found) */
-	char *m_default_title;
-
-	/* Song we are redirected to */
-	struct tag_song_t *m_redirect;
-
-	/* Input plugin being used to play this song */
-	in_plugin_t *m_inp;
-
-	/* Song mutex */
-	pthread_mutex_t m_mutex;
-} song_t;
 
 /* Create a new song */
 song_t *song_new( vfs_file_t *file, char *title, int len );

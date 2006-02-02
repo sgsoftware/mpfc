@@ -89,9 +89,15 @@ song_t *song_new( vfs_file_t *file, char *title, int len )
 		vfs_file_t file;
 		vfs_file_desc_init(NULL, &file, redir_name, NULL);
 		song->m_redirect = song_new(&file, NULL, 0);
+		free(redir_name);
+		if (song->m_redirect == NULL)
+		{
+			song_add_ref(song);
+			song_free(song);
+			return NULL;
+		}
 		song->m_redirect->m_start_time = rp.m_start_time;
 		song->m_redirect->m_end_time = rp.m_end_time;
-		free(redir_name);
 	}
 	return song_add_ref(song);
 } /* End of 'song_new' function */

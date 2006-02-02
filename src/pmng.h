@@ -26,9 +26,11 @@
 #include "types.h"
 #include "cfg.h"
 #include "csp.h"
+#include "command.h"
 #include "ep.h"
 #include "inp.h"
 #include "logger.h"
+#include "main_types.h"
 #include "outp.h"
 #include "plugin.h"
 #include "vfs.h"
@@ -55,6 +57,12 @@ typedef struct tag_pmng_t
 
 	/* Player window */
 	wnd_t *m_player_wnd;
+
+	/* Play list */
+	plist_t *m_playlist;
+
+	/* Player context */
+	player_context_t *m_player_context;
 } pmng_t;
 
 /* Initialize plugins */
@@ -68,6 +76,10 @@ bool_t pmng_load_plugins( pmng_t *pmng );
 
 /* Add a plugin */
 void pmng_add_plugin( pmng_t *pmng, plugin_t *p );
+
+/* Execute a command with a list of parameters */
+void pmng_player_command_obj( pmng_t *pmng, char *cmd, 
+		cmd_params_list_t *params );
 
 /* Send command message to player */
 void pmng_player_command( pmng_t *pmng, char *cmd, char *params_fmt, ... );
@@ -109,6 +121,9 @@ char *pmng_create_plugin_name( char *filename );
 
 /* Stop all general plugins */
 void pmng_stop_general_plugins( pmng_t *pmng );
+
+/* Call hint functions */
+void pmng_hint( pmng_t *pmng, char *hint );
 
 /*
  * Plugins iteration functions

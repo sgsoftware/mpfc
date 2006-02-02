@@ -49,8 +49,11 @@ typedef struct
 	/* Check if plugin is started */
 	bool_t (*m_is_started)( void );
 
+	/* hooks callback function */
+	void (*m_hooks_callback)( char *hook );
+
 	/* Reserved data */
-	byte m_reserved1[116];
+	byte m_reserved1[112];
 } genp_data_t;
 
 /* General plugin type */
@@ -78,6 +81,9 @@ void genp_end( general_plugin_t *p );
 
 /* Check if plugin is started */
 bool_t genp_is_started( general_plugin_t *p );
+
+/* hooks callback */
+void genp_hooks_callback( general_plugin_t *p, char *hook );
 
 #endif
 

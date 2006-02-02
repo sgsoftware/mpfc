@@ -88,14 +88,21 @@ void pmng_add_plugin( pmng_t *pmng, plugin_t *p )
 	pmng->m_plugins[pmng->m_num_plugins ++] = p;
 } /* End of 'pmng_add_plugin' function */
 
+/* Execute a command with a list of parameters */
+void pmng_player_command_obj( pmng_t *pmng, char *cmd, 
+		cmd_params_list_t *params )
+{
+	wnd_msg_send(pmng->m_player_wnd, "command", 
+			player_msg_command_new(cmd, params));
+} /* End of 'pmng_player_command_obj' function */
+
 /* Send command message to player */
 void pmng_player_command( pmng_t *pmng, char *cmd, char *params_fmt, ... )
 {
 	va_list ap;
 
 	va_start(ap, params_fmt);
-	wnd_msg_send(pmng->m_player_wnd, "command", 
-			player_msg_command_new(cmd, cmd_create_params_va(params_fmt, ap)));
+	pmng_player_command_obj(pmng, cmd, cmd_create_params_va(params_fmt, ap));
 	va_end(ap);
 } /* End of 'pmng_player_command' function */
 
@@ -490,6 +497,21 @@ void pmng_enable_effect( pmng_t *pmng, plugin_t *ep, bool_t enable )
 	snprintf(name, sizeof(name), "enable-effect-%s", ep->m_name);
 	cfg_set_var_bool(pmng->m_cfg_list, name, enable);
 } /* End of 'pmng_enable_effect' function */
+
+/* Call hook functions */
+void pmng_hook( pmng_t *pmng, char *hook )
+{
+	pmng_iterator_t i;
+
+	logger_debug(pmng->m_log, "hook %s", hook);
+	for ( i = pmng_start_iteration(pmng, PLUGIN_TYPE_GENERAL);; )
+	{
+		general_plugin_t *p = GENERAL_PLUGIN(pmng_iterate(&i));
+		if (p == NULL)
+			break;
+		genp_hooks_callback(p, hook);
+	}
+} /* End of 'pmng_hook' function */
 
 /* End of 'pmng.c' file */
 

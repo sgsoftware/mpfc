@@ -80,6 +80,8 @@ typedef struct
 	/* Launch configuration dialog function */
 	void (*m_configure)( wnd_t *parent );
 
+	/* Hint callback */
+
 	/* Reserved data */
 	byte m_reserved[32];
 } plugin_data_t;

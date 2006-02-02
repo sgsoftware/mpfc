@@ -38,6 +38,7 @@
 #include "help_screen.h"
 #include "logger.h"
 #include "logger_view.h"
+#include "main_types.h"
 #include "player.h"
 #include "plist.h"
 #include "pmng.h"
@@ -95,15 +96,8 @@ pthread_t player_timer_tid = 0;
 volatile bool_t player_end_timer = FALSE;
 volatile bool_t player_end_track = FALSE;
 
-/* Current song playing time */
-int player_cur_time = 0;
-
-/* Player status */
-volatile int player_status = PLAYER_STATUS_STOPPED;
-
-/* Current volume and balance */
-int player_volume = 0;
-int player_balance = 0;
+/* Player context */
+player_context_t *player_context = NULL;
 
 /* Has equalizer value changed */
 bool_t player_eq_changed = FALSE;
@@ -134,8 +128,6 @@ int player_last_pos = -1;
 /* Last position in song */
 int player_last_song = -1, player_last_song_time = -1;
 
-/* Current audio parameters */
-int player_bitrate = 0, player_freq = 0, player_stereo = 0;
 #define PLAYER_STEREO 1
 #define PLAYER_MONO 2
 
@@ -217,6 +209,21 @@ bool_t player_init( int argc, char *argv[] )
 	logger_status_msg(player_log, 0, _("MPFC %s Log\n%s"), VERSION, str_time);
 //	free(str_time);
 
+	/* Initialize context */
+	player_context = (player_context_t *)malloc(sizeof(*player_context));
+	if (player_context == NULL)
+	{
+		logger_fatal(player_log, 0, _("No enough memory"));
+		return FALSE;
+	}
+	player_context->m_cur_time = 0;
+	player_context->m_bitrate = 0;
+	player_context->m_freq = 0;
+	player_context->m_stereo = 0;
+	player_context->m_status = PLAYER_STATUS_STOPPED;
+	player_context->m_volume = 0;
+	player_context->m_balance = 0;
+
 	/* Parse command line */
 	logger_debug(player_log, "In player_init");
 	logger_debug(player_log, "Parsing command line");
@@ -256,6 +263,7 @@ bool_t player_init( int argc, char *argv[] )
 		return FALSE;
 	}
 	player_pmng->m_player_wnd = player_wnd;
+	player_pmng->m_player_context = player_context;
 
 	/* Initialize VFS */
 	logger_debug(player_log, "Initializing VFS");
@@ -291,6 +299,7 @@ bool_t player_init( int argc, char *argv[] )
 		logger_fatal(player_log, 0, _("Play list initialization failed"));
 		return FALSE;
 	}
+	player_pmng->m_playlist = player_plist;
 
 	/* Make a set of files to add */
 	logger_debug(player_log, "Initializing play list set");
@@ -329,20 +338,20 @@ bool_t player_init( int argc, char *argv[] )
 	outp_get_volume(player_pmng->m_cur_out, &l, &r);
 	if (l == 0 && r == 0)
 	{
-		player_volume = 0;
-		player_balance = 0;
+		player_context->m_volume = 0;
+		player_context->m_balance = 0;
 	}
 	else
 	{
 		if (l > r)
 		{
-			player_volume = l;
-			player_balance = r * 50 / l;
+			player_context->m_volume = l;
+			player_context->m_balance = r * 50 / l;
 		}
 		else
 		{
-			player_volume = r;
-			player_balance = 100 - l * 50 / r;
+			player_context->m_volume = r;
+			player_context->m_balance = 100 - l * 50 / r;
 		}
 	}
 
@@ -357,10 +366,10 @@ bool_t player_init( int argc, char *argv[] )
 	if (cfg_get_var_int(cfg_list, "play-from-stop") && !player_num_files)
 	{
 		logger_debug(player_log, "Playing from stop");
-		player_status = cfg_get_var_int(cfg_list, "player-status");
+		player_context->m_status = cfg_get_var_int(cfg_list, "player-status");
 		player_start = cfg_get_var_int(cfg_list, "player-start") - 1;
 		player_end = cfg_get_var_int(cfg_list, "player-end") - 1;
-		if (player_status != PLAYER_STATUS_STOPPED)
+		if (player_context->m_status != PLAYER_STATUS_STOPPED)
 			player_play(cfg_get_var_int(cfg_list, "cur-song"),
 					cfg_get_var_int(cfg_list, "cur-time"));
 	}
@@ -417,8 +426,8 @@ void player_root_destructor( wnd_t *wnd )
 	logger_debug(player_log, "Saving position to configuration");
 	cfg_set_var_int(cfg_list, "cur-song", 
 			player_plist->m_cur_song);
-	cfg_set_var_int(cfg_list, "cur-time", player_cur_time);
-	cfg_set_var_int(cfg_list, "player-status", player_status);
+	cfg_set_var_int(cfg_list, "cur-time", player_context->m_cur_time);
+	cfg_set_var_int(cfg_list, "player-status", player_context->m_status);
 	cfg_set_var_int(cfg_list, "player-start", player_start + 1);
 	cfg_set_var_int(cfg_list, "player-end", player_end + 1);
 	player_save_cfg();
@@ -495,6 +504,11 @@ void player_deinit( void )
 	player_ul = NULL;
 	logger_debug(player_log, "Freeing VFS");
 	vfs_free(player_vfs);
+	if (player_context != NULL)
+	{
+		free(player_context);
+		player_context = NULL;
+	}
 
 	/* Free logger */
 	if (player_log != NULL)
@@ -717,7 +731,7 @@ wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action, int repval )
 
 	was_pos = player_plist->m_sel_end;
 	was_song = player_plist->m_cur_song;
-	was_time = player_cur_time;
+	was_time = player_context->m_cur_time;
 
 	if (repval > 0)
 		rp = repval;
@@ -831,46 +845,53 @@ wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action, int repval )
 	/* Resume playing */
 	else if (!strcasecmp(action, "play"))
 	{
-		if (player_status == PLAYER_STATUS_PAUSED)
+		if (player_context->m_status == PLAYER_STATUS_PAUSED)
 		{
 			inp_resume(player_inp);
 			outp_resume(player_cur_outp);
 		}
 		else
 			player_play(player_plist->m_cur_song, 0);
-		player_status = PLAYER_STATUS_PLAYING;
+		player_context->m_status = PLAYER_STATUS_PLAYING;
+
+		pmng_hook(player_pmng, "player-status");
 	}
 	/* Pause */
 	else if (!strcasecmp(action, "pause"))
 	{
-		if (player_status == PLAYER_STATUS_PLAYING)
+		if (player_context->m_status == PLAYER_STATUS_PLAYING)
 		{
-			player_status = PLAYER_STATUS_PAUSED;
+			player_context->m_status = PLAYER_STATUS_PAUSED;
 			inp_pause(player_inp);
 			outp_pause(player_cur_outp);
 		}
-		else if (player_status == PLAYER_STATUS_PAUSED)
+		else if (player_context->m_status == PLAYER_STATUS_PAUSED)
 		{
-			player_status = PLAYER_STATUS_PLAYING;
+			player_context->m_status = PLAYER_STATUS_PLAYING;
 			inp_resume(player_inp);
 			outp_resume(player_cur_outp);
 		}
+
+		pmng_hook(player_pmng, "player-status");
 	}
 	/* Stop */
 	else if (!strcasecmp(action, "stop"))
 	{
-		player_status = PLAYER_STATUS_STOPPED;
+		player_context->m_status = PLAYER_STATUS_STOPPED;
 		player_end_play(FALSE);
 		player_plist->m_cur_song = was_song;
+		pmng_hook(player_pmng, "player-status");
 	}
 	/* Play song */
 	else if (!strcasecmp(action, "start_play"))
 	{
 		if (player_plist->m_len > 0)
 		{
-			player_status = PLAYER_STATUS_PLAYING;
+			player_context->m_status = PLAYER_STATUS_PLAYING;
 			player_play(player_plist->m_sel_end, 0);
 		}
+
+		pmng_hook(player_pmng, "player-status");
 	}
 	/* Go to next song */
 	else if (!strcasecmp(action, "next"))
@@ -1003,7 +1024,7 @@ wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action, int repval )
 		PLIST_GET_SEL(player_plist, player_start, player_end);
 		if (player_plist->m_len > 0)
 		{
-			player_status = PLAYER_STATUS_PLAYING;
+			player_context->m_status = PLAYER_STATUS_PLAYING;
 			player_play(player_start, 0);
 		}
 	}
@@ -1077,7 +1098,7 @@ wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action, int repval )
 		player_last_pos = was_pos;
 
 	/* Save last time */
-/*	if (player_plist->m_cur_song != was_song || player_cur_time != was_time)
+/*	if (player_plist->m_cur_song != was_song || player_context->m_cur_time != was_time)
 	{
 		player_last_song = was_song;
 		player_last_song_time = was_time;
@@ -1167,7 +1188,7 @@ wnd_msg_retcode_t player_on_mouse_ldouble( wnd_t *wnd, int x, int y,
 
 		if (s >= 0 && s < player_plist->m_len)
 		{
-			player_status = PLAYER_STATUS_PLAYING;
+			player_context->m_status = PLAYER_STATUS_PLAYING;
 			player_play(s, 0);
 			wnd_invalidate(wnd);
 		}
@@ -1195,6 +1216,8 @@ wnd_msg_retcode_t player_on_user( wnd_t *wnd, int id, void *data )
 wnd_msg_retcode_t player_on_command( wnd_t *wnd, char *cmd, 
 		cmd_params_list_t *params )
 {
+	logger_debug(player_log, "got message %s", cmd);
+
 	/* Clear play list */
 	if (!strcmp(cmd, "plist-clear"))
 	{
@@ -1216,7 +1239,7 @@ wnd_msg_retcode_t player_on_command( wnd_t *wnd, char *cmd,
 	else if (!strcmp(cmd, "play"))
 	{
 		int track = cmd_next_int_param(params);
-		player_status = PLAYER_STATUS_PLAYING;
+		player_context->m_status = PLAYER_STATUS_PLAYING;
 		player_play(track, 0);
 	}
 	/* Simulate an action */
@@ -1224,7 +1247,6 @@ wnd_msg_retcode_t player_on_command( wnd_t *wnd, char *cmd,
 	{
 		char *action;
 
-		logger_debug(player_log, "got command 'action'");
 		action = cmd_next_string_param(params);
 		logger_debug(player_log, "action is %s", action);
 		if (action != NULL)
@@ -1314,7 +1336,7 @@ wnd_msg_retcode_t player_on_display( wnd_t *wnd )
 
 		/* Print current time */
 		t = (show_rem = cfg_get_var_int(cfg_list, "show-time-remaining")) ? 
-			s->m_len - player_cur_time : player_cur_time;
+			s->m_len - player_context->m_cur_time : player_context->m_cur_time;
 		wnd_move(wnd, 0, 0, 1);
 		wnd_apply_style(wnd, "time-style");
 		wnd_printf(wnd, 0, 0, "%s%i:%02i/%i:%02i\n", 
@@ -1324,13 +1346,13 @@ wnd_msg_retcode_t player_on_display( wnd_t *wnd )
 
 	/* Display current audio parameters */
 	strcpy(aparams, "");
-	if (player_bitrate)
-		sprintf(aparams, "%s%d kbps ", aparams, player_bitrate);
-	if (player_freq)
-		sprintf(aparams, "%s%d Hz ", aparams, player_freq);
-	if (player_stereo)
+	if (player_context->m_bitrate)
+		sprintf(aparams, "%s%d kbps ", aparams, player_context->m_bitrate);
+	if (player_context->m_freq)
+		sprintf(aparams, "%s%d Hz ", aparams, player_context->m_freq);
+	if (player_context->m_stereo)
 		sprintf(aparams, "%s%s", aparams, 
-				(player_stereo == PLAYER_STEREO) ? "stereo" : "mono");
+				(player_context->m_stereo == player_context->m_stereo) ? "stereo" : "mono");
 	wnd_move(wnd, 0, PLAYER_SLIDER_BAL_X - strlen(aparams) - 1, 
 			PLAYER_SLIDER_BAL_Y);
 	wnd_apply_style(wnd, "audio-params-style");
@@ -1338,11 +1360,11 @@ wnd_msg_retcode_t player_on_display( wnd_t *wnd )
 
 	/* Display various slidebars */
 	player_display_slider(wnd, PLAYER_SLIDER_BAL_X, PLAYER_SLIDER_BAL_Y,
-			PLAYER_SLIDER_BAL_W, player_balance, 100.);
+			PLAYER_SLIDER_BAL_W, player_context->m_balance, 100.);
 	player_display_slider(wnd, PLAYER_SLIDER_TIME_X, PLAYER_SLIDER_TIME_Y, 
-			PLAYER_SLIDER_TIME_W, player_cur_time, (s == NULL) ? 0 : s->m_len);
+			PLAYER_SLIDER_TIME_W, player_context->m_cur_time, (s == NULL) ? 0 : s->m_len);
 	player_display_slider(wnd, PLAYER_SLIDER_VOL_X, PLAYER_SLIDER_VOL_Y,
-			PLAYER_SLIDER_VOL_W, player_volume, 100.);
+			PLAYER_SLIDER_VOL_W, player_context->m_volume, 100.);
 	
 	/* Display play list */
 	plist_display(player_plist, wnd);
@@ -1411,7 +1433,7 @@ void player_seek( int sec, bool_t rel )
 	if (s->m_redirect != NULL)
 		s = s->m_redirect;
 
-	new_time = (rel ? (player_cur_time + sec) : sec);
+	new_time = (rel ? (player_context->m_cur_time + sec) : sec);
 	if (new_time < 0)
 		new_time = 0;
 	else if (new_time > s->m_len)
@@ -1419,9 +1441,9 @@ void player_seek( int sec, bool_t rel )
 
 	player_save_time();
 	inp_seek(song_get_inp(s, NULL), player_translate_time(s, new_time, TRUE));
-	player_cur_time = new_time;
+	player_context->m_cur_time = new_time;
 	wnd_invalidate(player_wnd);
-	logger_debug(player_log, "after player_seek timer is %d", player_cur_time);
+	logger_debug(player_log, "after player_seek timer is %d", player_context->m_cur_time);
 } /* End of 'player_seek' function */
 
 /* Play song */
@@ -1444,8 +1466,8 @@ void player_play( int song, int start_time )
 	cfg_set_var(cfg_list, "cur-song-name", 
 			util_short_name(s->m_file_name));
 	player_plist->m_cur_song = song;
-	player_cur_time = start_time;
-//	player_status = PLAYER_STATUS_PLAYING;
+	player_context->m_cur_time = start_time;
+//	player_context->m_status = PLAYER_STATUS_PLAYING;
 
 	/* Move cursor to current song */
 	if (cfg_get_var_bool(cfg_list, "view-follows-cur-song") && 
@@ -1468,7 +1490,7 @@ void player_end_play( bool_t rem_cur_song )
 	outp_resume(player_cur_outp);
 	player_plist->m_cur_song = -1;
 	player_end_track = TRUE;
-//	player_status = PLAYER_STATUS_STOPPED;
+//	player_context->m_status = PLAYER_STATUS_STOPPED;
 	while (player_timer_tid)
 		util_wait();
 	if (!rem_cur_song)
@@ -1494,28 +1516,33 @@ void player_set_track( int track )
 		player_end_play(TRUE);
 	else
 		player_play(track, 0);
+	pmng_hook(player_pmng, "player-status");
 } /* End of 'player_set_track' function */
 
 /* Set volume */
 void player_set_vol( int vol, bool_t rel )
 {
-	player_volume = (rel) ? player_volume + vol : vol;
-	if (player_volume < 0)
-		player_volume = 0;
-	else if (player_volume > 100)
-		player_volume = 100;
+	player_context->m_volume = (rel) ? player_context->m_volume + vol : vol;
+	if (player_context->m_volume < 0)
+		player_context->m_volume = 0;
+	else if (player_context->m_volume > 100)
+		player_context->m_volume = 100;
 	player_update_vol();
+
+	pmng_hook(player_pmng, "volume");
 } /* End of 'player_set_vol' function */
 
 /* Set balance */
 void player_set_bal( int bal, bool_t rel )
 {
-	player_balance = (rel) ? player_balance + bal : bal;
-	if (player_balance < 0)
-		player_balance = 0;
-	else if (player_balance > 100)
-		player_balance = 100;
+	player_context->m_balance = (rel) ? player_context->m_balance + bal : bal;
+	if (player_context->m_balance < 0)
+		player_context->m_balance = 0;
+	else if (player_context->m_balance > 100)
+		player_context->m_balance = 100;
 	player_update_vol();
+
+	pmng_hook(player_pmng, "balance");
 } /* End of 'player_set_bal' function */
 
 /* Update volume */
@@ -1523,15 +1550,17 @@ void player_update_vol( void )
 {
 	int l, r;
 
-	if (player_balance < 50)
+	if (player_context->m_balance < 50)
 	{
-		l = player_volume;
-		r = player_volume * player_balance / 50;
+		l = player_context->m_volume;
+		r = player_context->m_volume * 
+			player_context->m_balance / 50;
 	}
 	else
 	{
-		r = player_volume;
-		l = player_volume * (100 - player_balance) / 50;
+		r = player_context->m_volume;
+		l = player_context->m_volume * 
+			(100 - player_context->m_balance) / 50;
 	}
 	outp_set_volume(player_pmng->m_cur_out, l, r);
 } /* End of 'player_update_vol' function */
@@ -1584,6 +1613,7 @@ int player_skip_songs( int num, bool_t play )
 			player_end_play(TRUE);
 		else
 			player_play(song, 0);
+		pmng_hook(player_pmng, "player-status");
 	}
 	return song;
 } /* End of 'player_skip_songs' function */
@@ -1598,7 +1628,7 @@ void player_stop_timer( void )
 		logger_debug(player_log, "Timer thread terminated");
 		player_end_timer = FALSE;
 		player_timer_tid = 0;
-		player_cur_time = 0;
+		player_context->m_cur_time = 0;
 	}
 } /* End of 'player_stop_timer' function */
 
@@ -1609,7 +1639,7 @@ void *player_timer_func( void *arg )
 	song_t *s = (song_t *)arg;
 
 	/* Start zero timer count */
-//	player_cur_time = 0;
+//	player_context->m_cur_time = 0;
 
 	/* Timer loop */
 	while (!player_end_timer)
@@ -1619,7 +1649,7 @@ void *player_timer_func( void *arg )
 		int tm;
 
 		/* Update timer */
-		if (player_status == PLAYER_STATUS_PAUSED)
+		if (player_context->m_status == PLAYER_STATUS_PAUSED)
 		{
 			t = new_t;
 		}
@@ -1630,19 +1660,21 @@ void *player_timer_func( void *arg )
 			{
 				if (new_t > t)
 				{
-					player_cur_time += (new_t - t);
+					player_context->m_cur_time += (new_t - t);
 					t = new_t;
 					logger_debug(player_log, "get_cur_time failed. setting time to %d", 
-							player_cur_time);
+							player_context->m_cur_time);
+					pmng_hook(player_pmng, "player-time");
 					wnd_invalidate(player_wnd);
 				}
 			}
 			else 
 			{
 				tm = player_translate_time(s, tm, FALSE);
-				if (tm - player_cur_time)
+				if (tm - player_context->m_cur_time)
 				{
-					player_cur_time = tm;
+					player_context->m_cur_time = tm;
+					pmng_hook(player_pmng, "player-time");
 					wnd_invalidate(player_wnd);
 				}
 			}
@@ -1650,7 +1682,7 @@ void *player_timer_func( void *arg )
 		util_wait();
 	}
 
-	player_cur_time = 0;
+	player_context->m_cur_time = 0;
 	player_end_timer = FALSE;
 	player_timer_tid = 0;
 	return NULL;
@@ -1690,7 +1722,7 @@ void *player_thread( void *arg )
 
 		/* Skip to next iteration if there is nothing to play */
 		if (player_plist->m_cur_song < 0 || 
-				player_status == PLAYER_STATUS_STOPPED)
+				player_context->m_status == PLAYER_STATUS_STOPPED)
 		{
 			util_wait();
 			continue;
@@ -1699,7 +1731,7 @@ void *player_thread( void *arg )
 		/* Play track */
 		s = player_plist->m_list[player_plist->m_cur_song];
 		song_played = (s->m_redirect == NULL) ? s : s->m_redirect;
-		//player_status = PLAYER_STATUS_PLAYING;
+		//player_context->m_status = PLAYER_STATUS_PLAYING;
 		player_end_track = FALSE;
 	
 		logger_debug(player_log, "Playing track %s", s->m_full_name);
@@ -1716,8 +1748,8 @@ void *player_thread( void *arg )
 			continue;
 		}
 		logger_debug(player_log, "start time is %d", song_played->m_start_time);
-		if (player_cur_time > 0 || song_played->m_start_time > -1)
-			inp_seek(inp, player_translate_time(song_played, player_cur_time, TRUE));
+		if (player_context->m_cur_time > 0 || song_played->m_start_time > -1)
+			inp_seek(inp, player_translate_time(song_played, player_context->m_cur_time, TRUE));
 		in_flags = inp_get_flags(inp);
 		out_flags = outp_get_flags(player_pmng->m_cur_out);
 		no_outp = (in_flags & INP_OWN_OUT) || 
@@ -1741,7 +1773,7 @@ void *player_thread( void *arg )
 					_("Output plugin initialization failed"));
 //			wnd_send_msg(wnd_root, WND_MSG_USER, PLAYER_MSG_END_TRACK);
 			inp_end(inp);
-			player_status = PLAYER_STATUS_STOPPED;
+			player_context->m_status = PLAYER_STATUS_STOPPED;
 			wnd_invalidate(player_wnd);
 			continue;
 		}
@@ -1778,7 +1810,7 @@ void *player_thread( void *arg )
 			int size = 8192;
 			struct timespec tv;
 
-			if (player_status == PLAYER_STATUS_PLAYING)
+			if (player_context->m_status == PLAYER_STATUS_PLAYING)
 			{
 				/* Update equalizer if it's parameters have changed */
 				if (player_eq_changed)
@@ -1795,21 +1827,17 @@ void *player_thread( void *arg )
 					dword new_fmt;
 					
 					/* Get audio parameters */
-					logger_debug(player_log, "got stream of size %d", size);
 					inp_get_audio_params(inp, &new_ch, &new_freq, &new_fmt, 
 							&new_br);
-					logger_debug(player_log, 
-							"samplerate is %d, channels is %d, format is %d",
-							new_freq, new_ch, new_fmt);
-					was_pfreq = player_freq; was_pstereo = player_stereo;
-					was_pbr = player_bitrate;
-					player_freq = new_freq;
-					player_stereo = (new_ch == 1) ? PLAYER_MONO : PLAYER_STEREO;
+					was_pfreq = player_context->m_freq; was_pstereo = player_context->m_stereo;
+					was_pbr = player_context->m_bitrate;
+					player_context->m_freq = new_freq;
+					player_context->m_stereo = (new_ch == 1) ? PLAYER_MONO : player_context->m_stereo;
 					new_br /= 1000;
-					player_bitrate = new_br;
-					if ((player_freq != was_pfreq || 
-							player_stereo != was_pstereo ||
-							player_bitrate != was_pbr) && !disp_count)
+					player_context->m_bitrate = new_br;
+					if ((player_context->m_freq != was_pfreq || 
+							player_context->m_stereo != was_pstereo ||
+							player_context->m_bitrate != was_pbr) && !disp_count)
 					{
 						disp_count = cfg_get_var_int(cfg_list, 
 								"audio-params-display-count");
@@ -1862,32 +1890,27 @@ void *player_thread( void *arg )
 								fmt, freq, ch);
 
 						/* Convert audio */
-						logger_debug(player_log, "before conversion data is %p", data);
 						if (fmt_convert_func != NULL)
 							size = fmt_convert_func(convert_buf, (void **)(&data), size);
 						if (chan_convert_func != NULL)
 							size = chan_convert_func(convert_buf, (void **)(&data), size);
 						if (freq_convert_func != NULL)
 						{
-							logger_debug(player_log, 
-									"applying frequency conversion function with "
-									"freq = %d, real_freq = %d. buffer is", freq, real_freq);
 							size = freq_convert_func(convert_buf, (void **)(&data), size,
 									freq, real_freq);
 						}
-						logger_debug(player_log, "after conversion data is %p", data);
 					
 						/* Send to output plugin */
 						outp_play(player_cur_outp, data, size);
 
 						/* Check for end of projected song */
 						if (song_played->m_end_time > -1 && 
-								player_translate_time(song_played, player_cur_time, TRUE) >= 
+								player_translate_time(song_played, player_context->m_cur_time, TRUE) >= 
 								song_played->m_end_time)
 						{
 							logger_debug(player_log, "stopping at time %d(%d).", 
-									player_cur_time,
-									player_translate_time(song_played, player_cur_time, TRUE));
+									player_context->m_cur_time,
+									player_translate_time(song_played, player_context->m_cur_time, TRUE));
 							break;
 						}
 					}
@@ -1899,7 +1922,7 @@ void *player_thread( void *arg )
 					break;
 				}
 			}
-			else if (player_status == PLAYER_STATUS_PAUSED)
+			else if (player_context->m_status == PLAYER_STATUS_PAUSED)
 			{
 				util_wait();
 			}
@@ -1931,7 +1954,7 @@ void *player_thread( void *arg )
 		logger_debug(player_log, "inp_end");
 		inp_end(inp);
 		player_inp = NULL;
-		player_bitrate = player_freq = player_stereo = 0;
+		player_context->m_bitrate = player_context->m_freq = player_context->m_stereo = 0;
 
 		/* End output plugin */
 		if (!no_outp)
@@ -3348,7 +3371,7 @@ void player_time_back( void )
 void player_save_time( void )
 {
 	player_last_song = player_plist->m_cur_song;
-	player_last_song_time = player_cur_time;
+	player_last_song_time = player_context->m_cur_time;
 } /* End of 'player_save_time' function */
 
 /* End of 'player.c' file */

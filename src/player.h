@@ -28,6 +28,7 @@
 #include "command.h"
 #include "logger.h"
 #include "logger_view.h"
+#include "main_types.h"
 #include "plist.h"
 #include "pmng.h"
 #include "undo.h"
@@ -35,11 +36,6 @@
 #include "vfs.h"
 #include "wnd_dialog.h"
 #include "wnd_editbox.h"
-
-/* Player statuses */
-#define PLAYER_STATUS_PLAYING 	0
-#define PLAYER_STATUS_PAUSED	1
-#define PLAYER_STATUS_STOPPED	2
 
 /* History lists stuff */
 #define PLAYER_HIST_LIST_ADD  		0

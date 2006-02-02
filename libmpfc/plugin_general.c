@@ -68,5 +68,12 @@ bool_t genp_is_started( general_plugin_t *p )
 	return FALSE;
 } /* End of 'genp_is_started' function */
 
+/* hooks callback */
+void genp_hooks_callback( general_plugin_t *p, char *hook )
+{
+	if (p != NULL && (p->m_pd.m_hooks_callback != NULL))
+		p->m_pd.m_hooks_callback(hook);
+} /* End of 'genp_hooks_callback' function */
+
 /* End of 'plugin_general.c' file */
 

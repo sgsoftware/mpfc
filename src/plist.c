@@ -93,6 +93,8 @@ bool_t plist_add( plist_t *pl, char *filename )
 	plist_set_add(set, filename);
 	ret = plist_add_set(pl, set);
 	plist_set_free(set);
+
+	pmng_hook(player_pmng, "playlist");
 	return ret;
 } /* End of 'plist_add' function */
 
@@ -620,6 +622,7 @@ void plist_sort( plist_t *pl, bool_t global, int criteria )
 
 	/* Sort */
 	plist_sort_bounds(pl, start, end, criteria);
+	pmng_hook(player_pmng, "playlist");
 } /* End of 'plist_sort' function */
 
 /* Remove selected songs from play list */
@@ -696,6 +699,8 @@ void plist_rem( plist_t *pl )
 
 	/* Unlock play list */
 	plist_unlock(pl);
+
+	pmng_hook(player_pmng, "playlist");
 } /* End of 'plist_rem' function */
 
 /* Search for string */

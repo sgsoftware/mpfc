@@ -25,37 +25,10 @@
 
 #include <pthread.h>
 #include "types.h"
+#include "main_types.h"
 #include "song.h"
 #include "vfs.h"
 #include "wnd.h"
-
-/* Play list type */
-typedef struct
-{
-	/* List start position in the window */
-	int m_start_pos;
-
-	/* Size of scrolled part */
-	int m_scrolled;
-
-	/* Selection start and end */
-	int m_sel_start, m_sel_end;
-
-	/* Currently playing song */
-	int m_cur_song;
-
-	/* Visual mode flag */
-	bool_t m_visual;
-	
-	/* List size */
-	int m_len;
-
-	/* Songs list */
-	song_t **m_list;
-
-	/* Mutex for synchronization play list operations */
-	pthread_mutex_t m_mutex;
-} plist_t;
 
 /* A set of files for adding */
 typedef struct 
