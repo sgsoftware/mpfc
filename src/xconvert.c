@@ -366,9 +366,6 @@ convert_func_t x_convert_get_func(int output, int input)
 	     ((output == AFMT_U16_LE && input == AFMT_S8) ||
 	      (output == AFMT_S16_LE && input == AFMT_U8))))
 		return convert_to_16_alien_endian_swap_sign;
-
-	logger_warning(player_log, 0, "Translation needed, but not available.\n"
-		  "Input: %d; Output %d.", input, output);
 	return NULL;
 }
 
@@ -638,9 +635,6 @@ do {								\
 
 static int convert_resample_stereo_s16ne(struct x_convert_buffers* buf, void **data, int length, int ifreq, int ofreq)
 {
-	logger_debug(player_log, "in convert_resample_stereo_s16ne: "
-			"buffer = %p; length = %d; ifreq = %d; ofreq = %d",
-			buf->freq_buffer.buffer, length, ifreq, ofreq);
 	RESAMPLE_STEREO(int16_t, FALSE);
 	return 0;
 }

@@ -218,6 +218,9 @@ void player_set_bal( int bal, bool_t rel );
 /* Update volume */
 void player_update_vol( void );
 
+/* Read volume from plugin */
+void player_read_volume( void );
+
 /* End play song thread */
 void player_end_play( bool_t rem_cur_song );
 

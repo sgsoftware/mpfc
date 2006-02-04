@@ -65,6 +65,9 @@ char *cmd_next_string_param( cmd_params_list_t *params );
 /* Get next integer parameter from the list */
 int cmd_next_int_param( cmd_params_list_t *params );
 
+/* Check that there is the next parameter */
+bool_t cmd_check_next_param( cmd_params_list_t *params );
+
 /* Free parameters list */
 void cmd_free_params( cmd_params_list_t *params );
 

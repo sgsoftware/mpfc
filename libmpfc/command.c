@@ -102,6 +102,13 @@ int cmd_next_int_param( cmd_params_list_t *params )
 	return 0;
 } /* End of 'cmd_next_int_param' function */
 
+/* Check that there is the next parameter */
+bool_t cmd_check_next_param( cmd_params_list_t *params )
+{
+	assert(params);
+	return (params->m_iterator < params->m_num_params);
+} /* End of 'cmd_check_next_param' function */
+
 /* Free parameters list */
 void cmd_free_params( cmd_params_list_t *params )
 {

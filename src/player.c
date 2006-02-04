@@ -176,7 +176,7 @@ out_plugin_t *player_cur_outp = NULL;
 /* Initialize player */
 bool_t player_init( int argc, char *argv[] )
 {
-	int i, l, r;
+	int i;
 	plist_set_t *set;
 	time_t t;
 	char *str_time;
@@ -334,26 +334,7 @@ bool_t player_init( int argc, char *argv[] )
 	}
 
 	/* Get volume */
-	logger_debug(player_log, "Getting volume");
-	outp_get_volume(player_pmng->m_cur_out, &l, &r);
-	if (l == 0 && r == 0)
-	{
-		player_context->m_volume = 0;
-		player_context->m_balance = 0;
-	}
-	else
-	{
-		if (l > r)
-		{
-			player_context->m_volume = l;
-			player_context->m_balance = r * 50 / l;
-		}
-		else
-		{
-			player_context->m_volume = r;
-			player_context->m_balance = 100 - l * 50 / r;
-		}
-	}
+	player_read_volume();
 
 	/* Initialize marks */
 	for ( i = 0; i < PLAYER_NUM_MARKS; i ++ )
@@ -1233,6 +1214,23 @@ wnd_msg_retcode_t player_on_command( wnd_t *wnd, char *cmd,
 		{
 			plist_add(player_plist, name);
 			free(name);
+
+			if (cmd_check_next_param(params))
+			{
+				int pos = cmd_next_int_param(params);
+				plist_move(player_plist, player_plist->m_len - 1, FALSE);
+				plist_move_sel(player_plist, pos, FALSE);
+			}
+		}
+	}
+	/* Delete song from play list */
+	else if (!strcmp(cmd, "plist-del"))
+	{
+		int index = cmd_next_int_param(params);
+		if (index >= 0 && index < player_plist->m_len)
+		{
+			plist_move(player_plist, index, FALSE);
+			plist_rem(player_plist);
 		}
 	}
 	/* Play track */
@@ -1241,6 +1239,54 @@ wnd_msg_retcode_t player_on_command( wnd_t *wnd, char *cmd,
 		int track = cmd_next_int_param(params);
 		player_context->m_status = PLAYER_STATUS_PLAYING;
 		player_play(track, 0);
+	}
+	/* Seek to time in current song */
+	else if (!strcmp(cmd, "seek"))
+	{
+		int value = cmd_next_int_param(params);
+		int relative = cmd_next_int_param(params);
+		player_seek(value, relative);
+	}
+	/* Set option */
+	else if (!strcmp(cmd, "cfg"))
+	{
+		char *name = cmd_next_string_param(params);
+		char *value = cmd_next_string_param(params);
+		if (name != NULL)
+		{
+			if (value != NULL)
+				cfg_set_var(cfg_list, name, value);
+			else 
+				cfg_set_var_bool(cfg_list, name, TRUE);
+		}
+	}
+	/* Set volume */
+	else if (!strcmp(cmd, "set-volume"))
+	{
+		player_context->m_volume = cmd_next_int_param(params);
+		player_update_vol();
+	}
+	/* Set balance */
+	else if (!strcmp(cmd, "set-balance"))
+	{
+		player_context->m_balance = cmd_next_int_param(params);
+		player_update_vol();
+	}
+	/* Set volume with both channels specification */
+	else if (!strcmp(cmd, "set-volume-full"))
+	{
+		int left = cmd_next_int_param(params);
+		int right = cmd_next_int_param(params);
+		if (left < 0)
+			left = 0;
+		else if (left > 100)
+			left = 100;
+		if (right < 0)
+			right = 0;
+		else if (right > 100)
+			right = 100;
+		outp_set_volume(player_cur_outp, left, right);
+		player_read_volume();
 	}
 	/* Simulate an action */
 	else if (!strcmp(cmd, "action"))
@@ -1564,6 +1610,33 @@ void player_update_vol( void )
 	}
 	outp_set_volume(player_pmng->m_cur_out, l, r);
 } /* End of 'player_update_vol' function */
+
+/* Read volume from plugin */
+void player_read_volume( void )
+{
+	int l, r;
+
+	logger_debug(player_log, "Getting volume");
+	outp_get_volume(player_pmng->m_cur_out, &l, &r);
+	if (l == 0 && r == 0)
+	{
+		player_context->m_volume = 0;
+		player_context->m_balance = 0;
+	}
+	else
+	{
+		if (l > r)
+		{
+			player_context->m_volume = l;
+			player_context->m_balance = r * 50 / l;
+		}
+		else
+		{
+			player_context->m_volume = r;
+			player_context->m_balance = 100 - l * 50 / r;
+		}
+	}
+} /* End of 'player_read_volume' function */
 
 /* Skip some songs */
 int player_skip_songs( int num, bool_t play )
