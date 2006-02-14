@@ -777,6 +777,11 @@ wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action, int repval )
 	{
 		player_seek((rp == 0) ? 10 : 10 * rp, TRUE);
 	}
+	/* Seek song backward */
+	else if (!strcasecmp(action, "time_bw"))
+	{
+		player_seek((rp == 0) ? -10 : -10 * rp, TRUE);
+	}
 	/* Long seek song forward */
 	else if (!strcasecmp(action, "time_long_fw"))
 	{
