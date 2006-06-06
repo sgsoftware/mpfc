@@ -22,6 +22,7 @@
 
 #include <stdlib.h>
 #include <stdarg.h>
+#include <string.h>
 #include "types.h"
 #include "command.h"
 #include "wnd.h"

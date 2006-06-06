@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <string.h>
 #include "types.h"
 #include "cfg.h"
 #include "logger.h"

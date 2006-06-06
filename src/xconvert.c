@@ -23,6 +23,7 @@
 
 #include "types.h"
 #include <stdlib.h>
+#include <string.h>
 #include <sys/soundcard.h>
 #include "xconvert.h"
 #include "player.h"

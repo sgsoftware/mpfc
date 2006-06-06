@@ -533,10 +533,16 @@ void alsa_configure( wnd_t *parent )
 /* Set mixer type */
 void alsa_set_mixer_type( plugin_mixer_type_t type )
 {
-	if (type >= (sizeof(alsa_mixer_types_table) / sizeof(*alsa_mixer_types_table)))
-		return;
-	alsa_mixer_type = type;
-	alsa_mixer_type_name = alsa_mixer_types_table[alsa_mixer_type];
+	char *name = cfg_get_var(alsa_cfg, "mixer-name");
+	if (name == NULL)
+	{
+		if (type >= (sizeof(alsa_mixer_types_table) / sizeof(*alsa_mixer_types_table)))
+			return;
+		alsa_mixer_type = type;
+		alsa_mixer_type_name = alsa_mixer_types_table[alsa_mixer_type];
+	}
+	else
+		alsa_mixer_type_name = name;
 }
 
 void plugin_exchange_data (plugin_data_t *pd)

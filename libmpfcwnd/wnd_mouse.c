@@ -25,6 +25,7 @@
 #include <gpm.h>
 #endif
 #include <stdlib.h>
+#include <string.h>
 #include "wnd.h"
 
 /* Initialize mouse */

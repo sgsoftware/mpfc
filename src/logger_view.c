@@ -21,6 +21,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include "types.h"
 #include "logger.h"
 #include "logger_view.h"

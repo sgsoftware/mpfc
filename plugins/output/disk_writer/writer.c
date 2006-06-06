@@ -21,6 +21,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include <sys/soundcard.h>
 #include "types.h"
 #include "file.h"
@@ -61,7 +62,7 @@ static char *dw_author = "Sergey E. Galanov <sgsoftware@mail.ru>";
 static logger_t *dw_log = NULL;
 
 /* Encoder thread data */
-static pthread_t dw_encoder_tid = -1;
+static pthread_t dw_encoder_tid = 0;
 static bool_t dw_encoder_stop = FALSE;
 static bool_t dw_encode = FALSE;
 static int dw_fragment_index = 0, dw_head_fragment = 0, dw_fragment_size;
@@ -140,7 +141,7 @@ bool_t dw_start( void )
 			dw_fragment_size *= 2;
 
 		/* Start encoder thread */
-		dw_encoder_tid = -1;
+		dw_encoder_tid = 0;
 		dw_encoder_stop = FALSE;
 		dw_head_fragment = 0;
 		if (pthread_create(&dw_encoder_tid, NULL, dw_encoder_thread, NULL))
@@ -194,11 +195,11 @@ void dw_end( void )
 {
 	if (dw_fd != NULL)
 		dw_finish_file();
-	if (dw_encoder_tid)
+	if (dw_encoder_tid != 0)
 	{
 		dw_encoder_stop = TRUE;
 		pthread_join(dw_encoder_tid, NULL);
-		dw_encoder_tid = -1;
+		dw_encoder_tid = 0;
 	}
 } /* End of 'dw_end' function */
 

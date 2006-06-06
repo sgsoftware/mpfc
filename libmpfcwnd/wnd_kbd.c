@@ -25,6 +25,7 @@
 #include <errno.h>
 #include <pthread.h>
 #include <sys/time.h>
+#include <stdlib.h>
 #include <string.h>
 #include <term.h>
 #include "types.h"

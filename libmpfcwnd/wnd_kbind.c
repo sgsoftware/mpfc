@@ -22,6 +22,7 @@
  */
 
 #include <ctype.h>
+#include <stdlib.h>
 #include <string.h>
 #include "types.h"
 #include "wnd.h"
