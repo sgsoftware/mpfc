@@ -6,6 +6,7 @@ AC_PROG_LIBTOOL
 
 AM_CONFIG_HEADER(mpfc-config.h)
 AM_GNU_GETTEXT
+AM_GNU_GETTEXT_VERSION(0.14.5)
 
 # Set up common libraries
 #COMMON_LIBS="-ldmalloc"
@@ -219,7 +220,6 @@ AC_OUTPUT(Makefile \
 		  intl/Makefile  \
 		  libmpfc/Makefile \
 		  libmpfcwnd/Makefile \
-		  m4/Makefile \
 		  po/Makefile.in  \
 		  src/Makefile \
 		  plugins/Makefile \
