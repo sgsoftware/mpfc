@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <linux/cdrom.h>
 #include <errno.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
 #include <sys/ioctl.h>
@@ -37,6 +38,7 @@
 #include "song_info.h"
 #include "util.h"
 #include "wnd.h"
+#include "wnd_checkbox.h"
 #include "wnd_combobox.h"
 #include "wnd_dialog.h"
 #include "wnd_editbox.h"
@@ -53,6 +55,9 @@
 
 /* Get address in frames */
 #define ACD_LBA(msf)	(((msf).minute * 60 + (msf).second) * 75 + (msf).frame)
+#define CDA_MSF_OFFSET	150
+#define MIN(a, b)		((a) < (b) ? (a) : (b))
+#define MIN3(a, b, c)	MIN(MIN((a), (b)), (c))
 
 /* Plugins manager */
 pmng_t *acd_pmng = NULL;
@@ -60,7 +65,7 @@ pmng_t *acd_pmng = NULL;
 /* Tracks information array */
 struct acd_trk_info_t acd_tracks_info[ACD_MAX_TRACKS];
 int acd_num_tracks = 0;
-static int acd_cur_track = -1;
+static int acd_cur_track = -1, acd_cur_frame = -1;
 static bool_t acd_info_read = FALSE;
 
 /* Current time */
@@ -86,6 +91,9 @@ cfg_node_t *acd_cfg = NULL;
 
 /* Plugin author */
 static char *acd_author = "Sergey E. Galanov <sgsoftware@mail.ru>";
+
+/* Whether we are in digital mode? */
+static bool_t acd_digital_mode = FALSE;
 
 /* Prepare cdrom for ioctls */
 static int acd_prepare_cd( void )
@@ -122,6 +130,9 @@ bool_t acd_start( char *filename )
 	int mixer_fd;
 	int format = AFMT_S16_LE, ch = 2, rate = 44100;
 
+	/* Query playing mode */
+	acd_digital_mode = cfg_get_var_bool(acd_cfg, "digital-mode");
+
 	/* Open device */
 	if ((fd = acd_prepare_cd()) < 0)
 		return FALSE;
@@ -135,18 +146,22 @@ bool_t acd_start( char *filename )
 			track > acd_tracks_info[acd_num_tracks - 1].m_number)
 		return FALSE;
 	acd_cur_track = track;
+	acd_cur_frame = ACD_LBA(acd_tracks_info[acd_cur_track].m_start);
 
 	/* Start playing */
-	msf.cdmsf_min0 = acd_tracks_info[track].m_start.minute;
-	msf.cdmsf_sec0 = acd_tracks_info[track].m_start.second;
-	msf.cdmsf_frame0 = acd_tracks_info[track].m_start.frame;
-	msf.cdmsf_min1 = acd_tracks_info[track].m_end.minute;
-	msf.cdmsf_sec1 = acd_tracks_info[track].m_end.second;
-	msf.cdmsf_frame1 = acd_tracks_info[track].m_end.frame;
-	if (ioctl(fd, CDROMPLAYMSF, &msf) < 0)
+	if (!acd_digital_mode)
 	{
-		close(fd);
-		return FALSE;
+		msf.cdmsf_min0 = acd_tracks_info[track].m_start.minute;
+		msf.cdmsf_sec0 = acd_tracks_info[track].m_start.second;
+		msf.cdmsf_frame0 = acd_tracks_info[track].m_start.frame;
+		msf.cdmsf_min1 = acd_tracks_info[track].m_end.minute;
+		msf.cdmsf_sec1 = acd_tracks_info[track].m_end.second;
+		msf.cdmsf_frame1 = acd_tracks_info[track].m_end.frame;
+		if (ioctl(fd, CDROMPLAYMSF, &msf) < 0)
+		{
+			close(fd);
+			return FALSE;
+		}
 	}
 	acd_time = 0;
 	acd_info_read = FALSE;
@@ -155,22 +170,25 @@ bool_t acd_start( char *filename )
 	/* Close device */
 	close(fd);
 
-	/* Set recording source as cd */
-	mixer_fd = open("/dev/mixer", O_WRONLY);
-	if (mixer_fd >= 0)
+	if (!acd_digital_mode)
 	{
-		int mask = SOUND_MASK_CD;
-		ioctl(mixer_fd, SOUND_MIXER_WRITE_RECSRC, &mask);
-		close(mixer_fd);
-	}
+		/* Set recording source as cd */
+		mixer_fd = open("/dev/mixer", O_WRONLY);
+		if (mixer_fd >= 0)
+		{
+			int mask = SOUND_MASK_CD;
+			ioctl(mixer_fd, SOUND_MIXER_WRITE_RECSRC, &mask);
+			close(mixer_fd);
+		}
 
-	/* Open audio device (for reading audio data) */
-	audio_fd = open("/dev/dsp", O_RDONLY);
-	if (audio_fd >= 0)
-	{
-		ioctl(audio_fd, SNDCTL_DSP_SETFMT, &format);
-		ioctl(audio_fd, SNDCTL_DSP_CHANNELS, &ch);
-		ioctl(audio_fd, SNDCTL_DSP_SPEED, &rate);
+		/* Open audio device (for reading audio data) */
+		audio_fd = open("/dev/dsp", O_RDONLY);
+		if (audio_fd >= 0)
+		{
+			ioctl(audio_fd, SNDCTL_DSP_SETFMT, &format);
+			ioctl(audio_fd, SNDCTL_DSP_CHANNELS, &ch);
+			ioctl(audio_fd, SNDCTL_DSP_SPEED, &rate);
+		}
 	}
 	
 	/* Open audio device */
@@ -181,6 +199,9 @@ bool_t acd_start( char *filename )
 void acd_end( void )
 {
 	int fd;
+
+	if (acd_digital_mode)
+		return;
 
 	/* Open device */
 	acd_time = 0;
@@ -214,8 +235,8 @@ static int acd_get_len( char *filename )
 	return acd_tracks_info[track].m_len;
 } /* End of 'acd_get_len' function */
 
-/* Get stream function */
-int acd_get_stream( void *buf, int size )
+/* Get stream in analog mode function */
+int acd_get_stream_analog( void *buf, int size )
 {
 	int fd;
 	struct cdrom_subchnl info;
@@ -247,12 +268,61 @@ int acd_get_stream( void *buf, int size )
 			size = ret_size;
 	}
 	return size;
+} /* End of 'acd_get_stream_analog' function */
+
+/* Get stream in digital mode function */
+int acd_get_stream_digital( void *buf, int size )
+{
+	int fd;
+	struct cdrom_read_audio cdra;
+	int last_frame;
+
+	/* Check if we are playing now */
+	if ((fd = acd_prepare_cd()) < 0)
+		return 0;
+
+	/* Check track boundaries */
+	last_frame = ACD_LBA(acd_tracks_info[acd_cur_track].m_end);
+	if (acd_cur_frame >= last_frame)
+	{
+		close(fd);
+		return 0;
+	}
+
+	acd_time = (acd_cur_frame - ACD_LBA(acd_tracks_info[acd_cur_track].m_start)) / 75;
+
+	memset(&cdra, 0, sizeof(cdra));
+	cdra.addr.lba = acd_cur_frame - CDA_MSF_OFFSET;
+	cdra.addr_format = CDROM_LBA;
+	cdra.buf = buf;
+	cdra.nframes = MIN3(8, size / CD_FRAMESIZE_RAW, last_frame - acd_cur_frame);
+	acd_cur_frame += cdra.nframes;
+	if (ioctl(fd, CDROMREADAUDIO, &cdra) != 0)
+	{
+		close(fd);
+		return -1;
+	}
+
+	close(fd);
+	return cdra.nframes * CD_FRAMESIZE_RAW;
+} /* End of 'acd_get_stream_digital' function */
+
+/* Get stream function */
+int acd_get_stream( void *buf, int size )
+{
+	if (acd_digital_mode)
+		return acd_get_stream_digital(buf, size);
+	else
+		return acd_get_stream_analog(buf, size);
 } /* End of 'acd_get_stream' function */
 
 /* Pause */
 void acd_pause( void )
 {
 	int fd;
+
+	if (acd_digital_mode)
+		return;
 
 	/* Open device */
 	if ((fd = acd_prepare_cd()) < 0)
@@ -273,6 +343,9 @@ void acd_pause( void )
 void acd_resume( void )
 {
 	int fd;
+
+	if (acd_digital_mode)
+		return;
 
 	/* Open device */
 	if ((fd = acd_prepare_cd()) < 0)
@@ -298,6 +371,13 @@ void acd_seek( int shift )
 
 	if (acd_cur_track < 0 || acd_cur_track >= acd_num_tracks)
 		return;
+
+	/* Digital mode */
+	if (acd_digital_mode)
+	{
+		acd_cur_frame = ACD_LBA(acd_tracks_info[acd_cur_track].m_start) + shift * 75;
+		return;
+	}
 
 	/* Start playing from new position */
 	if ((fd = acd_prepare_cd()) < 0)
@@ -448,20 +528,24 @@ int acd_stat( char *name, struct stat *sb )
 /* Get plugin mixer type */
 plugin_mixer_type_t acd_get_mixer_type( void )
 {
-	return PLUGIN_MIXER_CD;
+	return (cfg_get_var_bool(acd_cfg, "digital-mode") ? 
+			PLUGIN_MIXER_PCM : PLUGIN_MIXER_CD);
 } /* End of 'acd_get_mixer_type' function */
 
 /* Handle 'ok_clicked' message for configuration dialog */
 wnd_msg_retcode_t acd_on_configure( wnd_t *wnd )
 {
 	editbox_t *device_eb, *host_eb, *cat_eb, *email_eb;
+	checkbox_t *digital_cb;
 	
 	device_eb = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "device"));
+	digital_cb = CHECKBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "digital"));
 	host_eb = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "host"));
 	cat_eb = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "category"));
 	email_eb = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "email"));
 	assert(device_eb && host_eb && cat_eb && email_eb);
 	cfg_set_var(acd_cfg, "device", EDITBOX_TEXT(device_eb));
+	cfg_set_var_bool(acd_cfg, "digital-mode", digital_cb->m_checked);
 	cfg_set_var(acd_cfg, "cddb-host", EDITBOX_TEXT(host_eb));
 	cfg_set_var(acd_cfg, "cddb-email", EDITBOX_TEXT(email_eb));
 	cfg_set_var(acd_cfg, "cddb-category", EDITBOX_TEXT(cat_eb));
@@ -479,6 +563,8 @@ void acd_configure( wnd_t *parent )
 	dlg = dialog_new(parent, _("Configure AudioCD plugin"));
 	editbox_new_with_label(WND_OBJ(dlg->m_vbox), _("CD &device: "), 
 			"device", cfg_get_var(acd_cfg, "device"), 'd', 50);
+	checkbox_new(WND_OBJ(dlg->m_vbox), _("Use di&gital mode"), 
+			"digital", 'g', cfg_get_var_bool(acd_cfg, "digital-mode"));
 	vbox = vbox_new(WND_OBJ(dlg->m_vbox), _("CDDB parameters"), 0);
 	editbox_new_with_label(WND_OBJ(vbox), _("&Host: "), 
 			"host", cfg_get_var(acd_cfg, "cddb-host"), 'h', 50);
@@ -493,6 +579,18 @@ void acd_configure( wnd_t *parent )
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", acd_on_configure);
 	dialog_arrange_children(dlg);
 } /* End of 'acd_configure' function */
+
+/* Get plugin flags */
+dword acd_get_plugin_flags( void )
+{
+	dword flags;
+	flags = INP_OWN_SOUND | INP_VFS;
+
+	/* In digital mode we use output plugin */
+	if (cfg_get_var_bool(acd_cfg, "digital-mode"))
+		flags &= (~INP_OWN_SOUND);
+	return flags;
+} /* End of 'acd_get_plugin_flags' function */
 
 /* Exchange data with main program */
 void plugin_exchange_data( plugin_data_t *pd )
@@ -518,6 +616,7 @@ void plugin_exchange_data( plugin_data_t *pd )
 	INP_DATA(pd)->m_vfs_readdir = acd_readdir;
 	INP_DATA(pd)->m_vfs_stat = acd_stat;
 	INP_DATA(pd)->m_get_mixer_type = acd_get_mixer_type;
+	INP_DATA(pd)->m_get_plugin_flags = acd_get_plugin_flags;
 	acd_pmng = pd->m_pmng;
 	acd_log = pd->m_logger;
 	acd_cfg = pd->m_cfg;

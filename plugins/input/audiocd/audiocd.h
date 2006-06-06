@@ -44,8 +44,7 @@ extern struct acd_trk_info_t
 	bool_t m_data;
 } acd_tracks_info[ACD_MAX_TRACKS];
 extern int acd_num_tracks;
-extern int acd_cur_track;
-extern bool_t acd_info_read;
+//extern bool_t acd_info_read;
 
 /* Plugins manager */
 extern pmng_t *acd_pmng;

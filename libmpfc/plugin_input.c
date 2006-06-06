@@ -182,6 +182,11 @@ void inp_set_eq( in_plugin_t *p )
 /* Get plugin flags */
 dword inp_get_flags( in_plugin_t *p )
 {
+	dword flags;
+
+	flags = inp_get_plugin_flags(p);
+	if (flags != 0)
+		return flags;
 	if (p != NULL)
 		return p->m_pd.m_flags;
 	return 0;
@@ -322,6 +327,15 @@ char *inp_redirect( in_plugin_t *p, char *filename, inp_redirect_params_t *rp )
 		return p->m_pd.m_redirect(filename, rp);
 	else
 		return NULL;
+} /* End of 'inp_redirect' function */
+
+/* Get plugin flags */
+dword inp_get_plugin_flags( in_plugin_t *p )
+{
+	if (p != NULL && p->m_pd.m_get_plugin_flags != NULL)
+		return p->m_pd.m_get_plugin_flags();
+	else
+		return 0;
 } /* End of 'inp_redirect' function */
 
 /* End of 'inp.c' file */

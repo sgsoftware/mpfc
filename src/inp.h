@@ -146,8 +146,11 @@ typedef struct
 	/* Redirect virtual file to a normal one */
 	char *(*m_redirect)( char *filename, inp_redirect_params_t *rp );
 
+	/* Update plugin flags (called on start of every play) */
+	dword (*m_get_plugin_flags)( void );
+
 	/* Reserved */
-	byte m_reserved[40];
+	byte m_reserved[36];
 
 	/*
 	 * Data
@@ -263,6 +266,9 @@ bool_t inp_is_our_file( in_plugin_t *p, char *filename );
 
 /* Redirect file */
 char *inp_redirect( in_plugin_t *p, char *filename, inp_redirect_params_t *rp );
+
+/* Update plugin flags */
+dword inp_get_plugin_flags( in_plugin_t *p );
 
 #endif
 
