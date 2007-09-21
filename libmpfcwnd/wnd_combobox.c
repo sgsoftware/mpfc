@@ -58,7 +58,7 @@ combo_t *combo_new_with_label( wnd_t *parent, char *title,
 {
 	hbox_t *hbox = hbox_new(parent, NULL, 0);
 	label_new(WND_OBJ(hbox), title, "", 0);
-	return combo_new(WND_OBJ(hbox), id, text, letter, width - strlen(title), 
+	return combo_new(WND_OBJ(hbox), id, text, letter, width - mbslen(title), 
 			height);
 } /* End of 'combo_new_with_label' function */
 
@@ -237,7 +237,7 @@ void combo_expand( combo_t *combo )
 void combo_synch_list( combo_t *combo )
 {
 	char *text = EDITBOX_TEXT(combo);
-	int len = strlen(text);
+	int len = mbslen(text);
 	int pos = 0, i;
 
 	/* Search for the most suitable item */

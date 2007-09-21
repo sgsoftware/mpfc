@@ -80,7 +80,7 @@ filebox_t *filebox_new_with_label( wnd_t *parent, char *title, char *id,
 	hbox_t *hbox;
 	hbox = hbox_new(parent, NULL, 0);
 	label_new(WND_OBJ(hbox), title, "", 0);
-	return filebox_new(WND_OBJ(hbox), id, text, letter - strlen(title), width);
+	return filebox_new(WND_OBJ(hbox), id, text, letter - mbslen(title), width);
 } /* End of 'filebox_new_with_label' function */
 
 /* Destructor */

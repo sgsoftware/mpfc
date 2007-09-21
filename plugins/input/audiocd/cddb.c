@@ -67,8 +67,8 @@ bool_t cddb_read( void )
 	/* Search for entry on local machine */
 	if (cddb_read_local(id))
 		return TRUE;
-	else if (cddb_read_server(id))
-		return TRUE;
+//	else if (cddb_read_server(id))
+//		return TRUE;
 	return FALSE;
 } /* End of 'cddb_read' function */
 

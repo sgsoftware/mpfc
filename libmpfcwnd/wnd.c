@@ -618,7 +618,7 @@ void wnd_draw_decorations( wnd_t *wnd )
 		if (WND_FLAGS(wnd) & WND_FLAG_CAPTION)
 		{
 			/* Determine title position */
-			text_pos = (int)(wnd->m_width - strlen(wnd->m_title) - 2) / 2;
+			text_pos = (int)(wnd->m_width - mbslen(wnd->m_title) - 2) / 2;
 			if (text_pos <= 0)
 				text_pos = 1;
 
@@ -1059,12 +1059,19 @@ void wnd_sync_screen( wnd_t *wnd )
 	for ( pos = buf->m_data;; pos ++ )
 	{
 		dword ch;
+		cchar_t cc;
 
 		/* Set symbol */
 		ch = pos->m_char;
 		if (ch < 0x20 || ch == 0x7F)
 			ch = '?';
-		addch(pos->m_attr | /*pos->m_char*/ch);
+		//util_log("waddch %x\n", ch);
+		memset(&cc, 0, sizeof(cc));
+		cc.attr = pos->m_attr;
+		cc.chars[0] = ch;
+//		setcchar(&cc, &ch, pos->m_attr, 0, NULL);
+		add_wch(&cc);
+//		waddch(WND_CURSES(wnd), pos->m_attr | /*pos->m_char*/ch);
 
 		/* Move to next symbol */
 		if (x >= buf->m_width - 1)

@@ -328,5 +328,10 @@ char *util_strcat( char *first, ... )
 	return ret;
 } /* End of 'util_strcat' function */
 
+int mbslen( char *str )
+{
+	return strlen(str);
+}
+
 /* End of 'util.c' file */
 

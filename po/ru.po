@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: mpfc 1.3.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2006-02-14 16:04+0300\n"
+"POT-Creation-Date: 2007-03-03 12:59+0300\n"
 "PO-Revision-Date: 2003-02-13 09:15+0300\n"
 "Last-Translator: Sergey E. Galanov <sgsoftware@mail.ru>\n"
 "Language-Team: Russian <sgsoftware@mail.ru>\n"
@@ -24,7 +24,7 @@ msgid "Getting address of host %s"
 msgstr "Получаю адрес %s"
 
 #: libmpfc/file_http.c:87 libmpfc/file_http.c:101 libmpfc/file_http.c:158
-#: libmpfcwnd/wnd_dialog.c:89 plugins/input/mp3/mp3.c:955
+#: libmpfcwnd/wnd_dialog.c:89 plugins/input/mp3/mp3.c:956
 msgid "OK"
 msgstr "OK"
 
@@ -59,7 +59,7 @@ msgstr "Облом!"
 msgid "Filling buffer: %d%% done"
 msgstr "Заполняю буфер: %d%%"
 
-#: libmpfc/plugin.c:88
+#: libmpfc/plugin.c:89
 #, c-format
 msgid "Plugin %s has no 'plugin_exchange_data'"
 msgstr "Плагин %s не имеет 'plugin_exchange_data'"
@@ -82,35 +82,39 @@ msgstr "Нет детей\n"
 msgid "Cancel"
 msgstr "Отмена"
 
-#: plugins/input/audiocd/audiocd.c:479
+#: plugins/input/audiocd/audiocd.c:563
 msgid "Configure AudioCD plugin"
 msgstr "Конфигурация плагина AudioCD"
 
-#: plugins/input/audiocd/audiocd.c:480
+#: plugins/input/audiocd/audiocd.c:564
 msgid "CD &device: "
 msgstr "Устройство CD (&d): "
 
-#: plugins/input/audiocd/audiocd.c:482
+#: plugins/input/audiocd/audiocd.c:566
+msgid "Use di&gital mode"
+msgstr ""
+
+#: plugins/input/audiocd/audiocd.c:568
 msgid "CDDB parameters"
 msgstr "Параметры CDDB"
 
-#: plugins/input/audiocd/audiocd.c:483
+#: plugins/input/audiocd/audiocd.c:569
 msgid "&Host: "
 msgstr "Хост (&h): "
 
-#: plugins/input/audiocd/audiocd.c:485
+#: plugins/input/audiocd/audiocd.c:571
 msgid "&Email: "
 msgstr "&Email: "
 
-#: plugins/input/audiocd/audiocd.c:487
+#: plugins/input/audiocd/audiocd.c:573
 msgid "Disc c&ategory: "
 msgstr "Категория диска (&a): "
 
-#: plugins/input/audiocd/audiocd.c:529
+#: plugins/input/audiocd/audiocd.c:628
 msgid "Reload info from CDDB"
 msgstr "Загрузить информацию из CDDB"
 
-#: plugins/input/audiocd/audiocd.c:532
+#: plugins/input/audiocd/audiocd.c:631
 msgid "Submit info to CDDB"
 msgstr "Отправить информацию в CDDB"
 
@@ -164,15 +168,15 @@ msgstr "Получаю ответ"
 msgid "Failure!"
 msgstr "Облом!"
 
-#: plugins/input/mp3/mp3.c:299
+#: plugins/input/mp3/mp3.c:300
 msgid "Only regular files are supported for writing info by mp3 plugin"
 msgstr "Плагин mp3 может писать информацию только в обычные файлы"
 
-#: plugins/input/mp3/mp3.c:318
+#: plugins/input/mp3/mp3.c:319
 msgid "Unable to create ID3 tag"
 msgstr "Не могу создать тег ID3"
 
-#: plugins/input/mp3/mp3.c:467
+#: plugins/input/mp3/mp3.c:468
 #, c-format
 msgid ""
 "MPEG %s, layer %i\n"
@@ -193,48 +197,48 @@ msgstr ""
 "Подлинный: %s\n"
 "Акцент: %s"
 
-#: plugins/input/mp3/mp3.c:480 plugins/input/mp3/mp3.c:610
+#: plugins/input/mp3/mp3.c:481 plugins/input/mp3/mp3.c:611
 msgid "Single channel"
 msgstr "Один канал"
 
-#: plugins/input/mp3/mp3.c:481 plugins/input/mp3/mp3.c:611
+#: plugins/input/mp3/mp3.c:482 plugins/input/mp3/mp3.c:612
 msgid "Dual channel"
 msgstr "Два канала"
 
-#: plugins/input/mp3/mp3.c:482 plugins/input/mp3/mp3.c:612
+#: plugins/input/mp3/mp3.c:483 plugins/input/mp3/mp3.c:613
 msgid "Joint Stereo"
 msgstr "Объединенное стерео"
 
-#: plugins/input/mp3/mp3.c:483 plugins/input/mp3/mp3.c:613
+#: plugins/input/mp3/mp3.c:484 plugins/input/mp3/mp3.c:614
 msgid "Stereo"
 msgstr "Стерео"
 
-#: plugins/input/mp3/mp3.c:484 plugins/input/mp3/mp3.c:485
-#: plugins/input/mp3/mp3.c:486 plugins/input/mp3/mp3.c:614
-#: plugins/input/mp3/mp3.c:615 plugins/input/mp3/mp3.c:616
+#: plugins/input/mp3/mp3.c:485 plugins/input/mp3/mp3.c:486
+#: plugins/input/mp3/mp3.c:487 plugins/input/mp3/mp3.c:615
+#: plugins/input/mp3/mp3.c:616 plugins/input/mp3/mp3.c:617
 msgid "Yes"
 msgstr "Да"
 
-#: plugins/input/mp3/mp3.c:484 plugins/input/mp3/mp3.c:485
-#: plugins/input/mp3/mp3.c:486 plugins/input/mp3/mp3.c:614
-#: plugins/input/mp3/mp3.c:615 plugins/input/mp3/mp3.c:616
+#: plugins/input/mp3/mp3.c:485 plugins/input/mp3/mp3.c:486
+#: plugins/input/mp3/mp3.c:487 plugins/input/mp3/mp3.c:615
+#: plugins/input/mp3/mp3.c:616 plugins/input/mp3/mp3.c:617
 msgid "No"
 msgstr "Нет"
 
-#: plugins/input/mp3/mp3.c:487 plugins/input/mp3/mp3.c:617
+#: plugins/input/mp3/mp3.c:488 plugins/input/mp3/mp3.c:618
 msgid "None"
 msgstr "Нет"
 
-#: plugins/input/mp3/mp3.c:489 plugins/input/mp3/mp3.c:619
+#: plugins/input/mp3/mp3.c:490 plugins/input/mp3/mp3.c:620
 msgid "50/15 microseconds"
 msgstr "50/15 микросекунд"
 
-#: plugins/input/mp3/mp3.c:489 plugins/input/mp3/mp3.c:619
+#: plugins/input/mp3/mp3.c:490 plugins/input/mp3/mp3.c:620
 msgid "CCITT J.17"
 msgstr "CCITT J.17"
 
 # c-format
-#: plugins/input/mp3/mp3.c:594
+#: plugins/input/mp3/mp3.c:595
 #, c-format
 msgid ""
 "MPEG %s, layer %i\n"
@@ -261,24 +265,24 @@ msgstr ""
 "Длина: %i секунд\n"
 "Размер файла: %i байт"
 
-#: plugins/input/mp3/mp3.c:620
+#: plugins/input/mp3/mp3.c:621
 msgid "approx. "
 msgstr "примерно "
 
-#: plugins/input/mp3/mp3.c:934
+#: plugins/input/mp3/mp3.c:935
 #, c-format
 msgid "Removing tag from file %s"
 msgstr "Удаляю тег из файла %s"
 
-#: plugins/input/mp3/mp3.c:973
+#: plugins/input/mp3/mp3.c:974
 msgid "Configure mp3 plugin"
 msgstr "Конфигурация плагина mp3"
 
-#: plugins/input/mp3/mp3.c:975
+#: plugins/input/mp3/mp3.c:976
 msgid "&Quick length calculation"
 msgstr "Быстрое вычисление длины (&q)"
 
-#: plugins/input/mp3/mp3.c:1006
+#: plugins/input/mp3/mp3.c:1007
 msgid "Remove ID3 tags"
 msgstr "Удалить теги ID3"
 
@@ -391,37 +395,37 @@ msgstr "Конфигурация плагина alsa"
 msgid "&Device: "
 msgstr "Устройство (&d): "
 
-#: plugins/output/disk_writer/writer.c:88
+#: plugins/output/disk_writer/writer.c:89
 #, c-format
 msgid "Unable to create file %s"
 msgstr "Не могу создать файл %s"
 
-#: plugins/output/disk_writer/writer.c:308
+#: plugins/output/disk_writer/writer.c:309
 #, c-format
 msgid "Encoding: %s"
 msgstr ""
 
-#: plugins/output/disk_writer/writer.c:346
+#: plugins/output/disk_writer/writer.c:347
 msgid "Configure disk writer plugin"
 msgstr "Конфигурация плагина disk writer"
 
-#: plugins/output/disk_writer/writer.c:347
+#: plugins/output/disk_writer/writer.c:348
 msgid "P&ath to store: "
 msgstr "Путь к каталогу (&a): "
 
-#: plugins/output/disk_writer/writer.c:349
+#: plugins/output/disk_writer/writer.c:350
 msgid "Encoder"
 msgstr ""
 
-#: plugins/output/disk_writer/writer.c:350
+#: plugins/output/disk_writer/writer.c:351
 msgid "&Enable encoder"
 msgstr ""
 
-#: plugins/output/disk_writer/writer.c:352
+#: plugins/output/disk_writer/writer.c:353
 msgid "F&ragment size: "
 msgstr ""
 
-#: plugins/output/disk_writer/writer.c:354
+#: plugins/output/disk_writer/writer.c:355
 #, fuzzy
 msgid "Encoder c&ommand: "
 msgstr "Команда (&o): "
@@ -495,15 +499,15 @@ msgstr "Сменить каталог"
 msgid "&Directory: "
 msgstr "Каталог (&d): "
 
-#: src/eqwnd.c:76
+#: src/eqwnd.c:77
 msgid "MPFC Equalizer"
 msgstr "Эквалайзер MPFC"
 
-#: src/eqwnd.c:213
+#: src/eqwnd.c:214
 msgid "Load preset from a Winamp EQF file"
 msgstr "Загрузить пресет из файла Winamp EQF"
 
-#: src/eqwnd.c:214 src/player.c:2143 src/player.c:2389
+#: src/eqwnd.c:215 src/player.c:2143 src/player.c:2389
 msgid "&Name: "
 msgstr "Имя (&n): "
 
@@ -851,7 +855,7 @@ msgstr "k или <Вверх>:\t Поднять курсор"
 msgid "p:\t\t Load Winamp EQF preset"
 msgstr "p:\t\t Загрузить пресет Winamp EQF"
 
-#: src/logger_view.c:60
+#: src/logger_view.c:61
 msgid "Log"
 msgstr "Журнал"
 

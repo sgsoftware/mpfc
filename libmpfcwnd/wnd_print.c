@@ -25,6 +25,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <string.h>
+#include <wchar.h>
 #include "types.h"
 #include "wnd.h"
 #include "wnd_print.h"
@@ -134,6 +136,8 @@ void wnd_putchar( wnd_t *wnd, wnd_print_flags_t flags, dword ch )
 void wnd_putstring( wnd_t *wnd, wnd_print_flags_t flags, int right_border,
 		char *str )
 {
+	mbstate_t state;
+
 	assert(wnd);
 	assert(str);
 
@@ -149,21 +153,37 @@ void wnd_putstring( wnd_t *wnd, wnd_print_flags_t flags, int right_border,
 		right_border = wnd->m_client_w - 1;
 
 	/* Print string */
-	for ( ; *str; str ++ )
+	memset(&state, 0, sizeof(state));
+	mbsinit(&state);
+	for ( ;; )
 	{
+		wchar_t ch;
+		size_t nbytes;
+
+		nbytes = mbrtowc(&ch, str, MB_CUR_MAX, &state);
+		if ((size_t)(-1) == nbytes || (size_t)(-2) == nbytes)
+		{
+			ch = '?';
+			nbytes = 1;
+		}
+		if (0 == nbytes)
+			break;
+		else
+			str += nbytes;
+
 		/* In case of new line - clear the rest of the current */
-		if (*str == '\n')
+		if (ch == '\n')
 		{
 			while (wnd->m_cursor_x <= right_border)
 				wnd_putchar(wnd, flags, ' ');
-			wnd_putchar(wnd, flags, *str);
+			wnd_putchar(wnd, flags, ch);
 			continue;
 		}
 		
 		/* Border is OK, so simply print this char */
 		if (wnd->m_cursor_x <= right_border)
 		{
-			wnd_putchar(wnd, flags, (byte)*str);
+			wnd_putchar(wnd, flags, ch);
 
 			/* Move to the next line */
 			if (wnd->m_cursor_x > right_border && (flags & WND_PRINT_NOCLIP))
@@ -174,7 +194,7 @@ void wnd_putstring( wnd_t *wnd, wnd_print_flags_t flags, int right_border,
 		}
 
 		/* If the very next char is new line, that's OK */
-		if (*(str + 1) == '\n')
+		if (*str == '\n')
 			continue;
 
 		/* Put ellipses */
@@ -188,11 +208,30 @@ void wnd_putstring( wnd_t *wnd, wnd_print_flags_t flags, int right_border,
 		}
 
 		/* Skip to the end of this line */
-		for ( ; *str && *str != '\n'; str ++ );
-		if (!(*str))
+		bool_t finished = FALSE;
+		for ( ;; )
+		{
+			nbytes = mbrtowc(&ch, str, MB_CUR_MAX, &state);
+			if ((size_t)(-1) == nbytes || (size_t)(-2) == nbytes)
+			{
+				nbytes = 1;
+				ch = '?';
+			}
+			if (0 == nbytes)
+			{
+				finished = TRUE;
+				break;
+			}
+			else 
+				str += nbytes;
+
+			if ('\n' == ch)
+				break;
+		}
+		if (finished)
 			break;
 		else
-			wnd_putchar(wnd, flags, *str);
+			wnd_putchar(wnd, flags, ch);
 	}
 } /* End of 'wnd_putstring' function */
 

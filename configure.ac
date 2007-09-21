@@ -1,5 +1,5 @@
 AC_INIT(src/main.c)
-AM_INIT_AUTOMAKE(mpfc, 1.3.7)
+AM_INIT_AUTOMAKE(mpfc, 1.3.8-svn)
 AC_PROG_CC
 AC_C_BIGENDIAN
 AC_PROG_LIBTOOL
@@ -16,8 +16,8 @@ AC_SUBST(COMMON_LIBS)
 # Check for ncurses
 LIBS_save=$LIBS
 AC_CHECK_HEADERS([curses.h],,[AC_MSG_ERROR(*** Can't find curses.h ***)])
-AC_CHECK_LIB(ncurses, initscr,,[AC_MSG_ERROR(*** Can't find ncurses library ***)])
-CURSES_LIBS="-lncurses"
+AC_CHECK_LIB(ncursesw, waddch,,[AC_MSG_ERROR(*** Can't find ncurses library ***)])
+CURSES_LIBS="-lncursesw"
 AC_SUBST(CURSES_LIBS)
 LIBS=$LIBS_save
 
