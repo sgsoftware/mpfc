@@ -255,7 +255,9 @@ void vfs_visit_match( vfs_t *vfs, vfs_file_t *file, vfs_callback_t callback,
 			if (name == NULL)
 				break;
 			if (!(flags & VFS_GLOB_RETURN_SPEC_LINKS) &&
-					(!strcmp(name, ".") || !strcmp(name, "..")))
+					(!strcmp(name, ".") || !strcmp(name, "..") ||
+					(vfs && cfg_get_var_bool(vfs->m_pmng->m_cfg_list, "skip-hidden-files") && 
+					 (*name) == '.')))
 				continue;
 
 			dir_name = str_new(file->m_full_name);
