@@ -6,7 +6,7 @@ AC_PROG_LIBTOOL
 
 AM_CONFIG_HEADER(mpfc-config.h)
 AM_GNU_GETTEXT
-AM_GNU_GETTEXT_VERSION(0.14.5)
+AM_GNU_GETTEXT_VERSION(0.16.1)
 
 # Set up common libraries
 #COMMON_LIBS="-ldmalloc"
