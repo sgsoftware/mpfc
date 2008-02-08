@@ -64,6 +64,9 @@
 #define PLAYER_MSG_INFO			0
 #define PLAYER_MSG_NEXT_FOCUS	1
 
+/* Max number of enqueued songs */
+#define PLAYER_MAX_ENQUEUED 	20
+
 /* Player window type */
 typedef struct
 {
@@ -118,6 +121,10 @@ extern logger_view_t *player_logview;
 
 /* VFS data */
 extern vfs_t *player_vfs;
+
+/* enqueued songs - max of PLAYER_MAX_ENQUEUED */
+extern int queued_songs[PLAYER_MAX_ENQUEUED];
+extern int num_queued_songs;
 
 /***
  * Initialization/deinitialization functions

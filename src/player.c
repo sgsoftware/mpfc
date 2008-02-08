@@ -160,6 +160,10 @@ logger_view_t *player_logview = NULL;
 /* VFS data */
 vfs_t *player_vfs = NULL;
 
+/* enqueued songs */
+int queued_songs[PLAYER_MAX_ENQUEUED];
+int num_queued_songs = 0;
+
 /* Main thread ID */
 pthread_t player_main_tid = 0; 
 
@@ -723,6 +727,12 @@ wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action, int repval )
 	if (!strcasecmp(action, "quit"))
 	{
 		wnd_close(wnd_root);
+	}
+	/* Queue up a song */
+	else if (!strcasecmp(action, "queue"))
+	{
+		if(num_queued_songs < PLAYER_MAX_ENQUEUED)
+			queued_songs[num_queued_songs++] = player_plist->m_sel_end;
 	}
 	/* Show help screen */
 	else if (!strcasecmp(action, "help"))
@@ -1682,6 +1692,16 @@ int player_skip_songs( int num, bool_t play )
 			song = -1;
 		else
 			song = s + base;
+	}
+	if(num_queued_songs != 0)
+	{
+		int queue_loop;
+		song = queued_songs[0];
+		for(queue_loop = 0;queue_loop < num_queued_songs-1;queue_loop++)
+		{
+			queued_songs[queue_loop] = queued_songs[queue_loop+1];
+		}
+		num_queued_songs--;
 	}
 
 	/* Start or end play */
@@ -3319,6 +3339,7 @@ void player_class_set_default_styles( cfg_node_t *list )
 	cfg_set_var(list, "status-style", "red:black");
 
 	/* Initialize kbinds */
+	cfg_set_var(list, "kbind.queue", "'");
 	cfg_set_var(list, "kbind.quit", "q;Q");
 	cfg_set_var(list, "kbind.move_down", "j;<Ctrl-n>;<Down>");
 	cfg_set_var(list, "kbind.move_up", "k;<Ctrl-p>;<Up>");

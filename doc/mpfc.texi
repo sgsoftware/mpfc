@@ -794,6 +794,7 @@ Here is the list of available key bindings for various window classes.
 @item goback: return to the last play list position (default is 
 ``@verb{|``|}'')
 @item time_back: return to the last song position (default is ``<Backspace>'');
+@item queue: queue the song under cursor (default is ``'@w{}'');
 @item file_browser: launch file browser (default is ``B'');
 @item log: open logger window (default is ``O'');
 @item marka, @dots{}, markz: remember cursor position (defaults are ``ma'',

@@ -867,10 +867,16 @@ void plist_display( plist_t *pl, wnd_t *wnd )
 			song_t *s = pl->m_list[j];
 			char len[10];
 			int x;
+			int queueList;
 			
 			wnd_move(wnd, 0, 0, pl->m_start_pos + i);
 			wnd_printf(wnd, WND_PRINT_ELLIPSES, WND_WIDTH(wnd) - 8, 
 					"%i. %s", j + 1, STR_TO_CPTR(s->m_title));
+			for(queueList=0;queueList<num_queued_songs;queueList++)
+			{
+				if(queued_songs[queueList] == j)
+					wnd_printf(wnd, 0, 0, "    #%i in queue...", queueList+1);
+			}
 			sprintf(len, "%i:%02i", s->m_len / 60, s->m_len % 60);
 			wnd_move(wnd, WND_MOVE_ADVANCE, WND_WIDTH(wnd) - strlen(len) - 1, 
 					pl->m_start_pos + i);
