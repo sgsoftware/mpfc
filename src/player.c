@@ -1632,6 +1632,7 @@ void player_read_volume( void )
 	int l, r;
 
 	logger_debug(player_log, "Getting volume");
+	outp_set_mixer_type(player_pmng->m_cur_out, PLUGIN_MIXER_DEFAULT);
 	outp_get_volume(player_pmng->m_cur_out, &l, &r);
 	if (l == 0 && r == 0)
 	{
