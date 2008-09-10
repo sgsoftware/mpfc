@@ -21,6 +21,7 @@
  */
 
 #include <string.h>
+#include <stdlib.h>
 #include "types.h"
 #include "wnd.h"
 #include "wnd_dialog.h"

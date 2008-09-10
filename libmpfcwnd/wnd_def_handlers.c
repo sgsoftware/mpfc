@@ -21,6 +21,7 @@
  */
 
 #include <assert.h>
+#include <stdlib.h>
 #include "types.h"
 #include "wnd.h"
 #include "wnd_def_handlers.h"
