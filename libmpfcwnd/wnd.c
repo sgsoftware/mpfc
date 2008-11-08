@@ -437,7 +437,9 @@ void wnd_main( wnd_t *wnd_root )
 				/* Rearrange all the windows */
 				was_width = winsz.ws_col;
 				was_height = winsz.ws_row;
+				pthread_mutex_lock(&WND_CURSES_MUTEX(wnd_root));
 				resizeterm(winsz.ws_row, winsz.ws_col);
+				pthread_mutex_unlock(&WND_CURSES_MUTEX(wnd_root));
 
 				/* Reallocate display buffer */
 				wnd_display_buf_lock(buf);
