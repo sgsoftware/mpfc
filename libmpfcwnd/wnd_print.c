@@ -74,14 +74,10 @@ void wnd_move( wnd_t *wnd, wnd_move_style_t style, int x, int y )
 } /* End of 'wnd_move' function */
 
 /* Low-level character printing */
-void wnd_putc( wnd_t *wnd, dword ch )
+void wnd_putc_impl( wnd_t *wnd, struct wnd_display_buf_symbol_char_t* ch )
 {
 	int cx, cy;
 	struct wnd_display_buf_symbol_t *pos;
-
-	/* This function doesn't print not-printable characters */
-	if (ch < 0x20)
-		return;
 
 	/* Print character */
 	if (wnd_pos_visible(wnd, wnd->m_cursor_x, wnd->m_cursor_y, &pos))
@@ -91,12 +87,35 @@ void wnd_putc( wnd_t *wnd, dword ch )
 			bg += WND_COLOR_NUMBER;
 		pos->m_attr = wnd->m_attrib | 
 			COLOR_PAIR(fg * WND_COLOR_NUMBER + bg);
-		pos->m_char = ch;
+		pos->m_char = *ch;
 	}
 
 	/* Advance cursor */
 	wnd->m_cursor_x ++;
 } /* End of 'wnd_putc' function */
+
+/* Put a special (ACS_*) symbol */
+void wnd_put_special( wnd_t *wnd, chtype ch )
+{
+	struct wnd_display_buf_symbol_char_t c;
+	c.m_normal_tag = FALSE;
+	c.m_special = ch;
+	wnd_putc_impl(wnd, &c);
+}
+
+/* Put a normal symbol */
+void wnd_putc( wnd_t *wnd, dword ch )
+{
+	struct wnd_display_buf_symbol_char_t c;
+
+	/* This function doesn't print not-printable characters */
+	if (ch < 0x20)
+		return;
+
+	c.m_normal_tag = TRUE;
+	c.m_normal = ch;
+	wnd_putc_impl(wnd, &c);
+}
 
 /* Put a character */
 void wnd_putchar( wnd_t *wnd, wnd_print_flags_t flags, dword ch )

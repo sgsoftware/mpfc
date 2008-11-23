@@ -159,7 +159,8 @@ wnd_msg_retcode_t wnd_default_on_erase_back( wnd_t *wnd )
 			{
 				if (owning == wnd)
 				{
-					pos->m_char = ' ';
+					pos->m_char.m_normal = ' ';
+					pos->m_char.m_normal_tag = TRUE;
 					pos->m_attr = 0;
 					break;
 				}

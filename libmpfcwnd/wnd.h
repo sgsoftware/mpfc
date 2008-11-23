@@ -123,7 +123,16 @@ struct tag_wnd_global_data_t
 		struct wnd_display_buf_symbol_t
 		{
 			/* Character code */
-			chtype m_char;
+			struct wnd_display_buf_symbol_char_t
+			{
+				union
+				{
+					dword m_normal;
+					chtype m_special;
+				};
+				bool_t m_normal_tag;
+			} m_char;
+
 			/* Character attribute */
 			int m_attr;
 			/* The window this position belongs to */

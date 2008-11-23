@@ -102,6 +102,9 @@ void wnd_move( struct tag_wnd_t *wnd, wnd_move_style_t style, int x, int y );
 /* Low-level character printing */
 void wnd_putc( struct tag_wnd_t *wnd, dword ch );
 
+/* Low-level special (ACS_*) character printing */
+void wnd_put_special( struct tag_wnd_t *wnd, chtype ch );
+
 /* Put a character */
 void wnd_putchar( struct tag_wnd_t *wnd, wnd_print_flags_t flags, dword ch );
 
