@@ -1818,6 +1818,7 @@ void *player_thread( void *arg )
 		convert_func_t fmt_convert_func;
 		convert_channel_func_t chan_convert_func;
 		convert_freq_func_t freq_convert_func;
+		bool_t song_finished;
 
 		/* Skip to next iteration if there is nothing to play */
 		if (player_plist->m_cur_song < 0 || 
@@ -1903,6 +1904,7 @@ void *player_thread( void *arg )
 		/* Play */
 		disp_count = 0;
 		logger_debug(player_log, "Going into track playing cycle");
+		song_finished = FALSE;
 		while (!player_end_track)
 		{
 			byte buf[8192], *data = buf;
@@ -2010,6 +2012,7 @@ void *player_thread( void *arg )
 							logger_debug(player_log, "stopping at time %d(%d).", 
 									player_context->m_cur_time,
 									player_translate_time(song_played, player_context->m_cur_time, TRUE));
+							song_finished = TRUE;
 							break;
 						}
 					}
@@ -2018,6 +2021,7 @@ void *player_thread( void *arg )
 				}
 				else
 				{
+					song_finished = TRUE;
 					break;
 				}
 			}
@@ -2032,7 +2036,7 @@ void *player_thread( void *arg )
 		x_convert_buffers_destroy(convert_buf);
 
 		/* Wait until we really stop playing */
-		if (!no_outp)
+		if (!no_outp && song_finished)
 		{
 			logger_debug(player_log, "outp_flush");
 			outp_flush(player_cur_outp);
