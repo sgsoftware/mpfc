@@ -27,6 +27,8 @@
 #include <stdarg.h>
 #include <string.h>
 #include <wchar.h>
+#include <unicode/ucnv.h>
+#include <unicode/unorm.h>
 #include "types.h"
 #include "wnd.h"
 #include "wnd_print.h"
@@ -155,7 +157,14 @@ void wnd_putchar( wnd_t *wnd, wnd_print_flags_t flags, dword ch )
 void wnd_putstring( wnd_t *wnd, wnd_print_flags_t flags, int right_border,
 		char *str )
 {
-	mbstate_t state;
+	UChar* converted = NULL;
+	UChar* normalized = NULL;
+	UConverter* cnv = NULL;
+	UErrorCode err = 0;
+	size_t len = 0;
+	size_t conv_len = 0;
+	size_t norm_len = 0;
+	int i;
 
 	assert(wnd);
 	assert(str);
@@ -171,24 +180,57 @@ void wnd_putstring( wnd_t *wnd, wnd_print_flags_t flags, int right_border,
 	else if (right_border <= 0 || right_border >= wnd->m_client_w)
 		right_border = wnd->m_client_w - 1;
 
-	/* Print string */
-	memset(&state, 0, sizeof(state));
-	mbsinit(&state);
-	for ( ;; )
+	/* Allocate memory for unicode string */
+	len = strlen(str);
+	converted = malloc(sizeof(UChar) * (len + 1));
+	if (!converted)
+	{
+		util_log("Fatal error: memory allocation failed\n");
+		goto cleanup;
+	}
+
+	/* Allocate memory for normalized string */
+	normalized = malloc(sizeof(UChar) * (len + 1));
+	if (!normalized)
+	{
+		util_log("Fatal error: memory allocation failed\n");
+		goto cleanup;
+	}
+
+	/* Create converter */
+	cnv = ucnv_open("UTF-8", &err);
+	if (!cnv)
+	{
+		util_log("Fatal error: utf-8 converter creation failed: %s\n",
+				u_errorName(err));
+		goto cleanup;
+	}
+
+	/* Convert to unicode */
+	conv_len = ucnv_toUChars(cnv, converted, len + 1, str, -1, &err);
+	if (U_FAILURE(err))
+	{
+		util_log("Fatal error: utf-8 converting failed: %s\n",
+				u_errorName(err));
+		goto cleanup;
+	}
+
+	/* Normalize string */
+	norm_len = unorm_normalize(converted, conv_len, UNORM_NFC, 0,
+			normalized, len + 1, &err);
+	if (U_FAILURE(err))
+	{
+		util_log("Fatal error: unicode normalization failed: %s\n",
+				u_errorName(err));
+		goto cleanup;
+	}
+
+	/* Print characters */
+	for ( i = 0; i < norm_len; i ++ )
 	{
 		wchar_t ch;
-		size_t nbytes;
 
-		nbytes = mbrtowc(&ch, str, MB_CUR_MAX, &state);
-		if ((size_t)(-1) == nbytes || (size_t)(-2) == nbytes)
-		{
-			ch = '?';
-			nbytes = 1;
-		}
-		if (0 == nbytes)
-			break;
-		else
-			str += nbytes;
+		ch = normalized[i];
 
 		/* In case of new line - clear the rest of the current */
 		if (ch == '\n')
@@ -213,7 +255,7 @@ void wnd_putstring( wnd_t *wnd, wnd_print_flags_t flags, int right_border,
 		}
 
 		/* If the very next char is new line, that's OK */
-		if (*str == '\n')
+		if (normalized[i + 1] == '\n')
 			continue;
 
 		/* Put ellipses */
@@ -228,22 +270,15 @@ void wnd_putstring( wnd_t *wnd, wnd_print_flags_t flags, int right_border,
 
 		/* Skip to the end of this line */
 		bool_t finished = FALSE;
-		for ( ;; )
+		for ( ;; i ++ )
 		{
-			nbytes = mbrtowc(&ch, str, MB_CUR_MAX, &state);
-			if ((size_t)(-1) == nbytes || (size_t)(-2) == nbytes)
-			{
-				nbytes = 1;
-				ch = '?';
-			}
-			if (0 == nbytes)
+			if (i == norm_len - 1)
 			{
 				finished = TRUE;
 				break;
 			}
-			else 
-				str += nbytes;
 
+			ch = normalized[i];
 			if ('\n' == ch)
 				break;
 		}
@@ -252,6 +287,13 @@ void wnd_putstring( wnd_t *wnd, wnd_print_flags_t flags, int right_border,
 		else
 			wnd_putchar(wnd, flags, ch);
 	}
+cleanup:
+	if (converted)
+		free(converted);
+	if (normalized)
+		free(normalized);
+	if (cnv)
+		ucnv_close(cnv);
 } /* End of 'wnd_putstring' function */
 
 /* Print a formatted string */

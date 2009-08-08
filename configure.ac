@@ -63,6 +63,14 @@ RESOLV_LIBS="-lresolv"
 AC_SUBST(RESOLV_LIBS)
 LIBS=$LIBS_save
 
+# Check for ICU library
+LIBS_save=$LIBS
+AC_CHECK_HEADERS([unicode/ucnv.h],,[AC_MSG_ERROR(*** Can't find libicu header ***)])
+#AC_CHECK_LIB(icuuc, ucnv_open,,[AC_MSG_ERROR(*** Can't find libicu ***)])
+ICU_LIBS="-licuuc"
+AC_SUBST(ICU_LIBS)
+LIBS=$LIBS_save
+
 # Stuff for mp3 plugin
 AC_ARG_ENABLE(mp3, 
 [	--disable-mp3		Disable mp3 input plugin [default=enabled]],,
