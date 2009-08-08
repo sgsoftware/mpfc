@@ -106,7 +106,7 @@ struct mad_header mp3_head;
 static logger_t *mp3_log = NULL;
 
 /* Get song information */
-static song_info_t *mp3_read_info( char *filename, int *len, int *nf );
+static song_info_t *mp3_read_info( char *filename, int *len, int *nf, int *skip_start, int *skip_end );
 
 /* Plugin description */
 static char *mp3_desc = "mp3 files playback plugin";
@@ -117,11 +117,19 @@ static char *mp3_author = "Sergey E. Galanov <sgsoftware@mail.ru>";
 /* Configuration lists */
 static cfg_node_t *mp3_cfg, *mp3_root_cfg;
 
+/* Real mp3 data bounds */
+static int mp3_start_pos = 0, mp3_end_pos = 0;
+
 /* Start play with an opened file descriptor */
 bool_t mp3_start_with_fd( char *filename, file_t *fd )
 {
+	int skip_start = 0, skip_end = 0;
+
 	/* Remember tag */
-	mp3_cur_info = mp3_read_info(filename, &mp3_len, &mp3_total_num_frames);
+	mp3_cur_info = mp3_read_info(filename, &mp3_len,
+			&mp3_total_num_frames, &skip_start, &skip_end);
+	mp3_start_pos = skip_start;
+	mp3_end_pos = util_get_file_size(filename) - skip_end;
 
 	/* Open file */
 	if (fd == NULL)
@@ -310,7 +318,7 @@ bool_t mp3_save_info( char *filename, song_info_t *info )
 	}
 
 	/* Read tag */
-	tag = id3_read(filename);
+	tag = id3_read(filename, NULL);
 	if (tag == NULL)
 	{
 		tag = id3_new();
@@ -437,7 +445,8 @@ end:
 } /* End of 'mp3_get_xing_frames' function */
 
 /* Get song information */
-static song_info_t *mp3_read_info( char *filename, int *len, int *nf )
+static song_info_t *mp3_read_info( char *filename, int *len, int *nf,
+		                           int *skip_start, int *skip_end )
 {
 	struct mad_header head;
 	int i, filesize;
@@ -445,6 +454,12 @@ static song_info_t *mp3_read_info( char *filename, int *len, int *nf )
 	char own_data[1024];
 	song_info_t *si = NULL;
 	int bytes2skip = 0;
+	byte tags_present = 0;
+
+	if (skip_start)
+		(*skip_start) = 0;
+	if (skip_end)
+		(*skip_end) = 0;
 
 	/* Supported only for regular files; for others - 
 	 * output audio parameters */
@@ -466,7 +481,7 @@ static song_info_t *mp3_read_info( char *filename, int *len, int *nf )
 		si->m_flags |= SI_ONLY_OWN;
 		snprintf(own_data, sizeof(own_data),
 			_("MPEG %s, layer %i\n"
-			"Bitrate: %i kb/s\n"
+			"Bitrate: %lu kb/s\n"
 			"Samplerate: %i Hz\n"
 			"%s\n"
 			"Error protection: %s\n"
@@ -506,9 +521,14 @@ static song_info_t *mp3_read_info( char *filename, int *len, int *nf )
 	/* Read tag */
 	si = si_new();
 	si->m_glist = mp3_glist;
-	tag = id3_read(filename);
+	tag = id3_read(filename, &tags_present);
 	if (tag != NULL)
 	{
+		if (skip_end)
+			(*skip_end) = (tags_present & ID3_V1_PRESENT) ? tag->m_v1.m_stream_len : 0;
+		if (skip_start)
+			(*skip_start) = (tags_present & ID3_V2_PRESENT) ? tag->m_v2.m_stream_len : 0;
+
 		/* Save tag size for skipping it */
 		if (tag->m_version == 2)
 		{
@@ -593,7 +613,7 @@ static song_info_t *mp3_read_info( char *filename, int *len, int *nf )
 		
 		snprintf(own_data, sizeof(own_data),
 			_("MPEG %s, layer %i\n"
-			"Bitrate: %i kb/s\n"
+			"Bitrate: %lu kb/s\n"
 			"Samplerate: %i Hz\n"
 			"%s\n"
 			"Error protection: %s\n"
@@ -630,7 +650,7 @@ static song_info_t *mp3_read_info( char *filename, int *len, int *nf )
 /* Get song information (exported) */
 song_info_t *mp3_get_info( char *filename, int *len )
 {
-	return mp3_read_info(filename, len, NULL);
+	return mp3_read_info(filename, len, NULL, NULL, NULL);
 } /* End of 'mp3_get_info' function */
 
 /* Get stream function */
@@ -650,7 +670,7 @@ int mp3_get_stream( void *buf, int size )
 		/* Seek */
 		if (mp3_seek_val != -1 && mp3_bitrate)
 		{
-			file_seek(mp3_fd, mp3_seek_val * mp3_bitrate / 8, SEEK_SET);
+			file_seek(mp3_fd, mp3_start_pos + mp3_seek_val * mp3_bitrate / 8, SEEK_SET);
 			mp3_time = mp3_seek_val;
 			mp3_timer.seconds = mp3_time;
 			mp3_timer.fraction = 0;//mp3_time * MAD_TIMER_RESOLUTION;
@@ -662,6 +682,7 @@ int mp3_get_stream( void *buf, int size )
 		{
 			int read_size, remaining;
 			byte *read_start;
+			long cur_pos;
 
 			/* Prepare input buffer */
 			if (mp3_stream.next_frame != NULL)
@@ -676,6 +697,13 @@ int mp3_get_stream( void *buf, int size )
 				read_size = MP3_IN_BUF_SIZE;
 				read_start = mp3_in_buf;
 				remaining = 0;
+			}
+
+			/* Check for end */
+			cur_pos = file_tell(mp3_fd);
+			if (cur_pos + read_size >= mp3_end_pos)
+			{
+				read_size = (mp3_end_pos - cur_pos);
 			}
 
 			/* Fill buffer */
@@ -1115,7 +1143,7 @@ static void mp3_read_song_params( void )
 	/* Unitialize all */
 	mad_header_finish(&head);
 	mad_stream_finish(&stream);
-	file_seek(mp3_fd, 0, SEEK_SET);
+	file_seek(mp3_fd, mp3_start_pos, SEEK_SET);
 } /* End of 'mp3_read_song_params' function */
 
 /* Read mp3 file header */

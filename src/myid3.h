@@ -135,11 +135,15 @@ typedef struct
 #define ID3_UTF16BE 2
 #define ID3_UTF8    3
 
+/* What tags are present */
+#define ID3_V1_PRESENT	1
+#define ID3_V2_PRESENT	2
+
 /* Create a new empty tag */
 id3_tag_t *id3_new( void );
 	
 /* Read tag from file */
-id3_tag_t *id3_read( char *filename );
+id3_tag_t *id3_read( char *filename, byte *tags_present );
 
 /* Write tag to file */
 bool_t id3_write( id3_tag_t *tag, char *filename );

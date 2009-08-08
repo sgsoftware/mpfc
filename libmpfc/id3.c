@@ -47,7 +47,7 @@ id3_tag_t *id3_new( void )
 } /* End of 'id3_new' function */
 	
 /* Read tag from file */
-id3_tag_t *id3_read( char *filename )
+id3_tag_t *id3_read( char *filename, byte *tags_present )
 {
 	file_t *fd;
 	id3_tag_t *tag;
@@ -67,6 +67,16 @@ id3_tag_t *id3_read( char *filename )
 	file_read(id, 1, 3, fd);
 	if (!strncmp(id, "TAG", 3))
 		has_v1 = TRUE;
+
+	/* Report what tags are present */
+	if (tags_present)
+	{
+		(*tags_present) = 0;
+		if (has_v1)
+			(*tags_present) |= ID3_V1_PRESENT;
+		if (has_v2)
+			(*tags_present) |= ID3_V2_PRESENT;
+	}
 
 	/* No tag found */
 	if (!has_v1 && !has_v2)
