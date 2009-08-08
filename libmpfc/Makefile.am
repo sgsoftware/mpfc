@@ -5,7 +5,7 @@ libdir = $(prefix)/lib/
 libmpfchdrdir = $(prefix)/include/mpfc
 libmpfchdr_HEADERS = ../mpfc-config.h ../src/types.h ../src/cfg.h \
 					 ../src/charset.h \
-					 ../src/file.h ../src/file.h file_http.h file_reg.h \
+					 ../src/file.h file_http.h file_reg.h \
 					 ../src/genre_list.h ../src/myid3.h ../src/csp.h \
 					 ../src/ep.h ../src/inp.h ../src/outp.h ../src/pmng.h \
 					 ../src/util.h ../src/song_info.h ../src/mystring.h \
