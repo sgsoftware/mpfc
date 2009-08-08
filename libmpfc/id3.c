@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unicode/ucnv.h>
 #include "types.h"
 #include "myid3.h"
 
@@ -576,12 +577,81 @@ void id3_rem_end_spaces( char *str, int len )
 	str[len + 1] = 0;
 } /* End of 'id3_rem_end_spaces' function */
 
+/* Convert a unicode string to UTF-8 and copy it to frame */
+#define ID3_BOM_BE 0xFEFF
+#define ID3_BOM_LE 0xFFFE
+#define IS_BOM(x) ((x) == ID3_BOM_BE || (x) == ID3_BOM_LE)
+void id3_copy_unicode_to_frame( id3_frame_t *f, byte **ptr, int size, int bom )
+{
+	UConverter* cnv = NULL;
+	UErrorCode err = 0;
+	UChar* in_buf = NULL;
+	char* out_buf = NULL;
+	size_t out_size, in_size, i;
+
+	/* Create converter */
+	cnv = ucnv_open("UTF-8", &err);
+	if (!cnv)
+	{
+		util_log("Fatal error: utf-8 converter creation failed: %s\n",
+				u_errorName(err));
+		goto cleanup;
+	}
+
+	/* Allocate */
+	in_size = size / 2;
+	in_buf = malloc(sizeof(UChar) * (in_size + 1));
+	if (!in_buf)
+	{
+		util_log("Fatal error: memory allocation failed\n");
+		goto cleanup;
+	}
+	out_size = in_size * ucnv_getMaxCharSize(cnv) + 1;
+	out_buf = malloc(out_size);
+	if (!out_buf)
+	{
+		util_log("Fatal error: memory allocation failed\n");
+		goto cleanup;
+	}
+
+	/* Fill uchars */
+	for ( i = 0; i < in_size; i ++ )
+	{
+		byte hi;
+		byte lo;
+
+		hi = *(*ptr)++;
+		lo = *(*ptr)++;
+		in_buf[i] = (bom == ID3_BOM_LE ? (lo << 8) | hi : (hi << 8) | lo);
+	}
+	in_buf[in_size] = 0;
+
+	/* Convert to UTF-8 */
+	out_size = ucnv_fromUChars(cnv, out_buf, out_size, in_buf, -1, &err);
+	if (U_FAILURE(err))
+	{
+		util_log("Fatal error: utf-8 converting failed: %s\n",
+				u_errorName(err));
+		goto cleanup;
+	}
+	util_log("out_buf: %s\n", out_buf);
+
+	f->m_val = out_buf;
+
+cleanup:
+	if (in_buf)
+		free(in_buf);
+	if (cnv)
+		ucnv_close(cnv);
+}
+
 /* Copy string to frame */
 void id3_copy2frame( id3_frame_t *f, byte **ptr, int size )
 {	
 	byte pos = 0;
 	int i;
 	bool_t zeros_block = FALSE;
+	int bom = 0;
 	
 	if (f == NULL)
 		return;
@@ -590,30 +660,40 @@ void id3_copy2frame( id3_frame_t *f, byte **ptr, int size )
 	if (f->m_version == 1 && !strcmp(f->m_name, ID3_FRAME_COMMENT) &&
 			(*ptr)[28] == 0 && (*ptr)[29] != 0)
 		size --;
-	
-	/* Seek to the last string in frame */
-	for ( i = 0; i < size; i ++ )
+
+	/* Detect unicode value */
+	if (size >= 2 && 
+			(bom = (((*ptr)[0] << 8) | ((*ptr)[1]))) && IS_BOM(bom))
 	{
-		if (!(*ptr)[i])
-			zeros_block = TRUE;
-		else if (zeros_block)
-		{
-			pos = i;
-			zeros_block = FALSE;
-		}
+		(*ptr) += 2;
+		id3_copy_unicode_to_frame(f, ptr, size - 2, bom);
 	}
-	size -= pos;
-	(*ptr) += pos;
+	else
+	{
+		/* Seek to the last string in frame */
+		for ( i = 0; i < size; i ++ )
+		{
+			if (!(*ptr)[i])
+				zeros_block = TRUE;
+			else if (zeros_block)
+			{
+				pos = i;
+				zeros_block = FALSE;
+			}
+		}
+		size -= pos;
+		(*ptr) += pos;
 
-	/* Allocate memory */
-	f->m_val = (char *)malloc(size + 1);
+		/* Allocate memory */
+		f->m_val = (char *)malloc(size + 1);
 
-	/* Copy */
-	memcpy(f->m_val, (char *)(*ptr), size);
-	id3_rem_end_spaces(f->m_val, size);
+		/* Copy */
+		memcpy(f->m_val, (char *)(*ptr), size);
+		id3_rem_end_spaces(f->m_val, size);
 
-	/* Shift frame pointer */
-	(*ptr) += size;
+		/* Shift frame pointer */
+		(*ptr) += size;
+	}
 } /* End of 'id3_copy2frame' function */
 
 /* Remove tags from file */
