@@ -634,7 +634,6 @@ void id3_copy_unicode_to_frame( id3_frame_t *f, byte **ptr, int size, int bom )
 				u_errorName(err));
 		goto cleanup;
 	}
-	util_log("out_buf: %s\n", out_buf);
 
 	f->m_val = out_buf;
 
