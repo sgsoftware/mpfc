@@ -29,6 +29,8 @@
 #include "wnd_dialog.h"
 #include "wnd_editbox.h"
 
+#define ALSA_SAMPLE_XFER 256
+
 static snd_pcm_t *handle = NULL;
 static snd_pcm_hw_params_t *hwparams = NULL;
 static snd_pcm_sw_params_t *swparams = NULL;
@@ -48,8 +50,8 @@ static char *alsa_author =
 static cfg_node_t *alsa_cfg = NULL;
 static logger_t *alsa_log = NULL;
 
-static snd_pcm_sframes_t alsa_buffer_size;
-static snd_pcm_sframes_t alsa_period_size;
+static unsigned int alsa_buffer_time;
+static unsigned int alsa_period_time;
 
 /* Mixer types table */
 static char *alsa_mixer_types_table[] = 
@@ -153,10 +155,18 @@ bool_t alsa_start ()
   }
   logger_debug(alsa_log, "after set_rate_near alsa_rate is %d", alsa_rate);
 
-  alsa_buffer_size = alsa_rate / 10;
-  err = snd_pcm_hw_params_set_period_size_near(handle, hwparams, &alsa_buffer_size, NULL);
+  alsa_buffer_time = 500000;
+  err = snd_pcm_hw_params_set_buffer_time_near(handle, hwparams, &alsa_buffer_time, NULL);
   if (err < 0) {
-    logger_message(alsa_log, 0, "snd_pcm_hw_params_set_period_size_near() failed: %s", snd_strerror(err));
+    logger_message(alsa_log, 0, "snd_pcm_hw_params_set_buffer_time_near() failed: %s", snd_strerror(err));
+    alsa_end();
+    return FALSE;
+  }
+
+  alsa_period_time = 1000000 * ALSA_SAMPLE_XFER / alsa_rate;
+  err = snd_pcm_hw_params_set_period_time_near(handle, hwparams, &alsa_period_time, NULL);
+  if (err < 0) {
+    logger_message(alsa_log, 0, "snd_pcm_hw_params_set_period_time_near() failed: %s", snd_strerror(err));
     alsa_end();
     return FALSE;
   }
