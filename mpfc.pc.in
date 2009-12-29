@@ -1,0 +1,11 @@
+prefix=@prefix@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+plugindir=${libdir}/mpfc
+
+Name: mpfc
+Description: Music Player For Linux Console
+Version: @VERSION@
+Libs: -L${libdir} -lmpfc -lmpfcwnd
+Cflags: -I${includedir}/mpfc -I${includedir}/mpfc/libmpfcwnd

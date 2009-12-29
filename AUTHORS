@@ -1,0 +1,15 @@
+Main programming:
+	Sergey E. Galanov			<sgsoftware@mail.ru>
+
+Contributors:
+	Derek Davis (songs queueing)
+
+Plugins writing:
+	Thadeu Lima de Souza Cascardo (ALSA and ESD plugins)
+	Heikki Orsila (ALSA patches)
+
+People who helped to find bugs:
+	Alexey Tourbin
+	Igmar Palsenber
+	Luis Felipe Strano Moraes
+	Heikki Orsila

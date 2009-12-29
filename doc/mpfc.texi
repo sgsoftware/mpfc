@@ -1,0 +1,1336 @@
+\input texinfo @c -*-texinfo-*-
+@c %**start of header
+@setfilename mpfc.info
+@settitle MPFC 1.3.6
+@c %**end of header
+
+@copying
+This manual describes the SG Music Player For Linux Console, version 1.3.6
+
+Copyright @copyright{} 2003-2005 SG Software.
+@end copying
+
+@titlepage
+@title SG MPFC
+@subtitle Music Player For Linux Console
+@author Sergey E. Galanov
+
+@c The following two commands start the copyright page
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+
+@end titlepage
+
+@c Output the table of contents at the beginning
+@contents
+
+@ifinfo
+@node Top, Introduction, (dir), (dir)
+@top MPFC 1.3.6
+
+This manual documents version 1.3.6 of SG MPFC, media player for Linux console.
+
+Copyright @copyright{} 2003-2005 SG Software
+
+@menu
+* Introduction::		
+* Getting Started::	
+* Using Variables::
+* Plugins::		
+* Copying::	
+@end menu
+@end ifinfo
+
+@node Introduction, Getting Started, Top, Top
+@chapter Introduction to MPFC
+
+MPFC is an abbrevation for Music Player For Console. It is a full-featured
+curses-based playlist-oriented player.
+
+MPFC supports a number of input file formats. This support is organised through
+input plugins model. It means that the formats list is expandable---you
+must simply add a new plugin. Also there are plugins for output and effects.
+
+To get a brief help on MPFC commands you may press @kbd{?} key in MPFC 
+main window.
+
+Turn to the following sections to learn about MPFC features in greater detail.
+
+Note that the commands that are given further are named by the keys you type
+to enter them but you may change these keys (@pxref{Key bindings}).
+
+@node Getting Started, Using Variables, Introduction, Top
+@chapter Getting started with MPFC
+
+@menu
+* Launching MPFC::
+* Moving around::
+* Playing files::
+* Playlist management::
+* Window system::
+* Other features::
+@end menu
+
+@node Launching MPFC, Moving around, Getting Started, Getting Started
+@section Launching MPFC
+To launch MPFC type:
+
+@example
+mpfc [options] [files]
+@end example
+
+Here [options]
+is a list of variables you set directly (@pxref{Using Variables}) and [files]
+is a list of files you want to play. For example, to play file song.mp3 type:
+
+@example
+mpfc file.mp3
+@end example
+
+File list may be empty, this means
+you will either continue playing the previous play list (if the respective
+option is set), or start with an empty play list.
+
+You may also specify a plugin that will be used for playing file. This notation
+with special plugins that play virtual files (e.g audiocd plugin) and also
+if file has non-standard extesion. For example:
+
+@example
+mpfc audiocd://track0* mp3://some-file-with-no-mp3-extension audiocd://
+@end example
+
+First pattern in this list specifies all the Audio-CD tracks from 1 to 9,
+second is simply a hint for MPFC to use mp3 plugin, and the last means to
+add total Audio-CD.
+
+Note that ``objects'' system is no longer used.
+
+If you want to exit MPFC use command @kbd{q}.
+
+@node Moving around, Playing files, Launching MPFC, Getting Started
+@section Moving around
+As soon as you have launched MPFC you will notice that the largest part of 
+the screen is occupied by the play list. This is a list of all songs you can
+play. Also you will notice a long line from left side of the screen to the
+right side that selects one of the songs. This is cursor. It is used to 
+select songs for various manipulations (e.g. playing them). Here are methods
+you can use to move cursor within playlist.
+
+@menu
+* Basic cursor movement operations::
+* Search::
+* Marks::
+@end menu
+
+@node Basic cursor movement operations, Search, Moving around, Moving around
+@subsection Basic cursor movement operations
+Basic operations are the following:
+
+@kbd{j} or @kbd{@key{Down}}: move cursor one line lower;
+
+@kbd{k} or @kbd{@key{Up}}: move cursor one line higher;
+
+@kbd{d} or @kbd{@key{PageDown}}: move cursor one screen lower;
+
+@kbd{u} or @kbd{@key{PageUp}}: move cursor one screen higher;
+
+@kbd{G}: move cursor to any specified line (see further);
+
+@kbd{C}: move cursor to the currently playing song.
+
+There is a feature with these commands. You may specify a repeat value before
+any of them (except for C of course) and it will result in repeating the
+command this number of times. For G command this value has a slightly different
+meaning---it is the number of line you want to move to (without repeat value
+@kbd{G} moves to the playlist end). 
+To specify this value simply print it before the
+command. As soon as you start entering digits, a prompt will appear and you
+will be able to correct your input or even cancel entering this value by 
+pressing ESC. For example, to move 5 lines down type: @kbd{5j}, and to 
+move to the 30-th line of playlist type: @kbd{30G}.
+
+@node Search, Marks, Basic cursor movement operations, Moving around
+@subsection Search
+You can move to a position in playlist also by searching by a string. There
+are two types of search: simple and advanced. Simple search is invoked by
+@kbd{/} command. You will be prompted for the string. When you enter a string
+MPFC will search for a song with title containing this string and move 
+cursor to the first match. 
+
+Advanced search is invoked by @kbd{\} command. It allows searching not only
+by the song title but also by other song information parameters 
+(@pxref{Song Info}), so you will be prompted for the search criteria and then
+for the string.
+
+After doing search you can move to the next or previous match by using
+commands @kbd{n} and @kbd{N} respectively.
+
+To make search case-sensitive unset variable ``search-nocase'' 
+(it is 1 by default).
+
+@node Marks,, Search, Moving around
+@subsection Marks
+What if you have a large playlist and move periodically between some places
+in its different parts? That's where marks are used.
+
+You can store cursor position in any of 26 marks by using command 
+@kbd{m<Letter>}, where <Letter> is a letter from a to z naming the mark. To 
+move to mark <Letter> command @kbd{`<Letter>} is used. Also there is a special
+mark---`. You can't set it directly but it always points to your last position
+so if you want to return to it type: @kbd{``}.
+
+@node Playing files, Playlist management, Moving around, Getting Started
+@section Playing files
+@menu
+* Play/pause/stop::
+* Play modes::
+* Boundaries::
+* Time back::
+* Volume and balance::
+* Equalizer::
+@end menu
+
+@node Play/pause/stop, Play modes, Playing files, Playing files
+@subsection Play/pause/stop
+There are four basic playing commands:
+
+@kbd{@key{RET}}: starts playing currently selected song;
+
+@kbd{x}: plays currently playing song from beginning (if it is playing now) or 
+resumes playing after a pause or a stop;
+
+@kbd{c}: pause/unpause;
+
+@kbd{v}: stops playing.
+
+Also you can jump to the next or previous songs. This is done by commands
+@kbd{b} (next) and @kbd{z} (previous).
+
+If you want to move within currently playing song use commands @kbd{<} and 
+@kbd{>} 
+for moving 10 seconds back or forth and command @kbd{gt} to move to any 
+specified position (these commands support repeat values, for @kbd{gt} its
+meaning is the same as for @kbd{G}, @pxref{Basic cursor movement operations}).
+
+@node Play modes, Boundaries, Play/pause/stop, Playing files
+@subsection Play modes
+Normally after the song you specified to play finishes MPFC begins to play 
+the next song in playlist and so on until it reaches the playlist end when it
+stops. 
+
+This behaviour may be changed by setting any of two play modes: shuffle or 
+loop. In shuffle mode (@kbd{R} command) the next song to play is selected by
+random. In loop mode (@kbd{L} command) the play order is as in the normal mode
+but MPFC begins playing from the beginning when it reaches end. Also you may
+set these modes by variables ``shuffle-play'' and ``loop-play'' 
+(@pxref{Using Variables}).
+ 
+@node Boundaries, Time back, Play modes, Playing files
+@subsection Boundaries
+Normally the beginning of playlist is the first song and the end is the last 
+one. But you can change them by setting boundaries. First select a playlist
+area in visual mode (@pxref{Visual mode}). Then you can use one of two commands:
+
+@kbd{ps}: sets the boundaries respectively to your selection;
+
+@kbd{p@key{RET}}: the same as previous but also begins playing the selection.
+
+To clear boundaries use command @kbd{pc}.
+
+@node Time back, Volume and balance, Boundaries, Playing files
+@subsection Time back
+Time back is a feature in MPFC that helps you to return to the place in song
+where you have been the last time before jump (not that here manual jump is
+meant, e.g. with a @kbd{@key{RET}} command). To do it use command 
+@kbd{@key{BS}}.
+
+@node Volume and balance, Equalizer, Time back, Playing files
+@subsection Volume and balance
+You can see current volume and balance in the top right corner of the screen
+as two slidebars (the upper is volume). To increase or decrease volume and 
+balance levels use @kbd{-} and @kbd{+} commands for volume and @kbd{[} and 
+@kbd{]} commands for balance.
+
+@node Equalizer,, Volume and balance, Playing files
+@subsection Equalizer
+MPFC supports equalizer. To launch equalizer panel use command @kbd{e}. Here
+you are able to adjust equalizer band levels. To exit panel press @kbd{q} or
+@kbd{@key{ESC}}. To move between bands press @kbd{h} or @kbd{@key{Left}} and 
+@kbd{l} or @kbd{@key{Right}}, to change level press @kbd{j} or @kbd{@key{Down}}
+and @kbd{k} or @kbd{@key{Up}}.
+
+You are able also to load preset from a Winamp EQF file. To do this press
+@kbd{@key{p}} and enter file name.
+
+Equalizer's parameters are configurable. They are represented by variables
+in configuration list ``equalizer''.  ``enabled'' variable controls whether
+equalizer is enabled. ``band1'', @dots{}, ``band10'' and ``preamp'' hold
+band values. Also there is ``enable-on-change'' (default is 1). If it is set,
+equalizer is automatically enabled when you change any band value in the
+equalizer window.
+
+@node Playlist management, Window system, Playing files, Getting Started
+@section Playlist management
+@menu
+* Visual mode::
+* Add/remove::
+* File browser::
+* Save::
+* Sort::
+* Move::
+* Undo::
+* Song Info::
+@end menu
+
+@node Visual mode, Add/remove, Playlist management, Playlist management
+@subsection Visual mode
+Many commands (e.g. sort) may affect a group of songs. MPFC allows you to
+make continuous selections (starting from one song and ending with another).
+To make such a selection place cursor in one of the selection boundaries, then
+switch to the visual mode (by @kbd{V} command) and move cursor to another bound.
+You can use any of the cursor movement commands. After the selection is made 
+you can switch back to normal mode (by entering this command one more time).
+
+@node Add/remove, File browser, Visual mode, Playlist management
+@subsection Add/remove
+There are three commands for add/remove purposes. To add song use @kbd{a}.
+After you enter 
+this command the edit box will appear where you are able to enter file name.
+Name autocompletion is supported (by @kbd{@key{TAB}} key). 
+Note that MPFC allows you to play streaming audio. To do it place ``http://''
+in the beginning of file name.
+
+Remove command (@kbd{r}) removes the currently selected group of files.
+
+@node File browser, Save, Add/remove, Playlist management
+@subsection File browser
+File browser is a special tool created to help you adding files to the play
+list. Launch it using @kbd{B} command. To select/deselect file press
+@kbd{@key{INSERT}} key. Also you may select or deselect a group of files
+matching a specified pattern. To do this press @kbd{+} (for select) or
+@kbd{-} (for deselect) key and enter the pattern. After you have selected
+the files you can add them to play list by pressing @kbd{a} or @kbd{r} key.
+The latter one also clears the existing play list. You may press
+@kbd{h} to go to your home directory, @kbd{@key{BACKSPACE}} to go to the
+parent directory or @kbd{@key{c}} to manually specify a directory you want
+to move to. 
+
+File browser always is in one of two modes: normal or song info. In normal 
+mode file names are displayed. In song info mode some parts of song info
+are displayed. To control what parts exactly and screen space reserved for
+them you can use special window styles (@pxref{Styles}): ``fname-len'' 
+(for file name), ``title-len'' (for song name), ``artist-name'' (for artist), 
+``album-len'', ``year-len'', ``genre-len'', ``comments-len'',
+``track-len'' and ``time-len'' (for song length). Note that these fields
+appear exactly in this order and you can't change it. To switch between normal
+and song info modes press @kbd{i}.
+
+You can navigate in a directory more easily using search mode. To set it
+press @kbd{s} key and the enter name of file (or its title if you are in
+info mode) you want to jump to. As you will type the name cursor will move
+to the respective file. If you want to stop this process press 
+@kbd{@key{ESCAPE}}.
+
+To exit browser press @kbd{q}.
+
+@node Save, Sort, File browser, Playlist management
+@subsection Save
+To save playlist use @kbd{s} command. You will be prompted for file name.
+It must end with ``.m3u'' or ``.pls'' extension, so you can save playlist
+in any of these two formats.
+
+@node Sort, Move, Save, Playlist management
+@subsection Sort
+To sort playlist use command @kbd{S}. First you will be asked whether to sort
+globally or not. If you choose global sorting the entire playlist will be
+sorted, otherwise---only the current selection. Then you specify the sort 
+criteria (by title, file name, path and file name or path and track) and the 
+sorting is done.
+
+Also you can tell MPFC to do sorting automatically on loading songs. Set 
+``sort-on-load'' variable to do this. By default sorting by title is done, but
+you may change this behaviour with ``sort-on-load-type'' variable 
+(``sort-by-title'', ``sort-by-file-name'', ``sort-by-path-and-file'' and
+``sort-by-path-and-track'' values).
+
+@node Move, Undo, Sort, Playlist management
+@subsection Move 
+You may move a part of playlist. To do this select this part and use one of
+the three movement commands:
+
+@kbd{J}: move selection one line down;
+
+@kbd{K}: move selection one line up;
+
+@kbd{M}: move selection to any specified poisition.
+
+Note that these commands support repeation value specification 
+(@pxref{Basic cursor movement operations}). For @kbd{M} command this value
+meaning is the same as for @kbd{G}.
+
+@node Undo, Song Info, Move, Playlist management
+@subsection Undo
+MPFC supports undo playlist management actions history. Undoable actions are
+the following: add/remove songs, sort and move playlist. To undo action use
+@kbd{U} command and to redo---@kbd{D} command.
+
+@node Song Info,, Undo, Playlist management
+@subsection Song Info
+Each song may have some information associated with it. This information
+include: song, artist and album names, year, track number, song genre and 
+comments. The song format must support setting these fields in order you
+can make advantage of them (e.g. for MP3 this information is written in its
+ID3 tag). 
+
+You can view and edit this information using song info editor dialog. To 
+call it place cursor to the respective song and use @kbd{i} command. 
+You can also edit info for multiple songs. To do it select these songs in
+visual mode and answer ``No'' to the appearing question. The dialog
+will appear (if the format allows you). Then you will be able to change its
+contents by setting focus to the respective edit box (press @kbd{@key{TAB}}
+several times to reach it). If you want to save changes press @kbd{@key{RET}},
+otherwise press @kbd{@key{ESC}}. If some of the selected songs have different
+values for an info field it will remain the same unless you change it. If you
+change any field its value will be saved to each of the selected songs.
+
+You may change songs title accordingly to their info. To do it you must change
+``title-format'' variable value (@pxref{Using Variables}). Its value may be any
+string including some format sequences:
+
+%p means artist name;
+
+%a means album name;
+
+%f means file name;
+
+%F means full file name (with path);
+
+%e means file extension;
+
+%t means song name;
+
+%n means track number;
+
+%y means song year;
+
+%g means song genre;
+
+%c means song comments.
+
+The default value is ``%p - %t'' that means that title contains artist and 
+song names divided by dash sign.
+
+Some plugins may have special functions associated with their respective
+songs (e.g. function of removing tags for mp3 plugin). This function is called
+by clicking respective button in the song info dialog.
+
+Also there is a command that reloads all selected playlist songs 
+information---@kbd{I}.
+
+@node Window system, Other features, Playlist management, Getting Started
+@section Window system
+@menu
+* Overview::
+* Using dialogs::
+* Styles::
+* Key bindings::
+* Other window system features::
+@end menu
+
+@node Overview, Using dialogs, Window system, Window system
+@subsection Overview
+MPFC has an advanced window system. When you start MPFC there always appears
+play list window. As a result of some events there can appear other windows
+(e.g. file browser, help screen or various dialogs). 
+
+All the top-level windows are listed in a special place on the root window
+which is called ``window bar'' and situated on the last line of the screen.
+Currently active (``focused'') window is marked with green color. To move
+between windows you press @kbd{@key{ALT}-,} or @kbd{@key{ALT}-.} keys. You
+may also select a window by clicking mouse left button its image on the 
+window bar.
+
+Most of the windows have a border with controls on it. These controls are
+a close window button (presented by ``x'' letter) and maximize button
+(``o'' letter). Use them by clicking mouse or pressing buttons 
+@kbd{@key{ALT}-c} and @kbd{@key{ALT}-m} respectively.
+
+Windows are often resizable and movable. To turn window to the
+resize mode press @kbd{@key{ALT}-s}, to the move mode--@kbd{@key{ALT}-p}.
+After that window border will turn its color to green and you'll be able
+to change size/position of the window using arrow keys. Then press 
+@kbd{@key{ENTER}} to finish operation.
+
+@node Using dialogs, Styles, Overview, Window system
+@subsection Using dialogs
+Dialogs are widely used in MPFC for operations where user input is required.
+There is number of special keys for navigating through the dialog items.
+First of all, you can use @kbd{@key{TAB}} key to move to the next item.
+But in big dialogs it is better to use special shortcuts to items. Many of
+the items have a letter associated with them. This letter is usually marked
+red on the label. So when you press @kbd{@key{ALT}} with this letter you
+jump to it.
+
+Also there are @kbd{@key{ENTER}} key connected with the ``OK'' button and
+@kbd{@key{ESCAPE}} or @kbd{@key{CTRL}-G} connected with the ``Cancel'' button.
+
+@node Styles, Key bindings, Using dialogs, Window system
+@subsection Styles
+Window system display parameters are highly configurable. This configuration
+is implemented with a concept of a style.
+
+Style is a parameter of some item of the interface. In fact it is a 
+variable (@pxref{Using Variables}) that you may set as you always do. 
+Usually it represents color and symbol attribute of the text. In that case
+variable value has the following format: <color>[:bg-color[:attrib]].
+Color is one of the following values: ``black'', ``red'', ``green'', ``blue'',
+``yellow'', ``magenta'', ``cyan'' and ``white''. ``attrib'' field is a
+combination (delimited by a comma) of the following values: ``standout'',
+``underline'', ``reverse'', ``blink'', ``dim'', ``bold'', ``protect'',
+``invis'' and ``altcharset''. Note that not all of these attributes are
+supported on your terminal. In fact you usually will use only ``bold'' and,
+maybe, ``blink''.
+
+Before listing style names a note on window classes should be made. Any window
+belongs to some class. All these classes make an hierarchy. The main purpose
+of the classes is to let the user configure styles of a group of similar 
+windows (e.g edit boxes). 
+
+Root configuration list where all the window system related variables are
+holded is ``windows''. It has child list ``classes''. This list has many
+child lists for each of the available classes.
+
+When MPFC searches for a style for a particular window it first seeks for 
+a variable of the name same with the style name in the window configuration
+list. In fact, this list is not (yet) accessible for a user, so it does not
+make much sense. Then it searches for this variable in the window class 
+configuration list, then in that class parent class list, and so on, until
+it reaches the base window system configuration list. If it is not found
+there, style is undefined (value for an undefined style is ``white:black'').
+So, for example, if you want all the edit boxes to display their text
+bold green with red background you should set variable 
+``windows.classes.editbox.text-style'' to ``green:red:bold''.
+
+You may unite a set of styles into a style scheme. To do this
+create a file in @file{~/.mpfc/colors} directory. The name of this file is
+the name of scheme. This file may contain any of the variable operations
+you may use in configuration file (although, you would probably list there
+styles). To turn on a scheme set ``color-scheme'' variable to scheme name.
+
+Here is a list of some window classes and their styles.
+
+@menu
+* basic::
+* player::
+* browser::
+* help::
+* eqwnd::
+* logger_view::
+* dialog::
+* dlgitem::
+* listbox and combo::
+@end menu
+
+@node basic, player, Styles, Styles
+@subsection basic
+``basic'' class is the base window class. It defines the following styles:
+
+@itemize
+@item caption-style;
+@item border-style;
+@item repos-border-style;
+@item maximize-box-style;
+@item close-box-style;
+@item wndbar-focus-style;
+@item text-style;
+@item focus-text-style.
+@end itemize
+
+@node player, browser, basic, Styles
+@subsection player
+``player'' class is class of the player window. Styles:
+
+@itemize
+@item plist-style: style of play list item;
+@item plist-playing-style: style of play list item currently being played;
+@item plist-selected-style: style of a selected play list item;
+@item plist-sel-and-play-style: combination of the previous two;
+@item plist-time-style: style of play list item time;
+@item title-style: current song title style;
+@item time-style: current time style;
+@item audio-params-style: audio parameters style;
+@item about-style: about string style;
+@item slider-style: sliders style (for time, volume and balance);
+@item play-modes-style: ``Loop'' and ``Shuffle'' strings style;
+@item status-style: status line style.
+@end itemize
+
+@node browser, help, player, Styles
+``browser'' class is class of file browser window. Styles:
+
+@itemize
+@item file-style;
+@item cur-file-style;
+@item dir-style;
+@item cur-dir-style;
+@item selection-style;
+@item cur-selecton-style;
+@item search-prompt-style;
+@item search-string-style;
+@item title-style;
+@item header-style.
+@end itemize
+
+@node help, eqwnd, browser, Styles
+``help'' class is class of help screen. Styles:
+
+@itemize
+@item item-style;
+@item prompt-style.
+@end itemize
+
+@node eqwnd, logger_view, help, Styles
+``eqwnd'' class is class of equalizer window. Styles:
+
+@itemize
+@item band-style;
+@item focus-band-style;
+@item label-style;
+@item focus-label-style.
+@end itemize
+
+@node logger_view, dialog, eqwnd, Styles
+``logger_view'' is child of ``scrollable'' class. Styles of ``scrollable'':
+
+@itemize
+@item scroll-arrow-style;
+@item scroll-bar-style;
+@item scroll-slider-style.
+@end itemize
+
+Styles of ``logger_view'':
+
+@itemize
+@item logger-normal-style;
+@item logger-status-style;
+@item logger-warning-style;
+@item logger-error-style;
+@item logger-fatal-style;
+@item logger-debug-style.
+@end itemize
+
+@node dialog, dlgitem, logger_view, Styles
+``dialog'' class is class of dialogs. It has no specific styles.
+
+@node dlgitem, listbox and combo, dialog, Styles
+``dlgitem'' class is class of various dialog items. It has many child classes:
+``button'', ``editbox'' (with ``filebox'' and ``combo'' children), ``listbox'',
+``label'', ``radio'', ``checkbox'', ``hbox'' and ``vbox''.
+
+@node listbox and combo,, dlgitem, Styles
+@itemize
+@item list-style: 
+style of list item highlighted by cursor in a not-focused window;
+@item focus-list-style: the same but in a focused window.
+@end itemize
+
+@node Key bindings, Other window system features, Styles, Window system
+@subsection Key bindings
+MPFC features configurable key bindings. This is achieved in a way similar to
+the styles (@pxref{Styles}) mechanism. In fact, key bindings may be 
+considered also styles with names starting with ``kbind.''.
+
+The value of a key binding consists of a list of respective keys. Particular
+keys in this list are delimited with a ``;''. To specify a normal key you
+use its respective character. To specify a special key use its textual 
+representation in angle brackets (e.g. ``<F1>'', ``<Return>'', ``<Left''>). 
+
+Full list of the special keys may be found in terminfo(5) manpage. There is
+a table of capabilities. You need keypad capabilities (with their names in
+the first column starting with ``key_'' prefix). Textual representation of
+a special key may be retrieved by throwing this prefix away (e.g. 
+``key_dc'' leads to ``dc''). Also there are some aliases: ``delete'' or ``del''
+is the same as ``dc'', ``insert'' or ``ins'' is the same as ``ic'', 
+``pageup'' is the same as ``ppage'', ``pagedown'' is the same as ``npage'').
+Also there are some keys not included into that list: ``tab'', ``space'',
+``escape'', ``enter'' and ``return'' (the latter two represent the same key).
+
+Besides that you can use control and alt combinations. They are represented
+also in angle brackets with names starting with ``ctrl-'' and ``alt-'' 
+(e.g. ``<ctrl-a>'' or ``<alt-w>'').
+
+To use ``<'' and ``>'' directly specify a ``\'' in front of them. The 
+same with using ``\'' itself. Note that expressions inside angle brackets
+are case-insensitive, so that ``Left'' is the same with ``LEFT'' (although
+this is not the case with an alt combination, for key after ``-'' is a
+key you press, thats why ``Alt-a'' and ``Alt-A'' are different).
+
+Note also that key binding actually is not one key but key sequence, so that
+you may set it to, for example, ``tt''. Then to perform respective action
+you must press ``t'' key twice.
+
+When making your own key bindings ``add'' and ``rem'' variables operations
+are useful. Consider setting a binding for moving cursor in play list down.
+Default binding is ``j;<Ctrl-n>;<Down>'' and it is stored in 
+``windows.classes.player.kbind.move_down'' variable. You type the following
+line in your configuration file:
+
+@example
+windows.classes.player.kbind.move_down = "."
+@end example
+
+But then other keys (``j'' and others) for this binding will be removed. 
+Usually this is not a desired behaviour. So you should type this:
+
+@example
+windows.classes.player.kbind.move_down += "."
+@end example
+
+Sometimes you can see that setting a key binding doesn't work. It may be
+because of conflicting a key in your binding with this key in some other
+(default) binding. So you should remove the key from the latter binding:
+
+@example
+windows.classes.player.kbind.screen_down -= "d"
+windows.classes.player.kbind.move_down += "d"
+@end example
+
+You may unite a set of key bindings into a kbind scheme. To do this
+create a file in @file{~/.mpfc/kbinds} directory. The name of this file is
+the name of scheme. This file may contain any of the variable operations
+you may use in configuration file (although, you would probably list there
+kbind variables operations). To turn on a scheme set ``kbind-scheme'' variable
+to scheme name.
+
+Here is the list of available key bindings for various window classes.
+
+@menu
+* basic keybinds::
+* player keybinds::
+* browser keybinds::
+* help keybinds::
+* equalizer keybinds::
+* logger_view keybinds::
+* dlgitem keybinds::
+* button keybinds::
+* radio keybinds::
+* checkbox keybinds::
+* editbox keybinds::
+* filebox keybinds::
+* combo keybinds::
+* listbox keybinds::
+@end menu
+
+@node basic keybinds, player keybinds, Key bindings, Key bindings
+@subsection basic keybinds
+@itemize
+@item refresh_screen: refresh the screen (default is ``<Ctrl-l>'');
+@item close_window: close the window (default is ``<Alt-c>'');
+@item maximize_window: toggle window maximization state (default is 
+``<Alt-m>'');
+@item move_window: start window moving (default is ``<Alt-p>'');
+@item resize_window: start window resizing (default is ``<Alt-s>'');
+@item next_focus: set focus to the next window (default is ``<Alt-.>'');
+@item prev_focus: set focus to the previous window (default is ``<Alt-,>'').
+@end itemize
+
+@node player keybinds, browser keybinds, basic keybinds, Key bindings
+@subsection player keybinds
+@itemize
+@item quit: quit MPFC (default is ``q;Q'');
+@item move_down: move play list cursor down (default is ``j;<Ctrl-n>;<Down>'');
+@item move_up: move play list cursor up (defaut is ``k;<Ctrl-p>;<Up>'');
+@item screen_down: move play list cursor one screen down (default is 
+``d;<Ctrl-v>;<PageDown>'');
+@item screen_up: move play list cursor one screen up (default is
+``u;<Alt-v>;<PageUp>'');
+@item move_to_begin: move play list cursor to the beginning (default is
+``gg;<Ctrl-a>;<Home>'');
+@item move_to_end: move play list cursor to the end (default is 
+``<End>;<Ctrl-e>'');
+@item move: move play list cursor to any position (default is ``G'');
+@item start_play: start playing (default is ``Return'');
+@item play: resume playing/play from the beginning (default is ``x'');
+@item pause: pause/resume playing (default is ``c'');
+@item stop: stop playing (default is ``v'');
+@item prev: play previous song (default is ``z'');
+@item next: play next song (default is ``b'');
+@item time_fw: seek song forward (default is ``\>;lt'');
+@item time_bw: seek song backwards (default is ``\>;ht'');
+@item time_long_fw: seek song forward 1 minute (default is ``<Right>;lT'');
+@item time_long_bw: seek song backwards 1 minute (default is ``<Left>;hT'');
+@item time_move: seek to any position in the song (default is ``gt'');
+@item vol_fw: increase volume (default is ``+;lv'');
+@item vol_bw: decrease volume (default is ``-;hv'');
+@item bal_fw: increase balance (default is ``];lb'');
+@item bal_bw: decrease balance (default is ``[;hb'');
+@item info: launch song info dialog (default is ``i'');
+@item add: launch song adding dialog (default is ``a'');
+@item rem: remove song (default is ``r'');
+@item save: launch play list saving dialog (default is ``s'');
+@item sort: launch play list sorting dialog (default is ``S'');
+@item plugins_manager: launch plugins manager (default is ``P'');
+@item visual: toggle visual mode (default is ``V'');
+@item centrize: centrize view (default is ``C'');
+@item search: launch search dialog (default is ``/'');
+@item advanced_search: launch advanced search dialog (default is ``\\'');
+@item next_match: move to the next search match (default is ``n'');
+@item prev_match: move to the previous search match (default is ``N'');
+@item help: launch help screen (default is ``?'');
+@item equalizer: launch equalizer window (default is ``e'');
+@item shuffle: toggle shuffle mode (default is ``R'');
+@item var_manager: launch variable manager (default is ``o'');
+@item plist_down: shift play list item down (default is ``J'');
+@item plist_up: shift play list item up (default is ``K'');
+@item plist_move: move play list item (default is ``M'');
+@item undo: undo last action (default is ``U'');
+@item redo: redo last undone action (default is ``D'');
+@item reload_info: reload song info (default is ``I'');
+@item set_play_bounds: set playing boundaries (default is ``ps'');
+@item clear_play_bounds: clear playing boundaries (default is ``pc'');
+@item play_bounds: play inside playing boundaries (default is ``p<Return>'');
+@item exec: execute an external command (default is ``!'');
+@item goback: return to the last play list position (default is 
+``@verb{|``|}'')
+@item time_back: return to the last song position (default is ``<Backspace>'');
+@item queue: queue the song under cursor (default is ``'@w{}'');
+@item file_browser: launch file browser (default is ``B'');
+@item log: open logger window (default is ``O'');
+@item marka, @dots{}, markz: remember cursor position (defaults are ``ma'',
+@dots{}, ``mz'');
+@item goa, @dots{}, goz: go to respective mark (defaults are ```a'',
+@dots{}, ```z'').
+@end itemize
+
+@node browser keybinds, help keybinds, player keybinds, Key bindings
+@subsection browser keybinds
+@itemize
+@item quit: close browser (default is ``q;<Escape>'');
+@item move_up: move cursor up (default is ``k;<Up>;<Ctrl-p>'');
+@item move_down: move cursor down (default is ``j;<Down>;<Ctrl-n>'');
+@item screen_up: move cursor screen up (default is ``u;<PageUp>;<Alt-v>'');
+@item screen_down: move cursor screen down (default is 
+``d;<PageDown>;<Ctrl-v>'');
+@item move_to_start: move cursor to the beginning (default is 
+``<Ctrl-a>;<Home>'');
+@item move_to_end: move cursor to the end (default is ``<Ctrl-e>;<End>'');
+@item go_to_dir: go to currently selected directory (default is ``<Enter>'');
+@item go_to_home: go to home directory (default is ``h'');
+@item go_to_parent: go to parent directory (default is ``<Backspace>'');
+@item add_to_playlist: add selected files to play list (default is ``a'');
+@item replace_playlist: replace play list witht the selected files 
+(default is ``r'');
+@item toggle_info: toggle info move (default is ``i'');
+@item change_dir: launch change directory dialog (default is ``c'');
+@item select: select highlighted file (default is ``<Insert>'');
+@item select_pattern: select files matching a pattern (default is ``+'');
+@item deselect_pattern: deselect files matching a pattern (default is ``-'');
+@item help: launch help screen (default is ``?'').
+@end itemize
+
+@node help keybinds, equalizer keybinds, browser keybinds, Key bindings
+@subsection help keybinds
+@itemize
+@item quit: close window (default is ``q;<Escape>'');
+@item next_page: show next page (default is ``<Enter>;<Space>'').
+@end itemize
+
+@node equalizer keybinds, logger_view keybinds, help keybinds, Key bindings
+@subsection equalizer keybinds
+@itemize
+@item quit: close window (default is ``q;<Escape>'');
+@item move_left: highlight band to the left (default is ``h;<Left>;<Ctrl-b>'');
+@item move_right: highlight band to the right (default is 
+``l;<Right>;<Ctrl-f>'');
+@item increase: increase band value (default is ``k;<Up>;<Ctrl-p>'');
+@item decrease: decrease band value (default is ``j;<Down>;<Ctrl-n>'');
+@item load_eqf: launch loading EQF file dialog (default is ``p'');
+@item help: launch help screen (default is ``?'').
+@end itemize
+
+@node logger_view keybinds, dlgitem keybinds, equalizer keybinds, Key bindings
+@subsection logger_view keybinds
+@itemize
+@item quit: close window (default is ``q;<Escape>'');
+@item scroll_up: scroll up (default is ``k;<Up>;<Ctrl-p>'');
+@item scroll_down: scroll down (default is ``j;<Down>;<Ctrl-n>'');
+@item screen_up: scroll one screen up (default is ``u;<PageUp>;<Alt-v>'');
+@item screen_down: scroll one screen down (default is 
+``<Space>;d;<PageDown>;<Ctrl-v>'');
+@item scroll_to_start: scroll to the beginning (default is 
+``g;<Ctrl-a>;<Home>'');
+@item scroll_to_end: scroll to the end (default is ``G;<Ctrl-e>;<End>'').
+@end itemize
+
+@node dlgitem keybinds, button keybinds, logger_view keybinds, Key bindings
+@subsection dlgitem keybinds
+@itemize
+@item next: move to the next item (default is ``<Tab>'');
+@item ok: press dialog ``OK'' button (default is ``<Enter>'');
+@item cancel: press dialog ``Cancel'' button (default is ``<Escape>;<Ctrl-g>'').
+@end itemize
+
+@node button keybinds, radio keybinds, dlgitem keybinds, Key bindings
+@subsection button keybinds
+@itemize
+@item click: click button (default is ``<Space>'').
+@end itemize
+
+@node radio keybinds, checkbox keybinds, button keybinds, Key bindings
+@subsection radio keybinds
+@itemize
+@item check: check the radio button (default is ``<Space>'');
+@item move_to_next: move to next button in the group (default is 
+``<Down>;<Ctrl-n>;j'');
+@item move_to_prev: move to previous button in the group (default is 
+``<Up>;<Ctrl-p>;k'').
+@end itemize
+
+@node checkbox keybinds, editbox keybinds, radio keybinds, Key bindings
+@subsection checkbox keybinds
+@itemize
+@item toggle: toggle checkbox state (default is ``<Space>'').
+@end itemize
+
+@node editbox keybinds, filebox keybinds, checkbox keybinds, Key bindings
+@subsection editbox keybinsd
+@itemize
+@item move_left: move cursor left (default is ``<Left>;<Ctrl-b>'');
+@item move_right: move cursor right (default is ``<Right>;<Ctrl-f>'');
+@item word_left: move cursor one word left (default is ``<Alt-b>;<SLeft>'');
+@item word_right: move cursor one word right (default is ``<Alt-f>;<SRight>'');
+@item del_left: delete character to the left (default is ``<Backspace>'');
+@item del_right: delete character under cursor (default is ``<Del>;<Ctrl-d>'');
+@item kill_to_start: delete text from cursor to the start (default is 
+``<Ctrl-u>'');
+@item kill_to_end: delete text from cursor to te end (default is 
+``<Ctrl-k>'');
+@item move_to_start: move cursor to the beginning (default is 
+``<Home>;<Ctrl-a>'');
+@item move_to_end: move cursor to the end (default is ``<End>;<Ctrl-e>'');
+@item history_prev: insert previous history entry (default is 
+``<Up>;<Ctrl-p>'');
+@item history_next: insert next history entry (default is ``<Down>;<Ctrl-n>'').
+@end itemize
+
+@node filebox keybinds, combo keybinds, editbox keybinds, Key bindings
+@subsection filebox keybinds
+@itemize
+@item complete: do name completion (default is ``<Tab>'').
+@end itemize
+
+@node combo keybinds, listbox keybinds, filebox keybinds, Key bindings
+@subsection combo keybinds
+@itemize
+@item move_down: move cursor down (default is ``<Down>;<Ctrl-n>'');
+@item move_up: move cursor up (default is ``<Up>;<Ctrl-p>'');
+@item screen_down: move cursor one screen down (default is 
+``<PageDown>;<Ctrl-v>'');
+@item screen_up: move cursor one screen up (default is
+``<PageUp>;<Alt-v>'');
+@item toggle_expansion: expand/reduce list (default is ``<Ctrl-e>'').
+@end itemize
+
+@node listbox keybinds,, combo keybinds, Key bindings
+@subsection listbox keybinds
+@itemize
+@item move_down: move cursor down (default is ``<Down>;<Ctrl-n>;j'');
+@item move_up: move cursor up (default is ``<Up>;<Ctrl-p>;k'');
+@item screen_down: move cursor one screen down (default is 
+``<PageDown>;<Ctrl-v>;d'');
+@item screen_up: move cursor one screen up (default is
+``<PageUp>;<Alt-v>;u'');
+@item move_to_start: move cursor to list beginning (default is
+``<Ctrl-a>;<Home>;g'');
+@item move_to_end: move cursor to list end (default is
+``<Ctrl-e>;<End>;G'');
+@item select_item: select list item (default is ``<Space'');
+@end itemize
+
+@node Other window system features,, Key bindings, Window system
+@subsection Terminfo hints
+MPFC uses terminfo(5) for translating escape sequences into real keys.
+Unfortunately, terminfo table does not always contain all of needed 
+capabilities. For example, values for @key{Ctrl-Left} and @key{Ctrl-Right}
+are often missed.
+
+To use these keys you may specify a value for this capability in 
+variable ``windows.ti.<cap_name>''. The full list of capabilities may be
+found in manpage for terminfo(5).
+
+For example, to set values for @key{Ctrl-Left} and @key{Ctrl-Right}:
+
+@example
+windows.ti.%i = "\e[5C"
+windows.ti.#4 = "\e[5D"
+@end example
+
+@subsection Using terminal background
+Sometimes you want to use background color of your terminal instead of
+default MPFC background (black). To do this set ``force-terminal-bg''
+variable to 1. Then all the colors with black background will be treated as
+colors with default terminal background.
+
+@node Other features,, Window system, Getting Started
+@section Other features
+@menu
+* Command execution::
+* Log::
+* History::
+* Setting mouse parameters::
+@end menu
+
+@node Command execution, Log, Other features, Other features
+@subsection Command execution
+You are able to execute an external command when you are in MPFC. To do this
+use @kbd{!} command. You will be prompted for the command. After you finish
+press @kbd{@key{RET}} to return to MPFC.
+
+@node Log, History, Command execution, Other features
+@subsection Log
+MPFC has a log system. You may view log messages in two places. First is
+@file{~/.mpfc/log} file (this name may be changed by setting ``log-file''
+variable). Second is logger view window. It is activated by pressing
+@key{O} key. 
+
+An important issue concerning the log system is log level. It is set with
+``log-level'' variable and it controls the amount of messages you get. 
+Possible values for it are: ``none'', ``low'', ``default'', ``high'' and
+``debug'' (there is a little use from the latter for a common user, though).
+
+@node History, Setting mouse parameters, Log, Other features
+@subsection History
+Some edit boxes when you do input support history so that you can restore
+any of the strings you have entered there before. To jump between these
+strings press @kbd{@key{Up}} for going back and @kbd{@key{Down}} for going 
+forth.
+
+@node Setting mouse parameters,, History, Other features
+@subsection Setting mouse parameters
+MPFC tries to guess the type of mouse driver by the name of terminal it is
+running on. But it can do it wrong, so you may specify this type explicitly.
+Use variable ``mouse'' for this purpose. It may have one of the following
+values: ``none'' (no mouse is used), ``gpm'' (use gpm---this is normally
+used when you run MPFC on console) and ``xterm'' (on xterm-like terminal).
+
+@node Using Variables, Plugins, Getting Started, Top
+@chapter Variables usage
+
+MPFC supports variables that allow you to control some of its options. 
+These variables are organized into configuration lists. Each list can
+have variables and other lists in it. Variables and lists have their names.
+If a variable/list is not in the top-level list its ancestors names are
+delimited with ``.'' (e.g. ``windows.classes.kbind.move_down'').
+Each variable has a value associated with it. This value is a string. 
+If variable
+is not set its value is considered to be ``0''. Also you can simply ``set''
+variable so that its value becomes ``1''. These two values are often used
+when specifying a choice result. ``0'' means ``no'' and ``1'' means ``yes''.
+So when variable is not set, its value respects to ``no'' and when it is
+set---to ``yes''.
+
+@menu
+* Setting variables::
+* List of options::
+@end menu
+
+@node Setting variables, List of options, Using Variables, Using Variables
+@section Setting variables
+You may set a variable in three different places.
+
+The first is any of MPFC configuration files (@file{/etc/mpfcrc} and
+@file{~/.mpfc/mpfcrc}).  In this file each variable
+is specified in its own line in the format: <variable>[<operation><value>], 
+where ``variable'' is variable name, ``operation'' is one of the following
+symbol sequences: ``='', ``+='', ``-='', and ``value'' is variable value.
+You may skip the second part of this expression, then variable will be 
+set to ``1''. ``#'' in the line beginning starts a comment.
+
+Value may be in one of two forms. First consists of characters that will be
+literally used as the value. This sequence of characters is bounded by
+whitespaces, so you can't use whitespaces in these values. In second form
+you place the value inside double quotes, so that there is no such restriction.
+Also in that form you may use special characters: ``\n'' (new line), 
+``\t'' (tabulation), ``\e'' (escape), ``\"'' (double quote itself), 
+``\\'' (backslash).
+
+Operation type points to what will be done with the value. Assignment (``='')
+simply assigns variable this value. Addition (``+='') replaces current 
+value with the value ``<current value>;<specified value>'' (it is used
+primarily for setting key bindings @pxref{Key bindings}). Removal (``-='')
+is opposite for addition.
+Besides main configuration file you can use a local configuration file in 
+the current directory. Its name is also @file{.mpfcrc} but settings from it
+override the settings from the main file. 
+
+You may include a separate file with ``include(<file_name>)''.
+
+Also there is a special feature called list operator. It is used when you
+have to set many variables stored in deep-leveled lists. You write name of
+the list in square brackets and then variable on the next line will use this
+name as its parent. Certainly, you won't often use list operator for setting
+a single variable, so you would unite multiple lines in blocks using braces.
+
+Here is a short example of MPFC configuration file:
+
+@verbatim
+# MPFC configuration file
+lib-dir=/usr/local/lib/mpfc
+output-plugin=oss
+play-from-stop
+
+include(some_file)
+
+[windows.classes.player]
+{
+	plist-style = "red:green:blink"
+	time-style = "white:black"
+
+	[kbind]
+	{
+		move_down += "."
+		move_up -= "k"
+	}
+	kbind.screen_up = w
+}
+
+# Include statement is one line, so list operator is applied to all of 
+# the lines inside that file
+[windows.classes.browser]
+include(my_browser_styles)
+@end verbatim
+
+The second place where you can set variable is command line when you invoke
+MPFC (@pxref{Launching MPFC}). The format is the same with the configuration
+file but you must add prefix ``@verb{--}'' before each definition. 
+
+Also there is a way to specify include-file from the command line. Use 
+``-f <name>'' or ``-ff <name>'' for that. First uses file 
+@file{~/.mpfc/<name>}, while second uses name as the real file name.
+Here is an example:
+
+@example
+mpfc --lib-dir=/usr/local/lib/mpfc --output-plugin=oss --play-from-stop 
+-f some_file list.m3u
+@end example
+
+The third place is while running MPFC. It has a variable manager invoked
+by @kbd{o} command. There you set variable name, value and operation you
+want to perform, press ``OK'' button, and variable will be set.
+
+@node List of options,, Setting variables, Using Variables
+@section List of options
+
+Here is a list of MPFC configuration options. Note that plugin or
+window system specific options are not present here. Look for them in the
+respective sections of manual.
+
+@table @option
+@item autosave-plugins-params
+Automatically save plugins parameters (default is 1)
+@item charset-input
+Charset to use as input when reading songs information (@pxref{Charsets})
+@item convert-underscores2spaces
+Convert underscores to spaces in songs titles (default is 0)
+@item log-file
+Log file path
+@item log-level
+Log level (@pxref{Log})
+@item loop-play
+Turns on loop play mode (default is 0)
+@item play-from-stop
+At the beginning play from the point you stopped last time (default is 1)
+@item save-playlist-on-exit
+Save play list to @file{~/.mpfc/list.m3u} on exit (default is 1)
+@item search-nocase
+Make play list search case-insensitive (default is 1)
+@item show-time-remaining
+Show remaining song time instead of play time (default is 0)
+@item shuffle-play
+Turns on shuffle play mode (default is 0)
+@item silent-mode
+Don't use output plugin (default is 0)
+@item sort-on-load
+Sort play list after loading (default is 0)
+@item sort-on-load-type
+Type of sort on load (``sort-by-path-and-file'', ``sort-by-title'', 
+``sort-by-file-name'' or ``sort-by-path-and-track'')
+@item title-format
+Format of song title (@pxref{Song Info})
+@item view-follows-cur-song
+If current song escapes view, centrize it automatically (default is 1)
+@end table
+
+@node Plugins, Copying, Using Variables, Top
+@chapter Plugins usage
+
+Plugins are used to expand MPFC functionality. There are four kinds of
+plugins: input, output, effect and charset. Input plugins are used to play 
+files of some kind of format. Output plugins are used to work with sound 
+output devices. Effect plugins are used to add effects to playing. Charset
+plugins are used to support various charsets and convert between them.
+
+Plugins are stored commonly in @file{/usr/lib/mpfc/} or 
+@file{/usr/local/lib/mpfc}.
+There are four directories for each of these plugins types: @file{input},
+@file{output}, @file{effect} and @file{charset}. Each plugin is a shared 
+library (.so file). To install plugin simply copy it to the respective 
+directory.
+
+Plugins have special configuration lists hierarchy. Root list is ``plugins''.
+It has children for each of plugin types (``input'', ``output'', ``effect'',
+``charset''). Configuration for a speficic plugin is stored in list with 
+name same with plugin name and placed in respective list (e.g. 
+``plugins.input.mp3.quick_get_len''). Variable names given further in
+connection with the listed plugins are without ``plugins.<type>.<name>.''
+prefix.
+
+Here these types are described in a greater detail and also some standard
+plugins are considered.
+
+@menu
+* Input::
+* Output::
+* Effect::
+* Charsets::
+* Plugins manager::
+@end menu
+
+@node Input, Output, Plugins, Plugins
+@section Input plugins
+@menu
+* Common formats::
+* Audio CD::
+@end menu
+
+@node Common formats, Audio CD, Input, Input
+@subsection Common formats
+MPFC has four built-in plugins for common formats: MP3, Ogg Vorbis, WAV.
+These plugins have nothing special. The only aspect to note is connected 
+with MP3 plugin. 
+
+There are two methods to calculate MP3 song length: quick 
+and correct. In most cases quick method works correctly but for some songs with
+variable bitrate their length would be improper. Correct method calculates
+all songs length absolutely correctly but it is rather long. It is quick
+method that is turned on by default. To change this set variable
+``quick-get-len'' to ``0''.
+Also there is a note on Ogg Vorbis plugin behaviour. By default it always
+uses UTF-8 as output charset but you may override this behaviour by setting
+``always-use-utf8'' variable to ``0'', so it would save tags in your
+common output charset (@pxref{Charsets}).
+
+@node Audio CD,, Common formats, Input
+@subsection Audio CD
+Audio CD plugin supports Audio CDs. Audio-CD uses a special virtual file
+system with files named @file{track01}, ..., @file{trackNN}, where ``NN'' is
+total number of tracks on the disc. To specify such a file you must put 
+plugin prefix (``audiocd://'' before the name). You may also use patterns
+(e.g. @file{audiocd://track0[4-7]}) or even put @file{audiocd://}---this
+means total CD.
+
+By default CD-ROM device is @file{/dev/cdrom}, but you can change this
+behaviour by setting ``device'' variable.
+
+Song info for Audio CD is supported through CDDB. If you want to obtain
+this information you must be connected to the Internet. CDDB server is set
+through ``cddb-host'' variable. The default value is ``freedb.freedb.org''.
+After MPFC gets 
+information it stores it on your local machine and further loads it from this
+machine. Alternatively you may specify info by your own and store it. CDDB
+submission is not supported yet. Note that to use info for Audio CD you must
+have @file{cddb} directory in your @file{~/.mpfc}.
+
+Also you can submit info to CDDB. To do it click on the respective button
+in info editor for any of this CD songs. Note that you must have two variables
+set. First is ``cddb-email'' and it holds your e-mail address. Second is
+``cddb-category'' and it holds the category of disc you are about to submit.
+Possible values are: ``blues'', ``classical'', ``country'', ``data'', ``folk'',
+``jazz'', ``misc'', ``newage'', ``reggae'', ``rock'' and ``soundtrack''.
+
+@node Output, Effect, Input, Plugins
+@section Output plugins
+There may be only one active output plugin at the time. This name is set
+using variable ``output-plugin'' where the plugin name is stored (by default
+``alsa'' or ``oss'', depending on kernel version and configuration options).
+
+Here is description for standard MPFC plugins.
+
+@menu
+* ALSA and OSS::
+* Disk Writer::
+@end menu
+
+@node ALSA and OSS, Disk Writer, Output, Output
+@subsection ALSA and OSS
+ALSA and OSS are standard output plugins that you probably will use.
+ALSA is default for 2.6.* kernels, while OSS is default for former versions.
+Both of them can play music using different audio devices. For OSS default
+device is ``/dev/dsp'', for ALSA---``plughw:0,0''. You may set another
+devices through ``device'' variable in the respective configuration list.
+The value of this variable is a list of devices that MPFC should use to
+interact with audio system (the first device in this list is probed, then if it
+fails the second, and so on). For example:
+@example
+plugins.output.oss.device = "/dev/dsp1;/dev/dsp"
+plugins.output.alsa.device = "plughw:0,1;plughw:0,0"
+@end example
+
+@node Disk Writer,, ALSA and OSS, Output
+@subsection Disk Writer
+Disk Writer plugin is used to save the audio output to disk. Each song that 
+you play is stored in a WAV file. The name of this file is same with the file
+name of the song you play and path is read from ``path'' variable.
+
+This plugin can also encode this file using some external program (by default
+``oggenc''). This behaviour is controlled by ``encode'' variable. The file
+being encoded is split into parts of fixed length (in time units; by default
+10 minutes). Use ``fragment-size'' to set another value (in seconds).
+Also you can specify any other encoder with variable ``encode-command''.
+This variable should contain a shell command containing ``%i'' and ``%o''
+patterns (they expand into the input file name and output file name without
+extension respectively). For example:
+@example
+lame --quiet "%i" "%o.mp3"
+@end example
+
+@node Effect, Charsets, Output, Plugins
+@section Effect plugins
+To enable effect plugin ``plugin'' set variable ``enable-effect-plugin''.
+
+@node Charsets, Plugins manager, Effect, Plugins
+@section Charset plugins
+Charsets are used in song info management. Suppose you have song with info
+written in charset A and your display charset is B. This is where charsets
+management is used. Display charset is set with variable ``charset-output''.
+Input charset may be stored with the text in song info, so in this case you
+don't need to specify it. But in many cases it is not, that's why you may
+want to set it. It is done with variable ``charset-input''. Also there is
+a variable ``charset-save-info'' that controls the charset is written down in.
+
+And what about charset plugins? They are used to support various charsets.
+In fact, MPFC internally supports only one charset---UTF-8 (respective 
+variable value is ``utf-8''). So each one-byte
+charset that is used by you should be supported by some plugin. One plugin
+may support many charset (e.g. charsets for some language). Also there are
+special charsets called automatic. They expand to other charsets. These 
+charsets are useful when you have songs with different charsets, so MPFC
+will try to guess charset in each case. This certainly makes sense only for
+input charsets.
+
+@node Plugins manager,, Charsets, Plugins
+@section Plugins manager
+Plugins manager is a useful tool for configuring plugins system. It is called
+with @kbd{P} key (by default). Plugins manager allows you to view the 
+loaded plugins list along with their descriptions, 
+select output plugin (by pressing @kbd{@key{Space}} at the respective item
+in plugins list box, enable/disable effects and do plugin-specific 
+configuration.
+
+@node Copying,, Plugins, Top
+@chapter Copying information
+MPFC is licensed under GNU GPL license. To read it view @file{COPYING} file in
+MPFC distribution.
+
+@bye
