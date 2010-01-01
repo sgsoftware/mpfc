@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <locale.h>
+#include <gst/gst.h>
 #include "error.h"
 #include "player.h"
 #include "wnd.h"
@@ -38,6 +39,8 @@ int main( int argc, char *argv[] )
 	setlocale(LC_ALL, "");
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
+
+	gst_init(&argc, &argv);
 	
 	/* Initialize player */
 	if (!player_init(argc, argv))

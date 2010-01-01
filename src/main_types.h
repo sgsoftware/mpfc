@@ -24,6 +24,7 @@
 #define __SG_MPFC_MAIN_TYPES_H__
 
 #include <pthread.h>
+#include <gst/gst.h>
 #include "types.h"
 #include "types.h"
 #include "file.h"
@@ -131,6 +132,9 @@ typedef struct
 	/* Current volume and balance */
 	int m_volume;
 	int m_balance;
+
+	bool_t m_end_of_stream;
+	GstElement *m_pipeline;
 } player_context_t;
 
 #endif

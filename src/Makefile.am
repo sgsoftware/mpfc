@@ -12,7 +12,8 @@ EXTRA_DIST = .mpfcrc
 localedir = $(datadir)/locale
 DEFS = -DLOCALEDIR=\"$(localedir)\" -DLIBDIR=\"$(libdir)\" \
 	   -DSYSCONFDIR=\"$(sysconfdir)\" @DEFS@
-INCLUDES = -I$(top_builddir)/libmpfcwnd/
+INCLUDES = -I$(top_builddir)/libmpfcwnd/ @GSTREAMER_CFLAGS@
 mpfc_LDADD = @COMMON_LIBS@ @PTHREAD_LIBS@ @DL_LIBS@ @MATH_LIBS@ \
 			 $(top_builddir)/libmpfc/libmpfc.la \
-			 $(top_builddir)/libmpfcwnd/libmpfcwnd.la
+			 $(top_builddir)/libmpfcwnd/libmpfcwnd.la \
+			 @GSTREAMER_LIBS@
