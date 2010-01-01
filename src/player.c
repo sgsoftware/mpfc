@@ -100,6 +100,9 @@ volatile bool_t player_end_track = FALSE;
 /* Player context */
 player_context_t *player_context = NULL;
 
+bool_t player_end_of_stream = FALSE;
+GstElement *player_pipeline = NULL;
+
 /* Has equalizer value changed */
 bool_t player_eq_changed = FALSE;
 
@@ -1487,7 +1490,7 @@ void player_seek( int sec, bool_t rel )
 		new_time = s->m_len;
 
 	player_save_time();
-	gst_element_seek(player_context->m_pipeline, 1.0, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH,
+	gst_element_seek(player_pipeline, 1.0, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH,
 			GST_SEEK_TYPE_SET, (guint64)player_translate_time(s, new_time, TRUE) * 1000000000,
 			GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE);
 	player_context->m_cur_time = new_time;
@@ -1804,7 +1807,7 @@ static gboolean player_gst_bus_call( GstBus *bus, GstMessage *msg, gpointer data
 	switch (GST_MESSAGE_TYPE(msg))
 	{
 	case GST_MESSAGE_EOS:
-		player_context->m_end_of_stream = TRUE;
+		player_end_of_stream = TRUE;
 		break;
 	}
 
@@ -1901,9 +1904,9 @@ void *player_thread( void *arg )
 		*/
 
 		was_status = PLAYER_STATUS_STOPPED;
-		player_context->m_end_of_stream = FALSE;
+		player_end_of_stream = FALSE;
 		loop = g_main_loop_new(NULL, FALSE);
-		player_context->m_pipeline = gst_element_factory_make("playbin", "play");
+		player_pipeline = gst_element_factory_make("playbin", "play");
 
 		/* Set a user-specified audio sink */
 		{
@@ -1935,7 +1938,7 @@ void *player_thread( void *arg )
 						}
 					}
 					logger_debug(player_log, "gstreamer: setting audio sink to %s", audio_sink_name);
-					g_object_set(G_OBJECT(player_context->m_pipeline), "audio-sink", sink, NULL);
+					g_object_set(G_OBJECT(player_pipeline), "audio-sink", sink, NULL);
 				}
 				else
 				{
@@ -1945,18 +1948,18 @@ void *player_thread( void *arg )
 			}
 		}
 
-		bus = gst_pipeline_get_bus(GST_PIPELINE(player_context->m_pipeline));
+		bus = gst_pipeline_get_bus(GST_PIPELINE(player_pipeline));
 		gst_bus_add_watch(bus, player_gst_bus_call, NULL);
 		gst_object_unref(bus);
 
 		sprintf(file_name, "file://%s", s->m_full_name);
-		g_object_set(G_OBJECT(player_context->m_pipeline), "uri", file_name, NULL);
-		gst_element_set_state(player_context->m_pipeline, GST_STATE_PLAYING);
+		g_object_set(G_OBJECT(player_pipeline), "uri", file_name, NULL);
+		gst_element_set_state(player_pipeline, GST_STATE_PLAYING);
 
 		/* Start timer thread */
 		logger_debug(player_log, "Creating timer thread");
 		timer_thread_params.song_played = song_played;
-		timer_thread_params.play = player_context->m_pipeline;
+		timer_thread_params.play = player_pipeline;
 		pthread_create(&player_timer_tid, NULL, player_timer_func, &timer_thread_params);
 	
 		/* Play */
@@ -1972,10 +1975,10 @@ void *player_thread( void *arg )
 				switch (player_context->m_status)
 				{
 				case PLAYER_STATUS_PLAYING:
-					gst_element_set_state(player_context->m_pipeline, GST_STATE_PLAYING);
+					gst_element_set_state(player_pipeline, GST_STATE_PLAYING);
 					break;
 				case PLAYER_STATUS_PAUSED:
-					gst_element_set_state(player_context->m_pipeline, GST_STATE_PAUSED);
+					gst_element_set_state(player_pipeline, GST_STATE_PAUSED);
 					break;
 					/*
 				case PLAYER_STATUS_STOPPED:
@@ -2025,9 +2028,9 @@ void *player_thread( void *arg )
 				}
 			}
 
-			if (player_context->m_end_of_stream)
+			if (player_end_of_stream)
 			{
-				player_context->m_end_of_stream = FALSE;
+				player_end_of_stream = FALSE;
 				song_finished = TRUE;
 				break;
 			}
@@ -2037,9 +2040,9 @@ void *player_thread( void *arg )
 		}
 		logger_debug(player_log, "End playing track");
 
-		gst_element_set_state(player_context->m_pipeline, GST_STATE_NULL);
-		gst_object_unref(GST_OBJECT(player_context->m_pipeline));
-		player_context->m_pipeline = NULL;
+		gst_element_set_state(player_pipeline, GST_STATE_NULL);
+		gst_object_unref(GST_OBJECT(player_pipeline));
+		player_pipeline = NULL;
 
 		/* Wait until we really stop playing */
 		/*
