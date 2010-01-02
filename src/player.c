@@ -1823,12 +1823,6 @@ void *player_thread( void *arg )
 	
 		logger_debug(player_log, "Playing track %s", s->m_full_name);
 
-		/* Set proper mixer type */
-		/*
-		logger_debug(player_log, "Setting mixer type");
-		outp_set_mixer_type(player_pmng->m_cur_out, inp_get_mixer_type(inp));
-		*/
-
 		/* Get song length and information */
 		logger_debug(player_log, "Updating song info");
 		song_update_info(s);
@@ -1853,13 +1847,30 @@ void *player_thread( void *arg )
 		/* Create gstreamer stuff */
 		player_end_of_stream = FALSE;
 		loop = g_main_loop_new(NULL, FALSE);
+		if (!loop)
+		{
+			logger_error(player_log, 1, "g_main_loop_new failed");
+			goto cleanup;
+		}
 		player_pipeline = gst_element_factory_make("playbin", "play");
+		if (!player_pipeline)
+		{
+			logger_error(player_log, 1, "gstreamer: unable to create playbin");
+			goto cleanup;
+		}
 
 		/* Set a user-specified audio sink */
-		player_set_audio_sink();
+		if (!player_set_audio_sink())
+		{
+			goto cleanup;
+		}
 
 		/* Set bus message handler */
 		bus = gst_pipeline_get_bus(GST_PIPELINE(player_pipeline));
+		if (!bus)
+		{
+			logger_error(player_log, 1, "gst_pipeline_get_bus failed");
+		}
 		gst_bus_add_watch(bus, player_gst_bus_call, NULL);
 		gst_object_unref(bus);
 
@@ -1905,11 +1916,9 @@ void *player_thread( void *arg )
 				case PLAYER_STATUS_PAUSED:
 					gst_element_set_state(player_pipeline, GST_STATE_PAUSED);
 					break;
-					/*
 				case PLAYER_STATUS_STOPPED:
-					gst_element_set_state(play, GST_STATE_STOPPED);
+					gst_element_set_state(player_pipeline, GST_STATE_READY);
 					break;
-					*/
 				}
 			}
 
@@ -1983,17 +1992,6 @@ void *player_thread( void *arg )
 		logger_debug(player_log, "End playing track");
 
 		gst_element_set_state(player_pipeline, GST_STATE_NULL);
-		gst_object_unref(GST_OBJECT(player_pipeline));
-		player_pipeline = NULL;
-
-		/* Wait until we really stop playing */
-		/*
-		if (!no_outp && song_finished)
-		{
-			logger_debug(player_log, "outp_flush");
-			outp_flush(player_cur_outp);
-		}
-		*/
 
 		/* Send message about track end */
 		if (!player_end_track)
@@ -2005,18 +2003,20 @@ void *player_thread( void *arg )
 		/* End playing */
 		player_context->m_bitrate = player_context->m_freq = player_context->m_stereo = 0;
 
-		/* End output plugin */
-		/*
-		if (!no_outp)
-		{
-			logger_debug(player_log, "outp_end");
-			outp_end(player_cur_outp);
-		}
-		player_cur_outp = NULL;
-		*/
-
 		/* Update screen */
 		wnd_invalidate(player_wnd);
+
+	cleanup:
+		if (player_pipeline)
+		{
+			gst_object_unref(GST_OBJECT(player_pipeline));
+			player_pipeline = NULL;
+		}
+		if (loop)
+		{
+			g_main_loop_unref(loop);
+			loop = NULL;
+		}
 	}
 	logger_debug(player_log, "Player thread finished");
 	return NULL;
