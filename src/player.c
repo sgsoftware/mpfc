@@ -1744,6 +1744,50 @@ static gboolean player_gst_bus_call( GstBus *bus, GstMessage *msg, gpointer data
 }
 
 /* Player thread function */
+bool_t player_set_audio_sink( void )
+{
+	char *audio_sink_name = cfg_get_var(cfg_list, "gstreamer.audio-sink");
+	if (audio_sink_name)
+	{
+		GstElement *sink = gst_element_factory_make(audio_sink_name, "sink");
+		if (sink)
+		{
+			cfg_node_t *cfg_node = cfg_search_node(cfg_list, "gstreamer.audio-sink-params");
+			if (cfg_node)
+			{
+				cfg_list_iterator_t iter = cfg_list_begin_iteration(cfg_node);
+				for ( ;; )
+				{
+					cfg_node_t *cfg_node = cfg_list_iterate(&iter);
+					if (!cfg_node)
+						break;
+
+					if (CFG_NODE_IS_VAR(cfg_node))
+					{
+						char *name = cfg_node->m_name;
+						char *val = CFG_VAR_VALUE(cfg_node);
+
+						logger_debug(player_log, "gstreamer: setting audio sink param %s to %s",
+								name, val);
+						g_object_set(G_OBJECT(sink), name, val, NULL);
+					}
+				}
+			}
+			logger_debug(player_log, "gstreamer: setting audio sink to %s", audio_sink_name);
+			g_object_set(G_OBJECT(player_pipeline), "audio-sink", sink, NULL);
+		}
+		else
+		{
+			logger_error(player_log, 1, _("Audio sink %s could not be created"), 
+					audio_sink_name);
+			return FALSE;
+		}
+	}
+
+	return TRUE;
+}
+
+/* Player thread function */
 void *player_thread( void *arg )
 {
 	logger_debug(player_log, "In player_thread");
@@ -1761,8 +1805,8 @@ void *player_thread( void *arg )
 		bool_t song_finished;
 		GMainLoop *loop = NULL;
 		GstBus *bus = NULL;
-		char file_name[1024];
 		int was_status;
+		char *uri = NULL;
 
 		/* Skip to next iteration if there is nothing to play */
 		if (player_plist->m_cur_song < 0 || 
@@ -1806,59 +1850,26 @@ void *player_thread( void *arg )
 		}
 		*/
 
+		/* Create gstreamer stuff */
 		player_end_of_stream = FALSE;
 		loop = g_main_loop_new(NULL, FALSE);
 		player_pipeline = gst_element_factory_make("playbin", "play");
 
 		/* Set a user-specified audio sink */
-		{
-			char *audio_sink_name = cfg_get_var(cfg_list, "gstreamer.audio-sink");
-			if (audio_sink_name)
-			{
-				GstElement *sink = gst_element_factory_make(audio_sink_name, "sink");
-				if (sink)
-				{
-					cfg_node_t *cfg_node = cfg_search_node(cfg_list, "gstreamer.audio-sink-params");
-					if (cfg_node)
-					{
-						cfg_list_iterator_t iter = cfg_list_begin_iteration(cfg_node);
-						for ( ;; )
-						{
-							cfg_node_t *cfg_node = cfg_list_iterate(&iter);
-							if (!cfg_node)
-								break;
+		player_set_audio_sink();
 
-							if (CFG_NODE_IS_VAR(cfg_node))
-							{
-								char *name = cfg_node->m_name;
-								char *val = CFG_VAR_VALUE(cfg_node);
-
-								logger_debug(player_log, "gstreamer: setting audio sink param %s to %s",
-										name, val);
-								g_object_set(G_OBJECT(sink), name, val, NULL);
-							}
-						}
-					}
-					logger_debug(player_log, "gstreamer: setting audio sink to %s", audio_sink_name);
-					g_object_set(G_OBJECT(player_pipeline), "audio-sink", sink, NULL);
-				}
-				else
-				{
-					logger_error(player_log, 1, _("Audio sink %s could not be created"), 
-							audio_sink_name);
-				}
-			}
-		}
-
+		/* Set bus message handler */
 		bus = gst_pipeline_get_bus(GST_PIPELINE(player_pipeline));
 		gst_bus_add_watch(bus, player_gst_bus_call, NULL);
 		gst_object_unref(bus);
 
-		sprintf(file_name, "file://%s", song_played->m_full_name);
-		g_object_set(G_OBJECT(player_pipeline), "uri", file_name, NULL);
-		gst_element_set_state(player_pipeline, GST_STATE_PLAYING);
+		/* Make an URI for playbin */
+		uri = util_strcat("file://", song_played->m_full_name, NULL);
+		g_object_set(G_OBJECT(player_pipeline), "uri", uri, NULL);
+		free(uri);
 
-		/* Wait for state change */
+		/* Start playing */
+		gst_element_set_state(player_pipeline, GST_STATE_PLAYING);
 		gst_element_get_state(player_pipeline, NULL, NULL, GST_CLOCK_TIME_NONE);
 
 		/* Seek to start time */
