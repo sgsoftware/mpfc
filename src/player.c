@@ -1919,14 +1919,16 @@ void *player_thread( void *arg )
 				guint64 tm;
 
 				/* Update time */
-				gst_element_query_position(player_pipeline, &fmt, &tm);
-				tm /= 1000000000;
-				tm = player_translate_time(song_played, tm, FALSE);
-				if (tm - player_context->m_cur_time)
+				if (gst_element_query_position(player_pipeline, &fmt, &tm))
 				{
-					player_context->m_cur_time = tm;
-					pmng_hook(player_pmng, "player-time");
-					wnd_invalidate(player_wnd);
+					tm /= 1000000000;
+					tm = player_translate_time(song_played, tm, FALSE);
+					if (tm - player_context->m_cur_time)
+					{
+						player_context->m_cur_time = tm;
+						pmng_hook(player_pmng, "player-time");
+						wnd_invalidate(player_wnd);
+					}
 				}
 
 				/* Get audio parameters */
