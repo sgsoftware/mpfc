@@ -1475,6 +1475,7 @@ void player_seek( int sec, bool_t rel )
 {
 	song_t *s;
 	int new_time;
+	guint64 tm;
 	
 	if (player_plist->m_cur_song == -1)
 		return;
@@ -1490,9 +1491,13 @@ void player_seek( int sec, bool_t rel )
 		new_time = s->m_len;
 
 	player_save_time();
-	gst_element_seek(player_pipeline, 1.0, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH,
-			GST_SEEK_TYPE_SET, (guint64)player_translate_time(s, new_time, TRUE) * 1000000000,
-			GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE);
+	tm = (guint64)player_translate_time(s, new_time, TRUE) * 1000000000;
+	logger_debug(player_log, "gstreamer: seeking to time %lld", tm);
+	if (!gst_element_seek(player_pipeline, 1.0, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH,
+			GST_SEEK_TYPE_SET, tm, GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE))
+	{
+		logger_error(player_log, 1, "gstreamer: gst_element_seek returned FALSE");
+	}
 	player_context->m_cur_time = new_time;
 	wnd_invalidate(player_wnd);
 	logger_debug(player_log, "after player_seek timer is %d", player_context->m_cur_time);
@@ -1855,27 +1860,6 @@ void *player_thread( void *arg )
 	
 		logger_debug(player_log, "Playing track %s", s->m_full_name);
 
-		/* Start playing */
-		logger_debug(player_log, "Starting input plugin");
-		/*
-		inp = song_get_inp(s, &fd);
-		if (!inp_start(inp, song_played->m_file_name, fd))
-		{
-			player_next_track();
-			logger_error(player_log, 0,
-					_("Input plugin for file %s failed"), song_played->m_file_name);
-			wnd_invalidate(player_wnd);
-			continue;
-		}
-		logger_debug(player_log, "start time is %d", song_played->m_start_time);
-		if (player_context->m_cur_time > 0 || song_played->m_start_time > -1)
-			inp_seek(inp, player_translate_time(song_played, player_context->m_cur_time, TRUE));
-		in_flags = inp_get_flags(inp);
-		out_flags = outp_get_flags(player_pmng->m_cur_out);
-		no_outp = (in_flags & INP_OWN_OUT) || 
-			((in_flags & INP_OWN_SOUND) && !(out_flags & OUTP_NO_SOUND));
-		*/
-
 		/* Set proper mixer type */
 		/*
 		logger_debug(player_log, "Setting mixer type");
@@ -1955,6 +1939,23 @@ void *player_thread( void *arg )
 		sprintf(file_name, "file://%s", s->m_full_name);
 		g_object_set(G_OBJECT(player_pipeline), "uri", file_name, NULL);
 		gst_element_set_state(player_pipeline, GST_STATE_PLAYING);
+
+		/* Wait for state change */
+		gst_element_get_state(player_pipeline, NULL, NULL, GST_CLOCK_TIME_NONE);
+
+		/* Seek to start time */
+		logger_debug(player_log, "start time is %d", song_played->m_start_time);
+		logger_debug(player_log, "cur_time is %d", player_context->m_cur_time);
+		if (player_context->m_cur_time > 0 || song_played->m_start_time > -1)
+		{
+			guint64 tm = (guint64)player_translate_time(song_played, player_context->m_cur_time, TRUE) * 1000000000;
+			logger_debug(player_log, "gstreamer: seeking to time %lld", tm);
+			if (!gst_element_seek(player_pipeline, 1.0, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH,
+					GST_SEEK_TYPE_SET, tm, GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE))
+			{
+				logger_error(player_log, 1, "gstreamer: gst_element_seek returned FALSE");
+			}
+		}
 
 		/* Start timer thread */
 		logger_debug(player_log, "Creating timer thread");
