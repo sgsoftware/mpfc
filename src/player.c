@@ -90,11 +90,7 @@ pthread_t player_tid = 0;
 /* Player termination flag */
 volatile bool_t player_end_thread = FALSE;
 
-/* Timer thread ID */
-pthread_t player_timer_tid = 0;
-
 /* Timer termination flag */
-volatile bool_t player_end_timer = FALSE;
 volatile bool_t player_end_track = FALSE;
 
 /* Player context */
@@ -1550,8 +1546,6 @@ void player_end_play( bool_t rem_cur_song )
 	player_plist->m_cur_song = -1;
 	player_end_track = TRUE;
 //	player_context->m_status = PLAYER_STATUS_STOPPED;
-	while (player_timer_tid)
-		util_wait();
 	if (!rem_cur_song)
 		player_plist->m_cur_song = was_song;
 	cfg_set_var(cfg_list, "cur-song-name", "");
@@ -1717,87 +1711,6 @@ int player_skip_songs( int num, bool_t play )
 	return song;
 } /* End of 'player_skip_songs' function */
 
-/* Stop timer thread */
-void player_stop_timer( void )
-{
-	if (player_timer_tid != 0)
-	{
-		player_end_timer = TRUE;
-		pthread_join(player_timer_tid, NULL);
-		logger_debug(player_log, "Timer thread terminated");
-		player_end_timer = FALSE;
-		player_timer_tid = 0;
-		player_context->m_cur_time = 0;
-	}
-} /* End of 'player_stop_timer' function */
-
-/* Timer thread function */
-void *player_timer_func( void *arg )
-{
-	struct timer_thread_params
-	{
-		song_t *song_played;
-		GstElement *play;
-	};
-	time_t t = time(NULL);
-	struct timer_thread_params *params = (struct timer_thread_params *)arg;
-	song_t *s = params->song_played;
-	GstElement *play = params->play;
-
-	/* Start zero timer count */
-//	player_context->m_cur_time = 0;
-
-	/* Timer loop */
-	while (!player_end_timer)
-	{
-		time_t new_t = time(NULL);
-		struct timespec tv;
-		GstFormat fmt = GST_FORMAT_TIME;
-		guint64 tm;
-
-		/* Update timer */
-		if (player_context->m_status == PLAYER_STATUS_PAUSED)
-		{
-			t = new_t;
-		}
-		else
-		{	
-			gst_element_query_position(play, &fmt, &tm);
-			/*
-			if (tm < 0)
-			{
-				if (new_t > t)
-				{
-					player_context->m_cur_time += (new_t - t);
-					t = new_t;
-					logger_debug(player_log, "get_cur_time failed. setting time to %d", 
-							player_context->m_cur_time);
-					pmng_hook(player_pmng, "player-time");
-					wnd_invalidate(player_wnd);
-				}
-			}
-			else 
-			*/
-			{
-				tm /= 1000000000;
-				tm = player_translate_time(s, tm, FALSE);
-				if (tm - player_context->m_cur_time)
-				{
-					player_context->m_cur_time = tm;
-					pmng_hook(player_pmng, "player-time");
-					wnd_invalidate(player_wnd);
-				}
-			}
-		}
-		util_wait();
-	}
-
-	player_context->m_cur_time = 0;
-	player_end_timer = FALSE;
-	player_timer_tid = 0;
-	return NULL;
-} /* End of 'player_timer_func' function */
-
 /* Translate projected song time to real time */
 int player_translate_time( song_t *s, int t, bool_t virtual2real )
 {
@@ -1809,10 +1722,21 @@ int player_translate_time( song_t *s, int t, bool_t virtual2real )
 /* GStreamer bus message handler */
 static gboolean player_gst_bus_call( GstBus *bus, GstMessage *msg, gpointer data )
 {
+	gchar *debug;
+	GError *error;
+
 	switch (GST_MESSAGE_TYPE(msg))
 	{
 	case GST_MESSAGE_EOS:
+		logger_debug(player_log, "gstreamer: EOS message arrived");
 		player_end_of_stream = TRUE;
+		break;
+	case GST_MESSAGE_ERROR:
+		gst_message_parse_error(msg, &error, &debug);
+		g_free(debug);
+
+		logger_error(player_log, 1, "gstreamer error: %s", error->message);
+		g_error_free(error);
 		break;
 	}
 
@@ -1839,11 +1763,6 @@ void *player_thread( void *arg )
 		GstBus *bus = NULL;
 		char file_name[1024];
 		int was_status;
-		struct timer_thread_params
-		{
-			song_t *song_played;
-			GstElement *play;
-		} timer_thread_params;
 
 		/* Skip to next iteration if there is nothing to play */
 		if (player_plist->m_cur_song < 0 || 
@@ -1887,7 +1806,6 @@ void *player_thread( void *arg )
 		}
 		*/
 
-		was_status = PLAYER_STATUS_STOPPED;
 		player_end_of_stream = FALSE;
 		loop = g_main_loop_new(NULL, FALSE);
 		player_pipeline = gst_element_factory_make("playbin", "play");
@@ -1936,7 +1854,7 @@ void *player_thread( void *arg )
 		gst_bus_add_watch(bus, player_gst_bus_call, NULL);
 		gst_object_unref(bus);
 
-		sprintf(file_name, "file://%s", s->m_full_name);
+		sprintf(file_name, "file://%s", song_played->m_full_name);
 		g_object_set(G_OBJECT(player_pipeline), "uri", file_name, NULL);
 		gst_element_set_state(player_pipeline, GST_STATE_PLAYING);
 
@@ -1957,16 +1875,11 @@ void *player_thread( void *arg )
 			}
 		}
 
-		/* Start timer thread */
-		logger_debug(player_log, "Creating timer thread");
-		timer_thread_params.song_played = song_played;
-		timer_thread_params.play = player_pipeline;
-		pthread_create(&player_timer_tid, NULL, player_timer_func, &timer_thread_params);
-	
 		/* Play */
 		disp_count = 0;
 		logger_debug(player_log, "Going into track playing cycle");
 		song_finished = FALSE;
+		was_status = PLAYER_STATUS_PLAYING;
 		while (!player_end_track)
 		{
 			g_main_context_iteration(NULL, FALSE);
@@ -1991,6 +1904,20 @@ void *player_thread( void *arg )
 
 			if (player_context->m_status == PLAYER_STATUS_PLAYING)
 			{
+				GstFormat fmt = GST_FORMAT_TIME;
+				guint64 tm;
+
+				/* Update time */
+				gst_element_query_position(player_pipeline, &fmt, &tm);
+				tm /= 1000000000;
+				tm = player_translate_time(song_played, tm, FALSE);
+				if (tm - player_context->m_cur_time)
+				{
+					player_context->m_cur_time = tm;
+					pmng_hook(player_pmng, "player-time");
+					wnd_invalidate(player_wnd);
+				}
+
 				/* Get audio parameters */
 #if 0
 				inp_get_audio_params(inp, &new_ch, &new_freq, &new_fmt, 
@@ -2021,9 +1948,10 @@ void *player_thread( void *arg )
 						player_translate_time(song_played, player_context->m_cur_time, TRUE) >= 
 						song_played->m_end_time)
 				{
-					logger_debug(player_log, "stopping at time %d(%d).", 
+					logger_debug(player_log, "stopping at time %d(%d) with end_time=%d.", 
 							player_context->m_cur_time,
-							player_translate_time(song_played, player_context->m_cur_time, TRUE));
+							player_translate_time(song_played, player_context->m_cur_time, TRUE),
+							song_played->m_end_time);
 					song_finished = TRUE;
 					break;
 				}
@@ -2053,10 +1981,6 @@ void *player_thread( void *arg )
 			outp_flush(player_cur_outp);
 		}
 		*/
-
-		/* Stop timer thread */
-		logger_debug(player_log, "Stopping timer");
-		player_stop_timer();
 
 		/* Send message about track end */
 		if (!player_end_track)
