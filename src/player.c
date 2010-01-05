@@ -1326,7 +1326,7 @@ wnd_msg_retcode_t player_on_display( wnd_t *wnd )
 {
 	int i;
 	song_t *s = NULL;
-	char aparams[256];
+	char aparams[256], *aparams_ptr;
 
 	/* Display head */
 	wnd_move(wnd, 0, 0, 0);
@@ -1407,12 +1407,13 @@ wnd_msg_retcode_t player_on_display( wnd_t *wnd )
 
 	/* Display current audio parameters */
 	strcpy(aparams, "");
+	aparams_ptr = aparams;
 	if (player_context->m_bitrate)
-		sprintf(aparams, "%s%d kbps ", aparams, player_context->m_bitrate);
+		aparams_ptr += sprintf(aparams_ptr, "%d kbps ", player_context->m_bitrate);
 	if (player_context->m_freq)
-		sprintf(aparams, "%s%d Hz ", aparams, player_context->m_freq);
+		aparams_ptr += sprintf(aparams_ptr, "%d Hz ", player_context->m_freq);
 	if (player_context->m_stereo)
-		sprintf(aparams, "%s%s", aparams, 
+		aparams_ptr += sprintf(aparams_ptr, "%s", 
 				(player_context->m_stereo == player_context->m_stereo) ? "stereo" : "mono");
 	wnd_move(wnd, 0, PLAYER_SLIDER_BAL_X - strlen(aparams) - 1, 
 			PLAYER_SLIDER_BAL_Y);
@@ -1933,7 +1934,7 @@ void *player_thread( void *arg )
 					was_pfreq = player_context->m_freq; was_pstereo = player_context->m_stereo;
 					was_pbr = player_context->m_bitrate;
 					player_context->m_freq = new_freq;
-					player_context->m_stereo = (new_ch == 1) ? PLAYER_MONO : player_context->m_stereo;
+					player_context->m_stereo = (new_ch == 1) ? PLAYER_MONO : PLAYER_STEREO;
 					new_br /= 1000;
 					player_context->m_bitrate = new_br;
 					if ((player_context->m_freq != was_pfreq || 
