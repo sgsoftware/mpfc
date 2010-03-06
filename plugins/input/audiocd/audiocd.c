@@ -21,6 +21,7 @@
  */
 
 #include <stdio.h>
+#include <limits.h>
 #include <linux/cdrom.h>
 #include <errno.h>
 #include <stdlib.h>
