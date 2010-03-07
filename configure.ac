@@ -111,6 +111,17 @@ else
 	AC_MSG_RESULT([*** flac plugin disabled per user request ***])
 fi
 
+# Stuff for cue plugin
+AC_ARG_ENABLE(cue, 
+[	--disable-cue		Disable cue input plugin [default=enabled]],,
+		enable_cue="yes")
+if test "x$enable_cue" = xyes; then
+	LIBS_save=$LIBS
+	LIBS=$LIBS_save
+else
+	AC_MSG_RESULT([*** cue plugin disabled per user request ***])
+fi
+
 # Stuff for audiocd plugin
 AC_ARG_ENABLE(audiocd, 
 [	--disable-audiocd	Disable audiocd input plugin [default=enabled]],,
@@ -169,7 +180,7 @@ AC_ARG_ENABLE(oss,
 		enable_oss="yes")
 
 # Choose input plugins
-ALL_INPUT_PLUGINS="audiocd mp3 ogg wav flac"
+ALL_INPUT_PLUGINS="audiocd mp3 ogg wav flac cue"
 for plugin in $ALL_INPUT_PLUGINS; do
 	name="\$enable_$plugin"
 	value=`eval echo $name`
@@ -256,6 +267,7 @@ AC_OUTPUT(Makefile \
 		  plugins/input/ogg/Makefile \
 		  plugins/input/wav/Makefile \
 		  plugins/input/flac/Makefile \
+		  plugins/input/cue/Makefile \
 		  plugins/output/Makefile \
 		  plugins/output/alsa/Makefile \
 		  plugins/output/disk_writer/Makefile \
