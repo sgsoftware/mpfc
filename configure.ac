@@ -95,6 +95,22 @@ else
 	AC_MSG_RESULT([*** mp3 plugin disabled per user request ***])
 fi
 
+# Stuff for flac plugin
+AC_ARG_ENABLE(flac, 
+[	--disable-flac		Disable flac input plugin [default=enabled]],,
+		enable_flac="yes")
+if test "x$enable_flac" = xyes; then
+	# Check for flac library
+	LIBS_save=$LIBS
+	AC_CHECK_HEADERS([FLAC/all.h],,[AC_MSG_ERROR(*** Can't find FLAC/all.h ***)])
+	AC_CHECK_LIB(FLAC, FLAC__stream_decoder_process_single,,[AC_MSG_ERROR(*** Can't find FLAC library ***)])
+	FLAC_LIBS="-lFLAC"
+	AC_SUBST(FLAC_LIBS)
+	LIBS=$LIBS_save
+else
+	AC_MSG_RESULT([*** flac plugin disabled per user request ***])
+fi
+
 # Stuff for audiocd plugin
 AC_ARG_ENABLE(audiocd, 
 [	--disable-audiocd	Disable audiocd input plugin [default=enabled]],,
@@ -153,7 +169,7 @@ AC_ARG_ENABLE(oss,
 		enable_oss="yes")
 
 # Choose input plugins
-ALL_INPUT_PLUGINS="audiocd mp3 ogg wav"
+ALL_INPUT_PLUGINS="audiocd mp3 ogg wav flac"
 for plugin in $ALL_INPUT_PLUGINS; do
 	name="\$enable_$plugin"
 	value=`eval echo $name`
@@ -239,6 +255,7 @@ AC_OUTPUT(Makefile \
 		  plugins/input/mp3/Makefile \
 		  plugins/input/ogg/Makefile \
 		  plugins/input/wav/Makefile \
+		  plugins/input/flac/Makefile \
 		  plugins/output/Makefile \
 		  plugins/output/alsa/Makefile \
 		  plugins/output/disk_writer/Makefile \
