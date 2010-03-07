@@ -27,6 +27,7 @@
 #define __USE_GNU
 #include <string.h>
 #include <sys/types.h>
+#include <libgen.h>
 #include <dirent.h>
 #include "types.h"
 #include "cue_sheet.h"
