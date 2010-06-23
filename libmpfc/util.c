@@ -102,7 +102,7 @@ void util_delay( long s, long ns )
 {
 	struct timespec tv;
 
-	tv.tv_sec = 0;
+	tv.tv_sec = s;
 	tv.tv_nsec = ns;
 	nanosleep(&tv, NULL);
 } /* End of 'util_delay' function */
@@ -110,7 +110,7 @@ void util_delay( long s, long ns )
 /* Wait a little */
 void util_wait( void )
 {
-	util_delay(0, 100000);
+	util_delay(0, 10000000);
 } /* End of 'util_wait' function */
 /* Get file name without full path */
 char *util_short_name( char *name )
