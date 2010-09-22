@@ -13,6 +13,6 @@ localedir = $(datadir)/locale
 DEFS = -DLOCALEDIR=\"$(localedir)\" -DLIBDIR=\"$(libdir)\" \
 	   -DSYSCONFDIR=\"$(sysconfdir)\" @DEFS@
 INCLUDES = -I$(top_builddir)/libmpfcwnd/
-mpfc_LDADD = @COMMON_LIBS@ @PTHREAD_LIBS@ @DL_LIBS@ @MATH_LIBS@ \
-			 $(top_builddir)/libmpfc/libmpfc.la \
-			 $(top_builddir)/libmpfcwnd/libmpfcwnd.la
+mpfc_LDADD = $(top_builddir)/libmpfc/libmpfc.la \
+			 $(top_builddir)/libmpfcwnd/libmpfcwnd.la \
+			 @COMMON_LIBS@ @PTHREAD_LIBS@ @DL_LIBS@ @MATH_LIBS@

@@ -18,6 +18,6 @@ libmpfc_la_SOURCES = cfg.c charset.c file.c file_http.c file_reg.c \
 					 song_info.c string.c vfs.c logger.c cfg_rcfile.c \
 					 plugin.c plugin_general.c command.c \
 					 $(libmpfchdr_HEADERS)
-libmpfc_la_LIBADD = @COMMON_LIBS@ @RESOLV_LIBS@ 
+libmpfc_la_LIBADD = @COMMON_LIBS@ @RESOLV_LIBS@ @DL_LIBS@
 INCLUDES = -I$(top_builddir)/src -I$(top_builddir)/libmpfcwnd
 localedir = $(datadir)/locale
