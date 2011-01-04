@@ -125,6 +125,7 @@ song_info_t *cue_get_info( char *file_name, int *len )
 	cue_sheet_t *cs;
 	cue_track_t *track, *master;
 	song_info_t *si;
+	char track_num_str[10];
 
 	(*len) = 0;
 
@@ -163,6 +164,8 @@ song_info_t *cue_get_info( char *file_name, int *len )
 	si_set_album(si, master->m_title);
 	si_set_artist(si, track->m_performer);
 	si_set_name(si, track->m_title);
+	snprintf(track_num_str, sizeof(track_num_str), "%02d", track_num);
+	si_set_track(si, track_num_str);
 
 	/* Free memory */
 	cue_sheet_free(cs);
