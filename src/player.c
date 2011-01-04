@@ -3235,6 +3235,9 @@ bool_t player_handle_var_title_format( cfg_node_t *var, char *value,
 {
 	int i;
 
+	if (player_plist == NULL)
+		return TRUE;
+
 	for ( i = 0; i < player_plist->m_len; i ++ )
 		song_update_title(player_plist->m_list[i]);
 	wnd_invalidate(wnd_root);
