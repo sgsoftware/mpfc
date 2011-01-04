@@ -108,11 +108,14 @@ void dw_finish_file( void )
 bool_t dw_start( void )
 {
 	char name[MAX_FILE_NAME];
-	char *str;
+	char *str = NULL;
 	int i;
 
 	/* Get output file name (without extension and fragment index) */
-	str = cfg_get_var(dw_root_cfg, "cur-song-name");
+	if (cfg_get_var_int(dw_cfg, "name-as-title"))
+		str = cfg_get_var(dw_root_cfg, "cur-song-title");
+	else 
+		str = cfg_get_var(dw_root_cfg, "cur-song-name");
 	if (str == NULL)
 		return FALSE;
 	util_strncpy(name, str, sizeof(name));
