@@ -612,6 +612,7 @@ bool_t player_init_cfg( void )
 	cfg_list = cfg_new_list(NULL, "", NULL, CFG_NODE_BIG_LIST, 0);
 	cfg_new_var(cfg_list, "cur-song", CFG_NODE_RUNTIME, NULL, NULL);
 	cfg_new_var(cfg_list, "cur-song-name", CFG_NODE_RUNTIME, NULL, NULL);
+	cfg_new_var(cfg_list, "cur-song-title", CFG_NODE_RUNTIME, NULL, NULL);
 	cfg_new_var(cfg_list, "cur-time", CFG_NODE_RUNTIME, NULL, NULL);
 	cfg_new_var(cfg_list, "player-status", CFG_NODE_RUNTIME, NULL, NULL);
 	cfg_new_var(cfg_list, "player-start", CFG_NODE_RUNTIME, NULL, NULL);
@@ -1527,6 +1528,7 @@ void player_play( int song, int start_time )
 	/* Start new playing thread */
 	cfg_set_var(cfg_list, "cur-song-name", 
 			util_short_name(s->m_file_name));
+	cfg_set_var(cfg_list, "cur-song-title", STR_TO_CPTR(s->m_title));
 	player_plist->m_cur_song = song;
 	player_context->m_cur_time = start_time;
 //	player_context->m_status = PLAYER_STATUS_PLAYING;
@@ -1558,6 +1560,7 @@ void player_end_play( bool_t rem_cur_song )
 	if (!rem_cur_song)
 		player_plist->m_cur_song = was_song;
 	cfg_set_var(cfg_list, "cur-song-name", "");
+	cfg_set_var(cfg_list, "cur-song-title", "");
 } /* End of 'player_end_play' function */
 
 /* Go to next track */
