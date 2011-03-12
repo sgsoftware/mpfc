@@ -1,2029 +1,1133 @@
+2011-03-12 19:18  sg2
+
+	* .: MPFC 1.3.8 release.
+
+2011-01-04 19:29  sg2
+
+	* Fixed a crash occuring when --title-format is specified at
+	  startup.
+
+2011-01-04 19:18  sg2
+
+	* disk writer plugin: introduce the name-as-title cfg option to let
+	  the output file be named as the song title.
+
+2011-01-04 19:12  sg2
+
+	* cue plugin: set correct track number in the song info.
+
+2011-01-04 19:11  sg2
+
+	* Introduce the cur-song-title cfg variable.
+
+2010-09-22 12:03  sg2
+
+	* Linking problems fix.
+
+2010-09-21 16:01  sg2
+
+	* Added an option plugins.output.alsa.mixer-card-name to select
+	  mixer card (e.g. "hw:1").
+
+2010-06-23 17:35  sg2
+
+	* Increase wait interval (a temporary solution).
+
+2010-03-07 22:10  sg2
+
+	* Fixed some compiler warnings.
+
+2010-03-07 22:01  sg2
+
+	* cue plugin added to the default distribution.
+
+2010-03-07 21:56  sg2
+
+	* FLAC plugin added to the default distribution.
+
+2010-03-06 23:40  sg2
+
+	* Compilation fix.
+
+2010-01-05 20:36  sg2
+
+	* Fixed a problem with audio parameters printing (bug #2827602).
+
+2009-08-09 16:52  sg2
+
+	* Change ALSA buffer parameter (as in libao).
+
+2009-08-08 18:41  sg2
+
+	* Skip ID3 tags when decoding mp3.
+
+2009-08-08 17:24  sg2
+
+	* Debug logging removed.
+
+2009-08-08 14:23  sg2
+
+	* Unicode ID3 tags support.
+
+2009-08-08 12:48  sg2
+
+	* Installation fixed.
+
+2009-08-08 12:33  sg2
+
+	* 1. Use ICU library.
+	  2. Fixed a problem with composing unicode characters.
+
+2009-04-29 07:42  sg2
+
+	* Don't flush output if stopping was initiated by user.
+
+2008-11-23 12:50  sg2
+
+	* Line graphics fixed.
+
+2008-11-08 21:46  sg2
+
+	* Add mutex around resizeterm call (otherwise it usually crashes
+	  :).
+
+2008-09-10 23:29  sg2
+
+	* Fixed warnings.
+
+2008-02-14 21:19  sg2
+
+	* Set mixer type at start.
+
+2008-02-08 22:12  sg2
+
+	* Songs queueing implemented (a patch by Derek Davis).
+
+2007-09-21 20:45  sg2
+
+	* Switched to a newer gettext version.
+
+2007-09-21 19:42  sg2
+
+	* Added an option to disable traversing hidden files.
+
+2007-09-21 19:41  sg2
+
+	* Partial unicode support.
+
+2006-06-06 10:08  sg2
+
+	* Fixed compilation warnings.
+
+2006-06-06 10:00  sg2
+
+	* Audio CD digital playback mode implemented.
+
+2006-06-06 09:51  sg2
+
+	* Fixed some problems.
+
 2006-06-05 22:18  sg2
 
-	* trunk/Makefile.am, trunk/Makefile.am.shared,
-	  trunk/Makefile.am.static, trunk/configure.ac,
-	  trunk/configure.in.shared, trunk/configure.in.static,
-	  trunk/src/Makefile.am, trunk/src/Makefile.am.shared,
-	  trunk/src/Makefile.am.static: Removed static/shared stuff.
+	* Removed static/shared stuff.
 
 2006-02-14 13:06  sg2
 
-	* trunk/configure.in.shared, trunk/po/ru.po: MPFC 1.3.7 release.
+	* MPFC 1.3.7 release.
 
 2006-02-14 13:02  sg2
 
-	* trunk/src/player.c: Fixed 'seek backwards' bug.
+	* Fixed 'seek backwards' bug.
 
 2006-02-04 10:34  sg2
 
-	* trunk/configure.in.shared: MPFC 1.3.7 RC2.
+	* MPFC 1.3.7 RC2.
 
 2006-02-04 09:21  sg2
 
-	* trunk/libmpfc/command.c, trunk/po/ru.po, trunk/src/command.h,
-	  trunk/src/player.c, trunk/src/player.h, trunk/src/xconvert.c:
-	  'plist-del', 'set-volume', 'set-balance', 'set-volume-full',
+	* 'plist-del', 'set-volume', 'set-balance', 'set-volume-full',
 	  'seek' and 'cfg' player commands implemented.
 
 2006-02-02 00:49  sg2
 
-	* trunk/libmpfc/Makefile.am, trunk/libmpfc/command.c,
-	  trunk/libmpfc/plugin_general.c, trunk/libmpfc/plugin_mng.c,
-	  trunk/po/ru.po, trunk/src/Makefile.am.shared,
-	  trunk/src/command.c, trunk/src/genp.h, trunk/src/player.c,
-	  trunk/src/player.h, trunk/src/plist.c, trunk/src/plist.h,
-	  trunk/src/plugin.h, trunk/src/pmng.h, trunk/src/song.c,
-	  trunk/src/song.h: 1. Hooks implemented. 2. Moved commands module
-	  to libmpfc. 3. Made play list and player context available for
-	  plugins.
+	* 1. Hooks implemented.
+	  2. Moved commands module to libmpfc.
+	  3. Made play list and player context available for plugins.
 
 2006-01-08 12:31  sg2
 
-	* trunk/NEWS: MPFC 1.3.7 RC1 release.
+	* MPFC 1.3.7 RC1 release.
 
 2006-01-08 11:40  sg2
 
-	* trunk/libmpfcwnd/Makefile.am, trunk/libmpfcwnd/wnd_basic.c,
-	  trunk/libmpfcwnd/wnd_basic.h, trunk/libmpfcwnd/wnd_kbind.c,
-	  trunk/po/ru.po, trunk/src/player.c, trunk/src/player.h: 'action'
-	  player command added.
+	* 'action' player command added.
 
 2006-01-07 18:20  sg2
 
-	* trunk/libmpfc/plugin_output.c, trunk/plugins/output/alsa/alsa.c,
-	  trunk/po/ru.po, trunk/src/Makefile.am.shared, trunk/src/outp.h,
-	  trunk/src/player.c, trunk/src/xconvert.c, trunk/src/xconvert.h:
-	  Resampling of audio stream which doesn't fit into output plugin
+	* Resampling of audio stream which doesn't fit into output plugin
 	  capabilities implemented.
 
 2006-01-07 18:19  sg2
 
-	* trunk/plugins/input/wav/wav.c: Fixed troubles with amd64.
+	* Fixed troubles with amd64.
 
 2006-01-06 17:23  sg2
 
-	* trunk/libmpfc/plugin_mng.c, trunk/libmpfc/vfs.c, trunk/po/ru.po:
-	  Improved compatibility with cue plugin (now it can be used
+	* Improved compatibility with cue plugin (now it can be used
 	  without 'cue://' specification).
 
 2006-01-05 23:36  sg2
 
-	* trunk/libmpfc/plugin_input.c, trunk/libmpfc/plugin_mng.c,
-	  trunk/plugins/input/ogg/ogg.c, trunk/src/browser.c,
-	  trunk/src/inp.h, trunk/src/player.c, trunk/src/player.h,
-	  trunk/src/pmng.h, trunk/src/song.c, trunk/src/song.h: 1. Song
-	  redirection implemented. 2. Song projection implemented. 3.
-	  Input plugin 'inp_is_our_file' function added.
+	* 1. Song redirection implemented.
+	  2. Song projection implemented.
+	  3. Input plugin 'inp_is_our_file' function added.
 
 2006-01-02 01:13  sg2
 
-	* trunk/libmpfc/logger.c, trunk/plugins/output/alsa/alsa.c,
-	  trunk/po/ru.po, trunk/src/player.c: Fixed logger bug (long
-	  messages have been displayed incorrectly.)
+	* Fixed logger bug (long messages have been displayed incorrectly.)
 
 2005-12-02 20:50  sg2
 
-	* trunk/NEWS, trunk/libmpfc/cfg.c, trunk/libmpfcwnd/wnd.c,
-	  trunk/plugins/output/disk_writer/writer.c, trunk/po/ru.po,
-	  trunk/src/cfg.h, trunk/src/player.c, trunk/src/test.c,
-	  trunk/src/types.h: Fixed amd64 bug.
+	* Fixed amd64 bug.
 
 2005-09-12 07:11  sg2
 
-	* trunk/configure.in.shared: MPFC 1.3.6 release.
+	* MPFC 1.3.6 release.
 
 2005-09-10 19:51  sg2
 
-	* trunk/plugins/input/audiocd/audiocd.c,
-	  trunk/plugins/input/audiocd/audiocd.h,
-	  trunk/plugins/input/audiocd/cddb.c, trunk/po/ru.po: Improved
-	  AudioCD plugin.
+	* Improved AudioCD plugin.
 
 2005-09-09 22:40  sg2
 
-	* trunk/src/player.c: 'goback' after cursor positioning with mouse
-	  and 'view follows song' support implemented.
+	* 'goback' after cursor positioning with mouse and 'view follows
+	  song' support implemented.
 
 2005-09-09 22:12  sg2
 
-	* trunk/libmpfc/plugin_input.c, trunk/libmpfc/plugin_output.c,
-	  trunk/plugins/input/audiocd/audiocd.c,
-	  trunk/plugins/output/alsa/alsa.c,
-	  trunk/plugins/output/oss/oss.c, trunk/po/ru.po, trunk/src/inp.h,
-	  trunk/src/outp.h, trunk/src/player.c, trunk/src/plugin.h: 1.
-	  Audiocd plugin tracks skipping bug is fixed. 2. Extended plugins
-	  interface to allow input plugins tell output ones what kind of
-	  mixer they want to use.
+	* 1. Audiocd plugin tracks skipping bug is fixed.
+	  2. Extended plugins interface to allow input plugins tell output
+	  ones what kind of mixer they want to use.
 
 2005-09-04 18:41  sg2
 
-	* trunk/plugins/output/alsa/alsa.c, trunk/po/ru.po: ALSA mixer
-	  proper element choosing patch by Heikki Orsila.
+	* ALSA mixer proper element choosing patch by Heikki Orsila.
 
 2005-08-28 20:33  sg2
 
-	* trunk/plugins/output/alsa/alsa.c, trunk/po/ru.po: ALSA recover
-	  from broken pipe done.
+	* ALSA recover from broken pipe done.
 
 2005-08-27 23:22  sg2
 
-	* trunk/configure.in.shared: Made configure script printing
-	  enabled/disabled plugins summary.
+	* Made configure script printing enabled/disabled plugins summary.
 
 2005-08-27 22:49  sg2
 
-	* trunk/doc/mpfc.texi, trunk/src/player.c: 1. Made 'search-nocase'
-	  1 by default 2. Added 'view-follows-cur-song' option 3. Added
-	  'time_long_fw' and 'time_long_bw' actions 4. Added list of
-	  configuration options in the documentation
+	* 1. Made 'search-nocase' 1 by default
+	  2. Added 'view-follows-cur-song' option
+	  3. Added 'time_long_fw' and 'time_long_bw' actions
+	  4. Added list of configuration options in the documentation
 
 2005-08-25 21:39  sg2
 
-	* trunk/libmpfc/id3.c, trunk/src/myid3.h, trunk/src/song.c: ID3
-	  frames size bug fixed.
+	* ID3 frames size bug fixed.
 
 2005-08-21 22:38  sg2
 
-	* trunk/AUTHORS, trunk/configure.in.shared,
-	  trunk/configure.in.static, trunk/doc/mpfc.texi,
-	  trunk/plugins/output/alsa/alsa.c: ALSA plugin improved.
+	* ALSA plugin improved.
 
 2005-03-28 09:29  sg2
 
-	* trunk/plugins/input/mp3/mp3.c, trunk/plugins/input/mp3/mp3.h:
-	  Optimized mp3 header reading by skipping ID3 tag immediately
-	  (really speeds up get_info on songs with lengthy ID3 tags).
+	* Optimized mp3 header reading by skipping ID3 tag immediately
+	  (really speeds
+	  up get_info on songs with lengthy ID3 tags).
 
 2005-02-22 23:34  sg2
 
-	* trunk/configure.in.shared, trunk/libmpfc/plugin_mng.c,
-	  trunk/po/ru.po, trunk/src/Makefile.am.shared,
-	  trunk/src/command.c, trunk/src/command.h, trunk/src/player.c,
-	  trunk/src/player.h, trunk/src/pmng.h: Player command message
-	  implemented.
+	* Player command message implemented.
 
 2005-02-21 18:36  sg2
 
-	* trunk/libmpfc/cfg.c, trunk/libmpfc/cfg_rcfile.c,
-	  trunk/libmpfc/charset.c, trunk/libmpfc/file.c,
-	  trunk/libmpfc/file_http.c, trunk/libmpfc/file_http.h,
-	  trunk/libmpfc/file_reg.c, trunk/libmpfc/file_reg.h,
-	  trunk/libmpfc/genre_list.c, trunk/libmpfc/id3.c,
-	  trunk/libmpfc/logger.c, trunk/libmpfc/plugin.c,
-	  trunk/libmpfc/plugin_charset.c, trunk/libmpfc/plugin_effect.c,
-	  trunk/libmpfc/plugin_general.c, trunk/libmpfc/plugin_input.c,
-	  trunk/libmpfc/plugin_mng.c, trunk/libmpfc/plugin_output.c,
-	  trunk/libmpfc/song_info.c, trunk/libmpfc/string.c,
-	  trunk/libmpfc/util.c, trunk/libmpfc/vfs.c,
-	  trunk/libmpfcwnd/wnd.c, trunk/libmpfcwnd/wnd.h,
-	  trunk/libmpfcwnd/wnd_basic.c, trunk/libmpfcwnd/wnd_basic.h,
-	  trunk/libmpfcwnd/wnd_button.c, trunk/libmpfcwnd/wnd_button.h,
-	  trunk/libmpfcwnd/wnd_checkbox.c,
-	  trunk/libmpfcwnd/wnd_checkbox.h, trunk/libmpfcwnd/wnd_class.c,
-	  trunk/libmpfcwnd/wnd_class.h, trunk/libmpfcwnd/wnd_combobox.c,
-	  trunk/libmpfcwnd/wnd_combobox.h,
-	  trunk/libmpfcwnd/wnd_def_handlers.c,
-	  trunk/libmpfcwnd/wnd_def_handlers.h,
-	  trunk/libmpfcwnd/wnd_dialog.c, trunk/libmpfcwnd/wnd_dialog.h,
-	  trunk/libmpfcwnd/wnd_dlgitem.c, trunk/libmpfcwnd/wnd_dlgitem.h,
-	  trunk/libmpfcwnd/wnd_editbox.c, trunk/libmpfcwnd/wnd_editbox.h,
-	  trunk/libmpfcwnd/wnd_filebox.c, trunk/libmpfcwnd/wnd_filebox.h,
-	  trunk/libmpfcwnd/wnd_hbox.c, trunk/libmpfcwnd/wnd_hbox.h,
-	  trunk/libmpfcwnd/wnd_kbd.c, trunk/libmpfcwnd/wnd_kbd.h,
-	  trunk/libmpfcwnd/wnd_kbind.c, trunk/libmpfcwnd/wnd_kbind.h,
-	  trunk/libmpfcwnd/wnd_label.c, trunk/libmpfcwnd/wnd_label.h,
-	  trunk/libmpfcwnd/wnd_listbox.c, trunk/libmpfcwnd/wnd_listbox.h,
-	  trunk/libmpfcwnd/wnd_mouse.c, trunk/libmpfcwnd/wnd_mouse.h,
-	  trunk/libmpfcwnd/wnd_msg.c, trunk/libmpfcwnd/wnd_msg.h,
-	  trunk/libmpfcwnd/wnd_multiview_dialog.c,
-	  trunk/libmpfcwnd/wnd_multiview_dialog.h,
-	  trunk/libmpfcwnd/wnd_print.c, trunk/libmpfcwnd/wnd_print.h,
-	  trunk/libmpfcwnd/wnd_radio.c, trunk/libmpfcwnd/wnd_radio.h,
-	  trunk/libmpfcwnd/wnd_root.c, trunk/libmpfcwnd/wnd_root.h,
-	  trunk/libmpfcwnd/wnd_scrollable.c,
-	  trunk/libmpfcwnd/wnd_scrollable.h, trunk/libmpfcwnd/wnd_types.h,
-	  trunk/libmpfcwnd/wnd_vbox.c, trunk/libmpfcwnd/wnd_vbox.h,
-	  trunk/libmpfcwnd/wnd_views.c, trunk/libmpfcwnd/wnd_views.h,
-	  trunk/plugins/input/audiocd/audiocd.c,
-	  trunk/plugins/input/audiocd/audiocd.h,
-	  trunk/plugins/input/audiocd/cddb.c,
-	  trunk/plugins/input/audiocd/cddb.h,
-	  trunk/plugins/input/mp3/mp3.c, trunk/plugins/input/mp3/mp3.h,
-	  trunk/plugins/input/ogg/ogg.c, trunk/plugins/input/ogg/vcedit.c,
-	  trunk/plugins/input/wav/wav.c, trunk/plugins/input/wav/wav.h,
-	  trunk/plugins/output/disk_writer/writer.c,
-	  trunk/plugins/output/oss/oss.c, trunk/src/browser.c,
-	  trunk/src/browser.h, trunk/src/cfg.h, trunk/src/charset.h,
-	  trunk/src/csp.h, trunk/src/ep.h, trunk/src/eqwnd.c,
-	  trunk/src/eqwnd.h, trunk/src/file.h, trunk/src/genp.h,
-	  trunk/src/genre_list.h, trunk/src/help_screen.c,
-	  trunk/src/help_screen.h, trunk/src/history.c,
-	  trunk/src/history.h, trunk/src/info_rw_thread.c,
-	  trunk/src/info_rw_thread.h, trunk/src/inp.h, trunk/src/logger.h,
-	  trunk/src/logger_view.c, trunk/src/logger_view.h,
-	  trunk/src/main.c, trunk/src/myid3.h, trunk/src/mystring.h,
-	  trunk/src/outp.h, trunk/src/player.c, trunk/src/player.h,
-	  trunk/src/plist.c, trunk/src/plist.h, trunk/src/plugin.h,
-	  trunk/src/pmng.h, trunk/src/song.c, trunk/src/song.h,
-	  trunk/src/song_info.h, trunk/src/test.c, trunk/src/test.h,
-	  trunk/src/types.h, trunk/src/undo.c, trunk/src/undo.h,
-	  trunk/src/util.h, trunk/src/vfs.h: Changed source head format.
+	* Changed source head format.
 
 2005-02-21 16:44  sg2
 
-	* trunk/po/POTFILES.in, trunk/po/ru.po: Fix after previous commit.
+	* Fix after previous commit.
 
 2005-02-21 16:38  sg2
 
-	* trunk/configure.in.shared, trunk/doc/mpfc.texi,
-	  trunk/plugins/Makefile.am, trunk/plugins/charset/Makefile.am,
-	  trunk/plugins/charset/ru, trunk/plugins/effect/Makefile.am,
-	  trunk/plugins/effect/echo, trunk/plugins/general,
-	  trunk/plugins/general/Makefile.am,
-	  trunk/plugins/input/Makefile.am, trunk/plugins/input/radio,
-	  trunk/plugins/input/recorder, trunk/plugins/input/timidi,
-	  trunk/plugins/output/Makefile.am, trunk/plugins/output/esd:
-	  Removed non-essential plugins.
+	* Removed non-essential plugins.
 
 2005-02-21 16:07  sg2
 
-	* trunk/src/cfg, trunk/src/file, trunk/src/glist, trunk/src/myid3,
-	  trunk/src/plugin, trunk/src/util: Removed legacy subdirectories.
+	* Removed legacy subdirectories.
 
 2005-02-21 15:59  sg2
 
-	* trunk/libmpfc/plugin_general.c, trunk/po/ru.po,
-	  trunk/src/genp.h: Addition to the previous commit.
+	* Addition to the previous commit.
 
 2005-02-21 14:47  sg2
 
-	* trunk/ChangeLog, trunk/libmpfc/Makefile.am,
-	  trunk/libmpfc/cfg_rcfile.c, trunk/libmpfc/plugin.c,
-	  trunk/libmpfc/plugin_mng.c, trunk/libmpfcwnd/wnd_listbox.c,
-	  trunk/libmpfcwnd/wnd_listbox.h, trunk/plugins/Makefile.am,
-	  trunk/plugins/input/audiocd/audiocd.c, trunk/po/ru.po,
-	  trunk/src/player.c, trunk/src/player.h, trunk/src/plugin.h,
-	  trunk/src/pmng.h: General plugins support implemented.
+	* General plugins support implemented.
 
 2005-02-14 20:58  sg2
 
-	* trunk/src/player.c: Fixed bug: current output plugin was not
-	  selected in plugins manager.
+	* Fixed bug: current output plugin was not selected in plugins
+	  manager.
 
 2005-02-14 20:43  sg2
 
-	* trunk/doc/mpfc.texi, trunk/plugins/output/disk_writer/writer.c:
-	  Disk writer encoding capability implemented.
+	* Disk writer encoding capability implemented.
 
 2005-02-14 16:55  sg2
 
-	* trunk/src/player.c: Fixed bug: play is paused, we change output
-	  plugin and start playing (caused hang up because outp_resume
-	  applied to the new output plugin)
+	* Fixed bug: play is paused, we change output plugin and start
+	  playing (caused
+	  hang up because outp_resume applied to the new output plugin)
 
 2004-11-10 13:55  sg2
 
-	* trunk/ChangeLog, trunk/libmpfc/vfs.c,
-	  trunk/plugins/input/mp3/mp3.c, trunk/plugins/input/ogg/ogg.c,
-	  trunk/plugins/output/alsa/alsa.c, trunk/po/POTFILES.in,
-	  trunk/po/ru.po, trunk/src/player.c, trunk/src/player.h,
-	  trunk/src/plist.c, trunk/src/song.c: MPFC 1.3.5 release.
+	* MPFC 1.3.5 release.
 
 2004-11-08 15:10  sg2
 
-	* trunk/ChangeLog, trunk/libmpfc/id3.c,
-	  trunk/libmpfc/plugin_input.c, trunk/libmpfcwnd/wnd_kbd.c,
-	  trunk/plugins/input/audiocd/audiocd.c,
-	  trunk/plugins/input/audiocd/cddb.c,
-	  trunk/plugins/input/audiocd/cddb.h,
-	  trunk/plugins/input/mp3/mp3.c, trunk/plugins/input/ogg/ogg.c,
-	  trunk/po/ru.po, trunk/src/Makefile.am.shared,
-	  trunk/src/info_rw_thread.c, trunk/src/info_rw_thread.h,
-	  trunk/src/inp.h, trunk/src/iwt.c, trunk/src/iwt.h,
-	  trunk/src/myid3.h, trunk/src/player.c, trunk/src/plist.c,
-	  trunk/src/sat.c, trunk/src/sat.h, trunk/src/song.c,
-	  trunk/src/song.h: Info read/write thread implemented. Made
-	  'inp_save_info' function return the success code.
-	* trunk/ChangeLog: Info read/write thread implemented.
+	* Info read/write thread implemented.
+	  Made 'inp_save_info' function return the success code.
+
+2004-11-08 15:10  sg2
+
+	* Info read/write thread implemented.
 
 2004-11-03 23:43  sg2
 
-	* trunk/ChangeLog, trunk/libmpfcwnd/wnd.c, trunk/libmpfcwnd/wnd.h,
-	  trunk/libmpfcwnd/wnd_kbd.c: Screen messing up bug fixed.
+	* Screen messing up bug fixed.
 
 2004-11-03 16:17  sg2
 
-	* trunk/plugins/output/alsa/alsa.c: Moved ALSA plugin error output
-	  to the logger.
+	* Moved ALSA plugin error output to the logger.
 
 2004-11-01 15:17  sg2
 
-	* trunk/ChangeLog, trunk/configure.in.shared, trunk/doc/mpfc.texi,
-	  trunk/libmpfc/plugin.c, trunk/libmpfc/plugin_mng.c,
-	  trunk/libmpfcwnd/Makefile.am, trunk/libmpfcwnd/wnd_dialog.c,
-	  trunk/libmpfcwnd/wnd_dialog.h, trunk/libmpfcwnd/wnd_dlgitem.c,
-	  trunk/libmpfcwnd/wnd_editbox.c, trunk/libmpfcwnd/wnd_editbox.h,
-	  trunk/libmpfcwnd/wnd_label.c, trunk/libmpfcwnd/wnd_label.h,
-	  trunk/libmpfcwnd/wnd_listbox.c, trunk/libmpfcwnd/wnd_listbox.h,
-	  trunk/libmpfcwnd/wnd_multiview_dialog.c,
-	  trunk/libmpfcwnd/wnd_multiview_dialog.h,
-	  trunk/libmpfcwnd/wnd_views.c, trunk/libmpfcwnd/wnd_views.h,
-	  trunk/plugins/effect/echo/echo.c,
-	  trunk/plugins/input/audiocd/audiocd.c,
-	  trunk/plugins/input/audiocd/cddb.c,
-	  trunk/plugins/input/audiocd/cddb.h,
-	  trunk/plugins/input/mp3/mp3.c, trunk/plugins/input/ogg/ogg.c,
-	  trunk/plugins/input/radio/radio.c,
-	  trunk/plugins/output/alsa/alsa.c,
-	  trunk/plugins/output/disk_writer/writer.c,
-	  trunk/plugins/output/esd/esd.c, trunk/plugins/output/oss/oss.c,
-	  trunk/po/POTFILES.in, trunk/po/ru.po, trunk/src/help_screen.c,
-	  trunk/src/player.c, trunk/src/player.h, trunk/src/plugin.h,
-	  trunk/src/pmng.h: Multiview dialog and list box support
-	  implemented. Plugins manager and configuration written.
+	* Multiview dialog and list box support implemented.
+	  Plugins manager and configuration written.
 
 2004-10-25 14:07  sg2
 
-	* trunk/ChangeLog, trunk/NEWS: ChangeLog and NEWS updated.
+	* ChangeLog and NEWS updated.
 
 2004-10-25 12:37  sg2
 
-	* trunk/configure.in.shared, trunk/libmpfcwnd/wnd_kbd.c: Releasing
-	  1.3.4.
+	* Releasing 1.3.4.
 
 2004-10-24 10:04  sg2
 
-	* trunk/configure.in.shared, trunk/libmpfc/Makefile.am,
-	  trunk/libmpfcwnd/wnd_kbd.c, trunk/src/types.h: Backspace bug
-	  fixed.
+	* Backspace bug fixed.
 
 2004-10-24 08:58  sg2
 
-	* trunk/Makefile.am.shared, trunk/configure.in.shared,
-	  trunk/doc/mpfc.texi, trunk/libmpfc/Makefile.am,
-	  trunk/libmpfcwnd/Makefile.am, trunk/mpfc.pc.in, trunk/po/ru.po,
-	  trunk/src/sat.c: implemeted pkg-config stuff for writing plugins.
+	* implemeted pkg-config stuff for writing plugins.
 
 2004-10-21 13:00  sg2
 
-	* trunk/configure.in.shared, trunk/libmpfc/Makefile.am,
-	  trunk/libmpfc/cfg_rcfile.c, trunk/libmpfc/file.c,
-	  trunk/libmpfc/file_reg.c, trunk/libmpfc/util.c,
-	  trunk/libmpfcwnd/Makefile.am, trunk/libmpfcwnd/wnd.c,
-	  trunk/libmpfcwnd/wnd.h, trunk/libmpfcwnd/wnd_basic.c,
-	  trunk/libmpfcwnd/wnd_basic.h, trunk/libmpfcwnd/wnd_button.c,
-	  trunk/libmpfcwnd/wnd_button.h, trunk/libmpfcwnd/wnd_checkbox.c,
-	  trunk/libmpfcwnd/wnd_checkbox.h, trunk/libmpfcwnd/wnd_class.c,
-	  trunk/libmpfcwnd/wnd_class.h, trunk/libmpfcwnd/wnd_combobox.c,
-	  trunk/libmpfcwnd/wnd_def_handlers.c,
-	  trunk/libmpfcwnd/wnd_dialog.c, trunk/libmpfcwnd/wnd_dialog.h,
-	  trunk/libmpfcwnd/wnd_dlgitem.c, trunk/libmpfcwnd/wnd_dlgitem.h,
-	  trunk/libmpfcwnd/wnd_editbox.c, trunk/libmpfcwnd/wnd_editbox.h,
-	  trunk/libmpfcwnd/wnd_filebox.c, trunk/libmpfcwnd/wnd_hbox.c,
-	  trunk/libmpfcwnd/wnd_kbd.c, trunk/libmpfcwnd/wnd_kbd.h,
-	  trunk/libmpfcwnd/wnd_kbind.c, trunk/libmpfcwnd/wnd_label.c,
-	  trunk/libmpfcwnd/wnd_mouse.c, trunk/libmpfcwnd/wnd_mouse.h,
-	  trunk/libmpfcwnd/wnd_msg.c, trunk/libmpfcwnd/wnd_msg.h,
-	  trunk/libmpfcwnd/wnd_radio.c, trunk/libmpfcwnd/wnd_root.c,
-	  trunk/libmpfcwnd/wnd_root.h, trunk/libmpfcwnd/wnd_scrollable.c,
-	  trunk/libmpfcwnd/wnd_scrollable.h, trunk/libmpfcwnd/wnd_vbox.c,
-	  trunk/plugins/charset/ru/Makefile.am,
-	  trunk/plugins/effect/echo/Makefile.am,
-	  trunk/plugins/input/audiocd/Makefile.am,
-	  trunk/plugins/input/mp3/Makefile.am,
-	  trunk/plugins/input/ogg/Makefile.am,
-	  trunk/plugins/input/radio/Makefile.am,
-	  trunk/plugins/input/recorder/Makefile.am,
-	  trunk/plugins/input/timidi/Makefile.am,
-	  trunk/plugins/input/wav/Makefile.am,
-	  trunk/plugins/output/alsa/Makefile.am,
-	  trunk/plugins/output/disk_writer/Makefile.am,
-	  trunk/plugins/output/esd/Makefile.am,
-	  trunk/plugins/output/oss/Makefile.am,
-	  trunk/src/Makefile.am.shared, trunk/src/browser.c,
-	  trunk/src/eqwnd.c, trunk/src/help_screen.c, trunk/src/iwt.c,
-	  trunk/src/logger_view.c, trunk/src/main.c, trunk/src/player.c,
-	  trunk/src/player.h, trunk/src/plist.c, trunk/src/sat.c,
-	  trunk/src/song.c, trunk/src/test.c: Fixed many bugs.
+	* Fixed many bugs.
 
 2004-10-17 10:12  sg2
 
-	* trunk/libmpfcwnd/wnd.c, trunk/libmpfcwnd/wnd_kbd.c: Fixed aterm
-	  backspace bug.
+	* Fixed aterm backspace bug.
 
 2004-10-17 10:00  sg2
 
-	* trunk/libmpfcwnd/wnd.h, trunk/libmpfcwnd/wnd_kbd.c: *** empty
-	  log message ***
-	* trunk/libmpfcwnd/wnd.c: force-terminal-bg option added
+	* *** empty log message ***
+
+2004-10-17 10:00  sg2
+
+	* force-terminal-bg option added
 
 2004-10-15 20:43  sg2
 
-	* trunk/configure.in.shared, trunk/libmpfcwnd/wnd_mouse.c: Mouse
-	  initialization bug fixed.
+	* Mouse initialization bug fixed.
 
 2004-10-15 20:33  sg2
 
-	* trunk/configure.in.shared, trunk/po/ru.po: *** empty log message
-	  ***
+	* *** empty log message ***
 
 2004-10-14 08:07  sg2
 
-	* trunk/configure.in.shared, trunk/libmpfc/cfg_rcfile.c,
-	  trunk/libmpfcwnd/wnd.c, trunk/libmpfcwnd/wnd_basic.c,
-	  trunk/libmpfcwnd/wnd_basic.h, trunk/libmpfcwnd/wnd_filebox.c,
-	  trunk/plugins/input/ogg/ogg.c,
-	  trunk/plugins/output/disk_writer/writer.c, trunk/src/player.c:
-	  Implemeted "+=" and "-=" from command line.
+	* Implemeted "+=" and "-=" from command line.
 
 2004-10-14 07:34  sg2
 
-	* trunk/doc/mpfc.texi: Documentation updated.
+	* Documentation updated.
 
 2004-10-11 07:06  sg2
 
-	* trunk/libmpfc/logger.c, trunk/po/ru.po, trunk/src/eqwnd.c,
-	  trunk/src/help_screen.c, trunk/src/player.c, trunk/src/plist.c:
-	  Updated translations.
+	* Updated translations.
 
 2004-10-11 06:23  sg2
 
-	* trunk/libmpfc/Makefile.am, trunk/libmpfc/file_http.c,
-	  trunk/libmpfc/logger.c, trunk/libmpfc/plugin.c,
-	  trunk/libmpfc/plugin_charset.c, trunk/libmpfc/plugin_effect.c,
-	  trunk/libmpfc/plugin_input.c, trunk/libmpfc/plugin_mng.c,
-	  trunk/libmpfc/plugin_output.c, trunk/libmpfc/vfs.c,
-	  trunk/libmpfcwnd/wnd_button.c, trunk/libmpfcwnd/wnd_button.h,
-	  trunk/libmpfcwnd/wnd_checkbox.c,
-	  trunk/libmpfcwnd/wnd_checkbox.h, trunk/libmpfcwnd/wnd_dlgitem.c,
-	  trunk/libmpfcwnd/wnd_dlgitem.h, trunk/libmpfcwnd/wnd_kbd.c,
-	  trunk/libmpfcwnd/wnd_radio.c, trunk/libmpfcwnd/wnd_radio.h,
-	  trunk/plugins/charset/ru/Makefile.am,
-	  trunk/plugins/charset/ru/ru.c,
-	  trunk/plugins/effect/echo/Makefile.am,
-	  trunk/plugins/effect/echo/echo.c,
-	  trunk/plugins/input/audiocd/Makefile.am,
-	  trunk/plugins/input/audiocd/audiocd.c,
-	  trunk/plugins/input/audiocd/audiocd.h,
-	  trunk/plugins/input/audiocd/cddb.c,
-	  trunk/plugins/input/mp3/Makefile.am,
-	  trunk/plugins/input/mp3/mp3.c, trunk/plugins/input/mp3/mp3.h,
-	  trunk/plugins/input/ogg/Makefile.am,
-	  trunk/plugins/input/ogg/ogg.c,
-	  trunk/plugins/input/radio/Makefile.am,
-	  trunk/plugins/input/radio/radio.c,
-	  trunk/plugins/input/recorder/Makefile.am,
-	  trunk/plugins/input/recorder/recorder.c,
-	  trunk/plugins/input/timidi/Makefile.am,
-	  trunk/plugins/input/timidi/timidi.c,
-	  trunk/plugins/input/wav/Makefile.am,
-	  trunk/plugins/input/wav/wav.c, trunk/plugins/input/wav/wav.h,
-	  trunk/plugins/output/alsa/Makefile.am,
-	  trunk/plugins/output/alsa/alsa.c,
-	  trunk/plugins/output/disk_writer/Makefile.am,
-	  trunk/plugins/output/disk_writer/writer.c,
-	  trunk/plugins/output/esd/Makefile.am,
-	  trunk/plugins/output/esd/esd.c,
-	  trunk/plugins/output/oss/Makefile.am,
-	  trunk/plugins/output/oss/oss.c, trunk/po/ru.po,
-	  trunk/src/Makefile.am.shared, trunk/src/browser.c,
-	  trunk/src/colors.c, trunk/src/colors.h, trunk/src/csp.h,
-	  trunk/src/ep.h, trunk/src/help_screen.c, trunk/src/inp.h,
-	  trunk/src/iwt.c, trunk/src/logger.h, trunk/src/logger_view.c,
-	  trunk/src/outp.h, trunk/src/player.c, trunk/src/player.h,
-	  trunk/src/plist.c, trunk/src/plugin.h, trunk/src/pmng.h,
-	  trunk/src/undo.c: Plugin structure changed.
+	* Plugin structure changed.
 
 2004-10-06 22:04  sg2
 
-	* trunk/configure.in.shared, trunk/libmpfc/Makefile.am,
-	  trunk/libmpfc/cfg.c, trunk/libmpfc/cfg_rcfile.c,
-	  trunk/libmpfc/file.c, trunk/libmpfc/file_http.c,
-	  trunk/libmpfc/file_http.h, trunk/libmpfc/file_reg.c,
-	  trunk/libmpfc/file_reg.h, trunk/libmpfc/util.c,
-	  trunk/libmpfcwnd/wnd.c, trunk/libmpfcwnd/wnd_combobox.c,
-	  trunk/libmpfcwnd/wnd_editbox.c, trunk/libmpfcwnd/wnd_filebox.c,
-	  trunk/libmpfcwnd/wnd_kbd.c, trunk/libmpfcwnd/wnd_kbd.h,
-	  trunk/libmpfcwnd/wnd_kbind.c, trunk/plugins/input/mp3/mp3.c,
-	  trunk/src/Makefile.am.shared, trunk/src/cfg.h,
-	  trunk/src/eqwnd.c, trunk/src/eqwnd.h, trunk/src/file.h,
-	  trunk/src/logger_view.c, trunk/src/player.c, trunk/src/player.h,
-	  trunk/src/test.c, trunk/src/util.h: rcfiles load improved.
+	* rcfiles load improved.
 
 2004-09-30 08:11  sg2
 
-	* trunk/configure.in.shared, trunk/libmpfc/cfg.c,
-	  trunk/libmpfcwnd/Makefile.am, trunk/libmpfcwnd/wnd.c,
-	  trunk/libmpfcwnd/wnd.h, trunk/libmpfcwnd/wnd_basic.c,
-	  trunk/libmpfcwnd/wnd_basic.h, trunk/libmpfcwnd/wnd_button.c,
-	  trunk/libmpfcwnd/wnd_button.h, trunk/libmpfcwnd/wnd_checkbox.c,
-	  trunk/libmpfcwnd/wnd_checkbox.h,
-	  trunk/libmpfcwnd/wnd_combobox.c,
-	  trunk/libmpfcwnd/wnd_combobox.h,
-	  trunk/libmpfcwnd/wnd_def_handlers.c,
-	  trunk/libmpfcwnd/wnd_def_handlers.h,
-	  trunk/libmpfcwnd/wnd_dialog.c, trunk/libmpfcwnd/wnd_dialog.h,
-	  trunk/libmpfcwnd/wnd_dlgitem.c, trunk/libmpfcwnd/wnd_dlgitem.h,
-	  trunk/libmpfcwnd/wnd_editbox.c, trunk/libmpfcwnd/wnd_editbox.h,
-	  trunk/libmpfcwnd/wnd_filebox.c, trunk/libmpfcwnd/wnd_filebox.h,
-	  trunk/libmpfcwnd/wnd_hbox.c, trunk/libmpfcwnd/wnd_hbox.h,
-	  trunk/libmpfcwnd/wnd_kbind.c, trunk/libmpfcwnd/wnd_kbind.h,
-	  trunk/libmpfcwnd/wnd_msg.h, trunk/libmpfcwnd/wnd_radio.c,
-	  trunk/libmpfcwnd/wnd_radio.h, trunk/libmpfcwnd/wnd_root.c,
-	  trunk/libmpfcwnd/wnd_vbox.c, trunk/libmpfcwnd/wnd_vbox.h,
-	  trunk/src/Makefile.am.shared, trunk/src/Makefile.am.static,
-	  trunk/src/browser.c, trunk/src/browser.h, trunk/src/cfg.h,
-	  trunk/src/eqwnd.c, trunk/src/eqwnd.h, trunk/src/help_screen.c,
-	  trunk/src/help_screen.h, trunk/src/key_bind.c,
-	  trunk/src/key_bind.h, trunk/src/logger_view.c,
-	  trunk/src/logger_view.h, trunk/src/player.c, trunk/src/player.h:
-	  Key bindings implemented.
+	* Key bindings implemented.
 
 2004-09-29 08:48  sg2
 
-	* trunk/configure.in.shared, trunk/doc/mpfc.texi, trunk/po/ru.po:
-	  MPFC 1.3.2
+	* MPFC 1.3.2
 
 2004-09-26 17:09  sg2
 
-	* trunk/libmpfc/cfg.c, trunk/libmpfc/logger.c,
-	  trunk/po/POTFILES.in, trunk/po/ru.po, trunk/src/cfg.h,
-	  trunk/src/logger.h, trunk/src/logger_view.c, trunk/src/player.c,
-	  trunk/src/player.h: Log level implemented.
+	* Log level implemented.
 
 2004-09-26 16:10  sg2
 
-	* trunk/Makefile.am.shared, trunk/src/Makefile.am.shared,
-	  trunk/src/player.c, trunk/src/player.h: System configuration
-	  file installation through autoconf and automake implemented.
+	* System configuration file installation through autoconf and
+	  automake implemented.
 
 2004-09-26 13:40  sg2
 
-	* trunk/configure.in.shared, trunk/src/browser.c,
-	  trunk/src/eqwnd.c, trunk/src/help_screen.c, trunk/src/main.c,
-	  trunk/src/player.c, trunk/src/player.h: Implemented signal
-	  handlers.
+	* Implemented signal handlers.
 
 2004-09-26 12:25  sg2
 
-	* trunk/libmpfc/vfs.c, trunk/libmpfcwnd/wnd_print.c,
-	  trunk/libmpfcwnd/wnd_print.h, trunk/libmpfcwnd/wnd_scrollable.h,
-	  trunk/plugins/output/alsa/alsa.c, trunk/src/logger.h,
-	  trunk/src/logger_view.c, trunk/src/logger_view.h,
-	  trunk/src/player.c, trunk/src/vfs.h: Logger improved.
+	* Logger improved.
 
 2004-09-24 20:19  sg2
 
-	* trunk/libmpfc/logger.c, trunk/libmpfcwnd/Makefile.am,
-	  trunk/libmpfcwnd/wnd_scrollable.c,
-	  trunk/libmpfcwnd/wnd_scrollable.h, trunk/src/key_bind.c,
-	  trunk/src/key_bind.h, trunk/src/logger.h,
-	  trunk/src/logger_view.c, trunk/src/logger_view.h,
-	  trunk/src/player.c, trunk/src/player.h: Scrolling logger
-	  implemented.
+	* Scrolling logger implemented.
 
 2004-09-22 20:12  sg2
 
-	* trunk/libmpfc/Makefile.am, trunk/libmpfc/file.c,
-	  trunk/libmpfc/file_http.c, trunk/libmpfc/logger.c,
-	  trunk/libmpfc/plugin_mng.c, trunk/libmpfcwnd/wnd.c,
-	  trunk/libmpfcwnd/wnd.h, trunk/plugins/input/audiocd/audiocd.c,
-	  trunk/plugins/input/audiocd/audiocd.h,
-	  trunk/plugins/input/audiocd/cddb.c,
-	  trunk/plugins/input/mp3/mp3.c, trunk/plugins/input/ogg/ogg.c,
-	  trunk/src/Makefile.am.shared, trunk/src/browser.c,
-	  trunk/src/eqwnd.c, trunk/src/error.c, trunk/src/error.h,
-	  trunk/src/file.h, trunk/src/help_screen.c, trunk/src/history.c,
-	  trunk/src/iwt.c, trunk/src/logger.h, trunk/src/logger_view.c,
-	  trunk/src/logger_view.h, trunk/src/main.c, trunk/src/player.c,
-	  trunk/src/player.h, trunk/src/plist.c, trunk/src/pmng.h,
-	  trunk/src/song.c: Logger and logger view implemented.
+	* Logger and logger view implemented.
 
 2004-09-21 04:41  sg2
 
-	* trunk/configure.in.shared, trunk/libmpfcwnd/wnd.c: xterm resize
-	  bug fixed.
+	* xterm resize bug fixed.
 
 2004-09-20 21:15  sg2
 
-	* trunk/Makefile.am.shared, trunk/configure.in.shared,
-	  trunk/doc/mpfc.texi, trunk/libmpfc/Makefile.am,
-	  trunk/plugins/input/radio/radio.c, trunk/po/ru.po,
-	  trunk/src/Makefile.am.shared, trunk/src/Makefile.am.static,
-	  trunk/src/help_screen.c, trunk/src/plist.c: Updated
-	  documentation.
+	* Updated documentation.
 
 2004-09-20 17:57  sg2
 
-	* trunk/ChangeLog, trunk/configure.in.shared,
-	  trunk/libmpfc/Makefile.am, trunk/libmpfc/finder.c,
-	  trunk/libmpfc/plugin_input.c, trunk/libmpfc/plugin_mng.c,
-	  trunk/libmpfc/plugin_output.c, trunk/libmpfc/string.c,
-	  trunk/libmpfc/util.c, trunk/libmpfc/vfs.c,
-	  trunk/libmpfcwnd/wnd_filebox.c, trunk/libmpfcwnd/wnd_filebox.h,
-	  trunk/plugins/input/audiocd/audiocd.c,
-	  trunk/plugins/input/audiocd/audiocd.h,
-	  trunk/plugins/input/radio/radio.c,
-	  trunk/plugins/input/recorder/recorder.c,
-	  trunk/plugins/output/alsa/alsa.c, trunk/po/ru.po,
-	  trunk/src/Makefile.am.shared, trunk/src/browser.c,
-	  trunk/src/browser.h, trunk/src/finder.h,
-	  trunk/src/help_screen.c, trunk/src/inp.h, trunk/src/mystring.h,
-	  trunk/src/outp.h, trunk/src/player.c, trunk/src/player.h,
-	  trunk/src/plist.c, trunk/src/plist.h, trunk/src/pmng.h,
-	  trunk/src/song.c, trunk/src/song.h, trunk/src/undo.c,
-	  trunk/src/util.h, trunk/src/vfs.h: Virtual file system
-	  implemented.
+	* Virtual file system implemented.
 
 2004-09-18 13:50  sg2
 
-	* trunk/plugins/output/alsa/alsa.c: ALSA volume bug fixed.
+	* ALSA volume bug fixed.
 
 2004-09-15 06:50  sg2
 
-	* trunk/ChangeLog, trunk/Makefile.am.shared,
-	  trunk/build_rcfile.pl, trunk/po/ru.po: Rcfile building utility
-	  is written.
+	* Rcfile building utility is written.
 
 2004-09-15 06:29  sg2
 
-	* trunk/po/ru.po: Updated translations.
+	* Updated translations.
 
 2004-09-15 06:28  sg2
 
-	* trunk/ChangeLog, trunk/configure.in.shared,
-	  trunk/plugins/input/wav/wav.h, trunk/po/ru.po: Improved
-	  configuration.
+	* Improved configuration.
 
 2004-09-13 13:10  sg2
 
-	* trunk/plugins/output/alsa/alsa.c: Improved alsa plugin.
+	* Improved alsa plugin.
 
 2004-09-13 07:35  sg2
 
-	* trunk/configure.in.shared, trunk/plugins/output/alsa/alsa.c,
-	  trunk/po/ru.po: Fixed bug in alsa plugin.
+	* Fixed bug in alsa plugin.
 
 2004-09-13 05:11  sg2
 
-	* trunk/configure.in.shared, trunk/libmpfcwnd/wnd_dlgitem.c,
-	  trunk/po/POTFILES.in, trunk/po/ru.po: Some translations updated.
+	* Some translations updated.
 
 2004-09-12 21:46  sg2
 
-	* trunk/libmpfcwnd/wnd.c, trunk/libmpfcwnd/wnd_dialog.c,
-	  trunk/po/ru.po, trunk/src/browser.c, trunk/src/eqwnd.c,
-	  trunk/src/help_screen.c, trunk/src/player.c: Added items
-	  describing window library key bindings into help screen.
+	* Added items describing window library key bindings into help
+	  screen.
 
 2004-09-12 16:12  sg2
 
-	* trunk/libmpfc/cfg.c, trunk/libmpfcwnd/wnd.c,
-	  trunk/libmpfcwnd/wnd.h, trunk/libmpfcwnd/wnd_basic.c,
-	  trunk/libmpfcwnd/wnd_button.c, trunk/libmpfcwnd/wnd_button.h,
-	  trunk/libmpfcwnd/wnd_checkbox.c,
-	  trunk/libmpfcwnd/wnd_checkbox.h, trunk/libmpfcwnd/wnd_class.c,
-	  trunk/libmpfcwnd/wnd_class.h, trunk/libmpfcwnd/wnd_combobox.c,
-	  trunk/libmpfcwnd/wnd_combobox.h, trunk/libmpfcwnd/wnd_dialog.c,
-	  trunk/libmpfcwnd/wnd_dlgitem.c, trunk/libmpfcwnd/wnd_dlgitem.h,
-	  trunk/libmpfcwnd/wnd_editbox.c, trunk/libmpfcwnd/wnd_editbox.h,
-	  trunk/libmpfcwnd/wnd_filebox.c, trunk/libmpfcwnd/wnd_hbox.c,
-	  trunk/libmpfcwnd/wnd_label.c, trunk/libmpfcwnd/wnd_radio.c,
-	  trunk/libmpfcwnd/wnd_radio.h, trunk/libmpfcwnd/wnd_root.c,
-	  trunk/libmpfcwnd/wnd_vbox.c, trunk/src/browser.c,
-	  trunk/src/browser.h, trunk/src/cfg.h, trunk/src/eqwnd.c,
-	  trunk/src/eqwnd.h, trunk/src/help_screen.c,
-	  trunk/src/help_screen.h, trunk/src/player.c, trunk/src/player.h:
-	  1. Setting default configuration list variables values. 2. Made
-	  it possible to set variables while parent lists are not yet
-	  created.
+	* 1. Setting default configuration list variables values.
+	  2. Made it possible to set variables while parent lists are not
+	  yet created.
 
 2004-09-11 15:16  sg2
 
-	* trunk/Makefile.am, trunk/Makefile.am.shared,
-	  trunk/Makefile.am.static, trunk/configure.in,
-	  trunk/configure.in.shared, trunk/configure.in.static,
-	  trunk/libmpfcwnd/wnd.c, trunk/libmpfcwnd/wnd.h,
-	  trunk/libmpfcwnd/wnd_basic.c, trunk/libmpfcwnd/wnd_basic.h,
-	  trunk/libmpfcwnd/wnd_def_handlers.c,
-	  trunk/libmpfcwnd/wnd_dialog.c, trunk/libmpfcwnd/wnd_root.c,
-	  trunk/libmpfcwnd/wnd_root.h, trunk/po/ru.po,
-	  trunk/src/Makefile.am, trunk/src/Makefile.am.shared,
-	  trunk/src/Makefile.am.static, trunk/src/key_bind.c,
-	  trunk/src/key_bind.h, trunk/src/player.c, trunk/src/player.h,
-	  trunk/src/test.c, trunk/src/test.h: 1. Optimized windows
-	  visibility information building. 2. Fixed window bar.
+	* 1. Optimized windows visibility information building.
+	  2. Fixed window bar.
 
 2004-09-06 07:25  sg2
 
-	* trunk/configure.in, trunk/libmpfc/string.c,
-	  trunk/libmpfcwnd/wnd_editbox.c, trunk/libmpfcwnd/wnd_editbox.h,
-	  trunk/po/ru.po, trunk/src/mystring.h, trunk/src/player.c,
-	  trunk/src/player.h: Edit box history implemented.
+	* Edit box history implemented.
 
 2004-08-31 13:23  sg2
 
-	* trunk/libmpfcwnd/wnd.c, trunk/libmpfcwnd/wnd.h,
-	  trunk/libmpfcwnd/wnd_button.c, trunk/libmpfcwnd/wnd_checkbox.c,
-	  trunk/libmpfcwnd/wnd_class.c, trunk/libmpfcwnd/wnd_class.h,
-	  trunk/libmpfcwnd/wnd_combobox.c,
-	  trunk/libmpfcwnd/wnd_combobox.h, trunk/libmpfcwnd/wnd_dlgitem.c,
-	  trunk/libmpfcwnd/wnd_dlgitem.h, trunk/libmpfcwnd/wnd_editbox.c,
-	  trunk/libmpfcwnd/wnd_filebox.c, trunk/libmpfcwnd/wnd_filebox.h,
-	  trunk/libmpfcwnd/wnd_hbox.c, trunk/libmpfcwnd/wnd_hbox.h,
-	  trunk/libmpfcwnd/wnd_label.c, trunk/libmpfcwnd/wnd_label.h,
-	  trunk/libmpfcwnd/wnd_radio.c, trunk/libmpfcwnd/wnd_radio.h,
-	  trunk/libmpfcwnd/wnd_vbox.c, trunk/libmpfcwnd/wnd_vbox.h,
-	  trunk/src/browser.c, trunk/src/browser.h, trunk/src/eqwnd.c,
-	  trunk/src/eqwnd.h, trunk/src/help_screen.c,
-	  trunk/src/help_screen.h, trunk/src/player.c, trunk/src/player.h,
-	  trunk/src/plist.c: Improved the window styles configurability.
+	* Improved the window styles configurability.
 
 2004-08-29 16:49  sg2
 
-	* trunk/libmpfcwnd/wnd.c, trunk/libmpfcwnd/wnd_kbd.c,
-	  trunk/libmpfcwnd/wnd_kbd.h: Updated keyboard module.
+	* Updated keyboard module.
 
 2004-08-29 01:01  sg2
 
-	* trunk/libmpfcwnd/wnd_button.c, trunk/libmpfcwnd/wnd_button.h,
-	  trunk/libmpfcwnd/wnd_checkbox.c,
-	  trunk/libmpfcwnd/wnd_checkbox.h,
-	  trunk/libmpfcwnd/wnd_combobox.c,
-	  trunk/libmpfcwnd/wnd_combobox.h, trunk/libmpfcwnd/wnd_dialog.c,
-	  trunk/libmpfcwnd/wnd_dlgitem.c, trunk/libmpfcwnd/wnd_dlgitem.h,
-	  trunk/libmpfcwnd/wnd_editbox.c, trunk/libmpfcwnd/wnd_editbox.h,
-	  trunk/libmpfcwnd/wnd_filebox.c, trunk/libmpfcwnd/wnd_filebox.h,
-	  trunk/libmpfcwnd/wnd_hbox.c, trunk/libmpfcwnd/wnd_kbd.h,
-	  trunk/libmpfcwnd/wnd_label.c, trunk/libmpfcwnd/wnd_label.h,
-	  trunk/libmpfcwnd/wnd_radio.c, trunk/libmpfcwnd/wnd_radio.h,
-	  trunk/libmpfcwnd/wnd_vbox.c, trunk/src/browser.c,
-	  trunk/src/eqwnd.c, trunk/src/player.c: Fast jumping to dialog
-	  items implemented.
+	* Fast jumping to dialog items implemented.
 
 2004-08-28 16:37  sg2
 
-	* trunk/libmpfc/song_info.c,
-	  trunk/plugins/input/audiocd/audiocd.c,
-	  trunk/plugins/input/radio/radio.c,
-	  trunk/plugins/input/recorder/recorder.c: Fixed some bugs with
-	  song info production.
+	* Fixed some bugs with song info production.
 
 2004-08-28 16:06  sg2
 
-	* trunk/libmpfc/file_http.c, trunk/libmpfc/plugin_input.c,
-	  trunk/plugins/input/mp3/mp3.c, trunk/plugins/input/ogg/ogg.c,
-	  trunk/src/inp.h, trunk/src/iwt.c, trunk/src/player.c,
-	  trunk/src/plist.c, trunk/src/song.c, trunk/src/song.h: Written a
-	  proper PLS file loading and improved the streaming capabilities.
+	* Written a proper PLS file loading and improved the streaming
+	  capabilities.
 
 2004-08-26 22:05  sg2
 
-	* trunk/libmpfcwnd/wnd.c, trunk/libmpfcwnd/wnd.h,
-	  trunk/libmpfcwnd/wnd_checkbox.c,
-	  trunk/libmpfcwnd/wnd_checkbox.h,
-	  trunk/libmpfcwnd/wnd_combobox.c, trunk/libmpfcwnd/wnd_editbox.c,
-	  trunk/libmpfcwnd/wnd_editbox.h, trunk/libmpfcwnd/wnd_filebox.c,
-	  trunk/libmpfcwnd/wnd_label.c, trunk/libmpfcwnd/wnd_label.h,
-	  trunk/src/browser.c, trunk/src/cfg.h, trunk/src/eqwnd.c,
-	  trunk/src/iwt.c, trunk/src/iwt.h, trunk/src/player.c,
-	  trunk/src/player.h, trunk/src/plist.c, trunk/src/song.c,
-	  trunk/src/song.h: Implemented info dialog.
+	* Implemented info dialog.
 
 2004-08-25 15:47  sg2
 
-	* trunk/libmpfcwnd/wnd.c, trunk/libmpfcwnd/wnd.h: Some
-	  optimization done in window invalidation.
+	* Some optimization done in window invalidation.
 
 2004-08-25 15:28  sg2
 
-	* trunk/libmpfcwnd/Makefile.am, trunk/libmpfcwnd/wnd.c,
-	  trunk/libmpfcwnd/wnd.h, trunk/libmpfcwnd/wnd_basic.c,
-	  trunk/libmpfcwnd/wnd_basic.h, trunk/libmpfcwnd/wnd_combobox.c,
-	  trunk/libmpfcwnd/wnd_combobox.h, trunk/libmpfcwnd/wnd_dialog.c,
-	  trunk/libmpfcwnd/wnd_editbox.c, trunk/libmpfcwnd/wnd_editbox.h,
-	  trunk/libmpfcwnd/wnd_filebox.c, trunk/libmpfcwnd/wnd_filebox.h,
-	  trunk/libmpfcwnd/wnd_print.c, trunk/libmpfcwnd/wnd_print.h:
-	  Combo box implemented.
+	* Combo box implemented.
 
 2004-08-19 14:07  sg2
 
-	* trunk/libmpfc/string.c, trunk/libmpfcwnd/Makefile.am,
-	  trunk/libmpfcwnd/wnd.c, trunk/libmpfcwnd/wnd.h,
-	  trunk/libmpfcwnd/wnd_checkbox.c,
-	  trunk/libmpfcwnd/wnd_checkbox.h, trunk/libmpfcwnd/wnd_dialog.c,
-	  trunk/libmpfcwnd/wnd_dlgitem.c, trunk/libmpfcwnd/wnd_dlgitem.h,
-	  trunk/libmpfcwnd/wnd_editbox.c, trunk/libmpfcwnd/wnd_editbox.h,
-	  trunk/libmpfcwnd/wnd_filebox.c, trunk/libmpfcwnd/wnd_filebox.h,
-	  trunk/libmpfcwnd/wnd_hbox.c, trunk/libmpfcwnd/wnd_hbox.h,
-	  trunk/libmpfcwnd/wnd_kbd.h, trunk/libmpfcwnd/wnd_label.c,
-	  trunk/libmpfcwnd/wnd_label.h, trunk/libmpfcwnd/wnd_radio.c,
-	  trunk/libmpfcwnd/wnd_radio.h, trunk/libmpfcwnd/wnd_vbox.c,
-	  trunk/libmpfcwnd/wnd_vbox.h, trunk/src/browser.c,
-	  trunk/src/browser.h, trunk/src/eqwnd.c, trunk/src/eqwnd.h,
-	  trunk/src/help_screen.c, trunk/src/help_screen.h,
-	  trunk/src/key_bind.c, trunk/src/mystring.h, trunk/src/player.c,
-	  trunk/src/player.h: Implemented full-featured edit box, file
-	  box, check box and radio button; used them in player dialogs.
+	* Implemented full-featured edit box, file box, check box and radio
+	  button;
+	  used them in player dialogs.
 
 2004-08-17 14:37  sg2
 
-	* trunk/libmpfcwnd/Makefile.am, trunk/libmpfcwnd/wnd.c,
-	  trunk/libmpfcwnd/wnd.h, trunk/libmpfcwnd/wnd_button.c,
-	  trunk/libmpfcwnd/wnd_button.h,
-	  trunk/libmpfcwnd/wnd_def_handlers.c,
-	  trunk/libmpfcwnd/wnd_dialog.c, trunk/libmpfcwnd/wnd_dialog.h,
-	  trunk/libmpfcwnd/wnd_dlgitem.c, trunk/libmpfcwnd/wnd_dlgitem.h,
-	  trunk/libmpfcwnd/wnd_editbox.c, trunk/libmpfcwnd/wnd_editbox.h,
-	  trunk/libmpfcwnd/wnd_hbox.c, trunk/libmpfcwnd/wnd_hbox.h,
-	  trunk/libmpfcwnd/wnd_mouse.c, trunk/libmpfcwnd/wnd_vbox.c,
-	  trunk/libmpfcwnd/wnd_vbox.h, trunk/src/browser.c,
-	  trunk/src/eqwnd.c, trunk/src/help_screen.c, trunk/src/player.c:
-	  Vertical and horizontal boxes implemented.
+	* Vertical and horizontal boxes implemented.
 
 2004-08-16 09:29  sg2
 
-	* trunk/configure.in, trunk/libmpfcwnd/wnd.c,
-	  trunk/libmpfcwnd/wnd.h, trunk/libmpfcwnd/wnd_def_handlers.c,
-	  trunk/libmpfcwnd/wnd_print.c, trunk/libmpfcwnd/wnd_print.h,
-	  trunk/libmpfcwnd/wnd_types.h, trunk/src/Makefile.am,
-	  trunk/src/iwt.c, trunk/src/key_bind.c, trunk/src/sat.c:
-	  Optimized window painting.
+	* Optimized window painting.
 
 2004-08-13 21:46  sg2
 
-	* trunk/libmpfcwnd/Makefile.am, trunk/libmpfcwnd/wnd.c,
-	  trunk/libmpfcwnd/wnd.h, trunk/libmpfcwnd/wnd_button.c,
-	  trunk/libmpfcwnd/wnd_button.h, trunk/libmpfcwnd/wnd_dialog.c,
-	  trunk/libmpfcwnd/wnd_dialog.h, trunk/libmpfcwnd/wnd_dlgitem.c,
-	  trunk/libmpfcwnd/wnd_dlgitem.h, trunk/libmpfcwnd/wnd_editbox.c,
-	  trunk/libmpfcwnd/wnd_editbox.h, trunk/src/browser.c,
-	  trunk/src/eqwnd.c, trunk/src/help_screen.c, trunk/src/player.c,
-	  trunk/src/player.h: A simple version of edit box implemented.
+	* A simple version of edit box implemented.
 
 2004-08-13 17:48  sg2
 
-	* trunk/libmpfcwnd/wnd.c, trunk/libmpfcwnd/wnd.h,
-	  trunk/libmpfcwnd/wnd_def_handlers.c,
-	  trunk/libmpfcwnd/wnd_print.c, trunk/libmpfcwnd/wnd_print.h:
-	  'wnd_pos_visible' rewrittern.
+	* 'wnd_pos_visible' rewrittern.
 
 2004-08-13 14:41  sg2
 
-	* trunk/libmpfcwnd/wnd.c, trunk/libmpfcwnd/wnd.h,
-	  trunk/libmpfcwnd/wnd_basic.c, trunk/libmpfcwnd/wnd_basic.h,
-	  trunk/libmpfcwnd/wnd_button.c, trunk/libmpfcwnd/wnd_button.h,
-	  trunk/libmpfcwnd/wnd_def_handlers.c,
-	  trunk/libmpfcwnd/wnd_def_handlers.h,
-	  trunk/libmpfcwnd/wnd_dialog.c, trunk/libmpfcwnd/wnd_dialog.h,
-	  trunk/libmpfcwnd/wnd_kbd.c, trunk/libmpfcwnd/wnd_kbd.h,
-	  trunk/libmpfcwnd/wnd_root.c, trunk/libmpfcwnd/wnd_root.h,
-	  trunk/src/browser.c, trunk/src/browser.h, trunk/src/eqwnd.c,
-	  trunk/src/eqwnd.h, trunk/src/help_screen.c,
-	  trunk/src/help_screen.h, trunk/src/player.c, trunk/src/player.h:
-	  Changed key representation.
+	* Changed key representation.
 
 2004-08-13 13:19  sg2
 
-	* trunk/libmpfcwnd/Makefile.am, trunk/libmpfcwnd/wnd.c,
-	  trunk/libmpfcwnd/wnd.h, trunk/libmpfcwnd/wnd_basic.c,
-	  trunk/libmpfcwnd/wnd_basic.h, trunk/libmpfcwnd/wnd_button.c,
-	  trunk/libmpfcwnd/wnd_button.h, trunk/libmpfcwnd/wnd_class.c,
-	  trunk/libmpfcwnd/wnd_class.h, trunk/libmpfcwnd/wnd_dialog.c,
-	  trunk/libmpfcwnd/wnd_dialog.h, trunk/libmpfcwnd/wnd_kbd.c,
-	  trunk/libmpfcwnd/wnd_mouse.c, trunk/libmpfcwnd/wnd_msg.c,
-	  trunk/libmpfcwnd/wnd_msg.h, trunk/libmpfcwnd/wnd_root.c,
-	  trunk/libmpfcwnd/wnd_root.h, trunk/src/player.c,
-	  trunk/src/player.h: Implemented dialog and button window classes.
+	* Implemented dialog and button window classes.
 
 2004-08-11 14:50  sg2
 
-	* trunk/Makefile.am, trunk/configure.in,
-	  trunk/libmpfcwnd/Makefile.am, trunk/libmpfcwnd/wnd.c,
-	  trunk/libmpfcwnd/wnd.h, trunk/libmpfcwnd/wnd_basic.c,
-	  trunk/libmpfcwnd/wnd_basic.h, trunk/libmpfcwnd/wnd_class.c,
-	  trunk/libmpfcwnd/wnd_class.h, trunk/libmpfcwnd/wnd_common_msg.c,
-	  trunk/libmpfcwnd/wnd_common_msg.h,
-	  trunk/libmpfcwnd/wnd_def_handlers.c, trunk/libmpfcwnd/wnd_kbd.c,
-	  trunk/libmpfcwnd/wnd_mouse.c, trunk/libmpfcwnd/wnd_mouse.h,
-	  trunk/libmpfcwnd/wnd_msg.c, trunk/libmpfcwnd/wnd_msg.h,
-	  trunk/libmpfcwnd/wnd_root.c, trunk/libmpfcwnd/wnd_root.h,
-	  trunk/libmpfcwnd/wnd_types.h, trunk/plugins/output/oss/oss.c,
-	  trunk/src/browser.c, trunk/src/eqwnd.c, trunk/src/help_screen.c,
-	  trunk/src/main.c, trunk/src/player.c: 1. Introduced window
-	  classes. 2. Made messages with text identifiers.
+	* 1. Introduced window classes.
+	  2. Made messages with text identifiers.
 
 2004-08-07 21:47  sg2
 
-	* trunk/Makefile.am, trunk/configure.in, trunk/libmpfc/cfg.c,
-	  trunk/libmpfc/plugin_mng.c, trunk/libmpfc/util.c,
-	  trunk/libmpfcwnd, trunk/libmpfcwnd/Makefile.am,
-	  trunk/libmpfcwnd/wnd.c, trunk/libmpfcwnd/wnd.h,
-	  trunk/libmpfcwnd/wnd_common_msg.c,
-	  trunk/libmpfcwnd/wnd_common_msg.h,
-	  trunk/libmpfcwnd/wnd_def_handlers.c,
-	  trunk/libmpfcwnd/wnd_def_handlers.h, trunk/libmpfcwnd/wnd_kbd.c,
-	  trunk/libmpfcwnd/wnd_kbd.h, trunk/libmpfcwnd/wnd_mouse.c,
-	  trunk/libmpfcwnd/wnd_mouse.h, trunk/libmpfcwnd/wnd_msg.c,
-	  trunk/libmpfcwnd/wnd_msg.h, trunk/libmpfcwnd/wnd_print.c,
-	  trunk/libmpfcwnd/wnd_print.h, trunk/libmpfcwnd/wnd_root.c,
-	  trunk/libmpfcwnd/wnd_root.h,
-	  trunk/plugins/input/audiocd/audiocd.c, trunk/po/ru.po,
-	  trunk/src/Makefile.am, trunk/src/browser.c, trunk/src/browser.h,
-	  trunk/src/button.c, trunk/src/button.h, trunk/src/cfg.c,
-	  trunk/src/cfg.h, trunk/src/choice_ctrl.c,
-	  trunk/src/choice_ctrl.h, trunk/src/colors.c, trunk/src/colors.h,
-	  trunk/src/combobox.c, trunk/src/combobox.h,
-	  trunk/src/dlg_ctrl.c, trunk/src/dlg_ctrl.h, trunk/src/dlgbox.c,
-	  trunk/src/dlgbox.h, trunk/src/editbox.c, trunk/src/editbox.h,
-	  trunk/src/eqwnd.c, trunk/src/eqwnd.h, trunk/src/file_input.c,
-	  trunk/src/file_input.h, trunk/src/help_screen.c,
-	  trunk/src/help_screen.h, trunk/src/key_bind.c,
-	  trunk/src/label.c, trunk/src/label.h, trunk/src/listbox.c,
-	  trunk/src/listbox.h, trunk/src/player.c, trunk/src/player.h,
-	  trunk/src/plist.c, trunk/src/plist.h, trunk/src/pmng.h,
-	  trunk/src/song.c, trunk/src/types.h, trunk/src/util.h,
-	  trunk/src/window.c, trunk/src/window.h: Merged libmpfcwnd into
-	  the base MPFC source and used it instead of the old window
-	  library.
+	* Merged libmpfcwnd into the base MPFC source and used it instead
+	  of the
+	  old window library.
 
 2004-05-22 17:25  sg2
 
-	* trunk/AUTHORS, trunk/configure.in,
-	  trunk/plugins/input/audiocd/audiocd.c,
-	  trunk/plugins/input/mp3/mp3.c, trunk/plugins/output/Makefile.am,
-	  trunk/plugins/output/esd, trunk/plugins/output/esd/Makefile.am,
-	  trunk/plugins/output/esd/esd.c, trunk/po/ru.po,
-	  trunk/src/player.c, trunk/src/window.c, trunk/src/window.h: esd
-	  output plugin added.
+	* esd output plugin added.
 
 2004-04-29 10:20  sg2
 
-	* trunk/doc/mpfc.texi: Updated documentation.
+	* Updated documentation.
 
 2004-04-29 10:15  sg2
 
-	* trunk/configure.in, trunk/doc/mpfc.texi,
-	  trunk/plugins/output/Makefile.am, trunk/plugins/output/alsa,
-	  trunk/plugins/output/alsa/Makefile.am,
-	  trunk/plugins/output/alsa/alsa.c, trunk/po/ru.po,
-	  trunk/src/window.c: ALSA plugin added.
+	* ALSA plugin added.
 
 2004-04-29 09:59  sg2
 
-	* trunk/src/browser.c, trunk/src/dlgbox.c, trunk/src/editbox.c,
-	  trunk/src/eqwnd.c, trunk/src/help_screen.c, trunk/src/listbox.c,
-	  trunk/src/player.c, trunk/src/player.h, trunk/src/plist.c,
-	  trunk/src/plist.h, trunk/src/window.c, trunk/src/window.h:
-	  Improved work under xterm.
+	* Improved work under xterm.
 
 2004-04-23 19:35  sg2
 
-	* trunk/src/player.c: Oops... The same bug.
+	* Oops... The same bug.
 
 2004-04-23 19:29  sg2
 
-	* trunk/src/browser.c, trunk/src/key_bind.c, trunk/src/player.c,
-	  trunk/src/player.h, trunk/src/window.c: Fixed bug with
-	  displaying `loop' label.
+	* Fixed bug with displaying `loop' label.
 
 2004-03-24 06:36  sg2
 
-	* trunk/src/main.c: Added random numbers generator initialization.
+	* Added random numbers generator initialization.
 
 2004-03-16 09:57  sg2
 
-	* trunk/plugins/input/timidi/timidi.c: A bug with file name fixed.
+	* A bug with file name fixed.
 
 2004-03-11 18:31  sg2
 
-	* trunk/po/ru.po, trunk/src/browser.c, trunk/src/browser.h,
-	  trunk/src/help_screen.c, trunk/src/player.c, trunk/src/plist.c,
-	  trunk/src/plist.h: Improvements to the file browser (search mode
-	  and saving previous position)
+	* Improvements to the file browser (search mode and saving previous
+	  position)
 
 2004-03-11 12:55  sg2
 
-	* trunk/src/song.c: Another bug with info management fixed.
+	* Another bug with info management fixed.
 
 2004-03-11 10:29  sg2
 
-	* trunk/libmpfc/id3.c: Another mp3 info saving bug fixed.
+	* Another mp3 info saving bug fixed.
 
 2004-03-11 09:22  sg2
 
-	* trunk/configure.in, trunk/libmpfc/id3.c, trunk/libmpfc/util.c: A
-	  bug with saving mp3 info fixed.
+	* A bug with saving mp3 info fixed.
 
 2004-03-10 19:25  sg2
 
-	* trunk/src/song.c: Bug with not playing streamed audio fixed.
+	* Bug with not playing streamed audio fixed.
 
 2004-02-29 19:15  sg2
 
-	* trunk/configure.in, trunk/plugins/charset/ru/ru.c,
-	  trunk/plugins/output/oss/oss.c, trunk/po/ru.po,
-	  trunk/src/main.c, trunk/src/player.c, trunk/src/plist.c: Some
-	  bugs fixed.
+	* Some bugs fixed.
 
 2004-02-28 19:02  sg2
 
-	* trunk/doc/mpfc.texi, trunk/libmpfc/file_http.c,
-	  trunk/libmpfc/id3.c, trunk/libmpfc/plugin_mng.c,
-	  trunk/libmpfc/util.c, trunk/plugins/input/audiocd/audiocd.c,
-	  trunk/plugins/input/audiocd/cddb.c,
-	  trunk/plugins/input/mp3/mp3.c, trunk/plugins/input/ogg/ogg.c,
-	  trunk/plugins/input/radio/radio.c,
-	  trunk/plugins/input/recorder/recorder.c,
-	  trunk/plugins/input/timidi/timidi.c,
-	  trunk/plugins/input/wav/wav.c,
-	  trunk/plugins/output/disk_writer/writer.c, trunk/src/browser.c,
-	  trunk/src/file_input.c, trunk/src/player.c, trunk/src/plist.c,
-	  trunk/src/util.h: Some bugs fixed.
+	* Some bugs fixed.
 
 2004-02-21 19:44  sg2
 
-	* trunk/configure.in, trunk/plugins/input/audiocd/audiocd.c,
-	  trunk/plugins/input/audiocd/cddb.c, trunk/po/ru.po: Moved to
-	  version 1.2-2
+	* Moved to version 1.2-2
 
 2004-02-21 16:25  sg2
 
-	* trunk/plugins/input/ogg/ogg.c: Bug with saving info in song
-	  being played is fixed.
+	* Bug with saving info in song being played is fixed.
 
 2004-02-12 11:12  sg2
 
-	* trunk/configure.in, trunk/doc/mpfc.texi, trunk/libmpfc/util.c,
-	  trunk/plugins/input/recorder/recorder.c, trunk/po/POTFILES.in,
-	  trunk/po/ru.po, trunk/src/browser.c, trunk/src/browser.h,
-	  trunk/src/eqwnd.c, trunk/src/eqwnd.h, trunk/src/help_screen.c,
-	  trunk/src/help_screen.h, trunk/src/player.c: Made help screen
-	  for browser and equalizer.
+	* Made help screen for browser and equalizer.
 
 2004-02-11 18:59  sg2
 
-	* trunk/src/dlgbox.c, trunk/src/help_screen.c, trunk/src/player.c,
-	  trunk/src/plist.c, trunk/src/window.c, trunk/src/window.h:
-	  Printing optimizations done.
+	* Printing optimizations done.
 
 2004-02-11 16:42  sg2
 
-	* trunk/src/player.c, trunk/src/plist.c, trunk/src/plist.h,
-	  trunk/src/undo.c, trunk/src/undo.h, trunk/src/util.h: Sorting on
-	  load done.
+	* Sorting on load done.
 
 2004-02-11 08:51  sg2
 
-	* trunk/doc/mpfc.texi, trunk/plugins/input/recorder/recorder.c:
-	  Documentation updated.
+	* Documentation updated.
 
 2004-02-10 17:44  sg2
 
-	* trunk/po/POTFILES.in, trunk/po/ru.po: Updated russification.
+	* Updated russification.
 
 2004-02-10 17:30  sg2
 
-	* trunk/configure.in, trunk/libmpfc/Makefile.am,
-	  trunk/libmpfc/finder.c, trunk/libmpfc/util.c,
-	  trunk/plugins/charset/Makefile.am,
-	  trunk/plugins/charset/ru/ru.c, trunk/plugins/effect/Makefile.am,
-	  trunk/plugins/input/Makefile.am,
-	  trunk/plugins/input/audiocd/Makefile.am,
-	  trunk/plugins/input/mp3/Makefile.am,
-	  trunk/plugins/input/ogg/Makefile.am,
-	  trunk/plugins/input/ogg/ogg.c,
-	  trunk/plugins/input/timidi/timidi.c,
-	  trunk/plugins/output/Makefile.am,
-	  trunk/plugins/output/disk_writer/writer.c, trunk/po/ru.po,
-	  trunk/src/Makefile.am, trunk/src/listbox.c, trunk/src/player.c,
-	  trunk/src/plist.c, trunk/src/util.h: Made normal stuff with
-	  linking against libraries plus some bugfixes.
+	* Made normal stuff with linking against libraries plus some
+	  bugfixes.
 
 2004-02-09 13:06  sg2
 
-	* trunk/configure.in, trunk/plugins/input/Makefile.am,
-	  trunk/plugins/input/recorder,
-	  trunk/plugins/input/recorder/Makefile.am,
-	  trunk/plugins/input/recorder/recorder.c: Recorder input plugin
-	  added.
+	* Recorder input plugin added.
 
 2004-02-09 12:29  sg2
 
-	* trunk/libmpfc/plugin_output.c,
-	  trunk/plugins/input/audiocd/audiocd.c,
-	  trunk/plugins/input/radio/radio.c,
-	  trunk/plugins/input/timidi/timidi.c,
-	  trunk/plugins/output/disk_writer/writer.c, trunk/po/ru.po,
-	  trunk/src/browser.c, trunk/src/inp.h, trunk/src/outp.h,
-	  trunk/src/player.c, trunk/src/plist.c, trunk/src/window.c,
-	  trunk/src/window.h: Writing support added for AudioCD and radio.
+	* Writing support added for AudioCD and radio.
 
 2004-02-08 14:45  sg2
 
-	* trunk/src/browser.c, trunk/src/browser.h, trunk/src/cfg.c,
-	  trunk/src/player.c, trunk/src/plist.c, trunk/src/window.c,
-	  trunk/src/window.h: Improved browser: implemented song info mode
-	  plus some other features.
+	* Improved browser: implemented song info mode plus some other
+	  features.
 
 2004-02-08 10:03  sg2
 
-	* trunk/src/history.c, trunk/src/player.c: Some bugs fixed.
+	* Some bugs fixed.
 
 2004-02-07 21:06  sg2
 
-	* trunk/libmpfc/Makefile.am, trunk/libmpfc/string.c,
-	  trunk/po/POTFILES.in, trunk/po/ru.po, trunk/src/mystring.h:
-	  Strings are allocated by portions now.
+	* Strings are allocated by portions now.
 
 2004-02-07 20:54  sg2
 
-	* trunk/src/player.c: Fixed bug in variables saving.
+	* Fixed bug in variables saving.
 
 2004-02-07 20:48  sg2
 
-	* trunk/plugins/input/mp3/Makefile.am,
-	  trunk/plugins/input/mp3/getlen.c,
-	  trunk/plugins/input/mp3/getlen.h, trunk/plugins/input/mp3/mp3.c,
-	  trunk/plugins/input/mp3/mp3.h: Length getting function is
-	  rewritten.
+	* Length getting function is rewritten.
 
 2004-02-07 15:16  sg2
 
-	* trunk/libmpfc/Makefile.am, trunk/libmpfc/cfg.c,
-	  trunk/libmpfc/charset.c, trunk/libmpfc/file.c,
-	  trunk/libmpfc/file_http.c, trunk/libmpfc/file_http.h,
-	  trunk/libmpfc/file_reg.c, trunk/libmpfc/file_reg.h,
-	  trunk/libmpfc/genre_list.c, trunk/libmpfc/id3.c,
-	  trunk/libmpfc/plugin_charset.c, trunk/libmpfc/plugin_effect.c,
-	  trunk/libmpfc/plugin_input.c, trunk/libmpfc/plugin_mng.c,
-	  trunk/libmpfc/plugin_output.c, trunk/libmpfc/song_info.c,
-	  trunk/libmpfc/string.c, trunk/libmpfc/util.c,
-	  trunk/plugins/charset/ru/ru.c, trunk/plugins/effect/echo/echo.c,
-	  trunk/plugins/input/audiocd/audiocd.c,
-	  trunk/plugins/input/audiocd/audiocd.h,
-	  trunk/plugins/input/audiocd/cddb.c,
-	  trunk/plugins/input/audiocd/cddb.h,
-	  trunk/plugins/input/mp3/getlen.c, trunk/plugins/input/mp3/mp3.c,
-	  trunk/plugins/input/mp3/mp3.h, trunk/plugins/input/ogg/ogg.c,
-	  trunk/plugins/input/radio/radio.c,
-	  trunk/plugins/input/timidi/timidi.c,
-	  trunk/plugins/input/timidi/timidi.h,
-	  trunk/plugins/input/wav/wav.c,
-	  trunk/plugins/output/disk_writer/writer.c,
-	  trunk/plugins/output/oss/oss.c, trunk/src/Makefile.am,
-	  trunk/src/browser.c, trunk/src/browser.h, trunk/src/button.c,
-	  trunk/src/button.h, trunk/src/cfg.c, trunk/src/cfg.h,
-	  trunk/src/charset.h, trunk/src/choice_ctrl.c,
-	  trunk/src/choice_ctrl.h, trunk/src/colors.c, trunk/src/colors.h,
-	  trunk/src/combobox.c, trunk/src/combobox.h, trunk/src/csp.h,
-	  trunk/src/dlgbox.c, trunk/src/dlgbox.h, trunk/src/editbox.c,
-	  trunk/src/editbox.h, trunk/src/ep.h, trunk/src/eqwnd.c,
-	  trunk/src/file.h, trunk/src/file_input.c,
-	  trunk/src/file_input.h, trunk/src/genre_list.h,
-	  trunk/src/help_screen.c, trunk/src/help_screen.h,
-	  trunk/src/history.c, trunk/src/history.h, trunk/src/inp.h,
-	  trunk/src/iwt.c, trunk/src/listbox.c, trunk/src/listbox.h,
-	  trunk/src/menu.c, trunk/src/menu.h, trunk/src/myid3.h,
-	  trunk/src/mystring.h, trunk/src/outp.h, trunk/src/player.c,
-	  trunk/src/player.h, trunk/src/plist.c, trunk/src/pmng.h,
-	  trunk/src/song.c, trunk/src/song.h, trunk/src/song_info.h,
-	  trunk/src/types.h, trunk/src/undo.c, trunk/src/undo.h,
-	  trunk/src/util.h, trunk/src/window.c, trunk/src/window.h:
-	  Changed char arrays to pointr where it is possible and
-	  restructured plugins.
+	* Changed char arrays to pointr where it is possible and
+	  restructured
+	  plugins.
 
 2004-02-02 11:30  sg2
 
-	* trunk/Makefile.am, trunk/configure.in, trunk/libmpfc,
-	  trunk/libmpfc/Makefile.am, trunk/libmpfc/cfg.c,
-	  trunk/libmpfc/charset.c, trunk/libmpfc/file.c,
-	  trunk/libmpfc/file_http.c, trunk/libmpfc/file_http.h,
-	  trunk/libmpfc/file_reg.c, trunk/libmpfc/file_reg.h,
-	  trunk/libmpfc/finder.c, trunk/libmpfc/genre_list.c,
-	  trunk/libmpfc/id3.c, trunk/libmpfc/plugin_charset.c,
-	  trunk/libmpfc/plugin_effect.c, trunk/libmpfc/plugin_input.c,
-	  trunk/libmpfc/plugin_mng.c, trunk/libmpfc/plugin_output.c,
-	  trunk/libmpfc/util.c, trunk/plugins/Makefile.am,
-	  trunk/plugins/charset, trunk/plugins/charset/Makefile.am,
-	  trunk/plugins/charset/ru, trunk/plugins/charset/ru/Makefile.am,
-	  trunk/plugins/charset/ru/ru.c,
-	  trunk/plugins/effect/echo/Makefile.am,
-	  trunk/plugins/input/audiocd/Makefile.am,
-	  trunk/plugins/input/mp3/Makefile.am,
-	  trunk/plugins/input/mp3/mp3.c,
-	  trunk/plugins/input/ogg/Makefile.am,
-	  trunk/plugins/input/radio/Makefile.am,
-	  trunk/plugins/input/timidi/Makefile.am,
-	  trunk/plugins/input/wav/Makefile.am,
-	  trunk/plugins/output/disk_writer/Makefile.am,
-	  trunk/plugins/output/oss/Makefile.am, trunk/po/ru.po,
-	  trunk/src/Makefile.am, trunk/src/charset.h, trunk/src/finder.c,
-	  trunk/src/myid3.h, trunk/src/player.c, trunk/src/pmng.h,
-	  trunk/src/song.c, trunk/src/window.c: 1. Made one shared libmpfc
-	  library instead of many static libraries. 2. Written charset
-	  plugins.
+	* 1. Made one shared libmpfc library instead of many static
+	  libraries.
+	  2. Written charset plugins.
 
 2004-01-31 17:00  sg2
 
-	* trunk/plugins/input/mp3/Makefile.am,
-	  trunk/plugins/input/mp3/getlen.c,
-	  trunk/plugins/input/mp3/getlen.h, trunk/plugins/input/mp3/mp3.c:
-	  Proper song length obtaining.
+	* Proper song length obtaining.
 
 2004-01-31 14:31  sg2
 
-	* trunk/configure.in, trunk/plugins/input/radio/radio.c,
-	  trunk/po/ru.po, trunk/src/Makefile.am, trunk/src/ep.c,
-	  trunk/src/ep.h, trunk/src/inp.c, trunk/src/inp.h,
-	  trunk/src/outp.c, trunk/src/outp.h, trunk/src/player.c,
-	  trunk/src/player.h, trunk/src/plist.c, trunk/src/plugin,
-	  trunk/src/plugin/Makefile.am, trunk/src/plugin/ep.c,
-	  trunk/src/plugin/inp.c, trunk/src/plugin/outp.c,
-	  trunk/src/plugin/pmng.c, trunk/src/pmng.c, trunk/src/pmng.h,
-	  trunk/src/song.c: Made a plugin management functions.
+	* Made a plugin management functions.
 
 2004-01-31 12:19  sg2
 
-	* trunk/plugins/input/mp3/mp3.c, trunk/plugins/input/ogg/ogg.c,
-	  trunk/src/inp.c, trunk/src/inp.h, trunk/src/player.c,
-	  trunk/src/window.c, trunk/src/window.h: Current audio parameters
-	  (bitrate, sample rate and number of channels) displaying
-	  implemented.
+	* Current audio parameters (bitrate, sample rate and number of
+	  channels)
+	  displaying implemented.
 
 2004-01-17 21:35  sg2
 
-	* trunk/configure.in, trunk/doc/mpfc.texi,
-	  trunk/plugins/input/Makefile.am, trunk/plugins/input/timidi,
-	  trunk/plugins/input/timidi/Makefile.am,
-	  trunk/plugins/input/timidi/timidi.c,
-	  trunk/plugins/input/timidi/timidi.h, trunk/po/ru.po: TiMidi
-	  plugin introduced.
+	* TiMidi plugin introduced.
 
 2004-01-14 10:26  sg2
 
-	* trunk/src/editbox.c, trunk/src/plist.c, trunk/src/plist.h: A
-	  little bug in edit box fixed.
+	* A little bug in edit box fixed.
 
 2004-01-07 11:41  sg2
 
-	* trunk/src/plist.c: Fixed a little bug with songs which info
-	  wasn't reloaded after undoing their removing.
+	* Fixed a little bug with songs which info wasn't reloaded after
+	  undoing
+	  their removing.
 
 2004-01-06 21:09  sg2
 
-	* trunk/configure.in, trunk/po/ru.po, trunk/src/browser.c,
-	  trunk/src/player.c, trunk/src/plist.c: Moved to 1.1.1 version.
+	* Moved to 1.1.1 version.
 
 2004-01-02 08:47  sg2
 
-	* trunk/doc/mpfc.texi, trunk/po/ru.po, trunk/src/browser.c:
-	  Removed possibility to exit file browser by escape.
+	* Removed possibility to exit file browser by escape.
 
 2004-01-01 22:15  sg2
 
-	* trunk/doc/mpfc.texi, trunk/plugins/input/wav/wav.c,
-	  trunk/po/POTFILES.in, trunk/po/ru.po, trunk/src/Makefile.am,
-	  trunk/src/browser.c, trunk/src/browser.h,
-	  trunk/src/help_screen.c, trunk/src/key_bind.c,
-	  trunk/src/key_bind.h, trunk/src/player.c, trunk/src/player.h,
-	  trunk/src/window.c, trunk/src/window.h: File browser tool
-	  implemented.
+	* File browser tool implemented.
 
 2003-12-31 09:55  sg2
 
-	* trunk/plugins/input/mp3/mp3.c: Bug with equalizer in mp3 plugin
-	  fixed (it didn't apply)
+	* Bug with equalizer in mp3 plugin fixed (it didn't apply)
 
 2003-12-31 09:48  sg2
 
-	* trunk/src/pmng.c: Fixed a bug with effects (they were not
-	  applied)
+	* Fixed a bug with effects (they were not applied)
 
 2003-12-28 14:44  sg2
 
-	* trunk/src/player.c, trunk/src/player.h: Some bugs fixed.
+	* Some bugs fixed.
 
 2003-12-28 14:10  sg2
 
-	* trunk/plugins/input/mp3/mp3.c: A bug with info string overflow
-	  fixed.
+	* A bug with info string overflow fixed.
 
 2003-12-21 17:15  sg2
 
-	* trunk/doc/mpfc.texi: Documentation updated.
+	* Documentation updated.
 
 2003-12-21 17:12  sg2
 
-	* trunk/plugins/input/audiocd/audiocd.c, trunk/po/ru.po,
-	  trunk/src/inp.c, trunk/src/inp.h, trunk/src/player.c,
-	  trunk/src/player.h, trunk/src/window.c: 1. Smooth CD playing. 2.
-	  Mouse in xterm enabled.
+	* 1. Smooth CD playing.
+	  2. Mouse in xterm enabled.
 
 2003-12-21 12:17  sg2
 
-	* trunk/plugins/output/oss/oss.c: Variable controlling dsp device
-	  name added.
+	* Variable controlling dsp device name added.
 
 2003-12-20 21:33  sg2
 
-	* trunk/src/eqwnd.c, trunk/src/eqwnd.h: Added mouse support in
-	  equalizer window.
+	* Added mouse support in equalizer window.
 
 2003-12-18 17:19  sg2
 
-	* trunk/plugins/input/mp3/mp3.c, trunk/po/ru.po,
-	  trunk/src/Makefile.am, trunk/src/iwt.c, trunk/src/iwt.h,
-	  trunk/src/myid3/id3.c, trunk/src/player.c, trunk/src/sat.h,
-	  trunk/src/song.h: Song info writer thread module implemented.
+	* Song info writer thread module implemented.
 
 2003-12-18 09:40  sg2
 
-	* trunk/src/myid3/id3.c: Writing track in ID3 enabled.
+	* Writing track in ID3 enabled.
 
 2003-12-17 19:42  sg2
 
-	* trunk/src/myid3.h, trunk/src/myid3/id3.c: Added track number
-	  support in ID3V1 tags.
+	* Added track number support in ID3V1 tags.
 
 2003-12-15 19:01  sg2
 
-	* trunk/doc/mpfc.texi, trunk/plugins/input/audiocd/audiocd.c,
-	  trunk/plugins/input/mp3/mp3.c, trunk/po/ru.po,
-	  trunk/src/combobox.c, trunk/src/editbox.c,
-	  trunk/src/myid3/id3.c, trunk/src/player.c, trunk/src/plist.c,
-	  trunk/src/song.c, trunk/src/util.h, trunk/src/util/util.c,
-	  trunk/src/window.c, trunk/src/window.h: Bugs in ID3 fixed.
+	* Bugs in ID3 fixed.
 
 2003-11-27 17:33  sg2
 
-	* trunk/po/ru.po: Updated russification.
+	* Updated russification.
 
 2003-11-27 17:30  sg2
 
-	* trunk/doc/mpfc.texi: Updated info page.
+	* Updated info page.
 
 2003-11-27 11:59  sg2
 
-	* trunk/plugins/input/audiocd/cddb.c,
-	  trunk/plugins/input/audiocd/cddb.h, trunk/src/inp.c,
-	  trunk/src/player.c, trunk/src/window.c: CDDB submit function
-	  implemented.
+	* CDDB submit function implemented.
 
 2003-11-23 17:07  sg2
 
-	* trunk/configure.in, trunk/doc/Makefile.am,
-	  trunk/plugins/input/audiocd/audiocd.c,
-	  trunk/plugins/input/audiocd/audiocd.h,
-	  trunk/plugins/input/audiocd/cddb.c,
-	  trunk/plugins/input/mp3/Makefile.am,
-	  trunk/plugins/input/mp3/mp3.c, trunk/po/POTFILES.in,
-	  trunk/po/ru.po, trunk/src/cfg.c, trunk/src/help_screen.c,
-	  trunk/src/inp.c, trunk/src/inp.h, trunk/src/player.c,
-	  trunk/src/player.h, trunk/src/plist.c, trunk/src/window.c: Some
-	  features implemented.
+	* Some features implemented.
 
 2003-11-20 16:25  sg2
 
-	* trunk/configure.in, trunk/po/ru.po, trunk/src/Makefile.am,
-	  trunk/src/combobox.c, trunk/src/combobox.h,
-	  trunk/src/dlg_ctrl.c, trunk/src/dlg_ctrl.h, trunk/src/dlgbox.c,
-	  trunk/src/dlgbox.h, trunk/src/editbox.c, trunk/src/editbox.h,
-	  trunk/src/player.c, trunk/src/player.h, trunk/src/plist.c,
-	  trunk/src/plist.h, trunk/src/window.c, trunk/src/window.h: Mouse
-	  support implemented.
+	* Mouse support implemented.
 
 2003-11-14 20:11  sg2
 
-	* trunk/src/player.c, trunk/src/plist.c, trunk/src/plist.h: Fixed
-	  some bugs with undoing object removing.
+	* Fixed some bugs with undoing object removing.
 
 2003-11-14 19:45  sg2
 
-	* trunk/plugins/input/audiocd/audiocd.c,
-	  trunk/plugins/input/audiocd/audiocd.h,
-	  trunk/plugins/input/audiocd/cddb.c,
-	  trunk/plugins/input/audiocd/cddb.h,
-	  trunk/plugins/input/radio/radio.c, trunk/po/ru.po,
-	  trunk/src/inp.c, trunk/src/inp.h, trunk/src/player.c,
-	  trunk/src/plist.c, trunk/src/plist.h, trunk/src/song.c: Improved
-	  objects support.
+	* Improved objects support.
 
 2003-11-11 12:21  sg2
 
-	* trunk/plugins/input/mp3/mp3.c, trunk/src/inp.c, trunk/src/inp.h,
-	  trunk/src/label.c, trunk/src/label.h, trunk/src/myid3.h,
-	  trunk/src/myid3/id3.c, trunk/src/player.c, trunk/src/player.h,
-	  trunk/src/window.c, trunk/src/window.h: Special input plugin
-	  functions support and clear ID3 tags in mp3 plugin function
-	  implemented.
+	* Special input plugin functions support and clear ID3 tags in mp3
+	  plugin
+	  function implemented.
 
 2003-11-09 18:07  sg2
 
-	* trunk/src/player.c, trunk/src/player.h, trunk/src/plist.c,
-	  trunk/src/plist.h: Local info reload implemented.
+	* Local info reload implemented.
 
 2003-11-09 18:00  sg2
 
-	* trunk/src/myid3/id3.c: Some bugs in ID3 support fixed.
+	* Some bugs in ID3 support fixed.
 
 2003-11-09 15:08  sg2
 
-	* trunk/po/ru.po, trunk/src/combobox.c, trunk/src/combobox.h,
-	  trunk/src/editbox.c, trunk/src/editbox.h, trunk/src/myid3/id3.c,
-	  trunk/src/player.c, trunk/src/plist.h: Grouped info editing
-	  implemented.
+	* Grouped info editing implemented.
 
 2003-11-08 20:19  sg2
 
-	* trunk/configure.in, trunk/plugins/input/mp3/Makefile.am,
-	  trunk/plugins/input/mp3/mp3.c, trunk/plugins/input/mp3/mp3.h,
-	  trunk/src/Makefile.am, trunk/src/file/http.c, trunk/src/inp.c,
-	  trunk/src/myid3, trunk/src/myid3.h, trunk/src/myid3/Makefile.am,
-	  trunk/src/myid3/id3.c: Own ID3 tags support implemented.
+	* Own ID3 tags support implemented.
 
 2003-11-01 19:15  sg2
 
-	* trunk/src/editbox.c, trunk/src/editbox.h,
-	  trunk/src/file_input.c, trunk/src/window.c: Edit box C-u, C-k
-	  and C-y operations implemented.
+	* Edit box C-u, C-k and C-y operations implemented.
 
 2003-11-01 06:14  sg2
 
-	* trunk/README, trunk/plugins/input/mp3/mp3.c,
-	  trunk/plugins/input/ogg/ogg.c, trunk/plugins/input/wav/wav.c,
-	  trunk/po/ru.po, trunk/src/plist.c: A bug with moving selection
-	  fixed.
+	* A bug with moving selection fixed.
 
 2003-10-31 19:11  sg2
 
-	* trunk/src/cfg.c, trunk/src/player.c: 1. Bug with skipping songs
-	  fixed. 2. Configuration variables information updated.
+	* 1. Bug with skipping songs fixed.
+	  2. Configuration variables information updated.
 
 2003-10-31 18:59  sg2
 
-	* trunk/src/cfg.c, trunk/src/choice_ctrl.c, trunk/src/combobox.c,
-	  trunk/src/dlgbox.c, trunk/src/editbox.c, trunk/src/eqwnd.c,
-	  trunk/src/file/file.c, trunk/src/file/http.c,
-	  trunk/src/file/http.h, trunk/src/file/reg.c,
-	  trunk/src/file/reg.h, trunk/src/help_screen.c,
-	  trunk/src/label.c, trunk/src/menu.c, trunk/src/player.c,
-	  trunk/src/player.h, trunk/src/plist.c, trunk/src/plist.h,
-	  trunk/src/util.h, trunk/src/util/util.c, trunk/src/window.c,
-	  trunk/src/window.h: Some little bugs fixed.
+	* Some little bugs fixed.
 
 2003-10-22 16:09  sg2
 
-	* trunk/doc/Makefile.am, trunk/doc/mpfc.1, trunk/doc/mpfc.texi:
-	  Written documentation in Texinfo format.
+	* Written documentation in Texinfo format.
 
 2003-10-17 14:53  sg2
 
-	* trunk/configure.in, trunk/plugins/input/mp3/Makefile.am,
-	  trunk/plugins/input/mp3/mp3.c,
-	  trunk/plugins/input/ogg/Makefile.am,
-	  trunk/plugins/input/ogg/ogg.c,
-	  trunk/plugins/input/wav/Makefile.am, trunk/src/Makefile.am,
-	  trunk/src/cfg.c, trunk/src/file, trunk/src/file/Makefile.am,
-	  trunk/src/file/file.c, trunk/src/file/http.c,
-	  trunk/src/file/http.h, trunk/src/file/reg.c,
-	  trunk/src/file/reg.h, trunk/src/finder.c, trunk/src/inp.c,
-	  trunk/src/inp.h, trunk/src/player.c, trunk/src/player.h,
-	  trunk/src/plist.c, trunk/src/plist.h, trunk/src/pmng.c,
-	  trunk/src/pmng.h, trunk/src/song.c, trunk/src/song.h,
-	  trunk/src/util.h, trunk/src/util/util.c: Network support added.
+	* Network support added.
 
 2003-10-05 19:29  sg2
 
-	* trunk/plugins/effect/echo/echo.c, trunk/plugins/input/mp3/mp3.c,
-	  trunk/plugins/output/disk_writer/writer.c,
-	  trunk/plugins/output/oss/oss.c, trunk/po/ru.po, trunk/src/cfg.c,
-	  trunk/src/eqwnd.c, trunk/src/key_bind.c, trunk/src/player.c,
-	  trunk/src/plist.c, trunk/src/pmng.c, trunk/src/song.c: Changed
-	  '_' in variables names to '-'.
+	* Changed '_' in variables names to '-'.
 
 2003-10-02 17:19  sg2
 
-	* trunk/src/Makefile.am, trunk/src/cfg.c, trunk/src/finder.c,
-	  trunk/src/finder.h, trunk/src/help_screen.c,
-	  trunk/src/key_bind.c, trunk/src/key_bind.h, trunk/src/player.c,
-	  trunk/src/plist.c, trunk/src/plist.h, trunk/src/pmng.c,
-	  trunk/src/pmng.h: General file finder interface written. Plugins
-	  reload implemented.
+	* General file finder interface written.
+	  Plugins reload implemented.
 
 2003-10-02 15:58  sg2
 
-	* trunk/po/ru.po, trunk/src/Makefile.am, trunk/src/cfg.h,
-	  trunk/src/cfg/cfg.c, trunk/src/help_screen.c,
-	  trunk/src/help_screen.h, trunk/src/key_bind.c,
-	  trunk/src/player.c: Russification updated.
+	* Russification updated.
 
 2003-10-02 09:03  sg2
 
-	* trunk/src/plist.c: Normal file adder implemented.
+	* Normal file adder implemented.
 
 2003-09-30 06:36  sg2
 
-	* trunk/src/key_bind.c, trunk/src/key_bind.h, trunk/src/player.c,
-	  trunk/src/player.h: Time jumping one-level undo implemented.
+	* Time jumping one-level undo implemented.
 
 2003-09-29 16:52  sg2
 
-	* trunk/src/cfg.h, trunk/src/cfg/cfg.c, trunk/src/eqwnd.c,
-	  trunk/src/player.c, trunk/src/player.h, trunk/src/plist.c,
-	  trunk/src/song.c, trunk/src/song_info.h: Configuration variables
-	  setting handlers support implemented.
+	* Configuration variables setting handlers support implemented.
 
 2003-09-27 15:15  sg2
 
-	* trunk/src/key_bind.c, trunk/src/key_bind.h, trunk/src/player.c,
-	  trunk/src/player.h, trunk/src/plist.c, trunk/src/plist.h,
-	  trunk/src/util/util.c: Advaned search implemented.
+	* Advaned search implemented.
 
 2003-09-27 13:05  sg2
 
-	* trunk/src/plist.c, trunk/src/util.h, trunk/src/util/util.c: Play
-	  list search with regular expressions support implemented.
+	* Play list search with regular expressions support implemented.
 
 2003-09-27 05:50  sg2
 
-	* trunk/src/key_bind.c, trunk/src/key_bind.h, trunk/src/player.c,
-	  trunk/src/player.h, trunk/src/plist.c: Play list marks support
-	  implemented.
+	* Play list marks support implemented.
 
 2003-09-27 05:06  sg2
 
-	* trunk/src/plist.c: Now undo removes currently playing song.
+	* Now undo removes currently playing song.
 
 2003-09-26 07:01  sg2
 
-	* trunk/plugins/effect/echo/echo.c,
-	  trunk/plugins/input/audiocd/audiocd.c,
-	  trunk/plugins/input/audiocd/audiocd.h,
-	  trunk/plugins/input/audiocd/cddb.c,
-	  trunk/plugins/input/audiocd/cddb.h,
-	  trunk/plugins/input/mp3/mp3.c, trunk/plugins/input/mp3/mp3.h,
-	  trunk/plugins/input/ogg/ogg.c,
-	  trunk/plugins/input/radio/radio.c,
-	  trunk/plugins/input/wav/wav.c,
-	  trunk/plugins/output/disk_writer/writer.c,
-	  trunk/plugins/output/oss/oss.c, trunk/src/choice_ctrl.c,
-	  trunk/src/choice_ctrl.h, trunk/src/combobox.c,
-	  trunk/src/combobox.h, trunk/src/dlgbox.c, trunk/src/dlgbox.h,
-	  trunk/src/editbox.c, trunk/src/editbox.h, trunk/src/eqwnd.c,
-	  trunk/src/eqwnd.h, trunk/src/file_input.c,
-	  trunk/src/file_input.h, trunk/src/help_screen.c,
-	  trunk/src/help_screen.h, trunk/src/inp.c, trunk/src/inp.h,
-	  trunk/src/key_bind.c, trunk/src/label.c, trunk/src/label.h,
-	  trunk/src/menu.c, trunk/src/menu.h, trunk/src/outp.c,
-	  trunk/src/outp.h, trunk/src/player.c, trunk/src/player.h,
-	  trunk/src/plist.c, trunk/src/plist.h, trunk/src/pmng.c,
-	  trunk/src/pmng.h, trunk/src/sat.c, trunk/src/sat.h,
-	  trunk/src/song.c, trunk/src/song.h, trunk/src/song_info.h,
-	  trunk/src/types.h, trunk/src/util.h, trunk/src/util/util.c,
-	  trunk/src/window.c, trunk/src/window.h: 1. Changed bool to
-	  bool_t 2. Fixed bugs in adding songs
+	* 1. Changed bool to bool_t
+	  2. Fixed bugs in adding songs
 
 2003-09-11 14:56  sg2
 
-	* trunk/configure.in, trunk/plugins/input/audiocd/Makefile.am,
-	  trunk/plugins/input/audiocd/audiocd.c,
-	  trunk/plugins/input/audiocd/audiocd.h,
-	  trunk/plugins/input/audiocd/cddb.c,
-	  trunk/plugins/input/audiocd/cddb.h,
-	  trunk/plugins/input/mp3/mp3.c,
-	  trunk/plugins/input/ogg/Makefile.am, trunk/po/ru.po,
-	  trunk/src/player.c, trunk/src/plist.c, trunk/src/song.c,
-	  trunk/src/window.c, trunk/src/window.h: CDDB support implemented.
+	* CDDB support implemented.
 
 2003-09-07 17:28  sg2
 
-	* trunk/src/player.c: Saving play status and bounds to cfg file on
-	  exit.
+	* Saving play status and bounds to cfg file on exit.
 
 2003-09-07 17:17  sg2
 
-	* trunk/configure.in, trunk/plugins/input/mp3/mp3.c,
-	  trunk/plugins/input/ogg/Makefile.am,
-	  trunk/plugins/input/ogg/ogg.c, trunk/plugins/input/ogg/vcedit.c,
-	  trunk/plugins/input/ogg/vcedit.h, trunk/po/ru.po,
-	  trunk/src/combobox.c, trunk/src/inp.c, trunk/src/player.c,
-	  trunk/src/song.c, trunk/src/song_info.h: OggVorbis song info
-	  saving.
+	* OggVorbis song info saving.
 
 2003-09-06 20:18  sg2
 
-	* trunk/src/key_bind.c, trunk/src/key_bind.h, trunk/src/player.c,
-	  trunk/src/player.h: Outer commands execution implemented.
+	* Outer commands execution implemented.
 
 2003-09-06 13:13  sg2
 
-	* trunk/po/ru.po, trunk/src/key_bind.c, trunk/src/key_bind.h,
-	  trunk/src/player.c, trunk/src/plist.c, trunk/src/plist.h,
-	  trunk/src/song.c: Play bounds specification support implemented.
+	* Play bounds specification support implemented.
 
 2003-09-03 19:19  sg2
 
-	* trunk/src/player.c, trunk/src/song.c: Showing remaining song
-	  time instead of current option implemented.
+	* Showing remaining song time instead of current option
+	  implemented.
 
 2003-09-03 19:06  sg2
 
-	* trunk/src/song.c, trunk/src/song.h: Manual song title format
-	  specification option implemented.
+	* Manual song title format specification option implemented.
 
 2003-09-03 18:21  sg2
 
-	* trunk/src/song.c, trunk/src/util.h, trunk/src/util/util.c:
-	  Option to convert underscores to spaces in song titles
+	* Option to convert underscores to spaces in song titles
 	  implemented.
 
 2003-09-03 16:17  sg2
 
-	* trunk/src/label.c, trunk/src/label.h: Addition to the previous.
+	* Addition to the previous.
 
 2003-09-02 19:24  sg2
 
-	* trunk/plugins/input/mp3/mp3.c, trunk/plugins/input/mp3/mp3.h,
-	  trunk/plugins/input/ogg/ogg.c, trunk/plugins/input/wav/wav.c,
-	  trunk/src/Makefile.am, trunk/src/choice_ctrl.c,
-	  trunk/src/choice_ctrl.h, trunk/src/dlgbox.c, trunk/src/dlgbox.h,
-	  trunk/src/editbox.c, trunk/src/editbox.h, trunk/src/ep.c,
-	  trunk/src/ep.h, trunk/src/error.c, trunk/src/error.h,
-	  trunk/src/file_input.c, trunk/src/file_input.h, trunk/src/inp.c,
-	  trunk/src/inp.h, trunk/src/main.c, trunk/src/menu.c,
-	  trunk/src/menu.h, trunk/src/outp.c, trunk/src/outp.h,
-	  trunk/src/player.c, trunk/src/player.h, trunk/src/plist.h,
-	  trunk/src/pmng.c, trunk/src/pmng.h, trunk/src/song.c,
-	  trunk/src/song.h, trunk/src/song_info.h, trunk/src/types.h,
-	  trunk/src/util.h, trunk/src/util/Makefile.am,
-	  trunk/src/util/util.c, trunk/src/window.c, trunk/src/window.h:
-	  Audio parameters information is included to song info.
+	* Audio parameters information is included to song info.
 
 2003-08-30 19:47  sg2
 
-	* trunk/plugins/input/mp3/mp3.c, trunk/plugins/input/mp3/mp3.h,
-	  trunk/plugins/input/ogg/ogg.c, trunk/plugins/input/wav/wav.c,
-	  trunk/po/ru.po, trunk/src/cfg.h, trunk/src/player.c,
-	  trunk/src/player.h, trunk/src/song_info.h: Added a feature to
-	  start playing from last stop.
+	* Added a feature to start playing from last stop.
 
 2003-08-16 20:47  sg2
 
-	* trunk/plugins/output/oss/oss.c, trunk/po/ru.po,
-	  trunk/src/help_screen.c, trunk/src/inp.c, trunk/src/key_bind.c,
-	  trunk/src/outp.c, trunk/src/outp.h, trunk/src/player.c,
-	  trunk/src/player.h, trunk/src/pmng.c: Balance regulation
-	  implemented.
+	* Balance regulation implemented.
 
 2003-08-15 17:45  sg2
 
-	* trunk/src/Makefile.am, trunk/src/help_screen.c,
-	  trunk/src/key_bind.c, trunk/src/key_bind.h, trunk/src/player.c,
-	  trunk/src/player.h, trunk/src/plist.c, trunk/src/plist.h,
-	  trunk/src/sat.c, trunk/src/sat.h, trunk/src/song.c,
-	  trunk/src/song.h: Undo support for play list operations
-	  implemented.
+	* Undo support for play list operations implemented.
 
 2003-08-13 13:58  sg2
 
-	* trunk/configure.in, trunk/plugins/input/mp3/mp3.c,
-	  trunk/plugins/input/ogg/ogg.c, trunk/po/ru.po,
-	  trunk/src/Makefile.am, trunk/src/combobox.c,
-	  trunk/src/combobox.h, trunk/src/genre_list.h,
-	  trunk/src/player.c, trunk/src/song.c, trunk/src/song_info.h: 1.
-	  Implemented combo box. 2. Implemented feature to set any genres.
+	* 1. Implemented combo box.
+	  2. Implemented feature to set any genres.
 
 2003-08-12 13:07  sg2
 
-	* trunk/configure.in, trunk/plugins/input/Makefile.am,
-	  trunk/plugins/input/ogg, trunk/plugins/input/ogg/Makefile.am,
-	  trunk/plugins/input/ogg/ogg.c, trunk/src/genre_list.h,
-	  trunk/src/glist/genre_list.c, trunk/src/plist.c,
-	  trunk/src/pmng.c: Implemented OggVorbis input plugin (without
-	  saving info feature).
+	* Implemented OggVorbis input plugin (without saving info feature).
 
 2003-08-11 17:13  sg2
 
-	* trunk/plugins/output/disk_writer,
-	  trunk/plugins/output/disk_writer/Makefile.am,
-	  trunk/plugins/output/disk_writer/writer.c: *** empty log message
-	  ***
+	* *** empty log message ***
 
 2003-08-11 16:51  sg2
 
-	* trunk/configure.in, trunk/plugins/output/Makefile.am,
-	  trunk/plugins/output/oss/oss.c, trunk/po/ru.po, trunk/src/cfg.h,
-	  trunk/src/cfg/cfg.c, trunk/src/eqwnd.c, trunk/src/outp.c,
-	  trunk/src/player.c: Disk writer output plugin implemented.
+	* Disk writer output plugin implemented.
 
 2003-08-11 13:13  sg2
 
-	* trunk/plugins/input/mp3/mp3.c, trunk/plugins/input/mp3/mp3.h,
-	  trunk/po/ru.po, trunk/src/cfg.h, trunk/src/cfg/cfg.c,
-	  trunk/src/eqwnd.c, trunk/src/help_screen.c, trunk/src/player.c,
-	  trunk/src/player.h, trunk/src/plist.c, trunk/src/util.h,
-	  trunk/src/util/Makefile.am, trunk/src/util/buf.c,
-	  trunk/src/util/util.c, trunk/src/window.c: Fixed bugs etc.
+	* Fixed bugs etc.
 
 2003-08-09 14:00  sg2
 
-	* trunk/src/Makefile.am, trunk/src/cfg/cfg.c, trunk/src/dlgbox.c,
-	  trunk/src/dlgbox.h, trunk/src/editbox.c, trunk/src/editbox.h,
-	  trunk/src/help_screen.c, trunk/src/key_bind.c,
-	  trunk/src/key_bind.h, trunk/src/player.c, trunk/src/player.h,
-	  trunk/src/window.c, trunk/src/window.h: Advanced variables
-	  manager implemented.
+	* Advanced variables manager implemented.
 
 2003-08-08 15:03  sg2
 
-	* trunk/configure.in, trunk/plugins/input/audiocd/audiocd.c,
-	  trunk/plugins/input/mp3/mp3.c, trunk/plugins/input/wav/wav.c,
-	  trunk/plugins/output/oss/oss.c, trunk/po/ru.po, trunk/src/inp.c,
-	  trunk/src/inp.h, trunk/src/player.c: Correct get song current
-	  time function implemented.
+	* Correct get song current time function implemented.
 
 2003-08-06 10:35  sg2
 
-	* trunk/src/Makefile.am, trunk/src/editbox.c, trunk/src/editbox.h,
-	  trunk/src/file_input.c, trunk/src/history.c,
-	  trunk/src/history.h, trunk/src/player.c, trunk/src/player.h,
-	  trunk/src/util/util.c: Edit boxes history implemented.
+	* Edit boxes history implemented.
 
 2003-08-05 12:51  sg2
 
-	* trunk/src/Makefile.am, trunk/src/plist.c: A bug in sorting fixed.
+	* A bug in sorting fixed.
 
 2003-08-05 09:20  sg2
 
-	* trunk/src/help_screen.c, trunk/src/key_bind.c,
-	  trunk/src/key_bind.h, trunk/src/player.c, trunk/src/plist.c,
-	  trunk/src/plist.h: Play list parts moving implemented.
+	* Play list parts moving implemented.
 
 2003-08-04 12:50  sg2
 
-	* trunk/src/Makefile.am, trunk/src/dlgbox.c, trunk/src/editbox.c,
-	  trunk/src/help_screen.c, trunk/src/key_bind.c,
-	  trunk/src/key_bind.h, trunk/src/player.c, trunk/src/plist.c,
-	  trunk/src/window.c, trunk/src/window.h: Added colored UI support.
+	* Added colored UI support.
 
 2003-08-03 08:37  sg2
 
-	* trunk/src/key_bind.c, trunk/src/key_bind.h: Added feature of
-	  setting key bindings through configuration variables.
+	* Added feature of setting key bindings through configuration
+	  variables.
 
 2003-08-02 22:10  sg2
 
-	* trunk/src/Makefile.am, trunk/src/key_bind.c,
-	  trunk/src/key_bind.h, trunk/src/player.c, trunk/src/player.h,
-	  trunk/src/plist.c: Key bindings implemented.
+	* Key bindings implemented.
 
 2003-08-01 13:23  sg2
 
-	* trunk/doc/mpfc.1, trunk/plugins/output/oss/oss.c,
-	  trunk/src/player.c: Some minor changes.
+	* Some minor changes.
 
 2003-08-01 12:55  sg2
 
-	* trunk/configure.in, trunk/plugins/input/Makefile.am,
-	  trunk/plugins/input/radio,
-	  trunk/plugins/input/radio/Makefile.am,
-	  trunk/plugins/input/radio/radio.c: Radio plugin implemented.
+	* Radio plugin implemented.
 
 2003-08-01 10:44  sg2
 
-	* trunk/src/player.c: Implemented feature for adding objects from
-	  command line.
+	* Implemented feature for adding objects from command line.
 
 2003-08-01 09:46  sg2
 
-	* trunk/plugins/input/audiocd/audiocd.c, trunk/src/inp.c,
-	  trunk/src/inp.h, trunk/src/player.c: Improved Audio-CD support
-	  (pause and seek included).
+	* Improved Audio-CD support (pause and seek included).
 
 2003-07-29 13:29  sg2
 
-	* trunk/configure.in, trunk/plugins/input/Makefile.am,
-	  trunk/plugins/input/audiocd,
-	  trunk/plugins/input/audiocd/Makefile.am,
-	  trunk/plugins/input/audiocd/audiocd.c, trunk/po/ru.po,
-	  trunk/src/inp.c, trunk/src/inp.h, trunk/src/player.c,
-	  trunk/src/player.h, trunk/src/plist.c, trunk/src/plist.h,
-	  trunk/src/pmng.c, trunk/src/pmng.h, trunk/src/song.c,
-	  trunk/src/window.c, trunk/src/window.h: Audio CD Input plugin
-	  implemented.
+	* Audio CD Input plugin implemented.
 
 2003-07-27 20:16  sg2
 
-	* trunk/src/cfg/cfg.c: A little change.
+	* A little change.
 
 2003-07-27 19:45  sg2
 
-	* trunk/configure.in, trunk/doc/mpfc.1, trunk/plugins/Makefile.am,
-	  trunk/plugins/effect, trunk/plugins/effect/Makefile.am,
-	  trunk/plugins/effect/echo,
-	  trunk/plugins/effect/echo/Makefile.am,
-	  trunk/plugins/effect/echo/echo.c, trunk/po/ru.po,
-	  trunk/src/Makefile.am, trunk/src/ep.c, trunk/src/ep.h,
-	  trunk/src/error.c, trunk/src/error.h, trunk/src/inp.c,
-	  trunk/src/inp.h, trunk/src/outp.c, trunk/src/outp.h,
-	  trunk/src/player.c, trunk/src/pmng.c, trunk/src/pmng.h,
-	  trunk/src/util.h, trunk/src/util/util.c: Added support for
-	  effect plugins and echo effect plugin implemented.
+	* Added support for effect plugins and echo effect plugin
+	  implemented.
 
 2003-07-27 08:30  sg2
 
-	* trunk/src/help_screen.c, trunk/src/player.c, trunk/src/player.h:
-	  Simple variables manager implemented.
+	* Simple variables manager implemented.
 
 2003-07-27 08:15  sg2
 
-	* trunk/src/cfg/cfg.c, trunk/src/player.c: Added feature of saving
-	  play list on exit.
+	* Added feature of saving play list on exit.
 
 2003-07-27 08:08  sg2
 
-	* trunk/src/help_screen.c, trunk/src/player.c, trunk/src/player.h:
-	  Added shuffle and loop play modes.
+	* Added shuffle and loop play modes.
 
 2003-07-26 16:14  sg2
 
-	* trunk/configure.in, trunk/plugins/input/mp3/mp3.c,
-	  trunk/plugins/input/mp3/mp3.h, trunk/src/cfg.h,
-	  trunk/src/cfg/cfg.c, trunk/src/eqwnd.c, trunk/src/eqwnd.h,
-	  trunk/src/inp.c, trunk/src/inp.h, trunk/src/player.c,
-	  trunk/src/plist.c, trunk/src/util.h, trunk/src/util/util.c:
-	  Improved equalizer support. Saving parameters and loading
-	  presets implemented.
+	* Improved equalizer support. Saving parameters and loading presets
+	  implemented.
 
 2003-07-12 18:27  sg2
 
-	* trunk/doc/mpfc.1, trunk/plugins/input/mp3/mp3.c,
-	  trunk/plugins/input/wav/wav.c, trunk/po/ru.po, trunk/src/inp.c,
-	  trunk/src/inp.h, trunk/src/outp.c, trunk/src/outp.h,
-	  trunk/src/player.c, trunk/src/song.c: Safe functions for plugins
-	  are written.
+	* Safe functions for plugins are written.
 
 2003-07-12 16:04  sg2
 
-	* trunk/configure.in, trunk/plugins/input/mp3/mp3.c,
-	  trunk/plugins/input/mp3/mp3.h, trunk/plugins/input/wav/wav.c,
-	  trunk/src/Makefile.am, trunk/src/eqwnd.c, trunk/src/eqwnd.h,
-	  trunk/src/inp.h, trunk/src/player.c, trunk/src/player.h:
-	  Equalizer support added.
+	* Equalizer support added.
 
 2003-07-06 13:11  sg2
 
-	* trunk/configure.in, trunk/plugins/input/mp3/mp3.c,
-	  trunk/plugins/input/mp3/mp3.h, trunk/po/ru.po,
-	  trunk/src/player.c, trunk/src/plist.c, trunk/src/song.c,
-	  trunk/src/song_info.h: Added ID3 v2 support.
+	* Added ID3 v2 support.
 
 2003-07-04 13:26  sg2
 
-	* trunk/README, trunk/src/player.c: Some text is written in README.
+	* Some text is written in README.
 
 2003-07-04 13:23  sg2
 
-	* trunk/po/ru.po: Updated russification.
+	* Updated russification.
 
 2003-07-04 12:07  sg2
 
-	* trunk/doc, trunk/doc/Makefile.am, trunk/doc/mpfc.1: Written
-	  manual page for mpfc.
+	* Written manual page for mpfc.
 
 2003-07-04 09:51  sg2
 
-	* trunk/po/ru.po, trunk/src/player.c: Russification updated.
+	* Russification updated.
 
 2003-07-03 16:38  sg2
 
-	* trunk/plugins/input/mp3/Makefile.am,
-	  trunk/plugins/input/wav/Makefile.am, trunk/po/ru.po,
-	  trunk/src/Makefile.am, trunk/src/cfg/Makefile.am,
-	  trunk/src/cfg/cfg.c: Some less reasonable changes made.
+	* Some less reasonable changes made.
 
 2003-07-03 14:48  sg2
 
-	* trunk/src/player.c: Some small bugs fixed.
+	* Some small bugs fixed.
 
 2003-07-03 14:46  sg2
 
-	* trunk/configure.in, trunk/plugins/input/mp3/Makefile.am,
-	  trunk/plugins/input/mp3/mp3.c, trunk/plugins/input/mp3/mp3.h,
-	  trunk/plugins/input/mp3/new_mp3.c,
-	  trunk/plugins/input/mp3/old_mp3.c,
-	  trunk/plugins/input/wav/Makefile.am,
-	  trunk/plugins/input/wav/wav.c,
-	  trunk/plugins/output/oss/Makefile.am,
-	  trunk/plugins/output/oss/oss.c, trunk/src/Makefile.am,
-	  trunk/src/cfg, trunk/src/cfg.c, trunk/src/cfg.h,
-	  trunk/src/cfg/Makefile.am, trunk/src/cfg/cfg.c,
-	  trunk/src/error.c, trunk/src/error.h, trunk/src/file_input.c,
-	  trunk/src/help_screen.c, trunk/src/inp.c, trunk/src/inp.h,
-	  trunk/src/outp.h, trunk/src/player.c, trunk/src/player.h,
-	  trunk/src/plist.c, trunk/src/plist.h, trunk/src/pmng.c,
-	  trunk/src/sat.c, trunk/src/sat.h, trunk/src/util,
-	  trunk/src/util.c, trunk/src/util.h, trunk/src/util/Makefile.am,
-	  trunk/src/util/util.c: Added normal mp3 plugin!
+	* Added normal mp3 plugin!
 
 2003-05-09 14:58  sg2
 
-	* trunk/src/plist.c: Fixed bug when currently playing song index
-	  in play list was not changing when sorting.
+	* Fixed bug when currently playing song index in play list was not
+	  changing
+	  when sorting.
 
 2003-05-03 12:47  sg2
 
-	* trunk/src/player.c, trunk/src/plist.c, trunk/src/plist.h,
-	  trunk/src/util.c, trunk/src/util.h: 1) Added possibility to
-	  enable/disable full file name displaying in song info editor. 2)
-	  Sorting by file name implemented.
+	* 1) Added possibility to enable/disable full file name displaying
+	  in song info
+	  editor.
+	  2) Sorting by file name implemented.
 
 2003-05-03 09:53  sg2
 
-	* trunk/src/player.c: Some improvements done.
+	* Some improvements done.
 
 2003-05-02 19:51  sg2
 
-	* trunk/src/player.c: A little fix in song info editor.
+	* A little fix in song info editor.
 
 2003-05-02 17:02  sg2
 
-	* trunk/plugins/input/mp3/mp3.c, trunk/src/player.c: Fixed some
-	  bugs in ID3 tag editor.
+	* Fixed some bugs in ID3 tag editor.
 
 2003-05-02 16:30  sg2
 
-	* trunk/Makefile.am, trunk/configure.in, trunk/src/editbox.c,
-	  trunk/src/player.c, trunk/src/player.h, trunk/src/util.c,
-	  trunk/src/util.h, trunk/src/window.c: Fixed bug with updating
-	  root window when other windows are displayed.
+	* Fixed bug with updating root window when other windows are
+	  displayed.
 
 2003-04-29 15:45  sg2
 
-	* trunk/po/POTFILES.in, trunk/src/Makefile.am, trunk/src/cfg.c,
-	  trunk/src/cfg.h, trunk/src/options.c, trunk/src/options.h,
-	  trunk/src/player.c, trunk/src/pmng.c: Added configuration
-	  variables handling stuff.
+	* Added configuration variables handling stuff.
 
 2003-04-28 06:31  sg2
 
-	* trunk/src/Makefile.am, trunk/src/help_screen.c,
-	  trunk/src/help_screen.h, trunk/src/player.c, trunk/src/player.h,
-	  trunk/src/window.c, trunk/src/window.h: Help screen added.
+	* Help screen added.
 
 2003-04-27 17:32  sg2
 
-	* trunk/configure.in, trunk/plugins/input/mp3/Makefile.am,
-	  trunk/plugins/input/mp3/mp3.c, trunk/plugins/input/mp3/mp3.h,
-	  trunk/src/Makefile.am, trunk/src/choice_ctrl.c,
-	  trunk/src/choice_ctrl.h, trunk/src/dlgbox.c, trunk/src/dlgbox.h,
-	  trunk/src/editbox.c, trunk/src/editbox.h, trunk/src/error.c,
-	  trunk/src/file_input.c, trunk/src/file_input.h,
-	  trunk/src/genre_list.h, trunk/src/glist,
-	  trunk/src/glist/Makefile.am, trunk/src/glist/genre_list.c,
-	  trunk/src/inp.c, trunk/src/inp.h, trunk/src/menu.c,
-	  trunk/src/menu.h, trunk/src/player.c, trunk/src/player.h,
-	  trunk/src/song.c, trunk/src/song_info.h, trunk/src/window.c,
-	  trunk/src/window.h: Added file info editor.
+	* Added file info editor.
 
 2003-04-20 16:41  sg2
 
-	* trunk/ChangeLog, trunk/Makefile.am, trunk/configure.in,
-	  trunk/plugins/input/Makefile.am, trunk/po, trunk/po/LINGUAS,
-	  trunk/po/POTFILES.in, trunk/po/ru.po, trunk/src/Makefile.am,
-	  trunk/src/player.c, trunk/src/pmng.c, trunk/src/song.c: Added
-	  codepages conversion.
+	* Added codepages conversion.
 
 2003-04-20 08:17  sg2
 
-	* trunk/AUTHORS, trunk/ChangeLog, trunk/Makefile.am, trunk/NEWS,
-	  trunk/README, trunk/configure.in, trunk/plugins,
-	  trunk/plugins/Makefile.am, trunk/plugins/input,
-	  trunk/plugins/input/mp3, trunk/plugins/input/mp3/Makefile.am,
-	  trunk/plugins/input/mp3/mp3.c, trunk/plugins/input/mp3/mp3.h,
-	  trunk/plugins/input/mp3/new_mp3.c,
-	  trunk/plugins/input/mp3/old_mp3.c, trunk/plugins/input/wav,
-	  trunk/plugins/input/wav/Makefile.am,
-	  trunk/plugins/input/wav/wav.c, trunk/plugins/output,
-	  trunk/plugins/output/Makefile.am, trunk/plugins/output/oss,
-	  trunk/plugins/output/oss/Makefile.am,
-	  trunk/plugins/output/oss/oss.c, trunk/src,
-	  trunk/src/Makefile.am, trunk/src/choice_ctrl.c,
-	  trunk/src/choice_ctrl.h, trunk/src/dlgbox.c, trunk/src/dlgbox.h,
-	  trunk/src/editbox.c, trunk/src/editbox.h, trunk/src/error.c,
-	  trunk/src/error.h, trunk/src/file_input.c,
-	  trunk/src/file_input.h, trunk/src/inp.c, trunk/src/inp.h,
-	  trunk/src/main.c, trunk/src/menu.c, trunk/src/menu.h,
-	  trunk/src/options.c, trunk/src/options.h, trunk/src/outp.c,
-	  trunk/src/outp.h, trunk/src/player.c, trunk/src/player.h,
-	  trunk/src/plist.c, trunk/src/plist.h, trunk/src/pmng.c,
-	  trunk/src/pmng.h, trunk/src/song.c, trunk/src/song.h,
-	  trunk/src/song_info.h, trunk/src/types.h, trunk/src/util.c,
-	  trunk/src/util.h, trunk/src/window.c, trunk/src/window.h:
-	  Initial revision
+	* Initial revision
 
 2003-04-20 08:17  
 
-	* branches, tags, trunk: New repository initialized by cvs2svn.
+	* New repository initialized by cvs2svn.
 
