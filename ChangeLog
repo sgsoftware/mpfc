@@ -1,3 +1,47 @@
+2011-03-13 12:16  sg2
+
+	* libmpfc/id3.c, plugins/input/audiocd/cddb.c,
+	  plugins/input/cue/cue_sheet.c,
+	  plugins/output/disk_writer/writer.c, plugins/output/oss/oss.c,
+	  src/eqwnd.c, src/player.c: warn_unused_result warnings fixed.
+
+2011-03-13 11:58  sg2
+
+	* AUTHORS, libmpfc/Makefile.am, libmpfc/file.c, libmpfc/id3.c,
+	  libmpfc/plugin_input.c, libmpfc/util.c, libmpfc/vfs.c,
+	  libmpfcwnd/Makefile.am, libmpfcwnd/wnd_checkbox.c,
+	  libmpfcwnd/wnd_def_handlers.c, libmpfcwnd/wnd_editbox.c,
+	  libmpfcwnd/wnd_label.c, libmpfcwnd/wnd_listbox.c,
+	  libmpfcwnd/wnd_radio.c, libmpfcwnd/wnd_root.c, mpfc.pc.in,
+	  plugins/input/audiocd/Makefile.am,
+	  plugins/input/audiocd/audiocd.c, plugins/input/cue/Makefile.am,
+	  plugins/input/cue/cue.c, plugins/input/flac/Makefile.am,
+	  plugins/input/mp3/Makefile.am, plugins/input/ogg/Makefile.am,
+	  plugins/input/ogg/ogg.c, plugins/input/wav/Makefile.am,
+	  plugins/output/alsa/Makefile.am,
+	  plugins/output/disk_writer/Makefile.am,
+	  plugins/output/disk_writer/writer.c,
+	  plugins/output/oss/Makefile.am, plugins/output/oss/oss.c,
+	  src/browser.c, src/player.c, src/plist.c: Some patches by Pascal
+	  Bleser to fix build process and a possible buffer oveflow in m3u
+	  parsing.
+
+2011-03-12 21:46  sg2
+
+	* Makefile.am: Added m4 to dist.
+
+2011-03-12 19:47  sg2
+
+	* Makefile.am: EXTRA_DIST fix.
+
+2011-03-12 19:37  sg2
+
+	* ChangeLog: ChangeLog updated.
+
+2011-03-12 19:35  sg2
+
+	* configure.ac: Version update.
+
 2011-03-12 19:18  sg2
 
 	* .: MPFC 1.3.8 release.
