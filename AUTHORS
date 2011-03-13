@@ -3,6 +3,7 @@ Main programming:
 
 Contributors:
 	Derek Davis (songs queueing)
+	Pascal Bleser (build process fixes and a buffer overflow fix)
 
 Plugins writing:
 	Thadeu Lima de Souza Cascardo (ALSA and ESD plugins)

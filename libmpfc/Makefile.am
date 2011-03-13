@@ -1,8 +1,6 @@
 lib_LTLIBRARIES = libmpfc.la
 
-libdir = $(prefix)/lib/
-
-libmpfchdrdir = $(prefix)/include/mpfc
+libmpfchdrdir = $(includedir)/mpfc
 libmpfchdr_HEADERS = ../mpfc-config.h ../src/types.h ../src/cfg.h \
 					 ../src/charset.h \
 					 ../src/file.h file_http.h file_reg.h \

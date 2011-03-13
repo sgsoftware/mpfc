@@ -346,6 +346,7 @@ wnd_msg_retcode_t fb_on_action( wnd_t *wnd, char *action )
 		fb_help(fb);
 	}
 	wnd_invalidate(wnd);
+	return WND_MSG_RETCODE_OK;
 } /* End of 'fb_on_action' function */
 
 /* Handle mouse left button */

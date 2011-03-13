@@ -253,7 +253,7 @@ void inp_spec_func( in_plugin_t *p, int index, char *filename )
 str_t *inp_set_song_title( in_plugin_t *p, char *filename )
 {
 	if (filename == NULL)
-		return;
+		return NULL;
 	
 	if (p != NULL && p->m_pd.m_set_song_title != NULL)
 		return p->m_pd.m_set_song_title(filename);

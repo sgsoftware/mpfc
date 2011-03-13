@@ -1,6 +1,6 @@
-lib_LTLIBRARIES = libdisk_writer.la
+mylib_LTLIBRARIES = libdisk_writer.la
 
-libdir = $(prefix)/lib/mpfc/output
+mylibdir = $(libdir)/mpfc/output
 
 libdisk_writer_la_SOURCES = writer.c
 libdisk_writer_la_LIBADD = @COMMON_LIBS@

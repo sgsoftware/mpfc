@@ -1,6 +1,6 @@
-lib_LTLIBRARIES = libcue.la
+mylib_LTLIBRARIES = libcue.la
 
-libdir = $(prefix)/lib/mpfc/input
+mylibdir = $(libdir)/mpfc/input
 
 libcue_la_SOURCES = cue.c cue_sheet.c cue_sheet.h
 INCLUDES = -I$(top_builddir)/src -I$(top_builddir)/libmpfcwnd

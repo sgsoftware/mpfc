@@ -122,6 +122,7 @@ wnd_msg_retcode_t label_on_display( wnd_t *wnd )
 	wnd_move(wnd, 0, 0, 0);
 	wnd_apply_default_style(wnd);
 	dlgitem_display_label_text(wnd, wnd->m_title);
+    return WND_MSG_RETCODE_OK;
 } /* End of 'label_on_display' function */
 
 /* Initialize label class */

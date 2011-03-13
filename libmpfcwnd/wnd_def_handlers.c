@@ -20,6 +20,7 @@
  * MA 02111-1307, USA.
  */
 
+#include <strings.h>
 #include <assert.h>
 #include <stdlib.h>
 #include "types.h"

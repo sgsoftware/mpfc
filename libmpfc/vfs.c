@@ -20,6 +20,7 @@
  * MA 02111-1307, USA.
  */
 
+#include <ctype.h>
 #include <dirent.h>
 #include <fnmatch.h>
 #include <stdlib.h>

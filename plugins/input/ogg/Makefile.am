@@ -1,6 +1,6 @@
-lib_LTLIBRARIES = libogg_vorbis.la
+mylib_LTLIBRARIES = libogg_vorbis.la
 
-libdir = $(prefix)/lib/mpfc/input
+mylibdir = $(libdir)/mpfc/input
 
 libogg_vorbis_la_SOURCES = ogg.c vcedit.c vcedit.h
 INCLUDES = -I$(top_builddir)/src -I$(top_builddir)/libmpfcwnd

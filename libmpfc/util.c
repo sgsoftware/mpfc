@@ -136,6 +136,7 @@ char *util_escape_fname( char *out, char *in )
 			out[j ++] = '\\';
 		out[j ++] = in_name[i];
 	}
+    return out;
 } /* End of 'util_escape_fname' function */
 
 /* Open a file expanding home directories */

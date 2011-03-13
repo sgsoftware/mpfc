@@ -20,6 +20,7 @@
  * MA 02111-1307, USA.
  */
 
+#include <ctype.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -35,6 +36,8 @@
 #include "util.h"
 #include "undo.h"
 #include "wnd.h"
+
+extern void pmng_hook( pmng_t *pmng, char *hook );
 
 /* Number of files added by plist_add_set */
 int plist_num = 0;
@@ -224,7 +227,7 @@ int plist_add_m3u( plist_t *pl, char *filename )
 			break;
 
 		/* Extract song length from string read */
-		for ( i = 8, j = 0; str[i] && str[i] != ',' && j < sizeof(len); 
+		for ( i = 8, j = 0; str[i] && str[i] != ',' && j < (sizeof(len) - 1); 
 				i ++, j ++ )
 			len[j] = str[i];
 		len[j] = 0;
@@ -711,7 +714,7 @@ bool_t plist_search( plist_t *pl, char *pstr, int dir, int criteria )
 
 	assert(pl);
 	if (!pl->m_len)
-		return;
+		return FALSE;
 
 	/* Search */
 	for ( i = pl->m_sel_end, count = 0; count < pl->m_len && !found; count ++ )
