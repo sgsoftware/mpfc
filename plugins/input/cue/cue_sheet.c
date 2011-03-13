@@ -57,7 +57,8 @@ cue_sheet_t *cue_sheet_parse( char *file_name )
 		/* Parse a line */
 		if (feof(fd))
 			break;
-		fgets(line, sizeof(line_buf), fd);
+		if (fgets(line, sizeof(line_buf), fd) == NULL)
+			break;
 		tag = cue_sheet_get_line_tag(&line);
 		if (tag == CUE_SHEET_TAG_PERFORMER)
 		{

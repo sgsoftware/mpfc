@@ -314,7 +314,10 @@ static void *dw_encoder_thread( void *arg )
 				snprintf(cmd, sizeof(cmd), "oggenc -Q \"%s\"", full_name);
 			}
 			logger_status_msg(dw_log, 1, _("Encoding: %s"), cmd);
-			system(cmd);
+			if (system(cmd) < 0)
+			{
+				logger_error(dw_log, 1, _("Encoder command failed"));
+			}
 			unlink(full_name);
 			dw_head_fragment ++;
 		}

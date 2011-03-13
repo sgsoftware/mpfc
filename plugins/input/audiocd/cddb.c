@@ -182,7 +182,8 @@ bool_t cddb_read_local( dword id )
 					sizeof(char *) * (cddb_data_len + 1));
 
 		/* Read line */
-		fgets(s, CDDB_MAX_LINE_LEN, fd);
+		if (fgets(s, CDDB_MAX_LINE_LEN, fd) == NULL)
+			break;
 		if (feof(fd))
 			break;
 		while (s[strlen(s) - 1] == '\n' || s[strlen(s) - 1] == '\r')

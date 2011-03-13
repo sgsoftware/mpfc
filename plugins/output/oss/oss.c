@@ -91,7 +91,10 @@ void oss_play( void *buf, int size )
 	if (oss_fd == -1)
 		return;
 	
-	write(oss_fd, buf, size);
+	if (write(oss_fd, buf, size) != size)
+	{
+		return;
+	}
 } /* End of 'oss_play' function */
 
 /* Set channels number */
