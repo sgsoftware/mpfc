@@ -270,6 +270,9 @@ char *inp_redirect( in_plugin_t *p, char *filename, inp_redirect_params_t *rp );
 /* Update plugin flags */
 dword inp_get_plugin_flags( in_plugin_t *p );
 
+/* Get plugin flags */
+dword inp_get_flags( in_plugin_t *p );
+
 #endif
 
 /* End of 'inp.h' file */

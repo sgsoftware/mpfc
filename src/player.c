@@ -64,9 +64,6 @@
 #include "outp.h"
 #include "inp.h"
 #include "genp.h"
-extern void outp_set_mixer_type( out_plugin_t *p, plugin_mixer_type_t type );
-extern dword inp_get_flags( in_plugin_t *p );
-extern void pmng_hook( pmng_t *pmng, char *hook );
 
 /*****
  *
@@ -2693,7 +2690,7 @@ void player_pmng_dialog_sync( dialog_t *dlg )
 			v->m_enabled_cb->m_checked = pmng_is_effect_enabled(player_pmng, p);
 		else if (i == PLAYER_PMNG_GENERAL)
 		{
-			bool_t started = genp_is_started(p);
+			bool_t started = genp_is_started(GENERAL_PLUGIN(p));
 			wnd_set_title(WND_OBJ(v->m_start_stop_btn), started ? _("S&top") :
 					_("S&tart"));
 		}
@@ -3217,10 +3214,10 @@ wnd_msg_retcode_t player_pmng_dialog_on_start_stop_general( wnd_t *wnd )
 	p = (plugin_t *)v->m_list->m_list[index].m_data;
 
 	/* Change state */
-	if (!genp_is_started(p))
-		genp_start(p);
+	if (!genp_is_started(GENERAL_PLUGIN(p)))
+		genp_start(GENERAL_PLUGIN(p));
 	else
-		genp_end(p);
+		genp_end(GENERAL_PLUGIN(p));
 	player_pmng_dialog_sync(DIALOG_OBJ(dlg));
 	return WND_MSG_RETCODE_OK;
 } /* End of 'player_pmng_dialog_on_start_stop_general' function */

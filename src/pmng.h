@@ -154,6 +154,9 @@ bool_t pmng_is_effect_enabled( pmng_t *pmng, plugin_t *ep );
 /* Enable/disable effect */
 void pmng_enable_effect( pmng_t *pmng, plugin_t *ep, bool_t enable );
 
+/* Call hook functions */
+void pmng_hook( pmng_t *pmng, char *hook );
+
 #endif
 
 /* End of 'pmng.h' file */

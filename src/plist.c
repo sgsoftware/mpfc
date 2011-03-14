@@ -38,8 +38,6 @@
 #include "wnd.h"
 #include "info_rw_thread.h"
 
-extern void pmng_hook( pmng_t *pmng, char *hook );
-
 /* Number of files added by plist_add_set */
 int plist_num = 0;
 
