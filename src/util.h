@@ -80,7 +80,7 @@ char *util_strncpy( char *dest, char *src, size_t n );
 /* Concatenate multiple strings */
 char *util_strcat( char *first, ... );
 
-int msblen( char *str );
+int mbslen( char *str );
 
 #endif
 

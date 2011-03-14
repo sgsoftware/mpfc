@@ -31,8 +31,6 @@
 #include "wnd_root.h"
 #include "util.h"
 
-extern int mbslen( char *str );
-
 /* Initialize window system and create root window */
 wnd_t *wnd_init( cfg_node_t *cfg_list, logger_t *log )
 {

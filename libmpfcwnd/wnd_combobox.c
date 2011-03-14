@@ -29,8 +29,7 @@
 #include "wnd_editbox.h"
 #include "wnd_hbox.h"
 #include "wnd_label.h"
-
-extern int mbslen( char *str );
+#include "util.h"
 
 /* Create a new combo box */
 combo_t *combo_new( wnd_t *parent, char *id, char *text, char letter, 
