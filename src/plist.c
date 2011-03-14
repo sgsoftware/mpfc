@@ -36,6 +36,7 @@
 #include "util.h"
 #include "undo.h"
 #include "wnd.h"
+#include "info_rw_thread.h"
 
 extern void pmng_hook( pmng_t *pmng, char *hook );
 

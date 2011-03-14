@@ -33,6 +33,8 @@
 #include "vfs.h"
 #include "util.h"
 
+extern dword inp_get_flags( in_plugin_t *p );
+
 /* Check if symbol is a special pattern symbol */
 #define VFS_SYM_SPECIAL(ch, space_is_special) \
 		((ch) == '*' || (ch) == '?' || (ch) == '[' || (ch) == ']' || \

@@ -35,6 +35,7 @@
 #include "file.h"
 #include "file_http.h"
 #include "mystring.h"
+#include "util.h"
 
 /* Get file data */
 #define FHTTP_GET_DATA(data, file) \

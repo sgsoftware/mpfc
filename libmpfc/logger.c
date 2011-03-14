@@ -28,6 +28,8 @@
 #include "cfg.h"
 #include "logger.h"
 
+int logger_get_level( logger_t *log );
+
 /* Initialize logger */
 logger_t *logger_new( cfg_node_t *cfg_list, char *file_name )
 {

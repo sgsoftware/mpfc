@@ -32,6 +32,7 @@
 #include "types.h"
 #include "wnd.h"
 #include "wnd_print.h"
+#include "util.h"
 
 /* Move cursor to a specified position */
 void wnd_move( wnd_t *wnd, wnd_move_style_t style, int x, int y )

@@ -26,6 +26,7 @@
 #include <unicode/ucnv.h>
 #include "types.h"
 #include "myid3.h"
+#include "util.h"
 
 /* Create a new empty tag */
 id3_tag_t *id3_new( void )

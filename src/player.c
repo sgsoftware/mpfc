@@ -58,7 +58,15 @@
 #include "wnd_multiview_dialog.h"
 #include "wnd_radio.h"
 #include "wnd_root.h"
+#include "wnd_repval.h"
 #include "xconvert.h"
+#include "info_rw_thread.h"
+#include "outp.h"
+#include "inp.h"
+#include "genp.h"
+extern void outp_set_mixer_type( out_plugin_t *p, plugin_mixer_type_t type );
+extern dword inp_get_flags( in_plugin_t *p );
+extern void pmng_hook( pmng_t *pmng, char *hook );
 
 /*****
  *

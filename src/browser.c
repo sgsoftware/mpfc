@@ -21,6 +21,7 @@
  */
 
 #include <stdlib.h>
+#include <fnmatch.h>
 #include <glob.h>
 #include <string.h>
 #include <sys/types.h>
