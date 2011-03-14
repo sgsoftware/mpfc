@@ -1,6 +1,6 @@
-lib_LTLIBRARIES = libmp3.la
+mylib_LTLIBRARIES = libmp3.la
 
-libdir = $(prefix)/lib/mpfc/input
+mylibdir = $(libdir)/mpfc/input
 
 libmp3_la_SOURCES = mp3.c mp3.h 
 INCLUDES = -I$(top_builddir)/src -I$(top_builddir)/libmpfcwnd

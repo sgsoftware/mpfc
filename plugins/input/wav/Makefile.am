@@ -1,6 +1,6 @@
-lib_LTLIBRARIES = libwav.la
+mylib_LTLIBRARIES = libwav.la
 
-libdir = $(prefix)/lib/mpfc/input
+mylibdir = $(libdir)/mpfc/input
 
 libwav_la_SOURCES = wav.c wav.h
 libwav_la_LIBADD = @COMMON_LIBS@

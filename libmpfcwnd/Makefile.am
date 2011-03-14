@@ -1,6 +1,5 @@
 lib_LTLIBRARIES = libmpfcwnd.la
-libdir = $(prefix)/lib/
-libmpfcwndhdrdir = $(prefix)/include/mpfc/libmpfcwnd
+libmpfcwndhdrdir = $(includedir)/mpfc/libmpfcwnd
 libmpfcwndhdr_HEADERS = wnd.h wnd_print.h wnd_msg.h wnd_kbd.h \
 						wnd_def_handlers.h wnd_root.h wnd_mouse.h wnd_types.h \
 						wnd_basic.h wnd_class.h wnd_dialog.h wnd_dlgitem.h \

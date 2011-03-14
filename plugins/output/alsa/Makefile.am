@@ -1,6 +1,6 @@
-lib_LTLIBRARIES = libalsa.la
+mylib_LTLIBRARIES = libalsa.la
 
-libdir = $(prefix)/lib/mpfc/output
+mylibdir = $(libdir)/mpfc/output
 
 libalsa_la_SOURCES = alsa.c
 INCLUDES = -I$(top_builddir)/src -I$(top_builddir)/libmpfcwnd

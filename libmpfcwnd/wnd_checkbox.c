@@ -98,6 +98,7 @@ wnd_msg_retcode_t checkbox_on_display( wnd_t *wnd )
 	wnd_putchar(wnd, 0, ' ');
 	dlgitem_display_label_text(wnd, wnd->m_title);
 	wnd_move(wnd, 0, 1, 0);
+	return WND_MSG_RETCODE_OK;
 } /* End of 'checkbox_on_display' function */
 
 /* 'mouse_ldown' message handler */

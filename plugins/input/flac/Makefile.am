@@ -1,6 +1,6 @@
-lib_LTLIBRARIES = libflac.la
+mylib_LTLIBRARIES = libflac.la
 
-libdir = $(prefix)/lib/mpfc/input
+mylibdir = $(libdir)/mpfc/input
 
 libflac_la_SOURCES = flac.c
 INCLUDES = -I$(top_builddir)/src -I$(top_builddir)/libmpfcwnd

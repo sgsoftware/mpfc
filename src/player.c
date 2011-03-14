@@ -1664,7 +1664,7 @@ int player_skip_songs( int num, bool_t play )
 	int len, base, song;
 	
 	if (player_plist == NULL || !player_plist->m_len)
-		return;
+		return -1;
 	
 	/* Change current song */
 	song = player_plist->m_cur_song;

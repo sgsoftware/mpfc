@@ -112,7 +112,7 @@ bool_t id3_write( id3_tag_t *tag, char *filename )
 	bool_t ret1, ret2;
 
 	if (tag == NULL || filename == NULL)
-		return;
+		return FALSE;
 
 	/* Write tags */
 	ret1 = id3_v1_write(&tag->m_v1, filename);
@@ -323,7 +323,7 @@ bool_t id3_v2_write( id3_tag_data_t *tag, char *filename )
 	if (data == NULL)
 	{
 		fclose(fd);
-		return;
+		return FALSE;
 	}
 
 	/* Fill data */
@@ -337,7 +337,7 @@ bool_t id3_v2_write( id3_tag_data_t *tag, char *filename )
 	if (fd == NULL)
 	{
 		free(data);
-		return;
+		return NULL;
 	}
 	fwrite(data, 1, file_size + size, fd);
 	fclose(fd);

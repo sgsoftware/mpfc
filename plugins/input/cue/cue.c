@@ -21,6 +21,7 @@
  */
 
 //#include "config.h"
+#include <ctype.h>
 #define __MPFC_OUTER__
 #include <stdio.h>
 #include <stdlib.h>

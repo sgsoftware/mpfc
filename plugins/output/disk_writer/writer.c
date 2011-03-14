@@ -20,6 +20,8 @@
  * MA 02111-1307, USA.
  */
 
+#include <stdlib.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/soundcard.h>
@@ -31,6 +33,8 @@
 #include "wnd_dialog.h"
 #include "wnd_checkbox.h"
 #include "wnd_editbox.h"
+#include "wnd_filebox.h"
+#include "util.h"
 
 /* Header size */
 #define DW_HEAD_SIZE 44
