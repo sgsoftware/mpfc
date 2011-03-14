@@ -255,8 +255,10 @@ bool_t player_init( int argc, char *argv[] )
 	logger_attach_handler(player_log, player_on_log_msg, NULL);
 
 	/* Initialize file browser directory */
-	getcwd(player_fb_dir, sizeof(player_fb_dir));
-	strcat(player_fb_dir, "/");
+	if (getcwd(player_fb_dir, sizeof(player_fb_dir)) == NULL)
+		strcpy(player_fb_dir, "/");
+	else
+		strcat(player_fb_dir, "/");
 	
 	/* Initialize plugin manager */
 	logger_debug(player_log, "Initializing plugin manager");
@@ -2727,6 +2729,7 @@ wnd_msg_retcode_t player_on_save( wnd_t *wnd )
 wnd_msg_retcode_t player_on_exec( wnd_t *wnd )
 {
 	int fd;
+	int len;
 	editbox_t *eb = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "command"));
 	char *text = _("\n\033[0;32;40mPress enter to continue");
 	assert(eb);
@@ -2735,11 +2738,18 @@ wnd_msg_retcode_t player_on_exec( wnd_t *wnd )
 	wnd_close_curses(wnd_root);
 
 	/* Execute command */
-	system(EDITBOX_TEXT(eb));
+	if (system(EDITBOX_TEXT(eb)) < 0)
+	{
+		logger_error(player_log, 0, _("Command execution failed"));
+	}
 
 	/* Display text (mere printf doesn't work) */
 	fd = open("/dev/tty", O_WRONLY);
-	write(fd, text, strlen(text));
+	len = strlen(text);
+	if (write(fd, text, len) != len)
+	{
+		logger_error(player_log, 0, _("Writing to console failed"));
+	}
 	close(fd);
 	getchar();
 
