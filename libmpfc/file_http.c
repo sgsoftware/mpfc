@@ -44,16 +44,17 @@
 /* Open a file */
 file_t *fhttp_open( file_t *f, char *mode )
 {
-	int i;
 	file_http_data_t *data;
-	struct hostent *he;
-	struct sockaddr_in their_addr;
 	char str[1024];
 	char *header = NULL, *ph = NULL;
 	int n, end, hs, code;
 	char *name, *host_name, *file_name;
 	int port;
 	int read_size;
+    struct addrinfo hints;
+    struct addrinfo *result, *rp;
+    int s;
+    char portstr[16];
 
 	/* Allocate memory for additional data */
 	f->m_data = (void *)malloc(sizeof(*data));
@@ -77,28 +78,37 @@ file_t *fhttp_open( file_t *f, char *mode )
 	{
 		/* Parse URL */
 		fhttp_parse_url(name, &host_name, &file_name, &port);
+        snprintf(portstr, 16, "%d", port);
 
-		/* Get host address */
+        /* Get host address */
+        memset(&hints, 0, sizeof(struct addrinfo));
+        hints.ai_family = AF_UNSPEC;
+        hints.ai_socktype = SOCK_STREAM;
+        hints.ai_flags = 0;
+        hints.ai_protocol = 0;
 		logger_message(f->m_log, 1, _("Getting address of host %s"), host_name);
-		he = gethostbyname(host_name);
-		if (he == NULL)
-		{
-			goto close;
-		}
-		logger_message(f->m_log, 1, _("OK"));
-
-		/* Initialize socket and connect */
-		data->m_sock = socket(AF_INET, SOCK_STREAM, 0);
-		if (data->m_sock < 0)
-			goto close;
-		their_addr.sin_family = AF_INET;
-		their_addr.sin_port = htons(port);
-		their_addr.sin_addr = *((struct in_addr *)he->h_addr);
-		memset(&(their_addr.sin_zero), 0, 8);
-		logger_message(f->m_log, 1, _("Connecting to %s"), host_name);
-		if (connect(data->m_sock, (struct sockaddr *)&their_addr, 
-					sizeof(struct sockaddr)) < 0)
-			goto close;
+        s = getaddrinfo(host_name, portstr, &hints, &result);
+        if (s != 0)
+        {
+            logger_error(f->m_log, 1, _("Failed to connect to %s: getaddrinfo: %s"), host_name, gai_strerror(s));
+            goto close;
+        }
+        for (rp = result; rp != NULL; rp = rp->ai_next)
+        {
+            data->m_sock = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+            if (data->m_sock < 0)
+                continue;
+            logger_message(f->m_log, 1, _("Connecting to %s"), host_name);
+            if (connect(data->m_sock, rp->ai_addr, rp->ai_addrlen) >= 0)
+                break;
+            close(data->m_sock);
+        }
+        if (rp == NULL)
+        {
+            freeaddrinfo(result);
+            logger_error(f->m_log, 1, _("Failed to connect to %s"), host_name);
+            goto close;
+        }
 		logger_message(f->m_log, 1, _("OK"));
 
 		/* Send request for file we need */

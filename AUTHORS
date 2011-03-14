@@ -3,7 +3,7 @@ Main programming:
 
 Contributors:
 	Derek Davis (songs queueing)
-	Pascal Bleser (build process fixes and a buffer overflow fix)
+	Pascal Bleser (build process fixes, a buffer overflow fix, change gethostbyname with getaddrinfo)
 
 Plugins writing:
 	Thadeu Lima de Souza Cascardo (ALSA and ESD plugins)

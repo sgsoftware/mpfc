@@ -39,7 +39,7 @@
 #define CDDB_MAX_LINE_LEN 256
 
 #define CDDB_BUF_SIZE 65536
-#define CDDB_PORT 8880
+#define CDDB_PORT "8880"
 
 /* Data */
 static char **cddb_data = NULL;
@@ -201,10 +201,11 @@ bool_t cddb_read_server( dword id )
 {
 	int sockfd = -1, i;
 	char buf[CDDB_BUF_SIZE];
-	struct hostent *he;
-	struct sockaddr_in their_addr;
 	char host[MAX_FILE_NAME];
 	char category[80];
+    struct addrinfo hints;
+    struct addrinfo *result, *rp;
+    int s;
 
 	if (!cddb_server_found)
 		return FALSE;
@@ -213,23 +214,35 @@ bool_t cddb_read_server( dword id )
 	cddb_get_host_name(host);
 
 	/* Get host address */
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = 0;
+    hints.ai_protocol = 0;
 	logger_message(acd_log, 1, _("Getting address of %s"), host);
-	he = gethostbyname(host);
-	if (he == NULL)
-		goto close;
-
-	/* Initialize socket and connect */
-	logger_message(acd_log, 1, _("Connecting to %s"), host);
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	if (sockfd < 0)
-		goto close;
-	their_addr.sin_family = AF_INET;
-	their_addr.sin_port = htons(CDDB_PORT);
-	their_addr.sin_addr = *((struct in_addr *)he->h_addr);
-	memset(&(their_addr.sin_zero), 0, 8);
-	if (connect(sockfd, (struct sockaddr *)&their_addr, 
-				sizeof(struct sockaddr)) < 0)
-		goto close;
+    s = getaddrinfo(host, CDDB_PORT, &hints, &result);
+    if (s != 0)
+    {
+	    logger_error(acd_log, 1, _("Failed to connect to %s: getaddrinfo: %s"), host, gai_strerror(s));
+        goto close;
+    }
+    for (rp = result; rp != NULL; rp = rp->ai_next)
+    {
+        sockfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+        if (sockfd < 0)
+            continue;
+	    logger_message(acd_log, 1, _("Connecting to %s"), host);
+        if (connect(sockfd, rp->ai_addr, rp->ai_addrlen) >= 0)
+            break;
+        close(sockfd);
+    }
+    if (rp == NULL)
+    {
+        freeaddrinfo(result);
+	    logger_error(acd_log, 1, _("Failed to connect to %s"), host);
+        goto close;
+    }
+    logger_message(acd_log, 1, _("Connected to %s"), host);
 
 	/* Communicate with server */
 	logger_message(acd_log, 1, _("Sending query to server"));
@@ -548,12 +561,13 @@ void cddb_reload( char *filename )
 void cddb_submit( char *filename )
 {	
 	char *email, *category;
-	int sockfd = -1, i;
+	int sockfd = -1;
 	char buf[CDDB_BUF_SIZE];
-	struct hostent *he;
-	struct sockaddr_in their_addr;
 	char host[MAX_FILE_NAME];
 	char *post_str;
+    struct addrinfo hints;
+    struct addrinfo *result, *rp;
+    int s;
 	
 	/* Check data */
 	if (cddb_data == NULL)
@@ -584,22 +598,29 @@ void cddb_submit( char *filename )
 
 	/* Get host address */
 	logger_message(acd_log, 1, _("Getting address of %s"), host);
-	he = gethostbyname(host);
-	if (he == NULL)
-		goto close;
-
-	/* Initialize socket and connect */
-	logger_message(acd_log, 1, _("Connecting to %s"), host);
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	if (sockfd < 0)
-		goto close;
-	their_addr.sin_family = AF_INET;
-	their_addr.sin_port = htons(CDDB_PORT);
-	their_addr.sin_addr = *((struct in_addr *)he->h_addr);
-	memset(&(their_addr.sin_zero), 0, 8);
-	if (connect(sockfd, (struct sockaddr *)&their_addr, 
-				sizeof(struct sockaddr)) < 0)
-		goto close;
+    s = getaddrinfo(host, CDDB_PORT, &hints, &result);
+    if (s != 0)
+    {
+	    logger_error(acd_log, 1, _("Failed to connect to %s: getaddrinfo: %s"), host, gai_strerror(s));
+        goto close;
+    }
+    for (rp = result; rp != NULL; rp = rp->ai_next)
+    {
+        sockfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+        if (sockfd < 0)
+            continue;
+	    logger_message(acd_log, 1, _("Connecting to %s"), host);
+        if (connect(sockfd, rp->ai_addr, rp->ai_addrlen) >= 0)
+            break;
+        close(sockfd);
+    }
+    if (rp == NULL)
+    {
+        freeaddrinfo(result);
+	    logger_error(acd_log, 1, _("Failed to connect to %s"), host);
+        goto close;
+    }
+    logger_message(acd_log, 1, _("Connected to %s"), host);
 
 	/* Communicate with server */
 	logger_message(acd_log, 1, _("Posting data to server"));
