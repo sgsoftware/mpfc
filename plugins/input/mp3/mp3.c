@@ -701,7 +701,7 @@ int mp3_get_stream( void *buf, int size )
 
 			/* Check for end */
 			cur_pos = file_tell(mp3_fd);
-			if (cur_pos + read_size >= mp3_end_pos)
+			if (cur_pos + read_size >= mp3_end_pos && cur_pos <= mp3_end_pos)
 			{
 				read_size = (mp3_end_pos - cur_pos);
 			}
