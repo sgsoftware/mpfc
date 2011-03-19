@@ -24,7 +24,7 @@
 #define __SG_MPFC_WND_H__
 
 #define _XOPEN_SOURCE_EXTENDED
-#include <curses.h>
+#include <ncursesw/curses.h>
 #include "types.h"
 #include "cfg.h"
 #include "logger.h"
