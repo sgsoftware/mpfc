@@ -56,6 +56,9 @@ str_t *str_dup( str_t *s );
 /* Free string */
 void str_free( str_t *str );
  
+/* Clear string */
+void str_clear( str_t *str );
+
 /* Copy string from (char *) */
 str_t *str_copy_cptr( str_t *dest, char *src );
 

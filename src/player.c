@@ -366,6 +366,9 @@ bool_t player_init( int argc, char *argv[] )
 					cfg_get_var_int(cfg_list, "cur-time"));
 	}
 
+	/* Start server */
+	server_start();
+
 	/* Exit */
 	logger_message(player_log, 0, _("Player initialized"));
 	return TRUE;
@@ -455,6 +458,9 @@ void player_deinit( void )
 	int i;
 
 	logger_debug(player_log, "In player_deinit");
+
+	/* Stop server */
+	server_stop();
 
 	/* Uninitialize plugin manager */
 	logger_debug(player_log, "Doing pmng_free");

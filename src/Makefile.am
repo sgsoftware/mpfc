@@ -1,5 +1,7 @@
 bin_PROGRAMS = mpfc
 mpfc_SOURCES = main.c types.h player.c player.h \
+					server.c server.h server_client.c server_client.h \
+			        rd_with_notify.c rd_with_notify.h \
 					plist.c plist.h song.c song.h util.h \
 					cfg.h song_info.h history.c history.h undo.c undo.h \
 					info_rw_thread.h info_rw_thread.c \

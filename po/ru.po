@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: mpfc 1.3.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-15 00:40+0300\n"
+"POT-Creation-Date: 2011-06-18 23:03+0400\n"
 "PO-Revision-Date: 2003-02-13 09:15+0300\n"
 "Last-Translator: Sergey E. Galanov <sgsoftware@mail.ru>\n"
 "Language-Team: Russian <sgsoftware@mail.ru>\n"
@@ -19,43 +19,55 @@ msgstr ""
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 
 # c-format
-#: libmpfc/file_http.c:82
+#: libmpfc/file_http.c:89
 #, c-format
 msgid "Getting address of host %s"
 msgstr "Получаю адрес %s"
 
-#: libmpfc/file_http.c:88 libmpfc/file_http.c:102 libmpfc/file_http.c:159
-#: libmpfcwnd/wnd_dialog.c:89 plugins/input/mp3/mp3.c:984
-msgid "OK"
-msgstr "OK"
+#: libmpfc/file_http.c:93 plugins/input/audiocd/cddb.c:226
+#: plugins/input/audiocd/cddb.c:604
+#, c-format
+msgid "Failed to connect to %s: getaddrinfo: %s"
+msgstr ""
 
-#: libmpfc/file_http.c:98 plugins/input/audiocd/cddb.c:222
-#: plugins/input/audiocd/cddb.c:592
+#: libmpfc/file_http.c:101 plugins/input/audiocd/cddb.c:234
+#: plugins/input/audiocd/cddb.c:612
 #, c-format
 msgid "Connecting to %s"
 msgstr "Подключаюсь к %s"
 
+#: libmpfc/file_http.c:109 plugins/input/audiocd/cddb.c:242
+#: plugins/input/audiocd/cddb.c:620
+#, fuzzy, c-format
+msgid "Failed to connect to %s"
+msgstr "Не могу сохранить информацию в файл %s"
+
+#: libmpfc/file_http.c:112 libmpfc/file_http.c:169 libmpfcwnd/wnd_dialog.c:89
+#: plugins/input/mp3/mp3.c:984
+msgid "OK"
+msgstr "OK"
+
 # c-format
-#: libmpfc/file_http.c:105
+#: libmpfc/file_http.c:115
 #, c-format
 msgid "Sending request for file %s"
 msgstr "Отправляю запрос на файл %s"
 
-#: libmpfc/file_http.c:114
+#: libmpfc/file_http.c:124
 msgid "Getting HTTP header"
 msgstr "Получаю заголовок HTTP"
 
 # c-format
-#: libmpfc/file_http.c:175
+#: libmpfc/file_http.c:185
 #, c-format
 msgid "Redirect to %s"
 msgstr "Перенаправление к %s"
 
-#: libmpfc/file_http.c:184
+#: libmpfc/file_http.c:194
 msgid "Failure"
 msgstr "Облом!"
 
-#: libmpfc/file_http.c:252 libmpfc/file_http.c:257
+#: libmpfc/file_http.c:262 libmpfc/file_http.c:267
 #, c-format
 msgid "Filling buffer: %d%% done"
 msgstr "Заполняю буфер: %d%%"
@@ -65,17 +77,17 @@ msgstr "Заполняю буфер: %d%%"
 msgid "Plugin %s has no 'plugin_exchange_data'"
 msgstr "Плагин %s не имеет 'plugin_exchange_data'"
 
-#: libmpfc/vfs.c:145 libmpfc/vfs.c:248
+#: libmpfc/vfs.c:143 libmpfc/vfs.c:246
 #, c-format
 msgid "Unable to read directory %s"
 msgstr "Не могу прочитать каталог %s"
 
-#: libmpfc/vfs.c:217
+#: libmpfc/vfs.c:215
 #, c-format
 msgid "Unable to stat file %s"
 msgstr "Не могу получить информацию о файле %s"
 
-#: libmpfcwnd/wnd.c:750
+#: libmpfcwnd/wnd.c:748
 msgid "No children\n"
 msgstr "Нет детей\n"
 
@@ -119,53 +131,58 @@ msgstr "Загрузить информацию из CDDB"
 msgid "Submit info to CDDB"
 msgstr "Отправить информацию в CDDB"
 
-#: plugins/input/audiocd/cddb.c:216 plugins/input/audiocd/cddb.c:586
+#: plugins/input/audiocd/cddb.c:222 plugins/input/audiocd/cddb.c:600
 #, c-format
 msgid "Getting address of %s"
 msgstr "Получаю адрес %s"
 
-#: plugins/input/audiocd/cddb.c:235
+#: plugins/input/audiocd/cddb.c:245 plugins/input/audiocd/cddb.c:623
+#, fuzzy, c-format
+msgid "Connected to %s"
+msgstr "Подключаюсь к %s"
+
+#: plugins/input/audiocd/cddb.c:248
 msgid "Sending query to server"
 msgstr "Отправляю запрос серверу"
 
-#: plugins/input/audiocd/cddb.c:269
+#: plugins/input/audiocd/cddb.c:282
 msgid "Saving data"
 msgstr "Сохраняю данные"
 
-#: plugins/input/audiocd/cddb.c:271
+#: plugins/input/audiocd/cddb.c:284
 msgid "Success"
 msgstr "Успех"
 
-#: plugins/input/audiocd/cddb.c:274
+#: plugins/input/audiocd/cddb.c:287
 msgid "Failed!"
 msgstr "Облом!"
 
-#: plugins/input/audiocd/cddb.c:380 plugins/input/ogg/ogg.c:347
+#: plugins/input/audiocd/cddb.c:393 plugins/input/ogg/ogg.c:347
 #, fuzzy, c-format
 msgid "Unable to open file %s for writing"
 msgstr "Не могу создать файл %s"
 
-#: plugins/input/audiocd/cddb.c:562
+#: plugins/input/audiocd/cddb.c:576
 msgid "CDDB submit error: no existing info found"
 msgstr "Ошибка отправки CDDB: не найдено существующей информации"
 
-#: plugins/input/audiocd/cddb.c:571
+#: plugins/input/audiocd/cddb.c:585
 msgid "CDDB submit error: you must specify your email address"
 msgstr "Ошибка отправки CDDB: вы должны указать свой адрес email"
 
-#: plugins/input/audiocd/cddb.c:578
+#: plugins/input/audiocd/cddb.c:592
 msgid "CDDB submit error: you must specify your category"
 msgstr "Ошибка отправки CDDB: вы должны указать категорию"
 
-#: plugins/input/audiocd/cddb.c:605
+#: plugins/input/audiocd/cddb.c:626
 msgid "Posting data to server"
 msgstr "Отправляю данные к серверу"
 
-#: plugins/input/audiocd/cddb.c:616
+#: plugins/input/audiocd/cddb.c:637
 msgid "Getting response"
 msgstr "Получаю ответ"
 
-#: plugins/input/audiocd/cddb.c:624
+#: plugins/input/audiocd/cddb.c:645
 msgid "Failure!"
 msgstr "Облом!"
 
@@ -291,7 +308,7 @@ msgstr "Удалить теги ID3"
 msgid "Only regular files are supported forwriting info by ogg plugin"
 msgstr ""
 
-#: plugins/input/ogg/ogg.c:308 src/plist.c:274
+#: plugins/input/ogg/ogg.c:308 src/plist.c:272
 #, c-format
 msgid "Unable to open file %s"
 msgstr "Не могу открыть файл %s"
@@ -513,7 +530,7 @@ msgstr "Эквалайзер MPFC"
 msgid "Load preset from a Winamp EQF file"
 msgstr "Загрузить пресет из файла Winamp EQF"
 
-#: src/eqwnd.c:215 src/player.c:2182 src/player.c:2428
+#: src/eqwnd.c:215 src/player.c:2179 src/player.c:2425
 msgid "&Name: "
 msgstr "Имя (&n): "
 
@@ -872,17 +889,17 @@ msgid ""
 msgstr ""
 "Во время инициализации призошла фатальная ошибка. Посмотрите в журнал\n"
 
-#: src/player.c:208
+#: src/player.c:205
 #, c-format
 msgid "Unable to initialize configuration"
 msgstr "Не могу инициализировать конфигурацию"
 
-#: src/player.c:216
+#: src/player.c:213
 #, c-format
 msgid "Unable to initialize log system"
 msgstr "Не могу инициализировать журнальную систему"
 
-#: src/player.c:221
+#: src/player.c:218
 #, c-format
 msgid ""
 "MPFC %s Log\n"
@@ -891,243 +908,243 @@ msgstr ""
 "Журнал MPFC %s\n"
 "%s"
 
-#: src/player.c:228 src/plist.c:306
+#: src/player.c:225 src/plist.c:304
 msgid "No enough memory"
 msgstr "Недостаточно памяти"
 
-#: src/player.c:250
+#: src/player.c:247
 msgid "Window system initialization failed"
 msgstr "Оконная система не инициализирована"
 
-#: src/player.c:260
+#: src/player.c:257
 msgid "Unable to initialize play list window"
 msgstr "Не могу инициализировать окно плей-листа"
 
-#: src/player.c:276
+#: src/player.c:273
 msgid "Unable to initialize plugin manager"
 msgstr "Не могу инициализировать менеджер плагинов"
 
-#: src/player.c:287
+#: src/player.c:284
 msgid "Unable to initialize VFS module"
 msgstr "Не могу инициализировать модуль VFS"
 
-#: src/player.c:296
+#: src/player.c:293
 msgid "Unable to initialize info read/write thread"
 msgstr "Не могу инициализировать поток чтения/записи информации"
 
-#: src/player.c:305
+#: src/player.c:302
 msgid "Unable to initialize undo list"
 msgstr "Не могу инициализировать список отмен"
 
-#: src/player.c:313
+#: src/player.c:310
 msgid "Play list initialization failed"
 msgstr "Не могу инициализировать плей-лист"
 
-#: src/player.c:324
+#: src/player.c:321
 msgid "Unable to initialize set of files for play list"
 msgstr "Не могу инициализировать набор файлов для плей-листа"
 
-#: src/player.c:346
+#: src/player.c:343
 msgid "Unable to initialize player thread"
 msgstr "Не могу инициализировать поток плейера"
 
-#: src/player.c:373
+#: src/player.c:370
 msgid "Player initialized"
 msgstr "Плейер инициализирован"
 
-#: src/player.c:392
+#: src/player.c:389
 msgid "Play list"
 msgstr "Плей-лист"
 
-#: src/player.c:512
+#: src/player.c:509
 msgid "Left MPFC"
 msgstr "Вышли из MPFC"
 
-#: src/player.c:955 src/player.c:2975 src/player.c:3016
+#: src/player.c:952 src/player.c:2972 src/player.c:3013
 #, c-format
 msgid "String `%s' not found"
 msgstr "Строка `%s' не найдена"
 
-#: src/player.c:959 src/player.c:2979 src/player.c:3020
+#: src/player.c:956 src/player.c:2976 src/player.c:3017
 #, c-format
 msgid "String `%s' found at position %d"
 msgstr "Строка `%s' найдена в позиции %d"
 
-#: src/player.c:1351
+#: src/player.c:1348
 msgid "SG Software Media Player For Console"
 msgstr "Плейер для консоли от SG Software"
 
-#: src/player.c:1354 src/player.c:1391
+#: src/player.c:1351 src/player.c:1388
 msgid "Shuffle"
 msgstr "Случайно"
 
-#: src/player.c:1355 src/player.c:1392
+#: src/player.c:1352 src/player.c:1389
 msgid "Loop"
 msgstr "Циклически"
 
-#: src/player.c:1375
+#: src/player.c:1372
 #, c-format
 msgid "version %s"
 msgstr "версия %s"
 
-#: src/player.c:1860
+#: src/player.c:1857
 #, c-format
 msgid "Input plugin for file %s failed"
 msgstr "Входной плагин обломился с файлом %s"
 
-#: src/player.c:1887
+#: src/player.c:1884
 msgid "Output plugin initialization failed"
 msgstr "Не могу инициализировать выходной плагин"
 
-#: src/player.c:2103
+#: src/player.c:2100
 msgid "Add songs"
 msgstr "Добавить песни"
 
-#: src/player.c:2104 src/player.c:2119
+#: src/player.c:2101 src/player.c:2116
 msgid "File &name: "
 msgstr "Имя файла (&n): "
 
-#: src/player.c:2118
+#: src/player.c:2115
 msgid "Save play list"
 msgstr "Сохранить плей-лист"
 
-#: src/player.c:2132
+#: src/player.c:2129
 msgid "Execute external command"
 msgstr "Выполнить команду"
 
-#: src/player.c:2133
+#: src/player.c:2130
 msgid "C&ommand: "
 msgstr "Команда (&o): "
 
-#: src/player.c:2147
+#: src/player.c:2144
 msgid "Sort play list"
 msgstr "Сортировать плей-лист"
 
-#: src/player.c:2148
+#: src/player.c:2145
 msgid "Sort by"
 msgstr "Сортировать по"
 
-#: src/player.c:2149 src/player.c:2457
+#: src/player.c:2146 src/player.c:2454
 msgid "&Title"
 msgstr "Название (&t)"
 
-#: src/player.c:2150
+#: src/player.c:2147
 msgid "&File name"
 msgstr "Имя файла (&f)"
 
-#: src/player.c:2151
+#: src/player.c:2148
 msgid "P&ath and file name"
 msgstr "Путь и имя файла (&a)"
 
-#: src/player.c:2152 src/player.c:2463
+#: src/player.c:2149 src/player.c:2460
 msgid "T&rack"
 msgstr "Трек (&r)"
 
-#: src/player.c:2153
+#: src/player.c:2150
 msgid "&Only selected area"
 msgstr "Только выделенная область (o)"
 
-#: src/player.c:2184
+#: src/player.c:2181
 msgid "&Artist: "
 msgstr "Исполнитель (&a): "
 
-#: src/player.c:2186
+#: src/player.c:2183
 msgid "A&lbum: "
 msgstr "Альбом (&l): "
 
-#: src/player.c:2188
+#: src/player.c:2185
 msgid "&Year: "
 msgstr "Год (&y): "
 
-#: src/player.c:2190
+#: src/player.c:2187
 msgid "&Track No: "
 msgstr "Номер трека (&t): "
 
-#: src/player.c:2192
+#: src/player.c:2189
 msgid "C&omments: "
 msgstr "Комментарии (&o): "
 
-#: src/player.c:2194
+#: src/player.c:2191
 msgid "&Genre: "
 msgstr "Жанр (&g): "
 
-#: src/player.c:2197
+#: src/player.c:2194
 msgid "&Reload info"
 msgstr "Перезагрузить информацию (&r)"
 
-#: src/player.c:2260
+#: src/player.c:2257
 msgid "Write in&fo in all the selected songs"
 msgstr "Записать во все выделенные песни (&a)"
 
-#: src/player.c:2411
+#: src/player.c:2408
 msgid "Search"
 msgstr "Поиск"
 
-#: src/player.c:2412 src/player.c:2453
+#: src/player.c:2409 src/player.c:2450
 msgid "S&tring: "
 msgstr "Строка (&t): "
 
-#: src/player.c:2427
+#: src/player.c:2424
 msgid "Variables manager"
 msgstr "Менеджер переменных"
 
-#: src/player.c:2431
+#: src/player.c:2428
 msgid "&Value: "
 msgstr "Значение (&v): "
 
-#: src/player.c:2434
+#: src/player.c:2431
 msgid "Vie&w current value"
 msgstr "Посмотреть текущее значение (.w)"
 
-#: src/player.c:2436
+#: src/player.c:2433
 msgid "Operation"
 msgstr "Операция"
 
-#: src/player.c:2437
+#: src/player.c:2434
 msgid "S&et"
 msgstr "Установить (&e)"
 
-#: src/player.c:2438
+#: src/player.c:2435
 msgid "&Add"
 msgstr "Добавить (&a)"
 
-#: src/player.c:2439
+#: src/player.c:2436
 msgid "&Remove"
 msgstr "Удалить (&r)"
 
-#: src/player.c:2452
+#: src/player.c:2449
 msgid "Advanced search"
 msgstr "Продвинутый поиск"
 
-#: src/player.c:2456
+#: src/player.c:2453
 msgid "Search in"
 msgstr "Искать в"
 
-#: src/player.c:2458
+#: src/player.c:2455
 msgid "&Name"
 msgstr "Имя (&n)"
 
-#: src/player.c:2459
+#: src/player.c:2456
 msgid "&Artist"
 msgstr "Исполнитель (&a)"
 
-#: src/player.c:2460
+#: src/player.c:2457
 msgid "A&lbum"
 msgstr "Альбом (&l)"
 
-#: src/player.c:2461
+#: src/player.c:2458
 msgid "&Year"
 msgstr "Год (&y)"
 
-#: src/player.c:2462
+#: src/player.c:2459
 msgid "&Genre"
 msgstr "Жанр (&g)"
 
-#: src/player.c:2464
+#: src/player.c:2461
 msgid "C&omment"
 msgstr "Комментарии (&o)"
 
-#: src/player.c:2478
+#: src/player.c:2475
 #, c-format
 msgid "Removed %d song"
 msgid_plural "Removed %d songs"
@@ -1135,113 +1152,113 @@ msgstr[0] "Удалена %d песня"
 msgstr[1] "Удалено %d песни"
 msgstr[2] "Удалено %d песен"
 
-#: src/player.c:2486
+#: src/player.c:2483
 msgid "Reload info"
 msgstr "Перезагрузить информацию"
 
-#: src/player.c:2487
+#: src/player.c:2484
 msgid "&Only in selected area"
 msgstr "Только в выделенной области (&o)"
 
-#: src/player.c:2500
+#: src/player.c:2497
 msgid "Run/stop test"
 msgstr "Запустить/остановить тест"
 
-#: src/player.c:2501
+#: src/player.c:2498
 msgid "Tests"
 msgstr "Тесты"
 
-#: src/player.c:2502
+#: src/player.c:2499
 msgid "Test &1. Window library perfomance"
 msgstr "Тест &1. Производительность оконной библиотеки"
 
-#: src/player.c:2504
+#: src/player.c:2501
 msgid "&Stop job"
 msgstr "Остановить задачу (&s)"
 
-#: src/player.c:2547
+#: src/player.c:2544
 msgid "Input"
 msgstr "Входные"
 
-#: src/player.c:2548
+#: src/player.c:2545
 msgid "&Input"
 msgstr "Входные (&i)"
 
-#: src/player.c:2551
+#: src/player.c:2548
 msgid "Output"
 msgstr "Выходные"
 
-#: src/player.c:2552
+#: src/player.c:2549
 msgid "&Output"
 msgstr "Выходные (&o)"
 
-#: src/player.c:2555
+#: src/player.c:2552
 msgid "Effect"
 msgstr "Эффекты"
 
-#: src/player.c:2556
+#: src/player.c:2553
 msgid "&Effect"
 msgstr "Эффекты (&e)"
 
-#: src/player.c:2559
+#: src/player.c:2556
 #, fuzzy
 msgid "General"
 msgstr "Жанр"
 
-#: src/player.c:2560
+#: src/player.c:2557
 #, fuzzy
 msgid "&General"
 msgstr "Жанр (&g)"
 
-#: src/player.c:2563
+#: src/player.c:2560
 msgid "Charset"
 msgstr "Кодировки"
 
-#: src/player.c:2564
+#: src/player.c:2561
 msgid "C&harset"
 msgstr "Кодировки (&h)"
 
-#: src/player.c:2569
+#: src/player.c:2566
 msgid "Plugins manager"
 msgstr "Менеджер плагинов"
 
-#: src/player.c:2629
+#: src/player.c:2626
 msgid "Effect is ena&bled"
 msgstr "Эффект включен (&b)"
 
-#: src/player.c:2639
+#: src/player.c:2636
 msgid "&Description: "
 msgstr "Описание (&d): "
 
-#: src/player.c:2643
+#: src/player.c:2640
 msgid "&Author: "
 msgstr "Автор (&a): "
 
-#: src/player.c:2646
+#: src/player.c:2643
 msgid "Con&figure"
 msgstr "Конфигурировать (&f)"
 
-#: src/player.c:2653 src/player.c:2698
+#: src/player.c:2650 src/player.c:2695
 #, fuzzy
 msgid "S&tart"
 msgstr "Установить (&e)"
 
-#: src/player.c:2697
+#: src/player.c:2694
 #, fuzzy
 msgid "S&top"
 msgstr "Установить (&e)"
 
-#: src/player.c:2728
+#: src/player.c:2725
 #, c-format
 msgid "Play list saved to %s"
 msgstr "Плей-лист сохранен в %s"
 
-#: src/player.c:2731
+#: src/player.c:2728
 #, fuzzy, c-format
 msgid "Unable to save play list to %s (try naming it as a .m3u file)"
 msgstr "Не могу сохранить плей-лист в %s"
 
-#: src/player.c:2742
+#: src/player.c:2739
 msgid ""
 "\n"
 "[0;32;40mPress enter to continue"
@@ -1249,30 +1266,30 @@ msgstr ""
 "\n"
 "[0;32;40mНажмите enter, чтобы продолжить"
 
-#: src/player.c:2751
+#: src/player.c:2748
 msgid "Command execution failed"
 msgstr ""
 
-#: src/player.c:2759
+#: src/player.c:2756
 msgid "Writing to console failed"
 msgstr ""
 
-#: src/plist.c:196
+#: src/plist.c:194
 #, c-format
 msgid "Unable to read %s file"
 msgstr "Не могу прочитать файл %s"
 
-#: src/plist.c:284
+#: src/plist.c:282
 #, c-format
 msgid "%s: missing play list header"
 msgstr "%s: отсутствует заголовок плей-листа"
 
-#: src/plist.c:295
+#: src/plist.c:293
 #, c-format
 msgid "%s: missing `numberofentries' tag"
 msgstr "%s: отсутствует тег `numberofentries'"
 
-#: src/plist.c:900
+#: src/plist.c:898
 #, c-format
 msgid "%i/%i song; %i:%02i:%02i/%i:%02i:%02i"
 msgid_plural "%i/%i songs; %i:%02i:%02i/%i:%02i:%02i"
