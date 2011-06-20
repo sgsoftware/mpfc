@@ -435,6 +435,14 @@ void player_set_search_string( char *str );
 /* Save current song and time */
 void player_save_time( void );
 
+/* High-level start play */
+void player_start_play( int song, int start_time );
+
+/* High-level pause/resume */
+void player_pause_resume( void );
+
+/* High-level stop play */
+void player_stop( void );
 
 #endif
 

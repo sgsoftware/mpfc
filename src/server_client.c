@@ -122,24 +122,29 @@ void server_conn_exec_command(server_conn_desc_t *d)
 
 	if (!server_client_parse_cmd(cmd, &cmd_name, &param_kind, &param))
 	{
-		logger_message(player_log, 0, "Error parsing command");
+		logger_debug(player_log, "Error parsing command");
 		return;
 	}
 
-	switch (param_kind)
+	/* Execute */
+	if (!strcmp(cmd_name, "play"))
 	{
-		case PARAM_NONE:
-			logger_debug(player_log, "Received a no-param command '%s'", cmd_name);
-			break;
-		case PARAM_INT:
-			logger_debug(player_log, "Received an int-param command '%s' with param %ld",
-					cmd_name, param.num_param);
-			break;
-		case PARAM_STRING:
-			logger_debug(player_log, "Received a string-param command '%s' with param '%s'",
-					cmd_name, param.str_param);
-			break;
+		int song = (param_kind == PARAM_INT ? param.num_param : 0);
+		player_start_play(song, 0);
 	}
+	else if (!strcmp(cmd_name, "resume"))
+	{
+		player_pause_resume();
+	}
+	else if (!strcmp(cmd_name, "pause"))
+	{
+		player_pause_resume();
+	}
+	else if (!strcmp(cmd_name, "stop"))
+	{
+		player_stop();
+	}
+	wnd_invalidate(player_wnd);
 } /* End of 'server_conn_exec_command' function */
 
 /* End of 'server_client.c' file */

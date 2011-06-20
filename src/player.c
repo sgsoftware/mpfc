@@ -857,51 +857,30 @@ wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action, int repval )
 	{
 		if (player_context->m_status == PLAYER_STATUS_PAUSED)
 		{
-			inp_resume(player_inp);
-			outp_resume(player_cur_outp);
+			player_pause_resume();
 		}
 		else
-			player_play(player_plist->m_cur_song, 0);
-		player_context->m_status = PLAYER_STATUS_PLAYING;
-
-		pmng_hook(player_pmng, "player-status");
+		{
+			player_start_play(player_plist->m_cur_song, 0);
+		}
 	}
 	/* Pause */
 	else if (!strcasecmp(action, "pause"))
 	{
-		if (player_context->m_status == PLAYER_STATUS_PLAYING)
-		{
-			player_context->m_status = PLAYER_STATUS_PAUSED;
-			inp_pause(player_inp);
-			outp_pause(player_cur_outp);
-		}
-		else if (player_context->m_status == PLAYER_STATUS_PAUSED)
-		{
-			player_context->m_status = PLAYER_STATUS_PLAYING;
-			inp_resume(player_inp);
-			outp_resume(player_cur_outp);
-		}
-
-		pmng_hook(player_pmng, "player-status");
+		player_pause_resume();
 	}
 	/* Stop */
 	else if (!strcasecmp(action, "stop"))
 	{
-		player_context->m_status = PLAYER_STATUS_STOPPED;
-		player_end_play(FALSE);
-		player_plist->m_cur_song = was_song;
-		pmng_hook(player_pmng, "player-status");
+		player_stop();
 	}
 	/* Play song */
 	else if (!strcasecmp(action, "start_play"))
 	{
 		if (player_plist->m_len > 0)
 		{
-			player_context->m_status = PLAYER_STATUS_PLAYING;
-			player_play(player_plist->m_sel_end, 0);
+			player_start_play(player_plist->m_sel_end, 0);
 		}
-
-		pmng_hook(player_pmng, "player-status");
 	}
 	/* Go to next song */
 	else if (!strcasecmp(action, "next"))
@@ -3505,6 +3484,44 @@ void player_save_time( void )
 	player_last_song = player_plist->m_cur_song;
 	player_last_song_time = player_context->m_cur_time;
 } /* End of 'player_save_time' function */
+
+/* High-level start play */
+void player_start_play( int song, int start_time )
+{
+	player_context->m_status = PLAYER_STATUS_PLAYING;
+	player_play(song, start_time);
+	pmng_hook(player_pmng, "player-status");
+} /* End of 'player_start_play' function */
+
+/* High-level pause/resume */
+void player_pause_resume( void )
+{
+	if (player_context->m_status == PLAYER_STATUS_PLAYING)
+	{
+		player_context->m_status = PLAYER_STATUS_PAUSED;
+		inp_pause(player_inp);
+		outp_pause(player_cur_outp);
+	}
+	else if (player_context->m_status == PLAYER_STATUS_PAUSED)
+	{
+		player_context->m_status = PLAYER_STATUS_PLAYING;
+		inp_resume(player_inp);
+		outp_resume(player_cur_outp);
+	}
+
+	pmng_hook(player_pmng, "player-status");
+} /* End of 'player_pause_resume' function */
+
+/* High-level stop play */
+void player_stop( void )
+{
+	int was_song = player_plist->m_cur_song;
+
+	player_context->m_status = PLAYER_STATUS_STOPPED;
+	player_end_play(FALSE);
+	player_plist->m_cur_song = was_song;
+	pmng_hook(player_pmng, "player-status");
+} /* End of 'player_stop' function */
 
 /* End of 'player.c' file */
 
