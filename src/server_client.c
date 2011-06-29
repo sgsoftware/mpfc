@@ -144,6 +144,18 @@ void server_conn_exec_command(server_conn_desc_t *d)
 	{
 		player_stop();
 	}
+	else if (!strcmp(cmd_name, "next"))
+	{
+		player_skip_songs(1, TRUE);
+	}
+	else if (!strcmp(cmd_name, "prev"))
+	{
+		player_skip_songs(-1, TRUE);
+	}
+	else if (!strcmp(cmd_name, "time_back"))
+	{
+		player_time_back();
+	}
 	wnd_invalidate(player_wnd);
 } /* End of 'server_conn_exec_command' function */
 
