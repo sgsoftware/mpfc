@@ -17,4 +17,4 @@ DEFS = -DLOCALEDIR=\"$(localedir)\" -DLIBDIR=\"$(libdir)\" \
 INCLUDES = -I$(top_builddir)/libmpfcwnd/
 mpfc_LDADD = $(top_builddir)/libmpfc/libmpfc.la \
 			 $(top_builddir)/libmpfcwnd/libmpfcwnd.la \
-			 @COMMON_LIBS@ @PTHREAD_LIBS@ @DL_LIBS@ @MATH_LIBS@
+			 @JSON_LIBS@ @COMMON_LIBS@ @PTHREAD_LIBS@ @DL_LIBS@ @MATH_LIBS@

@@ -23,6 +23,8 @@
 #include <ctype.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <string.h>
+#include <json/json.h>
 #include "player.h"
 #include "server_client.h"
 
@@ -110,6 +112,24 @@ void server_conn_client_notify(server_conn_desc_t *d, char nv)
 {
 } /* End of 'server_conn_client_notify' function */
 
+/* Send a response to client and free message memory */
+void server_conn_response(server_conn_desc_t *d, const char *msg)
+{
+	int len = strlen(msg);
+	while (len > 0)
+	{
+		int sent = send(d->m_socket, msg, len, 0);
+		if (sent < 0)
+		{
+			logger_debug(player_log, "Error sending response");
+			return;
+		}
+
+		len -= sent;
+		msg += sent;
+	}
+} /* End of 'server_conn_response' function */
+
 /* Execute a command received from client */
 void server_conn_exec_command(server_conn_desc_t *d)
 {
@@ -155,6 +175,53 @@ void server_conn_exec_command(server_conn_desc_t *d)
 	else if (!strcmp(cmd_name, "time_back"))
 	{
 		player_time_back();
+	}
+	else if (!strcmp(cmd_name, "get_cur_song"))
+	{
+		struct json_object *js = json_object_new_object();
+		int cur_song = player_plist->m_cur_song;
+
+		json_object_object_add(js, "position", json_object_new_int(cur_song));
+		if (cur_song >= 0)
+		{
+			const char *status = "";
+			song_t *s = player_plist->m_list[cur_song];
+			json_object_object_add(js, "title", json_object_new_string(
+						STR_TO_CPTR(s->m_title)));
+			json_object_object_add(js, "time", json_object_new_int(
+						player_context->m_cur_time));
+			json_object_object_add(js, "length", json_object_new_int(
+						s->m_len));
+
+			if (player_context->m_status == PLAYER_STATUS_PLAYING)
+				status = "playing";
+			else if (player_context->m_status == PLAYER_STATUS_PAUSED)
+				status = "paused";
+			else if (player_context->m_status == PLAYER_STATUS_STOPPED)
+				status = "stopped";
+			json_object_object_add(js, "play_status", json_object_new_string(status));
+		}
+
+		server_conn_response(d, json_object_get_string(js));
+		json_object_put(js);
+	}
+	else if (!strcmp(cmd_name, "get_playlist"))
+	{
+		int i;
+		struct json_object *js = json_object_new_array();
+
+		for ( i = 0; i < player_plist->m_len; i++ )
+		{
+			struct json_object *js_child = json_object_new_object();
+			song_t *s = player_plist->m_list[i];
+			json_object_object_add(js_child, "title", json_object_new_string(
+						STR_TO_CPTR(s->m_title)));
+			json_object_object_add(js_child, "length", json_object_new_int(s->m_len));
+			json_object_array_add(js, js_child);
+		}
+
+		server_conn_response(d, json_object_get_string(js));
+		json_object_put(js);
 	}
 	wnd_invalidate(player_wnd);
 } /* End of 'server_conn_exec_command' function */

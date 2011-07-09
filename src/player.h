@@ -91,6 +91,9 @@ extern undo_list_t *player_ul;
 /* Play list */
 extern plist_t *player_plist;
 
+/* Player context */
+extern player_context_t *player_context;
+
 /* Do we story undo information now? */
 extern bool_t player_store_undo;
 
