@@ -112,22 +112,34 @@ void server_conn_client_notify(server_conn_desc_t *d, char nv)
 {
 } /* End of 'server_conn_client_notify' function */
 
-/* Send a response to client and free message memory */
-void server_conn_response(server_conn_desc_t *d, const char *msg)
+/* Send a buffer */
+bool_t server_conn_send_buf(server_conn_desc_t *d, const char *msg, int len)
 {
-	int len = strlen(msg);
 	while (len > 0)
 	{
 		int sent = send(d->m_socket, msg, len, 0);
 		if (sent < 0)
 		{
 			logger_debug(player_log, "Error sending response");
-			return;
+			return FALSE;
 		}
 
 		len -= sent;
 		msg += sent;
 	}
+	return TRUE;
+} /* End of 'server_conn_send_buf' function */
+
+/* Send a response to client and free message memory */
+void server_conn_response(server_conn_desc_t *d, const char *msg)
+{
+	int len = strlen(msg);
+	char header[128];
+
+	snprintf(header, sizeof(header), "Msg-Length: %d\nMsg-Type: response\n", len);
+	if (!server_conn_send_buf(d, header, strlen(header)))
+		return;
+	server_conn_send_buf(d, msg, len);
 } /* End of 'server_conn_response' function */
 
 /* Execute a command received from client */
