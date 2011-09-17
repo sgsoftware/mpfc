@@ -30,6 +30,7 @@
 #include <sys/select.h>
 #include <sys/socket.h>
 #include "cfg.h"
+#include "pmng.h"
 #include "player.h"
 #include "rd_with_notify.h"
 #include "server_client.h"
@@ -41,14 +42,16 @@ rd_with_notify_t *server_rdwn = NULL;
 
 server_conn_desc_t *server_conns = NULL;
 
+int server_hook_id = -1;
+
 pthread_mutex_t server_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void *server_thread( void * );
 static void *server_conn_thread( void * );
 
-#define SERVER_NOTIFY_EXIT 0
-
 static void server_conn_notify( server_conn_desc_t *conn, char nv );
+
+static void server_hook_handler( char *hook );
 
 /* Create a new connection descriptor */
 server_conn_desc_t *server_conn_desc_new( int sock )
@@ -173,6 +176,9 @@ bool_t server_start( void )
 		goto failed;
 	}
 
+	/* Install hook handler */
+	server_hook_id = pmng_add_hook_handler(player_pmng, server_hook_handler);
+
 	return TRUE;
 
 failed:
@@ -194,6 +200,9 @@ void server_stop( void )
 {
 	if (server_socket == -1)
 		return;
+
+	/* Uninstall hook handler */
+	pmng_remove_hook_handler(player_pmng, server_hook_id);
 
 	/* Notify the thread about exit */
 	char val = 0;
@@ -295,6 +304,27 @@ static void *server_thread( void *p )
 
 	return NULL;
 } /* End of 'server_thread' function */
+
+/* Hook handler to send notifications */
+static void server_hook_handler( char *hook )
+{
+	char nv;
+	server_conn_desc_t *conn;
+
+	/* Determine notification code */
+	if (!strcmp(hook, "playlist"))
+		nv = SERVER_NOTIFY_PLAYLIST;
+	else if (!strcmp(hook, "player-status"))
+		nv = SERVER_NOTIFY_STATUS;
+	else
+		return;
+
+	/* Notify all clients */
+	for ( conn = server_conns; conn; conn = conn->m_next )
+	{
+		server_conn_notify(conn, nv);
+	}
+} /* End of 'server_conn_hook_handler' function */
 
 /* Send exit notification to a connection */
 static void server_conn_notify( server_conn_desc_t *conn, char nv )

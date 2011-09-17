@@ -498,6 +498,24 @@ void pmng_enable_effect( pmng_t *pmng, plugin_t *ep, bool_t enable )
 	cfg_set_var_bool(pmng->m_cfg_list, name, enable);
 } /* End of 'pmng_enable_effect' function */
 
+/* Install a hook handler */
+int pmng_add_hook_handler( pmng_t *pmng, void (*handler)(char*) )
+{
+	/* Already occupied */
+	if (pmng->m_hook_handler)
+		return -1;
+
+	pmng->m_hook_handler = handler;
+	return (++pmng->m_hook_id);
+} /* End of 'pmng_add_hook_handler' function */
+
+/* Uninstall a hook handler */
+void pmng_remove_hook_handler( pmng_t *pmng, int handler_id )
+{
+	if (pmng->m_hook_id == handler_id)
+		pmng->m_hook_handler = NULL;
+} /* End of 'pmng_remove_hook_handler' function */
+
 /* Call hook functions */
 void pmng_hook( pmng_t *pmng, char *hook )
 {
@@ -511,6 +529,10 @@ void pmng_hook( pmng_t *pmng, char *hook )
 			break;
 		genp_hooks_callback(p, hook);
 	}
+
+	/* Call local handler */
+	if (pmng->m_hook_handler)
+		pmng->m_hook_handler(hook);
 } /* End of 'pmng_hook' function */
 
 /* End of 'pmng.c' file */

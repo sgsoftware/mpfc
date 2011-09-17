@@ -41,6 +41,14 @@ typedef struct tag_server_conn_desc_t
 	struct tag_server_conn_desc_t *m_next, *m_prev;
 } server_conn_desc_t;
 
+/* Notification codes */
+enum
+{
+	SERVER_NOTIFY_EXIT = 0,
+	SERVER_NOTIFY_PLAYLIST,
+	SERVER_NOTIFY_STATUS,
+};
+
 /* Send a notification to client */
 void server_conn_client_notify(server_conn_desc_t *d, char nv);
 

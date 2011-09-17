@@ -107,11 +107,6 @@ static bool_t server_client_parse_cmd( char *cmd, char **cmd_name,
 	return FALSE;
 } /* End of 'server_client_parse_cmd' function */
 
-/* Send a notification to client */
-void server_conn_client_notify(server_conn_desc_t *d, char nv)
-{
-} /* End of 'server_conn_client_notify' function */
-
 /* Send a buffer */
 bool_t server_conn_send_buf(server_conn_desc_t *d, const char *msg, int len)
 {
@@ -129,6 +124,39 @@ bool_t server_conn_send_buf(server_conn_desc_t *d, const char *msg, int len)
 	}
 	return TRUE;
 } /* End of 'server_conn_send_buf' function */
+
+/* Build notification message */
+void server_conn_notification_msg(char nv, char *msg, int buf_size)
+{
+	switch (nv)
+	{
+		case SERVER_NOTIFY_PLAYLIST:
+			strncpy(msg, "playlist", buf_size);
+			break;
+		case SERVER_NOTIFY_STATUS:
+			strncpy(msg, "status", buf_size);
+			break;
+		default:
+			strncpy(msg, "", buf_size);
+			break;
+	}
+} /* End of 'server_conn_notification_msg' function */
+
+/* Send a notification to client */
+void server_conn_client_notify(server_conn_desc_t *d, char nv)
+{
+	char msg[128];
+	char header[128];
+	int len;
+
+	server_conn_notification_msg(nv, msg, sizeof(msg));
+	len = strlen(msg);
+
+	snprintf(header, sizeof(header), "Msg-Length: %d\nMsg-Type: n\n", len);
+	if (!server_conn_send_buf(d, header, strlen(header)))
+		return;
+	server_conn_send_buf(d, msg, len);
+} /* End of 'server_conn_client_notify' function */
 
 /* Send a response to client and free message memory */
 void server_conn_response(server_conn_desc_t *d, const char *msg)

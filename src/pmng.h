@@ -63,6 +63,10 @@ typedef struct tag_pmng_t
 
 	/* Player context */
 	player_context_t *m_player_context;
+
+	/* Local hook handler */
+	int m_hook_id;
+	void (*m_hook_handler)(char *hook);
 } pmng_t;
 
 /* Initialize plugins */
@@ -153,6 +157,12 @@ bool_t pmng_is_effect_enabled( pmng_t *pmng, plugin_t *ep );
 
 /* Enable/disable effect */
 void pmng_enable_effect( pmng_t *pmng, plugin_t *ep, bool_t enable );
+
+/* Install a hook handler */
+int pmng_add_hook_handler( pmng_t *pmng, void (*handler)(char*) );
+
+/* Uninstall a hook handler */
+void pmng_remove_hook_handler( pmng_t *pmng, int handler_id );
 
 /* Call hook functions */
 void pmng_hook( pmng_t *pmng, char *hook );
