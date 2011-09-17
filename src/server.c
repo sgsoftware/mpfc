@@ -366,6 +366,8 @@ static void *server_conn_thread( void *p )
 					&conn_desc->m_buf, sizeof(conn_desc->m_buf) - 1, 0);
 			if (sz == -1)
 				continue;
+			else if (sz == 0)
+				break;
 			conn_desc->m_buf[sz] = 0;
 
 			server_conn_parse_input(conn_desc);

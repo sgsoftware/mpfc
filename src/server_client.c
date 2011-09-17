@@ -136,7 +136,7 @@ void server_conn_response(server_conn_desc_t *d, const char *msg)
 	int len = strlen(msg);
 	char header[128];
 
-	snprintf(header, sizeof(header), "Msg-Length: %d\nMsg-Type: response\n", len);
+	snprintf(header, sizeof(header), "Msg-Length: %d\nMsg-Type: r\n", len);
 	if (!server_conn_send_buf(d, header, strlen(header)))
 		return;
 	server_conn_send_buf(d, msg, len);
