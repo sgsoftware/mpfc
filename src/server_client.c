@@ -21,12 +21,15 @@
  */
 
 #include <ctype.h>
+#include <dirent.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <json/json.h>
 #include "player.h"
 #include "server_client.h"
+#include "util.h"
 
 typedef union
 {
@@ -170,6 +173,92 @@ void server_conn_response(server_conn_desc_t *d, const char *msg)
 	server_conn_send_buf(d, msg, len);
 } /* End of 'server_conn_response' function */
 
+/* Validate file name. It shall not contain '..' */
+static bool_t is_valid_file_name(char *name)
+{
+	if (name[0] != '/')
+		return FALSE;
+
+	for ( ;; )
+	{
+		assert((*name) == '/');
+
+		name++;
+		if (name[0] == '.' && name[1] == '.' &&
+				(name[2] == 0 || name[2] == '/'))
+			return FALSE;
+		name = strchr(name, '/');
+		if (!name)
+			break;
+	}
+
+	return TRUE;
+} /* End of 'is_valid_file_name' function */
+
+/* Translate virtual file name */
+static char *translate_file_name(char *name)
+{
+	char *r = cfg_get_var(cfg_list, "remote-dir-root");
+	if (!r)
+		return NULL;
+
+	if (!is_valid_file_name(name))
+		return NULL;
+
+	return util_strcat(r, name, NULL);
+} /* End of 'translate_file_name' function */
+
+/* Execute 'list_dir' command */
+static void server_conn_list_dir(char *name, struct json_object *js) {
+	DIR *dir = NULL;
+	char *real_name = NULL;
+	struct dirent *de = NULL, *de_result = NULL;
+	
+	/* Translate virtual directory name */
+	real_name = translate_file_name(name);
+	if (!real_name)
+		goto finally;
+
+	/* Open directory */
+	dir = opendir(real_name);
+	if (!dir)
+		goto finally;
+
+	/* Allocate dirent */
+	de = (struct dirent *)malloc(offsetof(struct dirent, d_name) +
+			pathconf(real_name, _PC_NAME_MAX) + 1);
+	if (!de)
+		goto finally;
+
+	for ( ;; )
+	{
+		if (readdir_r(dir, de, &de_result))
+			break;
+		if (!de_result)
+			break;
+
+		/* Skip special dirs */
+		if (de->d_name[0] == '.' &&
+				(de->d_name[1] == 0 || 
+				 (de->d_name[1] == '.' && de->d_name[2] == 0)))
+			continue;
+
+		{
+			struct json_object *js_child = json_object_new_object();
+			json_object_object_add(js_child, "name", json_object_new_string(de->d_name));
+			json_object_array_add(js, js_child);
+		}
+	}
+
+finally:
+	if (de)
+		free(de);
+	if (dir)
+		closedir(dir);
+	if (real_name)
+		free(real_name);
+} /* End of 'server_conn_list_dir' function */
+
 /* Execute a command received from client */
 void server_conn_exec_command(server_conn_desc_t *d)
 {
@@ -260,6 +349,14 @@ void server_conn_exec_command(server_conn_desc_t *d)
 			json_object_array_add(js, js_child);
 		}
 
+		server_conn_response(d, json_object_get_string(js));
+		json_object_put(js);
+	}
+	else if (!strcmp(cmd_name, "list_dir"))
+	{
+		struct json_object *js = json_object_new_array();
+		if (param_kind == PARAM_STRING)
+			server_conn_list_dir(param.str_param, js);
 		server_conn_response(d, json_object_get_string(js));
 		json_object_put(js);
 	}
