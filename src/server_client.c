@@ -362,6 +362,16 @@ void server_conn_exec_command(server_conn_desc_t *d)
 		server_conn_response(d, json_object_get_string(js));
 		json_object_put(js);
 	}
+	else if (!strcmp(cmd_name, "add"))
+	{
+		if (param_kind == PARAM_STRING)
+		{
+			char *real_name = translate_file_name(param.str_param);
+			plist_add(player_plist, real_name);
+			free(real_name);
+		}
+					
+	}
 	wnd_invalidate(player_wnd);
 } /* End of 'server_conn_exec_command' function */
 
