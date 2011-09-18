@@ -372,6 +372,10 @@ void server_conn_exec_command(server_conn_desc_t *d)
 		}
 					
 	}
+	else if (!strcmp(cmd_name, "clear_playlist"))
+	{
+		plist_clear(player_plist);
+	}
 	wnd_invalidate(player_wnd);
 } /* End of 'server_conn_exec_command' function */
 
