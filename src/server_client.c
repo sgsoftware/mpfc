@@ -246,6 +246,8 @@ static void server_conn_list_dir(char *name, struct json_object *js) {
 		{
 			struct json_object *js_child = json_object_new_object();
 			json_object_object_add(js_child, "name", json_object_new_string(de->d_name));
+			json_object_object_add(js_child, "type", json_object_new_string(
+						de->d_type == DT_DIR ? "d" : "f"));
 			json_object_array_add(js, js_child);
 		}
 	}
