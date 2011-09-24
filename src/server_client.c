@@ -208,8 +208,42 @@ static char *translate_file_name(char *name)
 	return util_strcat(r, name, NULL);
 } /* End of 'translate_file_name' function */
 
+/* Determine file type (regular or directory) resolving symlinks */
+static bool_t server_conn_file_type(char *name, bool_t *is_dir, int rec_level)
+{
+	struct stat st;
+	if (stat(name, &st))
+		return FALSE;
+
+	if (S_ISREG(st.st_mode))
+	{
+		(*is_dir) = FALSE;
+		return TRUE;
+	}
+	else if (S_ISDIR(st.st_mode))
+	{
+		(*is_dir) = TRUE;
+		return TRUE;
+	}
+	else if (S_ISLNK(st.st_mode))
+	{
+		/* Cyclic link? */
+		if (rec_level > 10)
+			return FALSE;
+
+		char linked_name[MAX_FILE_NAME];
+		if (readlink(name, linked_name, sizeof(linked_name)) < 0)
+			return FALSE;
+		return server_conn_file_type(linked_name, is_dir, rec_level + 1);
+	}
+
+	/* Special file which we are not interested in */
+	return FALSE;
+} /* End of 'server_conn_file_type' function */
+
 /* Execute 'list_dir' command */
-static void server_conn_list_dir(char *name, struct json_object *js) {
+static void server_conn_list_dir(char *name, struct json_object *js)
+{
 	DIR *dir = NULL;
 	char *real_name = NULL;
 	struct dirent *de = NULL, *de_result = NULL;
@@ -243,13 +277,21 @@ static void server_conn_list_dir(char *name, struct json_object *js) {
 				 (de->d_name[1] == '.' && de->d_name[2] == 0)))
 			continue;
 
+		/* Determine file type */
+		bool_t is_dir;
 		{
-			struct json_object *js_child = json_object_new_object();
-			json_object_object_add(js_child, "name", json_object_new_string(de->d_name));
-			json_object_object_add(js_child, "type", json_object_new_string(
-						de->d_type == DT_DIR ? "d" : "f"));
-			json_object_array_add(js, js_child);
+			char *full_name = util_strcat(real_name, "/", de->d_name, NULL);
+			bool_t ok = server_conn_file_type(full_name, &is_dir, 0);
+			free(full_name);
+			if (!ok)
+				continue;
 		}
+
+		struct json_object *js_child = json_object_new_object();
+		json_object_object_add(js_child, "name", json_object_new_string(de->d_name));
+		json_object_object_add(js_child, "type",
+				json_object_new_string(is_dir ? "d" : "f"));
+		json_object_array_add(js, js_child);
 	}
 
 finally:
