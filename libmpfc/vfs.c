@@ -82,7 +82,7 @@ void vfs_glob( vfs_t *vfs, char *pattern, vfs_callback_t callback, void *data,
 	abs_pattern = vfs_pattern2absolute(vfs, inp, pattern);
 	if (abs_pattern == NULL)
 		return;
-	if (STR_AT(abs_pattern, STR_LEN(abs_pattern) - 1) == '/' &&
+	while (STR_AT(abs_pattern, STR_LEN(abs_pattern) - 1) == '/' &&
 			STR_LEN(abs_pattern) > 1)
 		str_delete_char(abs_pattern, STR_LEN(abs_pattern) - 1);
 	bare_slash = (STR_LEN(abs_pattern) == 1);
@@ -116,8 +116,12 @@ void vfs_glob( vfs_t *vfs, char *pattern, vfs_callback_t callback, void *data,
 			struct vfs_glob_list_item_t *dir;
 			bool_t finish = FALSE;
 
-			/* Get part of the pattern respecting to current directory level */
-			s = strchr(&ap[index1 + 1], '/');
+			/* Skip duplicate slashes */
+			while (ap[index1] == '/')
+				index1 ++;
+
+			/* Get part of the pattern corresponding to current directory level */
+			s = strchr(&ap[index1], '/');
 			if (s == NULL)
 			{
 				index2 = STR_LEN(abs_pattern);
@@ -125,7 +129,8 @@ void vfs_glob( vfs_t *vfs, char *pattern, vfs_callback_t callback, void *data,
 			}
 			else
 				index2 = (s - ap);
-			cur_pattern = str_substring(abs_pattern, index1 + 1, index2 - 1);
+
+			cur_pattern = str_substring(abs_pattern, index1, index2 - 1);
 
 			/* Find files matching pattern */
 			new_list = vfs_glob_list_new();
