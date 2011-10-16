@@ -89,6 +89,8 @@ server_conn_desc_t *server_conn_desc_new( int sock )
 	pthread_mutex_lock(&server_mutex);
 	conn_desc->m_prev = NULL;
 	conn_desc->m_next = server_conns;
+	if (server_conns)
+		server_conns->m_prev = conn_desc;
 	server_conns = conn_desc;
 	pthread_mutex_unlock(&server_mutex);
 	return conn_desc;
