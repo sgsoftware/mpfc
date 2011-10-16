@@ -419,7 +419,7 @@ bool_t server_conn_exec_command(server_conn_desc_t *d)
 		if (param_kind == PARAM_INT)
 		{
 			int pos = param.num_param;
-			plist_move_sel(player_plist, pos, FALSE);
+			plist_move(player_plist, pos, FALSE);
 			plist_rem(player_plist);
 		}
 	}
@@ -428,7 +428,7 @@ bool_t server_conn_exec_command(server_conn_desc_t *d)
 		if (param_kind == PARAM_INT)
 		{
 			int pos = param.num_param;
-			plist_move_sel(player_plist, pos, FALSE);
+			plist_move(player_plist, pos, FALSE);
 			player_queue_song();
 		}
 	}
