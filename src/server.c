@@ -322,10 +322,12 @@ static void server_hook_handler( char *hook )
 		return;
 
 	/* Notify all clients */
+	pthread_mutex_lock(&server_mutex);
 	for ( conn = server_conns; conn; conn = conn->m_next )
 	{
 		server_conn_notify(conn, nv);
 	}
+	pthread_mutex_unlock(&server_mutex);
 } /* End of 'server_conn_hook_handler' function */
 
 /* Send exit notification to a connection */
