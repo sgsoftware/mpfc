@@ -304,7 +304,7 @@ finally:
 } /* End of 'server_conn_list_dir' function */
 
 /* Execute a command received from client */
-void server_conn_exec_command(server_conn_desc_t *d)
+bool_t server_conn_exec_command(server_conn_desc_t *d)
 {
 	char *cmd_name;
 	param_kind_t param_kind;
@@ -316,7 +316,7 @@ void server_conn_exec_command(server_conn_desc_t *d)
 	if (!server_client_parse_cmd(cmd, &cmd_name, &param_kind, &param))
 	{
 		logger_debug(player_log, "Error parsing command");
-		return;
+		return TRUE;
 	}
 
 	/* Execute */
@@ -418,7 +418,12 @@ void server_conn_exec_command(server_conn_desc_t *d)
 	{
 		plist_clear(player_plist);
 	}
+	else if (!strcmp(cmd_name, "bye"))
+	{
+		return FALSE;
+	}
 	wnd_invalidate(player_wnd);
+	return TRUE;
 } /* End of 'server_conn_exec_command' function */
 
 /* End of 'server_client.c' file */

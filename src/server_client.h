@@ -53,7 +53,7 @@ enum
 void server_conn_client_notify(server_conn_desc_t *d, char nv);
 
 /* Execute a command received from client */
-void server_conn_exec_command(server_conn_desc_t *d);
+bool_t server_conn_exec_command(server_conn_desc_t *d);
 
 #endif
 

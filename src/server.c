@@ -98,6 +98,7 @@ server_conn_desc_t *server_conn_desc_new( int sock )
 void server_conn_desc_free( server_conn_desc_t *conn_desc )
 {
 	pthread_mutex_lock(&server_mutex);
+	close(conn_desc->m_socket);
 	str_free(conn_desc->m_cur_cmd);
 	rd_with_notify_free(conn_desc->m_rdwn);
 
@@ -281,7 +282,10 @@ static void *server_thread( void *p )
 			/* Start the connection thread */
 			conn_desc = server_conn_desc_new(conn_socket);
 			if (!conn_desc)
+			{
+				close(conn_socket);
 				goto failure;
+			}
 			err = pthread_create(&conn_desc->m_tid, NULL,
 					server_conn_thread, conn_desc);
 			if (err)
@@ -296,8 +300,6 @@ static void *server_thread( void *p )
 		failure:
 			if (conn_desc)
 				server_conn_desc_free(conn_desc);
-			if (conn_socket != -1)
-				close(conn_socket);
 			continue;
 		}
 	}
@@ -333,10 +335,11 @@ static void server_conn_notify( server_conn_desc_t *conn, char nv )
 } /* End of 'server_conn_notify_exit' function */
 
 /* Parse and execute input from client */
-void server_conn_parse_input(server_conn_desc_t *d)
+bool_t server_conn_parse_input(server_conn_desc_t *d)
 {
 	int i;
 	char *p;
+	bool_t res = TRUE;
 
 	/* Extract command */
 	for ( i = 0, p = d->m_buf; *p && i < sizeof(d->m_buf); i++, p++ )
@@ -345,13 +348,13 @@ void server_conn_parse_input(server_conn_desc_t *d)
 			continue;
 		if ((*p) == '\n')
 		{
-			server_conn_exec_command(d);
+			res = server_conn_exec_command(d);
 			str_clear(d->m_cur_cmd);
 		}
 		else
 			str_insert_char(d->m_cur_cmd, *p, d->m_cur_cmd->m_len);
 	}
-
+	return res;
 } /* End of 'server_conn_parse_input' function */
 
 /* Connection management thread */
@@ -400,9 +403,12 @@ static void *server_conn_thread( void *p )
 				break;
 			conn_desc->m_buf[sz] = 0;
 
-			server_conn_parse_input(conn_desc);
+			if (!server_conn_parse_input(conn_desc))
+				break;
 		}
 	}
+
+	logger_message(player_log, 0, "Closing connection");
 
 	/* Destroy the connection */
 	server_conn_desc_free(conn_desc);
