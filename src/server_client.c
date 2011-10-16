@@ -414,6 +414,24 @@ bool_t server_conn_exec_command(server_conn_desc_t *d)
 		}
 					
 	}
+	else if (!strcmp(cmd_name, "remove"))
+	{
+		if (param_kind == PARAM_INT)
+		{
+			int pos = param.num_param;
+			plist_move_sel(player_plist, pos, FALSE);
+			plist_rem(player_plist);
+		}
+	}
+	else if (!strcmp(cmd_name, "queue"))
+	{
+		if (param_kind == PARAM_INT)
+		{
+			int pos = param.num_param;
+			plist_move_sel(player_plist, pos, FALSE);
+			player_queue_song();
+		}
+	}
 	else if (!strcmp(cmd_name, "clear_playlist"))
 	{
 		plist_clear(player_plist);

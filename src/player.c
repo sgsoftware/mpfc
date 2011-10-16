@@ -745,8 +745,7 @@ wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action, int repval )
 	/* Queue up a song */
 	else if (!strcasecmp(action, "queue"))
 	{
-		if(num_queued_songs < PLAYER_MAX_ENQUEUED)
-			queued_songs[num_queued_songs++] = player_plist->m_sel_end;
+		player_queue_song();
 	}
 	/* Show help screen */
 	else if (!strcasecmp(action, "help"))
@@ -3522,6 +3521,13 @@ void player_stop( void )
 	player_plist->m_cur_song = was_song;
 	pmng_hook(player_pmng, "player-status");
 } /* End of 'player_stop' function */
+
+/* Queue the selected song */
+void player_queue_song( void )
+{
+	if(num_queued_songs < PLAYER_MAX_ENQUEUED)
+		queued_songs[num_queued_songs++] = player_plist->m_sel_end;
+} /* End of 'player_queue_song' function */
 
 /* End of 'player.c' file */
 

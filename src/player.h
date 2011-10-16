@@ -447,6 +447,9 @@ void player_pause_resume( void );
 /* High-level stop play */
 void player_stop( void );
 
+/* Queue the selected song */
+void player_queue_song( void );
+
 #endif
 
 /* End of 'player.h' file */
