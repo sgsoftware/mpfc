@@ -359,7 +359,7 @@ static char *cue_fix_wrong_file_ext( char *dir, char **name )
 	assert(!ext);
 
 	/* Revert to the original (non-existant) path */
-	strcat(path + dir_len, *name);
+	strcpy(path + dir_len, *name);
 	return path;
 } /* End of 'cue_fix_wrong_file_ext' function */
 
