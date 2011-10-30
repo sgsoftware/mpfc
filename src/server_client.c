@@ -432,6 +432,14 @@ bool_t server_conn_exec_command(server_conn_desc_t *d)
 			player_queue_song();
 		}
 	}
+	else if (!strcmp(cmd_name, "seek"))
+	{
+		if (param_kind == PARAM_INT)
+		{
+			int t = param.num_param;
+			player_seek(t, FALSE);
+		}
+	}
 	else if (!strcmp(cmd_name, "clear_playlist"))
 	{
 		plist_clear(player_plist);

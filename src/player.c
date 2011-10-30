@@ -1498,6 +1498,8 @@ void player_seek( int sec, bool_t rel )
 	player_context->m_cur_time = new_time;
 	wnd_invalidate(player_wnd);
 	logger_debug(player_log, "after player_seek timer is %d", player_context->m_cur_time);
+
+	pmng_hook(player_pmng, "player-status");
 } /* End of 'player_seek' function */
 
 /* Play song */
