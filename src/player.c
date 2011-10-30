@@ -42,6 +42,7 @@
 #include "player.h"
 #include "plist.h"
 #include "pmng.h"
+#include "server.h"
 #include "test.h"
 #include "undo.h"
 #include "util.h"
