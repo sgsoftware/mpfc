@@ -67,6 +67,10 @@ typedef struct tag_pmng_t
 	/* Local hook handler */
 	int m_hook_id;
 	void (*m_hook_handler)(char *hook);
+
+	/* The list of supported media file extensions */
+	char *m_media_file_exts;
+	unsigned m_media_ext_max_len;
 } pmng_t;
 
 /* Initialize plugins */
@@ -166,6 +170,12 @@ void pmng_remove_hook_handler( pmng_t *pmng, int handler_id );
 
 /* Call hook functions */
 void pmng_hook( pmng_t *pmng, char *hook );
+
+/* Start media extensions list iteration */
+char *pmng_first_media_ext( pmng_t *pmng );
+
+/* Get next media extension */
+char *pmng_next_media_ext( char *iter );
 
 #endif
 

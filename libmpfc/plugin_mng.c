@@ -37,6 +37,70 @@
 #include "util.h"
 #include "vfs.h"
 
+/* Build supported media file extensions list */
+static bool_t pmng_fill_media_file_exts( pmng_t *pmng )
+{
+	/* First determine the requires length for the string */
+	int req_len = 1;
+	pmng_iterator_t iter = pmng_start_iteration(pmng, PLUGIN_TYPE_INPUT);
+	for ( ;; )
+	{
+		in_plugin_t *inp = INPUT_PLUGIN(pmng_iterate(&iter));
+		if (!inp)
+			break;
+
+		char formats[128];
+		inp_get_formats(inp, formats, NULL);
+		req_len += strlen(formats) + 1;
+	}
+
+	pmng->m_media_file_exts = (char*)malloc(req_len);
+	if (!pmng->m_media_file_exts)
+		return FALSE;
+	
+	/* Now build the list first by concatenating formats from all plugins
+	 * and replacing ';' with null chars */
+	char *p = pmng->m_media_file_exts;
+	iter = pmng_start_iteration(pmng, PLUGIN_TYPE_INPUT);
+	for ( ;; )
+	{
+		in_plugin_t *inp = INPUT_PLUGIN(pmng_iterate(&iter));
+		if (!inp)
+			break;
+
+		char formats[128];
+		inp_get_formats(inp, formats, NULL);
+		if (!formats[0])
+			continue;
+
+		int i;
+		for ( int i = 0; formats[i]; i++ )
+		{
+			char c = formats[i];
+			if (c == ';')
+				c = 0;
+			(*p++) = c;
+		}
+		(*p++) = 0;
+	}
+	(*p++) = 0;
+
+	/* Print extensions */
+	logger_message(pmng->m_log, 1, _("Supported media file extensions:"));
+	for ( char *i = pmng_first_media_ext(pmng); i; 
+			i = pmng_next_media_ext(i) )
+	{
+		logger_message(pmng->m_log, 1, "%s", i);
+
+		size_t len = strlen(i);
+		if (pmng->m_media_ext_max_len < len)
+			pmng->m_media_ext_max_len = len;
+	}
+	logger_message(pmng->m_log, 1, "");
+
+	return TRUE;
+} /* End of 'pmng_fill_media_file_exts' function */
+
 /* Initialize plugins */
 pmng_t *pmng_init( cfg_node_t *list, logger_t *log, wnd_t *wnd_root )
 {
@@ -58,6 +122,9 @@ pmng_t *pmng_init( cfg_node_t *list, logger_t *log, wnd_t *wnd_root )
 		return NULL;
 	}
 
+	/* Fill m_media_file_exts */
+	pmng_fill_media_file_exts(pmng);
+
 	/* Autostart general plugins */
 	pmng_autostart_general(pmng);
 	return pmng;
@@ -70,6 +137,9 @@ void pmng_free( pmng_t *pmng )
 
 	if (pmng == NULL)
 		return;
+
+	if (pmng->m_media_file_exts)
+		free(pmng->m_media_file_exts);
 
 	for ( i = 0; i < pmng->m_num_plugins; i ++ )
 		plugin_free(pmng->m_plugins[i]);
@@ -534,6 +604,24 @@ void pmng_hook( pmng_t *pmng, char *hook )
 	if (pmng->m_hook_handler)
 		pmng->m_hook_handler(hook);
 } /* End of 'pmng_hook' function */
+
+/* Start media extensions list iteration */
+char *pmng_first_media_ext( pmng_t *pmng )
+{
+	char *res = pmng->m_media_file_exts;
+	if (!(*res))
+		return NULL; /* Empty list */
+	return res;
+} /* End of 'pmng_first_media_exts' function */
+
+/* Get next media extension */
+char *pmng_next_media_ext( char *iter )
+{
+	char *next = strchr(iter, 0) + 1;
+	if (!(*next))
+		return NULL; /* End of the list */
+	return next;
+} /* End of 'pmng_next_media_exts' function */
 
 /* End of 'pmng.c' file */
 

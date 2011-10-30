@@ -303,6 +303,66 @@ int cue_stat( char *name, struct stat *sb )
 	return stat(name, sb);
 } /* End of 'cue_stat' function */
 
+/* Cue sheets often have a .wav file specified
+ * while actually relating to an encoded file
+ * Try to fix this.
+ * By the way return full name */
+static char *cue_fix_wrong_file_ext( char *dir, char **name )
+{
+	size_t dir_len = strlen(dir) + 1; /* +1 means the additional '/' */
+	size_t name_len = strlen(*name);
+
+	/* Buid full path */
+	char *path = (char*)malloc(dir_len + name_len + 
+			cue_pmng->m_media_ext_max_len + 1);
+	if (!path)
+		return NULL;
+	sprintf(path, "%s/%s", dir, *name);
+
+	/* File exists */
+	struct stat st;
+	if (!stat(path, &st))
+		return path;
+
+	/* Find extension start */
+	int ext_pos = name_len - 1;
+	for ( ; ext_pos >= 0; ext_pos-- )
+	{
+		/* No extension found */
+		if ((*name)[ext_pos] == '/')
+		{
+			ext_pos = -1;
+			break;
+		}
+		if ((*name)[ext_pos] == '.')
+			break;
+	}
+	if (ext_pos < 0)
+		return path;
+	ext_pos++;
+
+	/* Try supported extensions */
+	char *ext_start = path + dir_len + ext_pos;
+	char *ext = pmng_first_media_ext(cue_pmng);
+	for ( ; ext; ext = pmng_next_media_ext(ext) )
+	{
+		/* Try this extension */
+		strcpy(ext_start, ext);
+		if (!stat(path, &st))
+		{
+			/* Replace extension in the name */
+			free(*name);
+			(*name) = strdup(path + dir_len);
+			return path;
+		}
+	}
+	assert(!ext);
+
+	/* Revert to the original (non-existant) path */
+	strcat(path + dir_len, *name);
+	return path;
+} /* End of 'cue_fix_wrong_file_ext' function */
+
 /* Redirect song */
 char *cue_redirect( char *filename, inp_redirect_params_t *rp )
 {
@@ -311,7 +371,6 @@ char *cue_redirect( char *filename, inp_redirect_params_t *rp )
 	int track_num;
 	cue_sheet_t *cs = NULL;
 	cue_track_t *track;
-	char redir_name[MAX_FILE_NAME];
 
 	logger_debug(cue_log, "cue: cue_redirect %s", filename);
 
@@ -336,8 +395,8 @@ char *cue_redirect( char *filename, inp_redirect_params_t *rp )
 	track = cs->m_tracks[track_num];
 
 	/* Create song object */
-	snprintf(redir_name, sizeof(redir_name), "%s/%s", 
-			dirname(cue_name), cs->m_file_name);
+	char *dir = dirname(cue_name);
+	char *redir_name = cue_fix_wrong_file_ext(dir, &cs->m_file_name);
 	logger_debug(cue_log, "cue: redirection name is %s", redir_name);
 
 	/* Set redirection parameters */
@@ -354,7 +413,7 @@ char *cue_redirect( char *filename, inp_redirect_params_t *rp )
 	/* Free memory */
 	cue_sheet_free(cs);
 	free(cue_name);
-	return strdup(redir_name);
+	return redir_name;
 
 fail:
 	if (cs != NULL)
