@@ -69,6 +69,8 @@ plugin_t *plugin_init( pmng_t *pmng, char *name, plugin_type_t type, int size,
 		prefix = "plugins.charset";
 	else if (type == PLUGIN_TYPE_GENERAL)
 		prefix = "plugins.general";
+	else if (type == PLUGIN_TYPE_PLIST)
+		prefix = "plugins.plist";
 	else
 	{
 		plugin_free(p);

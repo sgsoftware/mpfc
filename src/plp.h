@@ -79,7 +79,7 @@ typedef struct tag_plist_plugin_t
 
 /* Helper macros */
 #define PLIST_PLUGIN(p) ((plist_plugin_t *)p)
-#define PLIST_DATA(pd) ((plist_data_t *)pd)
+#define PLIST_DATA(pd) ((plp_data_t *)pd)
 
 /* Initialize playlist plugin */
 plugin_t *plp_init( char *name, struct tag_pmng_t *pmng );

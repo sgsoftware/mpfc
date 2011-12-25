@@ -305,6 +305,7 @@ bool_t pmng_load_plugins( pmng_t *pmng )
 				{ PLUGIN_TYPE_OUTPUT, "output" },
 				{ PLUGIN_TYPE_EFFECT, "effect" },
 				{ PLUGIN_TYPE_CHARSET, "charset" },
+				{ PLUGIN_TYPE_PLIST, "plist" },
 				{ PLUGIN_TYPE_GENERAL, "general" } };
 	int num_types, i;
 	if (pmng == NULL)
@@ -361,6 +362,8 @@ void pmng_glob_handler( vfs_file_t *file, void *data )
 		p = csp_init(name, pmng);
 	else if (type == PLUGIN_TYPE_GENERAL)
 		p = genp_init(name, pmng);
+	else if (type == PLUGIN_TYPE_PLIST)
+		p = plp_init(name, pmng);
 	if (p == NULL)
 		return;
 

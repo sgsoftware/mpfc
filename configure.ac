@@ -187,6 +187,28 @@ AC_ARG_ENABLE(oss,
 [	--disable-oss		Disable oss output plugin [default=enabled]],,
 		enable_oss="yes")
 
+# Stuff for m3u plugin
+AC_ARG_ENABLE(m3u, 
+[	--disable-m3u		Disable m3u playlist plugin [default=enabled]],,
+		enable_m3u="yes")
+if test "x$enable_m3u" = xyes; then
+	LIBS_save=$LIBS
+	LIBS=$LIBS_save
+else
+	AC_MSG_RESULT([*** m3u plugin disabled per user request ***])
+fi
+
+# Stuff for pls plugin
+AC_ARG_ENABLE(pls, 
+[	--disable-pls		Disable pls playlist plugin [default=enabled]],,
+		enable_pls="yes")
+if test "x$enable_pls" = xyes; then
+	LIBS_save=$LIBS
+	LIBS=$LIBS_save
+else
+	AC_MSG_RESULT([*** pls plugin disabled per user request ***])
+fi
+
 # Choose input plugins
 ALL_INPUT_PLUGINS="audiocd mp3 ogg wav flac cue"
 for plugin in $ALL_INPUT_PLUGINS; do
@@ -252,11 +274,25 @@ for plugin in $ALL_GENERAL_PLUGINS; do
 	GENERAL_SUMMARY="$GENERAL_SUMMARY\n$plugin: $SUMMARY_MSG"
 done
 
+# Choose playlist plugins
+ALL_PLIST_PLUGINS="m3u pls"
+for plugin in $ALL_PLIST_PLUGINS; do
+	name="\$enable_$plugin"
+	value=`eval echo $name`
+	SUMMARY_MSG="No"
+	if test "x${value}" = xyes; then
+		PLIST_PLUGINS="$PLIST_PLUGINS $plugin"
+		SUMMARY_MSG="Yes"
+	fi
+	PLIST_SUMMARY="$PLIST_SUMMARY\n$plugin: $SUMMARY_MSG"
+done
+
 AC_SUBST(GENERAL_PLUGINS)
 AC_SUBST(CHARSET_PLUGINS)
 AC_SUBST(EFFECT_PLUGINS)
 AC_SUBST(INPUT_PLUGINS)
 AC_SUBST(OUTPUT_PLUGINS)
+AC_SUBST(PLIST_PLUGINS)
 
 AC_OUTPUT(Makefile \
 		  doc/Makefile \
@@ -280,6 +316,9 @@ AC_OUTPUT(Makefile \
 		  plugins/output/alsa/Makefile \
 		  plugins/output/disk_writer/Makefile \
 		  plugins/output/oss/Makefile \
+		  plugins/plist/Makefile \
+		  plugins/plist/m3u/Makefile \
+		  plugins/plist/pls/Makefile \
 		  po/Makefile \
 		  mpfc.pc)
 
@@ -294,3 +333,4 @@ echo -e "Output plugins:$OUTPUT_SUMMARY\n"
 echo -e "Effect plugins:$EFFECT_SUMMARY\n"
 echo -e "Charset plugins:$CHARSET_SUMMARY\n"
 echo -e "General plugins:$GENERAL_SUMMARY\n"
+echo -e "Playlist plugins:$PLIST_SUMMARY\n"
