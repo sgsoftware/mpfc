@@ -39,6 +39,7 @@ typedef enum
 	PLUGIN_TYPE_EFFECT = 1 << 2,
 	PLUGIN_TYPE_CHARSET = 1 << 3,
 	PLUGIN_TYPE_GENERAL = 1 << 4,
+	PLUGIN_TYPE_PLIST = 1 << 5,
 	PLUGIN_TYPE_ALL = 0xFFFFFF
 } plugin_type_t;
 

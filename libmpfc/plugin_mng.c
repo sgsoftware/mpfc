@@ -623,5 +623,42 @@ char *pmng_next_media_ext( char *iter )
 	return next;
 } /* End of 'pmng_next_media_exts' function */
 
+/* Check if file is a play list managed by a plugin */
+plist_plugin_t *pmng_is_playlist( pmng_t *pmng, char *format )
+{
+	if (!pmng)
+		return NULL;
+
+	logger_debug(pmng->m_log, "pmng_is_playlist(%s)", format);
+
+	pmng_iterator_t iter = pmng_start_iteration(pmng, PLUGIN_TYPE_PLIST);
+	for ( ;; )
+	{
+		char formats[128], ext[10];
+		int j, k = 0;
+		plist_plugin_t *plp = PLIST_PLUGIN(pmng_iterate(&iter));
+		if (!plp)
+			break;
+
+		plp_get_formats(plp, formats, NULL);
+		for ( j = 0;; ext[k ++] = formats[j ++] )
+		{
+			if (formats[j] == 0 || formats[j] == ';')
+			{
+				ext[k] = 0;
+				if (!strcasecmp(ext, format))
+				{
+					logger_debug(pmng->m_log, "extension matches");
+					return plp;
+				}
+				k = 0;
+			}
+			if (!formats[j])
+				break;
+		}
+	}
+	return NULL;
+} /* End of 'pmng_is_playlist' function */
+
 /* End of 'pmng.c' file */
 

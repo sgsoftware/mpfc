@@ -32,6 +32,7 @@
 #include "logger.h"
 #include "main_types.h"
 #include "outp.h"
+#include "plp.h"
 #include "plugin.h"
 #include "vfs.h"
 #include "wnd.h"
@@ -176,6 +177,9 @@ char *pmng_first_media_ext( pmng_t *pmng );
 
 /* Get next media extension */
 char *pmng_next_media_ext( char *iter );
+
+/* Check if file is a play list managed by a plugin */
+plist_plugin_t *pmng_is_playlist( pmng_t *pmng, char *format );
 
 #endif
 
