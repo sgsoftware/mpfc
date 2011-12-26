@@ -1485,8 +1485,6 @@ void player_seek( int sec, bool_t rel )
 		return;
 
 	s = player_plist->m_list[player_plist->m_cur_song];
-	if (s->m_redirect != NULL)
-		s = s->m_redirect;
 
 	new_time = (rel ? (player_context->m_cur_time + sec) : sec);
 	if (new_time < 0)
@@ -1828,7 +1826,7 @@ void *player_thread( void *arg )
 
 		/* Play track */
 		s = player_plist->m_list[player_plist->m_cur_song];
-		song_played = (s->m_redirect == NULL) ? s : s->m_redirect;
+		song_played = s;
 		//player_context->m_status = PLAYER_STATUS_PLAYING;
 		player_end_track = FALSE;
 	

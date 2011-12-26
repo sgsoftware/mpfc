@@ -39,9 +39,7 @@ song_t *song_new( vfs_file_t *file, char *title, int len )
 {
 	song_t *song;
 	in_plugin_t *inp;
-	char *redir_name;
 	char *filename = file->m_name;
-	inp_redirect_params_t rp;
 
 	/* Choose appropriate input plugin */
 	inp = file->m_inp;
@@ -79,25 +77,6 @@ song_t *song_new( vfs_file_t *file, char *title, int len )
 	{
 		song->m_title = str_new(title);
 		song->m_default_title = strdup(title);
-	}
-	redir_name = inp_redirect(song->m_inp, song->m_file_name, &rp);
-	if (redir_name != NULL)
-	{
-		logger_debug(player_log, "song %s is being redirected to %s", 
-				song->m_file_name, redir_name);
-
-		vfs_file_t file;
-		vfs_file_desc_init(NULL, &file, redir_name, NULL);
-		song->m_redirect = song_new(&file, NULL, 0);
-		free(redir_name);
-		if (song->m_redirect == NULL)
-		{
-			song_add_ref(song);
-			song_free(song);
-			return NULL;
-		}
-		song->m_redirect->m_start_time = rp.m_start_time;
-		song->m_redirect->m_end_time = rp.m_end_time;
 	}
 	return song_add_ref(song);
 } /* End of 'song_new' function */
@@ -160,13 +139,6 @@ void song_update_info( song_t *song )
 				(song->m_len - song->m_start_time);
 	}
 
-	/* Get proper length in case of redirected song */
-	if (song->m_redirect != NULL)
-	{
-		song_update_info(song->m_redirect);
-		song->m_len = song->m_redirect->m_len;
-	}
-	
 	song_update_title(song);
 	song->m_flags &= (~SONG_INFO_READ);
 	song_unlock(song);
@@ -273,10 +245,6 @@ void song_write_info( song_t *s )
 /* Get input plugin */
 in_plugin_t *song_get_inp( song_t *song, file_t **fd )
 {
-	/* Get plugin from redirect song if it exists */
-	if (song->m_redirect != NULL)
-		return song_get_inp(song->m_redirect, fd);
-
 	/* Do nothing if we already no plugin */
 	if (fd != NULL)
 		(*fd) = NULL;

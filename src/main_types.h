@@ -74,9 +74,6 @@ typedef struct tag_song_t
 	/* Default title (used when no info is found) */
 	char *m_default_title;
 
-	/* Song we are redirected to */
-	struct tag_song_t *m_redirect;
-
 	/* Input plugin being used to play this song */
 	in_plugin_t *m_inp;
 
