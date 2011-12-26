@@ -103,6 +103,7 @@ bool_t plist_add( plist_t *pl, char *filename )
 typedef struct
 {
 	plist_t *pl;
+	char *m_pl_name;
 	int num_added;
 } plist_cb_ctx_t;
 
@@ -111,9 +112,25 @@ static void plist_add_playlist_item( void *ctxv, char *name, song_metadata_t *me
 {
 	plist_cb_ctx_t *ctx = (plist_cb_ctx_t *)ctxv;
 
+	/* Get full path relative to the play list if it is not absolute */
+	char *full_name = name;
+	if ((*name) != '/')
+	{
+		full_name = (char*)malloc(strlen(ctx->m_pl_name) + strlen(name) + 2);
+		strcpy(full_name, ctx->m_pl_name);
+		char *sep = strrchr(full_name, '/');
+		if (sep)
+			strcpy(sep + 1, name);
+		else
+			strcpy(full_name, name);
+	}
+
 	vfs_file_t desc;
-	vfs_file_desc_init(player_vfs, &desc, name, NULL);
+	vfs_file_desc_init(player_vfs, &desc, full_name, NULL);
 	ctx->num_added += plist_add_one_file(ctx->pl, &desc, metadata, -1);
+
+	if (full_name != name)
+		free(full_name);
 } /* End of 'plist_add_playlist_item' function */
 
 /* Add single file to play list */
@@ -128,7 +145,7 @@ int plist_add_one_file( plist_t *pl, vfs_file_t *file, song_metadata_t *metadata
 	plist_plugin_t *plp = pmng_is_playlist(player_pmng, file->m_extension);
 	if (plp)
 	{
-		plist_cb_ctx_t ctx = { pl, 0 };
+		plist_cb_ctx_t ctx = { pl, file->m_name, 0 };
 		plp_status_t status = plp_for_each_item(plp, file->m_name,
 				&ctx, plist_add_playlist_item);
 		if (status != PLP_STATUS_OK)
