@@ -214,11 +214,6 @@ in_plugin_t *pmng_search_format( pmng_t *pmng, char *filename, char *format )
 		inp = INPUT_PLUGIN(pmng_iterate(&iter));
 		if (inp == NULL)
 			break;
-		if (inp_is_our_file(inp, filename))
-		{
-			logger_debug(pmng->m_log, "is our file");
-			return inp;
-		}
 		if (!(*format))
 			continue;
 		inp_get_formats(inp, formats, NULL);

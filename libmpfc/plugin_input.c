@@ -311,15 +311,6 @@ plugin_mixer_type_t inp_get_mixer_type( in_plugin_t *p )
 		return PLUGIN_MIXER_DEFAULT;
 } /* End of 'inp_get_mixer_type' function */
 
-/* Check file type */
-bool_t inp_is_our_file( in_plugin_t *p, char *filename )
-{
-	if (p != NULL && p->m_pd.m_is_our_file != NULL)
-		return p->m_pd.m_is_our_file(filename);
-	else
-		return FALSE;
-} /* End of 'inp_is_our_file' function */
-
 /* Get plugin flags */
 dword inp_get_plugin_flags( in_plugin_t *p )
 {

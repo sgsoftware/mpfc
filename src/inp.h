@@ -132,10 +132,8 @@ typedef struct
 	/* Get type of mixer used by this plugin */
 	plugin_mixer_type_t (*m_get_mixer_type)( void );
 
-	/* Check file type */
-	bool_t (*m_is_our_file)( char *filename );
-
-	byte m_reserved2[4];
+	/* This used to be some obsolete stuff */
+	byte m_reserved2[8];
 
 	/* Update plugin flags (called on start of every play) */
 	dword (*m_get_plugin_flags)( void );
@@ -251,9 +249,6 @@ int inp_vfs_stat( in_plugin_t *p, char *name, struct stat *sb );
 
 /* Get mixer type */
 plugin_mixer_type_t inp_get_mixer_type( in_plugin_t *p );
-
-/* Check file type */
-bool_t inp_is_our_file( in_plugin_t *p, char *filename );
 
 /* Update plugin flags */
 dword inp_get_plugin_flags( in_plugin_t *p );
