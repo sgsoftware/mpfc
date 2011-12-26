@@ -142,9 +142,17 @@ void song_update_info( song_t *song )
 	}
 
 	song_lock(song);
-	si_free(song->m_info);
-	song->m_info = inp_get_info(song->m_inp, song->m_file_name, 
+
+	song_info_t *new_info = inp_get_info(song->m_inp, song->m_file_name, 
 			&song->m_len);
+	if (!(song->m_flags & SONG_STATIC_INFO))
+	{
+		si_free(song->m_info);
+		song->m_info = new_info;
+	}
+	else if (new_info)
+		si_free(new_info);
+
 	if (song->m_start_time > -1)
 	{
 		song->m_len = (song->m_end_time > -1) ? 

@@ -158,6 +158,21 @@ int plist_add_one_file( plist_t *pl, vfs_file_t *file, song_metadata_t *metadata
 		plist_unlock(pl);
 		return 0;
 	}
+
+	/* Slice song */
+	if (metadata->m_start_time >= 0)
+	{
+		song->m_start_time = metadata->m_start_time;
+		song->m_end_time = metadata->m_end_time;
+	}
+
+	/* Set song info */
+	if (metadata->m_song_info)
+	{
+		song->m_info = metadata->m_song_info;
+		song->m_flags |= SONG_STATIC_INFO;
+	}
+
 	if (where < 0 || where >= pl->m_len)  
 		where = pl->m_len;
 	memmove(&pl->m_list[where + 1], &pl->m_list[where], 
@@ -180,7 +195,7 @@ int plist_add_one_file( plist_t *pl, vfs_file_t *file, song_metadata_t *metadata
 	plist_unlock(pl);
 
 	/* Schedule song for setting its info and length */
-	if (metadata->m_title == NULL && metadata->m_song_info == NULL)
+	if (!metadata->m_title)
 		pl->m_list[where]->m_flags |= SONG_SCHEDULE;
 	return 1;
 } /* End of 'plist_add_one_file' function */

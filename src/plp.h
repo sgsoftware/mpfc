@@ -36,9 +36,11 @@ typedef struct
 	char *m_title;
 	int m_len;
 	struct tag_song_info_t *m_song_info;
+	int m_start_time;
+	int m_end_time;
 } song_metadata_t;
 
-#define SONG_METADATA_EMPTY { NULL, -1, NULL }
+#define SONG_METADATA_EMPTY { NULL, -1, NULL, -1, -1 }
 
 /* Callback function which is called for each play list item */
 typedef void (*plp_func_t)( void *ctx, char *name, song_metadata_t *metadata );

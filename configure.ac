@@ -210,7 +210,7 @@ else
 fi
 
 # Choose input plugins
-ALL_INPUT_PLUGINS="audiocd mp3 ogg wav flac cue"
+ALL_INPUT_PLUGINS="audiocd mp3 ogg wav flac"
 for plugin in $ALL_INPUT_PLUGINS; do
 	name="\$enable_$plugin"
 	value=`eval echo $name`
@@ -275,7 +275,7 @@ for plugin in $ALL_GENERAL_PLUGINS; do
 done
 
 # Choose playlist plugins
-ALL_PLIST_PLUGINS="m3u pls"
+ALL_PLIST_PLUGINS="m3u pls cue"
 for plugin in $ALL_PLIST_PLUGINS; do
 	name="\$enable_$plugin"
 	value=`eval echo $name`
@@ -311,7 +311,6 @@ AC_OUTPUT(Makefile \
 		  plugins/input/ogg/Makefile \
 		  plugins/input/wav/Makefile \
 		  plugins/input/flac/Makefile \
-		  plugins/input/cue/Makefile \
 		  plugins/output/Makefile \
 		  plugins/output/alsa/Makefile \
 		  plugins/output/disk_writer/Makefile \
@@ -319,6 +318,7 @@ AC_OUTPUT(Makefile \
 		  plugins/plist/Makefile \
 		  plugins/plist/m3u/Makefile \
 		  plugins/plist/pls/Makefile \
+		  plugins/plist/cue/Makefile \
 		  po/Makefile \
 		  mpfc.pc)
 

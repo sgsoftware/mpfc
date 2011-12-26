@@ -37,7 +37,8 @@ typedef enum
 {
 	SONG_SCHEDULE = 1 << 0,
 	SONG_INFO_READ = 1 << 1,
-	SONG_INFO_WRITE = 1 << 2
+	SONG_INFO_WRITE = 1 << 2,
+	SONG_STATIC_INFO = 1 << 3
 } song_flags_t;
 
 /* Song type */
