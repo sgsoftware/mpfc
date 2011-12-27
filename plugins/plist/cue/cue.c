@@ -30,8 +30,8 @@
 #include <sys/types.h>
 #include <libgen.h>
 #include <dirent.h>
+#include <libcue/libcue.h>
 #include "types.h"
-#include "cue_sheet.h"
 #include "plp.h"
 #include "pmng.h"
 #include "util.h"
@@ -121,44 +121,52 @@ static char *cue_fix_wrong_file_ext( char *dir, char **name )
 plp_status_t cue_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 {
 	/* Load cue sheet */
-	cue_sheet_t *cs = cue_sheet_parse(pl_name);
-	if (cs == NULL)
+	FILE *fd = fopen(pl_name, "rt");
+	if (!fd)
 	{
 		logger_error(cue_log, 0, "cue: failed to load cue sheet %s", pl_name);
 		return PLP_STATUS_FAILED;
 	}
-
-	/* Redirect name if needed */
-	char *dir = dirname(pl_name);
-	char *redir_name = cue_fix_wrong_file_ext(dir, &cs->m_file_name);
-	logger_debug(cue_log, "cue: redirection name is %s", redir_name);
+	Cd *cd = cue_parse_file(fd);
+	if (!cd)
+	{
+		logger_error(cue_log, 0, "cue: failed to load cue sheet %s", pl_name);
+		fclose(fd);
+		return PLP_STATUS_FAILED;
+	}
+	fclose(fd);
 
 	/* Handle tracks */
-	cue_track_t *master = cs->m_tracks[0];
-	for ( int track_num = 1; track_num < cs->m_num_tracks; track_num++ )
+	int num_tracks = cd_get_ntrack(cd);
+	for ( int i = 1; i <= num_tracks; ++i )
 	{
-		cue_track_t *track = cs->m_tracks[track_num];
-
-		/* Make info */
-		song_info_t *si = si_new();
-		si_set_album(si, master->m_title);
-		si_set_artist(si, track->m_performer);
-		si_set_name(si, track->m_title);
-
-		char track_num_str[10];
-		snprintf(track_num_str, sizeof(track_num_str), "%02d", track_num);
-		si_set_track(si, track_num_str);
+		Track *track = cd_get_track(cd, i);
 
 		song_metadata_t metadata = SONG_METADATA_EMPTY;
-		metadata.m_start_time = track->m_indices[1] / 75;
-		metadata.m_end_time = (track_num < cs->m_num_tracks - 1) ? 
-			cs->m_tracks[track_num + 1]->m_indices[1] / 75 : -1;
+
+		/* Set bounds */
+		long start = track_get_start(track);
+		long len = track_get_length(track);
+		metadata.m_start_time = start / 75;
+		metadata.m_end_time = (len == 0) ? -1 : (start + len) / 75;
+
+		/* Set song info */
+		song_info_t *si = si_new();
+		si_set_album(si, cdtext_get(PTI_TITLE, cd_get_cdtext(cd)));
+		si_set_year(si, rem_get(REM_DATE, cd_get_rem(cd)));
+		si_set_artist(si, cdtext_get(PTI_PERFORMER, track_get_cdtext(track)));
+		si_set_name(si, cdtext_get(PTI_TITLE, track_get_cdtext(track)));
+
+		char track_num_str[10];
+		snprintf(track_num_str, sizeof(track_num_str), "%02d", i);
+		si_set_track(si, track_num_str);
 		metadata.m_song_info = si;
-		f(ctx, redir_name, &metadata);
+
+		f(ctx, track_get_filename(track), &metadata);
 	}
 
 	/* Free memory */
-	cue_sheet_free(cs);
+	cd_delete(cd);
 	return PLP_STATUS_OK;
 } /* End of 'cue_for_each_item' function */
 

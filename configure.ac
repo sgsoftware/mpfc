@@ -4,6 +4,9 @@ AC_PROG_CC_C99
 AC_C_BIGENDIAN
 AC_PROG_LIBTOOL
 
+m4_include([m4/pkg.m4])
+PKG_PROG_PKG_CONFIG
+
 AM_CONFIG_HEADER(mpfc-config.h)
 AM_GNU_GETTEXT
 AM_GNU_GETTEXT_VERSION(0.16.1)
@@ -125,6 +128,13 @@ AC_ARG_ENABLE(cue,
 		enable_cue="yes")
 if test "x$enable_cue" = xyes; then
 	LIBS_save=$LIBS
+	LIBS=$LIBS_save
+
+	# Check for libcue
+	LIBS_save=$LIBS
+	CFLAGS_save=$CFLAGS
+	PKG_CHECK_MODULES([LIBCUE], [libcue])
+	CFLAGS=$CFLAGS_save
 	LIBS=$LIBS_save
 else
 	AC_MSG_RESULT([*** cue plugin disabled per user request ***])
