@@ -107,6 +107,48 @@ typedef struct
 	int num_added;
 } plist_cb_ctx_t;
 
+/* Cue sheets often have a .wav file specified
+ * while actually relating to an encoded file
+ * Try to fix this.
+ * By the way return full name */
+static bool_t plist_fix_wrong_file_ext( char *name )
+{
+	/* Find extension start */
+	int ext_pos = strlen(name) - 1;
+	for ( ; ext_pos >= 0; ext_pos-- )
+	{
+		/* No extension found */
+		if (name[ext_pos] == '/')
+		{
+			ext_pos = -1;
+			break;
+		}
+		if (name[ext_pos] == '.')
+			break;
+	}
+	if (ext_pos < 0)
+		return FALSE;
+	ext_pos++; /* after the dot */
+
+	/* Try supported extensions */
+	char *ext_start = name + ext_pos;
+	char *ext = pmng_first_media_ext(player_pmng);
+	for ( ; ext; ext = pmng_next_media_ext(ext) )
+	{
+		/* Try this extension */
+		strcpy(ext_start, ext);
+
+		struct stat st;
+		if (!stat(name, &st))
+		{
+			return TRUE;
+		}
+	}
+	assert(!ext);
+
+	return FALSE;
+} /* End of 'cue_fix_wrong_file_ext' function */
+
 /* Playlist item adding callback */
 static void plist_add_playlist_item( void *ctxv, char *name, song_metadata_t *metadata )
 {
@@ -116,7 +158,8 @@ static void plist_add_playlist_item( void *ctxv, char *name, song_metadata_t *me
 	char *full_name = name;
 	if ((*name) != '/')
 	{
-		full_name = (char*)malloc(strlen(ctx->m_pl_name) + strlen(name) + 2);
+		full_name = (char*)malloc(strlen(ctx->m_pl_name) + strlen(name) +
+				player_pmng->m_media_ext_max_len + 2);
 		strcpy(full_name, ctx->m_pl_name);
 		char *sep = strrchr(full_name, '/');
 		if (sep)
@@ -125,10 +168,29 @@ static void plist_add_playlist_item( void *ctxv, char *name, song_metadata_t *me
 			strcpy(full_name, name);
 	}
 
+	/* Fix extension if it is incorrect */
+	struct stat st;
+	if (stat(full_name, &st))
+	{
+		/* Enlarge memory for extension probing.
+		 * But only if it was not allocated in the abs path handling block
+		 * because there we already take this into account */
+		if (full_name == name)
+		{
+			full_name = (char*)malloc(strlen(name) +
+					player_pmng->m_media_ext_max_len + 1);
+		}
+
+		/* If neither extension worked don't add this item */
+		if (!plist_fix_wrong_file_ext(full_name))
+			goto finish;
+	}
+
 	vfs_file_t desc;
 	vfs_file_desc_init(player_vfs, &desc, full_name, NULL);
 	ctx->num_added += plist_add_one_file(ctx->pl, &desc, metadata, -1);
 
+finish:
 	if (full_name != name)
 		free(full_name);
 } /* End of 'plist_add_playlist_item' function */

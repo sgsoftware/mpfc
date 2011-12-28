@@ -57,66 +57,6 @@ void cue_get_formats( char *extensions, char *content_type )
 		strcpy(content_type, "");
 } /* End of 'cue_get_formats' function */
 
-/* Cue sheets often have a .wav file specified
- * while actually relating to an encoded file
- * Try to fix this.
- * By the way return full name */
-static char *cue_fix_wrong_file_ext( char *dir, char **name )
-{
-	size_t dir_len = strlen(dir) + 1; /* +1 means the additional '/' */
-	size_t name_len = strlen(*name);
-
-	/* Buid full path */
-	char *path = (char*)malloc(dir_len + name_len + 
-			cue_pmng->m_media_ext_max_len + 1);
-	if (!path)
-		return NULL;
-	sprintf(path, "%s/%s", dir, *name);
-
-	/* File exists */
-	struct stat st;
-	if (!stat(path, &st))
-		return path;
-
-	/* Find extension start */
-	int ext_pos = name_len - 1;
-	for ( ; ext_pos >= 0; ext_pos-- )
-	{
-		/* No extension found */
-		if ((*name)[ext_pos] == '/')
-		{
-			ext_pos = -1;
-			break;
-		}
-		if ((*name)[ext_pos] == '.')
-			break;
-	}
-	if (ext_pos < 0)
-		return path;
-	ext_pos++;
-
-	/* Try supported extensions */
-	char *ext_start = path + dir_len + ext_pos;
-	char *ext = pmng_first_media_ext(cue_pmng);
-	for ( ; ext; ext = pmng_next_media_ext(ext) )
-	{
-		/* Try this extension */
-		strcpy(ext_start, ext);
-		if (!stat(path, &st))
-		{
-			/* Replace extension in the name */
-			free(*name);
-			(*name) = strdup(path + dir_len);
-			return path;
-		}
-	}
-	assert(!ext);
-
-	/* Revert to the original (non-existant) path */
-	strcpy(path + dir_len, *name);
-	return path;
-} /* End of 'cue_fix_wrong_file_ext' function */
-
 /* Parse playlist and handle its contents */
 plp_status_t cue_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 {
