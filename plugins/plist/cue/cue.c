@@ -94,7 +94,7 @@ plp_status_t cue_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 		song_info_t *si = si_new();
 		si_set_album(si, cdtext_get(PTI_TITLE, cd_get_cdtext(cd)));
 		si_set_year(si, rem_get(REM_DATE, cd_get_rem(cd)));
-		si_set_artist(si, cdtext_get(PTI_PERFORMER, track_get_cdtext(track)));
+		si_set_artist(si, cdtext_get(PTI_PERFORMER, cd_get_cdtext(cd)));
 		si_set_name(si, cdtext_get(PTI_TITLE, track_get_cdtext(track)));
 
 		char track_num_str[10];
