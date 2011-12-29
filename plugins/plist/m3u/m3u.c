@@ -20,6 +20,7 @@
  * MA 02111-1307, USA.
  */
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -47,6 +48,20 @@ void m3u_get_formats( char *extensions, char *content_type )
 		strcpy(content_type, "");
 } /* End of 'm3u_get_formats' function */
 
+/* Read a number from m3u line */
+static int m3u_read_int( char **s )
+{
+	int res = 0;
+	while (isdigit(**s))
+	{
+		int d = (**s) - '0';
+		++(*s);
+		res *= 10;
+		res += d;
+	}
+	return res;
+} /* End of 'm3u_read_int' function */
+
 /* Parse playlist and handle its contents */
 plp_status_t m3u_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 {
@@ -71,9 +86,6 @@ plp_status_t m3u_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 	/* Read file contents */
 	while (!file_eof(fd))
 	{
-		char len[10], *title;
-		int i, j, song_len, str_len;
-
 		/* Read file name if no extended info is supplied */
 		if (!ext_info)
 		{
@@ -92,14 +104,18 @@ plp_status_t m3u_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 		if (file_eof(fd) || strlen(str) < 10)
 			break;
 
-		/* Extract song length from string read */
-		for ( i = 8, j = 0; str[i] && str[i] != ',' && j < (sizeof(len) - 1); 
-				i ++, j ++ )
-			len[j] = str[i];
-		len[j] = 0;
-		if (str[i])
-			song_len = atoi(len);
-		title = strdup(&str[i + 1]);
+		/* Extract song length and starting position from string read */
+		char *s = &str[8]; /* skip '#EXTINF:' */
+		int song_len = m3u_read_int(&s);
+		int song_start = -1;
+		if ((*s) == '-')
+		{
+			++s;
+			song_start = m3u_read_int(&s);
+		}
+		if ((*s) == ',')
+			++s;
+		char *title = strdup(s);
 		util_del_nl(title, title);
 
 		/* Read song file name */
@@ -109,6 +125,11 @@ plp_status_t m3u_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 		song_metadata_t metadata = SONG_METADATA_EMPTY;
 		metadata.m_title = title;
 		metadata.m_len = song_len;
+		if (song_start >= 0)
+		{
+			metadata.m_start_time = song_start;
+			metadata.m_end_time = song_start + song_len - 1;
+		}
 		f(ctx, str, &metadata);
 		free(title);
 	}

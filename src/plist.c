@@ -307,9 +307,11 @@ bool_t plist_save_m3u( plist_t *pl, char *filename )
 	fprintf(fd, "#EXTM3U\n");
 	for ( i = 0; i < pl->m_len; i ++ )
 	{
-		fprintf(fd, "#EXTINF:%i,%s\n%s\n", pl->m_list[i]->m_len,
-				STR_TO_CPTR(pl->m_list[i]->m_title), 
-				pl->m_list[i]->m_full_name);
+		song_t *s = pl->m_list[i];
+		fprintf(fd, "#EXTINF:%i", s->m_len);
+		if (s->m_start_time >= 0)
+			fprintf(fd, "-%i", s->m_start_time);
+		fprintf(fd, ",%s\n%s\n", STR_TO_CPTR(s->m_title), s->m_full_name);
 	}
 
 	/* Close file */
