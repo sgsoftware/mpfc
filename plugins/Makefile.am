@@ -1,1 +1,1 @@
-SUBDIRS = charset effect general input output plist
+SUBDIRS = charset general plist
