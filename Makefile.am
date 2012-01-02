@@ -7,4 +7,4 @@ sysconf_DATA = mpfcrc
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = mpfc.pc
 
-EXTRA_DIST = mpfc.pc.in config.rpath mkinstalldirs  config.rpath build_rcfile.pl
+EXTRA_DIST = mpfc.pc.in config.rpath install-sh m4 build_rcfile.pl

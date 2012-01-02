@@ -220,7 +220,9 @@ void undo_undo( struct tag_undo_list_item_t *item )
 		{
 			vfs_file_t desc;
 			vfs_file_desc_init(player_vfs, &desc, data->m_files[i], NULL);
-			plist_add_one_file(player_plist, &desc, NULL, 0,
+			
+			song_metadata_t metadata = SONG_METADATA_EMPTY;
+			plist_add_one_file(player_plist, &desc, &metadata,
 					data->m_start_pos + i);
 		}
 		plist_flush_scheduled(player_plist);

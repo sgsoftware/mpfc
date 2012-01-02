@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "wnd.h"
+#include "util.h"
 
 /* Initialize mouse */
 wnd_mouse_data_t *wnd_mouse_init( wnd_global_data_t *global )

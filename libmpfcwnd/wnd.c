@@ -29,6 +29,7 @@
 #include "logger.h"
 #include "wnd.h"
 #include "wnd_root.h"
+#include "util.h"
 
 /* Initialize window system and create root window */
 wnd_t *wnd_init( cfg_node_t *cfg_list, logger_t *log )

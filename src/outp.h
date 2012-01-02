@@ -150,7 +150,7 @@ void outp_set_volume( out_plugin_t *p, int left, int right );
 void outp_get_volume( out_plugin_t *p, int *left, int *right );
 
 /* Set mixer type */
-void out_set_mixer_type( out_plugin_t *p, plugin_mixer_type_t type );
+void outp_set_mixer_type( out_plugin_t *p, plugin_mixer_type_t type );
 
 /* Get plugin flags */
 dword outp_get_flags( out_plugin_t *p );

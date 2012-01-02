@@ -26,6 +26,7 @@
 #include <unicode/ucnv.h>
 #include "types.h"
 #include "myid3.h"
+#include "util.h"
 
 /* Create a new empty tag */
 id3_tag_t *id3_new( void )
@@ -112,7 +113,7 @@ bool_t id3_write( id3_tag_t *tag, char *filename )
 	bool_t ret1, ret2;
 
 	if (tag == NULL || filename == NULL)
-		return;
+		return FALSE;
 
 	/* Write tags */
 	ret1 = id3_v1_write(&tag->m_v1, filename);
@@ -271,14 +272,22 @@ bool_t id3_v1_write( id3_tag_data_t *tag, char *filename )
 
 	/* Determine if there exists tag */
 	fseek(fd, -ID3_V1_TOTAL_SIZE, SEEK_END);
-	fread(magic, 1, 3, fd);
+	if (fread(magic, 1, 3, fd) != 3)
+	{
+		fclose(fd);
+		return FALSE;
+	}
 	if (strncmp(magic, "TAG", 3))
 		fseek(fd, 0, SEEK_END);
 	else
 		fseek(fd, -3, SEEK_CUR);
 
 	/* Write tag */
-	fwrite(tag->m_stream, 1, ID3_V1_TOTAL_SIZE, fd);
+	if (fwrite(tag->m_stream, 1, ID3_V1_TOTAL_SIZE, fd) != ID3_V1_TOTAL_SIZE)
+	{
+		fclose(fd);
+		return FALSE;
+	}
 
 	/* Close file */
 	fclose(fd);
@@ -301,15 +310,22 @@ bool_t id3_v2_write( id3_tag_data_t *tag, char *filename )
 		return FALSE;
 
 	/* Get information about current tag */
-	fread(magic, 1, 3, fd);
+	if (fread(magic, 1, 3, fd) != 3)
+	{
+		fclose(fd);
+		return FALSE;
+	}
 	prev_size = 0;
 	if (magic[0] == 'I' && magic[1] == 'D' && magic[2] == '3')
 	{
 		byte s[4];
 		byte f;
 		fseek(fd, 5, SEEK_SET);
-		fread(&f, 1, 1, fd);
-		fread(&s, 1, 4, fd);
+		if (fread(&f, 1, 1, fd) != 1 || fread(&s, 1, 4, fd) != 4)
+		{
+			fclose(fd);
+			return FALSE;
+		}
 		prev_size = s[3] | (s[2] << 7) | (s[1] << 14) | (s[0] << 21);
 		prev_size += 10;
 		if (f & 16)
@@ -323,12 +339,17 @@ bool_t id3_v2_write( id3_tag_data_t *tag, char *filename )
 	if (data == NULL)
 	{
 		fclose(fd);
-		return;
+		return FALSE;
 	}
 
 	/* Fill data */
 	fseek(fd, prev_size, SEEK_SET);
-	fread(&data[size], 1, file_size, fd);
+	if (fread(&data[size], 1, file_size, fd) != file_size)
+	{
+		fclose(fd);
+		free(data);
+		return FALSE;
+	}
 	memcpy(data, tag->m_stream, size);
 	fclose(fd);
 
@@ -337,9 +358,14 @@ bool_t id3_v2_write( id3_tag_data_t *tag, char *filename )
 	if (fd == NULL)
 	{
 		free(data);
-		return;
+		return FALSE;
 	}
-	fwrite(data, 1, file_size + size, fd);
+	if (fwrite(data, 1, file_size + size, fd) != file_size + size)
+	{
+		fclose(fd);
+		free(data);
+		return FALSE;
+	}
 	fclose(fd);
 	free(data);
 	return TRUE;
@@ -724,7 +750,11 @@ void id3_remove( char *filename )
 		return;
 	}
 	fseek(fd, 0, SEEK_SET);
-	fread(buf, 1, file_size, fd);
+	if (fread(buf, 1, file_size, fd) != file_size)
+	{
+		fclose(fd);
+		return;
+	}
 	fclose(fd);
 
 	/* Find and remove ID3V2 */
@@ -759,7 +789,13 @@ void id3_remove( char *filename )
 		free(buf);
 		return;
 	}
-	fwrite(buf, 1, file_size, fd);
+	if (fwrite(buf, 1, file_size, fd) != file_size)
+	{
+		fclose(fd);
+		free(buf);
+		return;
+	}
+
 	fclose(fd);
 	free(buf);
 } /* End of 'id3_remove' function */

@@ -57,14 +57,6 @@ typedef struct
 	void (*m_func)( char *filename );
 } inp_spec_func_t;
 
-/* Redirection parameters */
-typedef struct
-{
-	int m_start_time, m_end_time;
-
-	byte m_reserved[120];
-} inp_redirect_params_t;
-
 /* Data for exchange with plugin */
 typedef struct
 {
@@ -140,11 +132,8 @@ typedef struct
 	/* Get type of mixer used by this plugin */
 	plugin_mixer_type_t (*m_get_mixer_type)( void );
 
-	/* Check file type */
-	bool_t (*m_is_our_file)( char *filename );
-
-	/* Redirect virtual file to a normal one */
-	char *(*m_redirect)( char *filename, inp_redirect_params_t *rp );
+	/* This used to be some obsolete stuff */
+	byte m_reserved2[8];
 
 	/* Update plugin flags (called on start of every play) */
 	dword (*m_get_plugin_flags)( void );
@@ -261,14 +250,11 @@ int inp_vfs_stat( in_plugin_t *p, char *name, struct stat *sb );
 /* Get mixer type */
 plugin_mixer_type_t inp_get_mixer_type( in_plugin_t *p );
 
-/* Check file type */
-bool_t inp_is_our_file( in_plugin_t *p, char *filename );
-
-/* Redirect file */
-char *inp_redirect( in_plugin_t *p, char *filename, inp_redirect_params_t *rp );
-
 /* Update plugin flags */
 dword inp_get_plugin_flags( in_plugin_t *p );
+
+/* Get plugin flags */
+dword inp_get_flags( in_plugin_t *p );
 
 #endif
 

@@ -351,6 +351,7 @@ void alsa_flush ()
 
 static int alsa_get_mixer_element(snd_mixer_t **mix, snd_mixer_elem_t **elem)
 {
+  char *card_name = NULL;
   snd_mixer_selem_id_t *selem_id = NULL;
 
   *mix = NULL;
@@ -361,7 +362,15 @@ static int alsa_get_mixer_element(snd_mixer_t **mix, snd_mixer_elem_t **elem)
     logger_message(alsa_log, 0, "snd_mixer_open() returned NULL");
     goto error;
   }
-  snd_mixer_attach (*mix, "default");
+
+  card_name = cfg_get_var(alsa_cfg, "mixer-card-name");
+  if (card_name == NULL) {
+    card_name = "default";
+  }
+  if (snd_mixer_attach (*mix, card_name) < 0) {
+    logger_message(alsa_log, 0, "could not attach mixer %s", card_name);
+  }
+
   snd_mixer_selem_register (*mix, NULL, NULL);
   snd_mixer_load (*mix);
   snd_mixer_selem_id_alloca(&selem_id);

@@ -25,6 +25,7 @@
 #include "wnd_dialog.h"
 #include "wnd_editbox.h"
 #include "wnd_repval.h"
+#include "wnd_label.h"
 
 /* Create a repeat value dialog */
 dialog_t *wnd_repval_new( wnd_t *parent, void *on_ok, int dig )

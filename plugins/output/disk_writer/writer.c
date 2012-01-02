@@ -20,6 +20,8 @@
  * MA 02111-1307, USA.
  */
 
+#include <stdlib.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/soundcard.h>
@@ -31,6 +33,8 @@
 #include "wnd_dialog.h"
 #include "wnd_checkbox.h"
 #include "wnd_editbox.h"
+#include "wnd_filebox.h"
+#include "util.h"
 
 /* Header size */
 #define DW_HEAD_SIZE 44
@@ -108,11 +112,14 @@ void dw_finish_file( void )
 bool_t dw_start( void )
 {
 	char name[MAX_FILE_NAME];
-	char *str;
+	char *str = NULL;
 	int i;
 
 	/* Get output file name (without extension and fragment index) */
-	str = cfg_get_var(dw_root_cfg, "cur-song-name");
+	if (cfg_get_var_int(dw_cfg, "name-as-title"))
+		str = cfg_get_var(dw_root_cfg, "cur-song-title");
+	else 
+		str = cfg_get_var(dw_root_cfg, "cur-song-name");
 	if (str == NULL)
 		return FALSE;
 	util_strncpy(name, str, sizeof(name));
@@ -307,7 +314,10 @@ static void *dw_encoder_thread( void *arg )
 				snprintf(cmd, sizeof(cmd), "oggenc -Q \"%s\"", full_name);
 			}
 			logger_status_msg(dw_log, 1, _("Encoding: %s"), cmd);
-			system(cmd);
+			if (system(cmd) < 0)
+			{
+				logger_error(dw_log, 1, _("Encoder command failed"));
+			}
 			unlink(full_name);
 			dw_head_fragment ++;
 		}

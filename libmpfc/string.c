@@ -74,6 +74,16 @@ void str_free( str_t *str )
 	free(str);
 } /* End of 'str_free' function */
  
+/* Clear string */
+void str_clear( str_t *str )
+{
+	if (str == NULL)
+		return;
+
+	*str->m_data = 0;
+	str->m_len = 0;
+} /* End of 'str_clear' function */
+
 /* Copy string from (char *) */
 str_t *str_copy_cptr( str_t *dest, char *src )
 {

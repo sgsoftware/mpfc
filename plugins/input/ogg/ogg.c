@@ -20,6 +20,7 @@
  * MA 02111-1307, USA.
  */
 
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -375,8 +376,8 @@ song_info_t *ogg_get_info( char *filename, int *len )
 		si = si_new();
 		si->m_flags |= SI_ONLY_OWN;
 		snprintf(own_data, sizeof(own_data),
-				_("Nominal bitrate: %i kb/s\n"
-				"Samplerate: %i Hz\n"
+				_("Nominal bitrate: %li kb/s\n"
+				"Samplerate: %li Hz\n"
 				"Channels: %i"),
 				ogg_vi->bitrate_nominal / 1000, ogg_vi->rate, 
 				ogg_vi->channels);
@@ -416,8 +417,8 @@ song_info_t *ogg_get_info( char *filename, int *len )
 	if (vi != NULL)
 	{
 		snprintf(own_data, sizeof(own_data),
-				_("Nominal bitrate: %i kb/s\n"
-				"Samplerate: %i Hz\n"
+				_("Nominal bitrate: %li kb/s\n"
+				"Samplerate: %li Hz\n"
 				"Channels: %i\n"
 				"Length: %i seconds\n"
 				"File size: %i bytes"),

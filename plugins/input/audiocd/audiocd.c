@@ -20,7 +20,9 @@
  * MA 02111-1307, USA.
  */
 
+#include <unistd.h>
 #include <stdio.h>
+#include <limits.h>
 #include <linux/cdrom.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -446,7 +448,7 @@ bool_t acd_save_info( char *filename, song_info_t *info )
 	track = acd_fname2trk(filename);
 	if (track < 0 || track >= acd_num_tracks || 
 			track > acd_tracks_info[acd_num_tracks - 1].m_number)
-		return;
+		return FALSE;
 
 	/* Save info */
 	return cddb_save_trk_info(track, info);

@@ -32,6 +32,7 @@
 #include "logger.h"
 #include "main_types.h"
 #include "outp.h"
+#include "plp.h"
 #include "plugin.h"
 #include "vfs.h"
 #include "wnd.h"
@@ -63,6 +64,14 @@ typedef struct tag_pmng_t
 
 	/* Player context */
 	player_context_t *m_player_context;
+
+	/* Local hook handler */
+	int m_hook_id;
+	void (*m_hook_handler)(char *hook);
+
+	/* The list of supported media file extensions */
+	char *m_media_file_exts;
+	unsigned m_media_ext_max_len;
 } pmng_t;
 
 /* Initialize plugins */
@@ -153,6 +162,24 @@ bool_t pmng_is_effect_enabled( pmng_t *pmng, plugin_t *ep );
 
 /* Enable/disable effect */
 void pmng_enable_effect( pmng_t *pmng, plugin_t *ep, bool_t enable );
+
+/* Install a hook handler */
+int pmng_add_hook_handler( pmng_t *pmng, void (*handler)(char*) );
+
+/* Uninstall a hook handler */
+void pmng_remove_hook_handler( pmng_t *pmng, int handler_id );
+
+/* Call hook functions */
+void pmng_hook( pmng_t *pmng, char *hook );
+
+/* Start media extensions list iteration */
+char *pmng_first_media_ext( pmng_t *pmng );
+
+/* Get next media extension */
+char *pmng_next_media_ext( char *iter );
+
+/* Check if file is a play list managed by a plugin */
+plist_plugin_t *pmng_is_playlist( pmng_t *pmng, char *format );
 
 #endif
 

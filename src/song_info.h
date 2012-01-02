@@ -30,7 +30,7 @@
 struct tag_pmng_t;
 
 /* Song information type */
-typedef struct
+typedef struct tag_song_info_t
 {
 	char *m_artist;
 	char *m_name;

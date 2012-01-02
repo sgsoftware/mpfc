@@ -26,6 +26,7 @@
 #include <pthread.h>
 #include "types.h"
 #include "main_types.h"
+#include "plp.h"
 #include "song.h"
 #include "vfs.h"
 #include "wnd.h"
@@ -88,7 +89,7 @@ bool_t plist_add( plist_t *pl, char *filename );
 bool_t plist_add_set( plist_t *pl, plist_set_t *set );
 
 /* Add single file to play list */
-int plist_add_one_file( plist_t *pl, vfs_file_t *file, char *title, int len,
+int plist_add_one_file( plist_t *pl, vfs_file_t *file, song_metadata_t *metadata,
 		int where );
 
 /* Add M3U play list */

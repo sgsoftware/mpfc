@@ -173,7 +173,7 @@ void file_set_min_buf_size( file_t *f, int size )
 char *file_get_content_type( file_t *f )
 {
 	if (f == NULL)
-		return;
+		return NULL;
 	
 	switch (f->m_type)
 	{
@@ -182,6 +182,7 @@ char *file_get_content_type( file_t *f )
 	case FILE_TYPE_HTTP:
 		return fhttp_get_content_type(f);
 	}
+    return NULL;
 } /* End of 'file_get_content_type' function */
 
 /* Write line to file */
@@ -203,7 +204,7 @@ void file_puts( char *s, file_t *f )
 char *file_gets( char *s, int size, file_t *f )
 {
 	if (f == NULL)
-		return;
+		return NULL;
 	
 	switch (f->m_type)
 	{
@@ -219,7 +220,7 @@ char *file_gets( char *s, int size, file_t *f )
 bool_t file_eof( file_t *f )
 {
 	if (f == NULL)
-		return;
+		return FALSE;
 	
 	switch (f->m_type)
 	{
@@ -235,7 +236,7 @@ bool_t file_eof( file_t *f )
 str_t *file_get_str( file_t *f )
 {
 	if (f == NULL)
-		return;
+		return NULL;
 	
 	switch (f->m_type)
 	{

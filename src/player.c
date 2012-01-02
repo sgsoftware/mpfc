@@ -43,6 +43,7 @@
 #include "player.h"
 #include "plist.h"
 #include "pmng.h"
+#include "server.h"
 #include "test.h"
 #include "undo.h"
 #include "util.h"
@@ -59,7 +60,12 @@
 #include "wnd_multiview_dialog.h"
 #include "wnd_radio.h"
 #include "wnd_root.h"
+#include "wnd_repval.h"
 #include "xconvert.h"
+#include "info_rw_thread.h"
+#include "outp.h"
+#include "inp.h"
+#include "genp.h"
 
 /*****
  *
@@ -248,8 +254,10 @@ bool_t player_init( int argc, char *argv[] )
 	logger_attach_handler(player_log, player_on_log_msg, NULL);
 
 	/* Initialize file browser directory */
-	getcwd(player_fb_dir, sizeof(player_fb_dir));
-	strcat(player_fb_dir, "/");
+	if (getcwd(player_fb_dir, sizeof(player_fb_dir)) == NULL)
+		strcpy(player_fb_dir, "/");
+	else
+		strcat(player_fb_dir, "/");
 	
 	/* Initialize plugin manager */
 	logger_debug(player_log, "Initializing plugin manager");
@@ -352,6 +360,9 @@ bool_t player_init( int argc, char *argv[] )
 					cfg_get_var_int(cfg_list, "cur-time"));
 	}
 
+	/* Start server */
+	server_start();
+
 	/* Exit */
 	logger_message(player_log, 0, _("Player initialized"));
 	return TRUE;
@@ -440,6 +451,9 @@ void player_deinit( void )
 	int i;
 
 	logger_debug(player_log, "In player_deinit");
+
+	/* Stop server */
+	server_stop();
 
 	/* Uninitialize plugin manager */
 	logger_debug(player_log, "Doing pmng_free");
@@ -604,6 +618,7 @@ bool_t player_init_cfg( void )
 	cfg_list = cfg_new_list(NULL, "", NULL, CFG_NODE_BIG_LIST, 0);
 	cfg_new_var(cfg_list, "cur-song", CFG_NODE_RUNTIME, NULL, NULL);
 	cfg_new_var(cfg_list, "cur-song-name", CFG_NODE_RUNTIME, NULL, NULL);
+	cfg_new_var(cfg_list, "cur-song-title", CFG_NODE_RUNTIME, NULL, NULL);
 	cfg_new_var(cfg_list, "cur-time", CFG_NODE_RUNTIME, NULL, NULL);
 	cfg_new_var(cfg_list, "player-status", CFG_NODE_RUNTIME, NULL, NULL);
 	cfg_new_var(cfg_list, "player-start", CFG_NODE_RUNTIME, NULL, NULL);
@@ -723,8 +738,7 @@ wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action, int repval )
 	/* Queue up a song */
 	else if (!strcasecmp(action, "queue"))
 	{
-		if(num_queued_songs < PLAYER_MAX_ENQUEUED)
-			queued_songs[num_queued_songs++] = player_plist->m_sel_end;
+		player_queue_song();
 	}
 	/* Show help screen */
 	else if (!strcasecmp(action, "help"))
@@ -842,35 +856,20 @@ wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action, int repval )
 	/* Pause */
 	else if (!strcasecmp(action, "pause"))
 	{
-		if (player_context->m_status == PLAYER_STATUS_PLAYING)
-		{
-			player_context->m_status = PLAYER_STATUS_PAUSED;
-		}
-		else if (player_context->m_status == PLAYER_STATUS_PAUSED)
-		{
-			player_context->m_status = PLAYER_STATUS_PLAYING;
-		}
-
-		pmng_hook(player_pmng, "player-status");
+		player_pause_resume();
 	}
 	/* Stop */
 	else if (!strcasecmp(action, "stop"))
 	{
-		player_context->m_status = PLAYER_STATUS_STOPPED;
-		player_end_play(FALSE);
-		player_plist->m_cur_song = was_song;
-		pmng_hook(player_pmng, "player-status");
+		player_stop();
 	}
 	/* Play song */
 	else if (!strcasecmp(action, "start_play"))
 	{
 		if (player_plist->m_len > 0)
 		{
-			player_context->m_status = PLAYER_STATUS_PLAYING;
-			player_play(player_plist->m_sel_end, 0);
+			player_start_play(player_plist->m_sel_end, 0);
 		}
-
-		pmng_hook(player_pmng, "player-status");
 	}
 	/* Go to next song */
 	else if (!strcasecmp(action, "next"))
@@ -1311,7 +1310,7 @@ wnd_msg_retcode_t player_on_display( wnd_t *wnd )
 {
 	int i;
 	song_t *s = NULL;
-	char aparams[256];
+	char aparams[256], *aparams_ptr;
 
 	/* Display head */
 	wnd_move(wnd, 0, 0, 0);
@@ -1392,12 +1391,13 @@ wnd_msg_retcode_t player_on_display( wnd_t *wnd )
 
 	/* Display current audio parameters */
 	strcpy(aparams, "");
+	aparams_ptr = aparams;
 	if (player_context->m_bitrate)
-		sprintf(aparams, "%s%d kbps ", aparams, player_context->m_bitrate);
+		aparams_ptr += sprintf(aparams_ptr, "%d kbps ", player_context->m_bitrate);
 	if (player_context->m_freq)
-		sprintf(aparams, "%s%d Hz ", aparams, player_context->m_freq);
+		aparams_ptr += sprintf(aparams_ptr, "%d Hz ", player_context->m_freq);
 	if (player_context->m_stereo)
-		sprintf(aparams, "%s%s", aparams, 
+		aparams_ptr += sprintf(aparams_ptr, "%s", 
 				(player_context->m_stereo == player_context->m_stereo) ? "stereo" : "mono");
 	wnd_move(wnd, 0, PLAYER_SLIDER_BAL_X - strlen(aparams) - 1, 
 			PLAYER_SLIDER_BAL_Y);
@@ -1477,8 +1477,6 @@ void player_seek( int sec, bool_t rel )
 		return;
 
 	s = player_plist->m_list[player_plist->m_cur_song];
-	if (s->m_redirect != NULL)
-		s = s->m_redirect;
 
 	new_time = (rel ? (player_context->m_cur_time + sec) : sec);
 	if (new_time < 0)
@@ -1497,6 +1495,8 @@ void player_seek( int sec, bool_t rel )
 	player_context->m_cur_time = new_time;
 	wnd_invalidate(player_wnd);
 	logger_debug(player_log, "after player_seek timer is %d", player_context->m_cur_time);
+
+	pmng_hook(player_pmng, "player-status");
 } /* End of 'player_seek' function */
 
 /* Play song */
@@ -1518,6 +1518,7 @@ void player_play( int song, int start_time )
 	/* Start new playing thread */
 	cfg_set_var(cfg_list, "cur-song-name", 
 			util_short_name(s->m_file_name));
+	cfg_set_var(cfg_list, "cur-song-title", STR_TO_CPTR(s->m_title));
 	player_plist->m_cur_song = song;
 	player_context->m_cur_time = start_time;
 //	player_context->m_status = PLAYER_STATUS_PLAYING;
@@ -1549,6 +1550,7 @@ void player_end_play( bool_t rem_cur_song )
 	if (!rem_cur_song)
 		player_plist->m_cur_song = was_song;
 	cfg_set_var(cfg_list, "cur-song-name", "");
+	cfg_set_var(cfg_list, "cur-song-title", "");
 } /* End of 'player_end_play' function */
 
 /* Go to next track */
@@ -1654,7 +1656,7 @@ int player_skip_songs( int num, bool_t play )
 	int len, base, song;
 	
 	if (player_plist == NULL || !player_plist->m_len)
-		return;
+		return -1;
 	
 	/* Change current song */
 	song = player_plist->m_cur_song;
@@ -1818,7 +1820,8 @@ void *player_thread( void *arg )
 
 		/* Play track */
 		s = player_plist->m_list[player_plist->m_cur_song];
-		song_played = (s->m_redirect == NULL) ? s : s->m_redirect;
+		song_played = s;
+		//player_context->m_status = PLAYER_STATUS_PLAYING;
 		player_end_track = FALSE;
 	
 		logger_debug(player_log, "Playing track %s", s->m_full_name);
@@ -2627,7 +2630,7 @@ void player_pmng_dialog_sync( dialog_t *dlg )
 			v->m_enabled_cb->m_checked = pmng_is_effect_enabled(player_pmng, p);
 		else if (i == PLAYER_PMNG_GENERAL)
 		{
-			bool_t started = genp_is_started(p);
+			bool_t started = genp_is_started(GENERAL_PLUGIN(p));
 			wnd_set_title(WND_OBJ(v->m_start_stop_btn), started ? _("S&top") :
 					_("S&tart"));
 		}
@@ -2671,6 +2674,7 @@ wnd_msg_retcode_t player_on_save( wnd_t *wnd )
 wnd_msg_retcode_t player_on_exec( wnd_t *wnd )
 {
 	int fd;
+	int len;
 	editbox_t *eb = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "command"));
 	char *text = _("\n\033[0;32;40mPress enter to continue");
 	assert(eb);
@@ -2679,11 +2683,18 @@ wnd_msg_retcode_t player_on_exec( wnd_t *wnd )
 	wnd_close_curses(wnd_root);
 
 	/* Execute command */
-	system(EDITBOX_TEXT(eb));
+	if (system(EDITBOX_TEXT(eb)) < 0)
+	{
+		logger_error(player_log, 0, _("Command execution failed"));
+	}
 
 	/* Display text (mere printf doesn't work) */
 	fd = open("/dev/tty", O_WRONLY);
-	write(fd, text, strlen(text));
+	len = strlen(text);
+	if (write(fd, text, len) != len)
+	{
+		logger_error(player_log, 0, _("Writing to console failed"));
+	}
 	close(fd);
 	getchar();
 
@@ -3143,10 +3154,10 @@ wnd_msg_retcode_t player_pmng_dialog_on_start_stop_general( wnd_t *wnd )
 	p = (plugin_t *)v->m_list->m_list[index].m_data;
 
 	/* Change state */
-	if (!genp_is_started(p))
-		genp_start(p);
+	if (!genp_is_started(GENERAL_PLUGIN(p)))
+		genp_start(GENERAL_PLUGIN(p));
 	else
-		genp_end(p);
+		genp_end(GENERAL_PLUGIN(p));
 	player_pmng_dialog_sync(DIALOG_OBJ(dlg));
 	return WND_MSG_RETCODE_OK;
 } /* End of 'player_pmng_dialog_on_start_stop_general' function */
@@ -3178,6 +3189,9 @@ bool_t player_handle_var_title_format( cfg_node_t *var, char *value,
 		void *data )
 {
 	int i;
+
+	if (player_plist == NULL)
+		return TRUE;
 
 	for ( i = 0; i < player_plist->m_len; i ++ )
 		song_update_title(player_plist->m_list[i]);
@@ -3425,6 +3439,47 @@ void player_save_time( void )
 	player_last_song = player_plist->m_cur_song;
 	player_last_song_time = player_context->m_cur_time;
 } /* End of 'player_save_time' function */
+
+/* High-level start play */
+void player_start_play( int song, int start_time )
+{
+	player_context->m_status = PLAYER_STATUS_PLAYING;
+	player_play(song, start_time);
+	pmng_hook(player_pmng, "player-status");
+} /* End of 'player_start_play' function */
+
+/* High-level pause/resume */
+void player_pause_resume( void )
+{
+	if (player_context->m_status == PLAYER_STATUS_PLAYING)
+	{
+		player_context->m_status = PLAYER_STATUS_PAUSED;
+	}
+	else if (player_context->m_status == PLAYER_STATUS_PAUSED)
+	{
+		player_context->m_status = PLAYER_STATUS_PLAYING;
+	}
+
+	pmng_hook(player_pmng, "player-status");
+} /* End of 'player_pause_resume' function */
+
+/* High-level stop play */
+void player_stop( void )
+{
+	int was_song = player_plist->m_cur_song;
+
+	player_context->m_status = PLAYER_STATUS_STOPPED;
+	player_end_play(FALSE);
+	player_plist->m_cur_song = was_song;
+	pmng_hook(player_pmng, "player-status");
+} /* End of 'player_stop' function */
+
+/* Queue the selected song */
+void player_queue_song( void )
+{
+	if(num_queued_songs < PLAYER_MAX_ENQUEUED)
+		queued_songs[num_queued_songs++] = player_plist->m_sel_end;
+} /* End of 'player_queue_song' function */
 
 /* End of 'player.c' file */
 

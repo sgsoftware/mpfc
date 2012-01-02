@@ -20,6 +20,7 @@
  * MA 02111-1307, USA.
  */
 
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 #include "types.h"
@@ -28,6 +29,9 @@
 #include "wnd_dlgitem.h"
 #include "wnd_editbox.h"
 #include "wnd_hbox.h"
+#include "wnd_label.h"
+
+extern int mbslen( char *str );
 
 /* Create a new edit box */
 editbox_t *editbox_new( wnd_t *parent, char *id, char *text, char letter,

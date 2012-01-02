@@ -241,7 +241,11 @@ void eqwnd_load_eqf( char *filename )
 		return;
 
 	/* Read data */
-	fread(header, 1, 31, fd);
+	if (fread(header, 1, 31, fd) != 31)
+	{
+		fclose(fd);
+		return;
+	}
 	if (!strncmp(header, "Winamp EQ library file v1.1", 27))
 	{
 		if (fseek(fd, 257, SEEK_CUR) == -1)	/* Skip name */

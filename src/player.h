@@ -91,6 +91,9 @@ extern undo_list_t *player_ul;
 /* Play list */
 extern plist_t *player_plist;
 
+/* Player context */
+extern player_context_t *player_context;
+
 /* Do we story undo information now? */
 extern bool_t player_store_undo;
 
@@ -435,6 +438,17 @@ void player_set_search_string( char *str );
 /* Save current song and time */
 void player_save_time( void );
 
+/* High-level start play */
+void player_start_play( int song, int start_time );
+
+/* High-level pause/resume */
+void player_pause_resume( void );
+
+/* High-level stop play */
+void player_stop( void );
+
+/* Queue the selected song */
+void player_queue_song( void );
 
 #endif
 

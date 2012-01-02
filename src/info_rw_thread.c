@@ -27,6 +27,7 @@
 #include "info_rw_thread.h"
 #include "player.h"
 #include "song.h"
+#include "util.h"
 
 /* Thread queue */
 irw_queue_t *irw_head, *irw_tail;

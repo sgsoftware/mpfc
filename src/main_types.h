@@ -37,7 +37,8 @@ typedef enum
 {
 	SONG_SCHEDULE = 1 << 0,
 	SONG_INFO_READ = 1 << 1,
-	SONG_INFO_WRITE = 1 << 2
+	SONG_INFO_WRITE = 1 << 2,
+	SONG_STATIC_INFO = 1 << 3
 } song_flags_t;
 
 /* Song type */
@@ -72,9 +73,6 @@ typedef struct tag_song_t
 
 	/* Default title (used when no info is found) */
 	char *m_default_title;
-
-	/* Song we are redirected to */
-	struct tag_song_t *m_redirect;
 
 	/* Input plugin being used to play this song */
 	in_plugin_t *m_inp;
