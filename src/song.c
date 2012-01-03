@@ -38,15 +38,12 @@
 song_t *song_new( vfs_file_t *file, char *title, int len )
 {
 	song_t *song;
-	in_plugin_t *inp;
 	char *filename = file->m_name;
 
-	/* Choose appropriate input plugin */
-	inp = file->m_inp;
-	if (inp == NULL)
+	/* Is this a supported format */
+	if (file_get_type(filename) == FILE_TYPE_REGULAR)
 	{
-		inp = pmng_search_format(player_pmng, file->m_name, file->m_extension);
-		if (inp == NULL && file_get_type(filename) == FILE_TYPE_REGULAR)
+		if (!pmng_search_format(player_pmng, file->m_name, file->m_extension))
 			return NULL;
 	}
 	
@@ -65,7 +62,6 @@ song_t *song_new( vfs_file_t *file, char *title, int len )
 	song->m_file_ext = song->m_full_name + 
 		(file->m_extension - file->m_full_name);
 	song->m_info = NULL;
-	song->m_inp = inp;
 	song->m_flags = 0;
 	song->m_len = len;
 	song->m_title = NULL;

@@ -97,7 +97,7 @@ void pmng_player_command( pmng_t *pmng, char *cmd, char *params_fmt, ... );
 void pmng_autostart_general( pmng_t *pmng );
 
 /* Search for input plugin supporting given format */
-in_plugin_t *pmng_search_format( pmng_t *pmng, char *filename, char *ext );
+bool_t pmng_search_format( pmng_t *pmng, char *filename, char *ext );
 
 /* Search for input plugin supporting given content-type */
 in_plugin_t *pmng_search_content_type( pmng_t *pmng, char *content );

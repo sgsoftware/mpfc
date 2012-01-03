@@ -24,6 +24,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+#include <gst/gst.h>
 #include "types.h"
 #include "cfg.h"
 #include "command.h"
@@ -40,50 +41,42 @@
 /* Build supported media file extensions list */
 static bool_t pmng_fill_media_file_exts( pmng_t *pmng )
 {
-	/* First determine the requires length for the string */
-	int req_len = 1;
-	pmng_iterator_t iter = pmng_start_iteration(pmng, PLUGIN_TYPE_INPUT);
-	for ( ;; )
+	/* Collect all supported extensions from type finders corresponding to audio formats */
+	str_t *media_exts = str_new("");
+	GList *tffs = gst_type_find_factory_get_list();
+	for ( GList *p = tffs; p; p = p->next )
 	{
-		in_plugin_t *inp = INPUT_PLUGIN(pmng_iterate(&iter));
-		if (!inp)
-			break;
+		GstTypeFindFactory *tff = (GstTypeFindFactory*)(p->data);
 
-		char formats[128];
-		inp_get_formats(inp, formats, NULL);
-		req_len += strlen(formats) + 1;
-	}
-
-	pmng->m_media_file_exts = (char*)malloc(req_len);
-	if (!pmng->m_media_file_exts)
-		return FALSE;
-	
-	/* Now build the list first by concatenating formats from all plugins
-	 * and replacing ';' with null chars */
-	char *p = pmng->m_media_file_exts;
-	iter = pmng_start_iteration(pmng, PLUGIN_TYPE_INPUT);
-	for ( ;; )
-	{
-		in_plugin_t *inp = INPUT_PLUGIN(pmng_iterate(&iter));
-		if (!inp)
-			break;
-
-		char formats[128];
-		inp_get_formats(inp, formats, NULL);
-		if (!formats[0])
+		/* Determine if this audio from mime type
+		 * TODO: is there a better way?
+		 */
+		gchar *caps = gst_caps_to_string(gst_type_find_factory_get_caps(tff));
+		char audio[] = "audio/";
+		bool_t is_audio = (strncmp(caps, audio, sizeof(audio) - 1) == 0);
+		g_free(caps);
+		if (!is_audio)
 			continue;
 
-		int i;
-		for ( int i = 0; formats[i]; i++ )
+		gchar **exts = gst_type_find_factory_get_extensions(tff);
+		if (!exts)
+			continue;
+		for ( ; *exts; ++exts )
 		{
-			char c = formats[i];
-			if (c == ';')
-				c = 0;
-			(*p++) = c;
+			str_cat_cptr(media_exts, *exts);
+			str_cat_cptr(media_exts, ";");
 		}
-		(*p++) = 0;
 	}
-	(*p++) = 0;
+	str_cat_cptr(media_exts, ";");
+	gst_plugin_feature_list_free(tffs);
+
+	pmng->m_media_file_exts = strdup(STR_TO_CPTR(media_exts));
+	str_free(media_exts);
+
+	/* Replace ';' with 0 */
+	for ( char *p = pmng->m_media_file_exts; *p; ++p )
+		if ((*p) == ';')
+			(*p) = 0;
 
 	/* Print extensions */
 	logger_message(pmng->m_log, 1, _("Supported media file extensions:"));
@@ -195,45 +188,20 @@ void pmng_autostart_general( pmng_t *pmng )
 } /* End of 'pmng_autostart_general' function */
 
 /* Search for input plugin supporting given format */
-in_plugin_t *pmng_search_format( pmng_t *pmng, char *filename, char *format )
+bool_t pmng_search_format( pmng_t *pmng, char *filename, char *format )
 {
-	pmng_iterator_t iter;
-
 	if (pmng == NULL || (!(*filename) && !(*format)))
-		return NULL;
+		return FALSE;
 
 	logger_debug(pmng->m_log, "pmng_search_format(%s, %s)", filename, format);
 
-	iter = pmng_start_iteration(pmng, PLUGIN_TYPE_INPUT);
-	for ( ;; )
+	for ( char *ext = pmng_first_media_ext(pmng); ext; 
+			ext = pmng_next_media_ext(ext) )
 	{
-		char formats[128], ext[10];
-		int j, k = 0;
-		in_plugin_t *inp;
-	   
-		inp = INPUT_PLUGIN(pmng_iterate(&iter));
-		if (inp == NULL)
-			break;
-		if (!(*format))
-			continue;
-		inp_get_formats(inp, formats, NULL);
-		for ( j = 0;; ext[k ++] = formats[j ++] )
-		{
-			if (formats[j] == 0 || formats[j] == ';')
-			{
-				ext[k] = 0;
-				if (!strcasecmp(ext, format))
-				{
-					logger_debug(pmng->m_log, "extension matches");
-					return inp;
-				}
-				k = 0;
-			}
-			if (!formats[j])
-				break;
-		}
+		if (!strcasecmp(ext, format))
+			return TRUE;
 	}
-	return NULL;
+	return FALSE;
 } /* End of 'pmng_search_format' function */
 
 /* Apply effect plugins */

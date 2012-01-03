@@ -310,8 +310,10 @@ void vfs_file_desc_init( vfs_t *vfs, vfs_file_t *file, char *full_name,
 	else
 		inp = vfs_plugin_from_prefix(vfs, full_name, &file->m_name);
 	/* If there is no prefix - determine plugin from file name */
+	/*
 	if (inp == NULL && vfs != NULL)
 		inp = pmng_search_format(vfs->m_pmng, file->m_name, file->m_extension);
+		*/
 	file->m_inp = inp;
 
 	/* Get file parameters */
