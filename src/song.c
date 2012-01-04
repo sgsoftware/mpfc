@@ -22,6 +22,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <gst/gst.h>
 #include "types.h"
 #include "cfg.h"
 #include "file.h"
@@ -241,6 +242,8 @@ void song_write_info( song_t *s )
 /* Get input plugin */
 in_plugin_t *song_get_inp( song_t *song, file_t **fd )
 {
+	return NULL;
+#if 0
 	/* Do nothing if we already no plugin */
 	if (fd != NULL)
 		(*fd) = NULL;
@@ -263,6 +266,7 @@ in_plugin_t *song_get_inp( song_t *song, file_t **fd )
 			file_close(cfd);
 	}
 	return song->m_inp;
+#endif
 } /* End of 'song_get_inp' function */
 
 /* End of 'song.c' file */

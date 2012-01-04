@@ -27,6 +27,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <gst/gst.h>
 #include "types.h"
 #include "inp.h"
 #include "mystring.h"
@@ -90,21 +91,170 @@ void inp_end( in_plugin_t *p )
 		p->m_pd.m_end();
 } /* End of 'inp_end' function */
 
+static bool_t starts_with_prefix( const char *name )
+{
+	const char *p = strchr(name, '/');
+	return (p != name && *(p - 1) == ':' && *(p + 1) == '/');
+}
+
 /* Get song information function */
 song_info_t *inp_get_info( in_plugin_t *p, char *file_name, int *len )
 {
-	if (p != NULL && (p->m_pd.m_get_info != NULL))
+	GstElement *pipe = NULL;
+	char *full_name = NULL;
+	song_info_t *si = NULL;
+
+	(*len) = 0;
+
+	/* Append file:// prefix if needed */
+	full_name = file_name;
+	if (!starts_with_prefix(full_name))
 	{
-		song_info_t *si = p->m_pd.m_get_info(file_name, len);
-		if (si != NULL)
-		{
-			si_convert_cs(si, cfg_get_var(plugin_get_root_cfg(PLUGIN(p)),
-						"charset-output"), plugin_get_pmng(PLUGIN(p)));
-		}
-		return si;
+		char prefix[] = "file://";
+		full_name = (char*)malloc(sizeof(prefix) + strlen(file_name));
+		if (!full_name)
+			goto finally;
+		strcpy(full_name, prefix);
+		strcpy(full_name + sizeof(prefix) - 1, file_name);
 	}
-	*len = 0;
-	return NULL;
+
+	/* Create decoding pipeline */
+	pipe = gst_pipeline_new("pipeline");
+	if (!pipe)
+		goto finally;
+	GstElement *dec = gst_element_factory_make("uridecodebin", NULL);
+	if (!dec)
+		goto finally;
+	g_object_set(dec, "uri", full_name, NULL);
+	if (!gst_bin_add(GST_BIN(pipe), dec))
+	{
+		gst_object_unref(dec);
+		goto finally;
+	}
+	GstElement *sink = gst_element_factory_make("fakesink", NULL);
+	if (!sink)
+		goto finally;
+	if (!gst_bin_add(GST_BIN(pipe), sink))
+	{
+		gst_object_unref(sink);
+		goto finally;
+	}
+	gst_element_set_state(pipe, GST_STATE_PAUSED);
+
+	si = si_new();
+
+	/* Listen on the bus for tag messages */
+	for ( ;; )
+	{
+		GstMessage *msg = gst_bus_timed_pop_filtered(GST_ELEMENT_BUS(pipe),
+				GST_CLOCK_TIME_NONE,
+				GST_MESSAGE_ASYNC_DONE | GST_MESSAGE_TAG | GST_MESSAGE_ERROR);
+		if (!msg)
+			break;
+		if (GST_MESSAGE_TYPE(msg) != GST_MESSAGE_TAG)
+		{
+			gst_message_unref(msg);
+			break;
+		}
+
+		GstTagList *tags = NULL;
+		gst_message_parse_tag(msg, &tags);
+		if (tags)
+		{
+			gchar *val;
+			if (gst_tag_list_get_string(tags, GST_TAG_TITLE, &val))
+			{
+				si_set_name(si, val);
+				g_free(val);
+			}
+			if (gst_tag_list_get_string(tags, GST_TAG_ARTIST, &val))
+			{
+				si_set_artist(si, val);
+				g_free(val);
+			}
+			if (gst_tag_list_get_string(tags, GST_TAG_ALBUM, &val))
+			{
+				si_set_album(si, val);
+				g_free(val);
+			}
+			if (gst_tag_list_get_string(tags, GST_TAG_COMMENT, &val))
+			{
+				si_set_comments(si, val);
+				g_free(val);
+			}
+			if (gst_tag_list_get_string(tags, GST_TAG_GENRE, &val))
+			{
+				si_set_genre(si, val);
+				g_free(val);
+			}
+
+			GDate *date;
+			if (gst_tag_list_get_date(tags, GST_TAG_DATE, &date))
+			{
+				char year[100] = "";
+				char *p = year;
+				size_t sz = sizeof(year);
+
+				GDateYear y = g_date_get_year(date);
+				if (g_date_valid_year(y))
+				{
+					size_t len = snprintf(p, sz, "%d", y);
+
+					GDateMonth m = g_date_get_month(date);
+					if (g_date_valid_month(m))
+					{
+						p += len;
+						sz -= len;
+						len = snprintf(p, sz, "/%02d", m);
+
+						GDateDay d = g_date_get_day(date);
+						if (g_date_valid_day(d))
+						{
+							p += len;
+							sz -= len;
+							snprintf(p, sz, "/%02d", d);
+						}
+					}
+				}
+				si_set_year(si, year);
+				g_date_free(date);
+			}
+
+			unsigned track;
+			if (gst_tag_list_get_uint(tags, GST_TAG_TRACK_NUMBER, &track))
+			{
+				char trackstr[20];
+				snprintf(trackstr, sizeof(trackstr), "%02d", track);
+				si_set_track(si, trackstr);
+			}
+
+			gst_tag_list_free(tags);
+		}
+
+		gst_message_unref(msg);
+	}
+
+	/* Get song length */
+	GstFormat fmt = GST_FORMAT_TIME;
+	gint64 gst_len;
+	if (gst_element_query_duration(dec, &fmt, &gst_len))
+		(*len) = gst_len / 1000000000;
+
+	/* Convert charset*/
+	/* TODO: gstreamer
+	si_convert_cs(si, cfg_get_var(plugin_get_root_cfg(PLUGIN(p)),
+				"charset-output"), plugin_get_pmng(PLUGIN(p)));
+				*/
+
+finally:
+	if (pipe)
+	{
+		gst_element_set_state(pipe, GST_STATE_NULL);
+		gst_object_unref(pipe);
+	}
+	if (full_name && full_name != file_name)
+		free(full_name);
+	return si;
 } /* End of 'inp_get_info' function */
 	
 /* Save song information function */
