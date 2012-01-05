@@ -21,6 +21,7 @@
  */
 
 #include <ctype.h>
+#include <glib.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -311,7 +312,14 @@ bool_t plist_save_m3u( plist_t *pl, char *filename )
 		fprintf(fd, "#EXTINF:%i", s->m_len);
 		if (s->m_start_time >= 0)
 			fprintf(fd, "-%i", s->m_start_time);
-		fprintf(fd, ",%s\n%s\n", STR_TO_CPTR(s->m_title), s->m_full_name);
+
+		char *name = s->m_full_name;
+		char file_prefix[] = "file://";
+		if (!strncmp(name, file_prefix, sizeof(file_prefix) - 1))
+			name = g_filename_from_uri(name, NULL, NULL);
+		fprintf(fd, ",%s\n%s\n", STR_TO_CPTR(s->m_title), name);
+		if (name && name != s->m_full_name)
+			g_free(name);
 	}
 
 	/* Close file */
