@@ -50,12 +50,15 @@ static bool_t pmng_fill_media_file_exts( pmng_t *pmng )
 
 		/* Determine if this audio from mime type
 		 * TODO: is there a better way?
+		 * Checking for ogg is a hack since ogg itself is a container
 		 */
 		gchar *caps = gst_caps_to_string(gst_type_find_factory_get_caps(tff));
 		char audio[] = "audio/";
+		char ogg[] = "application/ogg";
 		bool_t is_audio = (strncmp(caps, audio, sizeof(audio) - 1) == 0);
+		bool_t is_ogg = (strncmp(caps, ogg, sizeof(ogg) - 1) == 0);
 		g_free(caps);
-		if (!is_audio)
+		if (!is_audio && !is_ogg)
 			continue;
 
 		gchar **exts = gst_type_find_factory_get_extensions(tff);
