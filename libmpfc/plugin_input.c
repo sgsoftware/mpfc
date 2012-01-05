@@ -91,32 +91,13 @@ void inp_end( in_plugin_t *p )
 		p->m_pd.m_end();
 } /* End of 'inp_end' function */
 
-static bool_t starts_with_prefix( const char *name )
-{
-	const char *p = strchr(name, '/');
-	return (p != name && *(p - 1) == ':' && *(p + 1) == '/');
-}
-
 /* Get song information function */
-song_info_t *inp_get_info( in_plugin_t *p, char *file_name, int *len )
+song_info_t *inp_get_info( in_plugin_t *p, char *full_name, int *len )
 {
 	GstElement *pipe = NULL;
-	char *full_name = NULL;
 	song_info_t *si = NULL;
 
 	(*len) = 0;
-
-	/* Append file:// prefix if needed */
-	full_name = file_name;
-	if (!starts_with_prefix(full_name))
-	{
-		char prefix[] = "file://";
-		full_name = (char*)malloc(sizeof(prefix) + strlen(file_name));
-		if (!full_name)
-			goto finally;
-		strcpy(full_name, prefix);
-		strcpy(full_name + sizeof(prefix) - 1, file_name);
-	}
 
 	/* Create decoding pipeline */
 	pipe = gst_pipeline_new("pipeline");
@@ -252,8 +233,6 @@ finally:
 		gst_element_set_state(pipe, GST_STATE_NULL);
 		gst_object_unref(pipe);
 	}
-	if (full_name && full_name != file_name)
-		free(full_name);
 	return si;
 } /* End of 'inp_get_info' function */
 	

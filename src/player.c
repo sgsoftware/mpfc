@@ -1877,10 +1877,7 @@ void *player_thread( void *arg )
 		gst_bus_add_watch(bus, player_gst_bus_call, NULL);
 		gst_object_unref(bus);
 
-		/* Make an URI for playbin */
-		uri = util_strcat("file://", song_played->m_full_name, NULL);
-		g_object_set(G_OBJECT(player_pipeline), "uri", uri, NULL);
-		free(uri);
+		g_object_set(G_OBJECT(player_pipeline), "uri", song_played->m_full_name, NULL);
 
 		/* Start playing */
 		gst_element_set_state(player_pipeline, GST_STATE_PLAYING);

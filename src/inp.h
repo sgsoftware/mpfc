@@ -198,7 +198,7 @@ void inp_resume( in_plugin_t *p );
 int inp_get_cur_time( in_plugin_t *p );
 
 /* Get song information function */
-song_info_t *inp_get_info( in_plugin_t *p, char *file_name, int *len );
+song_info_t *inp_get_info( in_plugin_t *p, char *full_name, int *len );
 	
 /* Save song information function */
 bool_t inp_save_info( in_plugin_t *p, char *file_name, song_info_t *info );

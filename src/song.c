@@ -35,6 +35,12 @@
 #include "util.h"
 #include "vfs.h"
 
+static bool_t starts_with_prefix( const char *name )
+{
+	const char *p = strchr(name, '/');
+	return (p != name && *(p - 1) == ':' && *(p + 1) == '/');
+}
+
 /* Create a new song */
 song_t *song_new( vfs_file_t *file, char *title, int len )
 {
@@ -56,7 +62,17 @@ song_t *song_new( vfs_file_t *file, char *title, int len )
 
 	/* Set song fields */
 	song->m_ref_count = 0;
-	song->m_full_name = strdup(file->m_full_name);
+	if (!starts_with_prefix(file->m_full_name))
+	{
+		song->m_full_name = gst_filename_to_uri(file->m_full_name, NULL);
+		if (!song->m_full_name)
+		{
+			free(song);
+			return NULL;
+		}
+	}
+	else
+		song->m_full_name = strdup(file->m_full_name);
 	song->m_file_name = song->m_full_name + (file->m_name - file->m_full_name);
 	song->m_short_name = song->m_full_name +
 		(file->m_short_name - file->m_full_name);
