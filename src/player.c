@@ -131,9 +131,6 @@ int player_last_pos = -1;
 /* Last position in song */
 int player_last_song = -1, player_last_song_time = -1;
 
-#define PLAYER_STEREO 1
-#define PLAYER_MONO 2
-
 /* Plugins manager */
 pmng_t *player_pmng = NULL;
 
@@ -222,7 +219,7 @@ bool_t player_init( int argc, char *argv[] )
 	player_context->m_cur_time = 0;
 	player_context->m_bitrate = 0;
 	player_context->m_freq = 0;
-	player_context->m_stereo = 0;
+	player_context->m_channels = 0;
 	player_context->m_status = PLAYER_STATUS_STOPPED;
 	player_context->m_volume = 0;
 	player_context->m_balance = 0;
@@ -1396,9 +1393,8 @@ wnd_msg_retcode_t player_on_display( wnd_t *wnd )
 		aparams_ptr += sprintf(aparams_ptr, "%d kbps ", player_context->m_bitrate);
 	if (player_context->m_freq)
 		aparams_ptr += sprintf(aparams_ptr, "%d Hz ", player_context->m_freq);
-	if (player_context->m_stereo)
-		aparams_ptr += sprintf(aparams_ptr, "%s", 
-				(player_context->m_stereo == player_context->m_stereo) ? "stereo" : "mono");
+	if (player_context->m_channels)
+		aparams_ptr += sprintf(aparams_ptr, "%d-chan", player_context->m_channels);
 	wnd_move(wnd, 0, PLAYER_SLIDER_BAL_X - strlen(aparams) - 1, 
 			PLAYER_SLIDER_BAL_Y);
 	wnd_apply_style(wnd, "audio-params-style");
@@ -1721,6 +1717,30 @@ int player_translate_time( song_t *s, int t, bool_t virtual2real )
 	return (virtual2real ? s->m_start_time + t : t - s->m_start_time);
 } /* End of 'player_translate_time' function */
 
+/* Handle a TAG message */
+static void player_handle_tag_msg( GstMessage *msg )
+{
+	GstTagList *tags = NULL;
+	gst_message_parse_tag(msg, &tags);
+	if (!tags)
+		return;
+
+	/* We are looking for bitrate changes.
+	 * Actually it seems gstreamer doesn't report _current_ bitrate so
+	 * this will be constant for a track */
+	unsigned bitrate;
+	if (gst_tag_list_get_uint(tags, GST_TAG_BITRATE, &bitrate))
+	{
+		bitrate /= 1000;
+		if (player_context->m_bitrate != bitrate)
+		{
+			player_context->m_bitrate = bitrate;
+			wnd_invalidate(player_wnd);
+		}
+	}
+	gst_tag_list_free(tags);
+} /* End of 'player_handle_tag_msg' function */
+
 /* GStreamer bus message handler */
 static gboolean player_gst_bus_call( GstBus *bus, GstMessage *msg, gpointer data )
 {
@@ -1740,10 +1760,52 @@ static gboolean player_gst_bus_call( GstBus *bus, GstMessage *msg, gpointer data
 		logger_error(player_log, 1, "gstreamer error: %s", error->message);
 		g_error_free(error);
 		break;
+
+	case GST_MESSAGE_TAG:
+		player_handle_tag_msg(msg);
+		break;
 	}
 
 	return TRUE;
-}
+} /* End of 'player_gst_bus_call' function */
+
+/* Handle audio caps setting */
+static void player_on_caps_set(GObject *obj, GParamSpec *pspec, gpointer user_data)
+{
+	GstCaps *caps = gst_pad_get_negotiated_caps(GST_PAD(obj));
+	if (!caps)
+		return;
+
+	GstStructure *s = gst_caps_get_structure(caps, 0);
+	if (s)
+	{
+		int rate = 0, channels = 0;
+		if (gst_structure_get_int(s, "rate", &rate) &&
+			gst_structure_get_int(s, "channels", &channels))
+		{
+			if (player_context->m_freq != rate ||
+					player_context->m_channels != channels)
+			{
+				player_context->m_freq = rate;
+				player_context->m_channels = channels;
+				wnd_invalidate(player_wnd);
+			}
+
+		}
+	}
+
+	gst_caps_unref(caps);
+} /* End of 'player_on_caps_set' function */
+
+/* Handle 'audio-changed' signal */
+static void player_on_audio_changed( GstElement *playbin, gpointer user_data )
+{
+	GstPad *pad = NULL;
+	g_signal_emit_by_name(playbin, "get-audio-pad", 0, &pad);
+	if (!pad)
+		return;
+	g_signal_connect(pad, "notify::caps", (GCallback)player_on_caps_set, NULL);
+} /* End of 'player_on_audio_changed' function */
 
 /* Player thread function */
 bool_t player_set_audio_sink( void )
@@ -1801,8 +1863,6 @@ void *player_thread( void *arg )
 		int ch = 0, freq = 0, real_ch = 0, real_freq = 0;
 		dword fmt = 0, real_fmt = 0;
 		song_info_t si;
-		int was_pfreq, was_pbr, was_pstereo;
-		int disp_count;
 		dword in_flags, out_flags;
 		bool_t song_finished;
 		GMainLoop *loop = NULL;
@@ -1855,7 +1915,7 @@ void *player_thread( void *arg )
 			logger_error(player_log, 1, "g_main_loop_new failed");
 			goto cleanup;
 		}
-		player_pipeline = gst_element_factory_make("playbin", "play");
+		player_pipeline = gst_element_factory_make("playbin2", "play");
 		if (!player_pipeline)
 		{
 			logger_error(player_log, 1, "gstreamer: unable to create playbin");
@@ -1876,6 +1936,7 @@ void *player_thread( void *arg )
 		}
 		gst_bus_add_watch(bus, player_gst_bus_call, NULL);
 		gst_object_unref(bus);
+		g_signal_connect(player_pipeline, "audio-changed", (GCallback)player_on_audio_changed, NULL);
 
 		g_object_set(G_OBJECT(player_pipeline), "uri", song_played->m_full_name, NULL);
 
@@ -1898,7 +1959,6 @@ void *player_thread( void *arg )
 		}
 
 		/* Play */
-		disp_count = 0;
 		logger_debug(player_log, "Going into track playing cycle");
 		song_finished = FALSE;
 		was_status = PLAYER_STATUS_PLAYING;
@@ -1940,31 +2000,6 @@ void *player_thread( void *arg )
 					}
 				}
 
-				/* Get audio parameters */
-#if 0
-				inp_get_audio_params(inp, &new_ch, &new_freq, &new_fmt, 
-						&new_br);
-				was_pfreq = player_context->m_freq; was_pstereo = player_context->m_stereo;
-				was_pbr = player_context->m_bitrate;
-				player_context->m_freq = new_freq;
-				player_context->m_stereo = (new_ch == 1) ? PLAYER_MONO : player_context->m_stereo;
-				new_br /= 1000;
-				player_context->m_bitrate = new_br;
-				if ((player_context->m_freq != was_pfreq || 
-						player_context->m_stereo != was_pstereo ||
-						player_context->m_bitrate != was_pbr) && !disp_count)
-				{
-					disp_count = cfg_get_var_int(cfg_list, 
-							"audio-params-display-count");
-					if (!disp_count)
-						disp_count = 20;
-					wnd_invalidate(player_wnd);
-				}
-				disp_count --;
-				if (disp_count < 0)
-					disp_count = 0;
-#endif
-
 				/* Check for end of projected song */
 				if (song_played->m_end_time > -1 && 
 						player_translate_time(song_played, player_context->m_cur_time, TRUE) >= 
@@ -2001,7 +2036,7 @@ void *player_thread( void *arg )
 		}
 
 		/* End playing */
-		player_context->m_bitrate = player_context->m_freq = player_context->m_stereo = 0;
+		player_context->m_bitrate = player_context->m_freq = player_context->m_channels = 0;
 
 		/* Update screen */
 		wnd_invalidate(player_wnd);
