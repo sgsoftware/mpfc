@@ -1928,6 +1928,10 @@ void *player_thread( void *arg )
 			goto cleanup;
 		}
 
+		/* Set fake videosink */
+		GstElement *videosink = gst_element_factory_make("fakesink", "videosink");
+		g_object_set(G_OBJECT(player_pipeline), "video-sink", videosink, NULL);
+
 		/* Set bus message handler */
 		bus = gst_pipeline_get_bus(GST_PIPELINE(player_pipeline));
 		if (!bus)

@@ -41,24 +41,71 @@
 /* Build supported media file extensions list */
 static bool_t pmng_fill_media_file_exts( pmng_t *pmng )
 {
+	/* First collect all mimetypes which might correspond to audio */
+	GHashTable *all_mimes = g_hash_table_new(g_str_hash, g_str_equal);
+    GList* factories = gst_registry_get_feature_list(gst_registry_get_default(),
+			GST_TYPE_ELEMENT_FACTORY);
+    for ( GList* iter = g_list_first(factories); iter; iter = g_list_next(iter) )
+	{
+        GstPluginFeature *feature = GST_PLUGIN_FEATURE(iter->data);
+		GstElementFactory *factory = GST_ELEMENT_FACTORY(feature);
+        const gchar *klass = gst_element_factory_get_klass(factory);
+
+		if (!strcmp(klass, "Codec/Decoder") ||
+		    !strcmp(klass, "Codec/Decoder/Audio") ||
+		    !strcmp(klass, "Codec/Demuxer") ||
+		    !strcmp(klass, "Codec/Demuxer/Audio") ||
+		    !strcmp(klass, "Codec/Parser") ||
+		    !strcmp(klass, "Codec/Parser/Audio"))
+		{
+            for ( const GList *templs = gst_element_factory_get_static_pad_templates(factory);
+					templs; templs = templs->next )
+			{
+                GstStaticPadTemplate *templ = (GstStaticPadTemplate*)templs->data;
+				if (!templ)
+					continue;
+				if (templ->direction != GST_PAD_SINK)
+					continue;
+
+				GstCaps *caps = gst_static_pad_template_get_caps(templ);
+				if (!caps)
+					continue;
+
+				for ( unsigned i = 0; i < gst_caps_get_size(caps); ++i )
+				{
+					const gchar *mime = gst_structure_get_name(
+							gst_caps_get_structure(caps, i));
+					g_hash_table_insert(all_mimes, (gpointer)mime, NULL);
+				}
+				gst_caps_unref(caps);
+			}
+
+        }
+    }
+    g_list_free(factories);
+
 	/* Collect all supported extensions from type finders corresponding to audio formats */
 	str_t *media_exts = str_new("");
 	GList *tffs = gst_type_find_factory_get_list();
 	for ( GList *p = tffs; p; p = p->next )
 	{
 		GstTypeFindFactory *tff = (GstTypeFindFactory*)(p->data);
+		GstCaps *caps = gst_type_find_factory_get_caps(tff);
+		if (!caps)
+			continue;
 
-		/* Determine if this audio from mime type
-		 * TODO: is there a better way?
-		 * Checking for ogg is a hack since ogg itself is a container
-		 */
-		gchar *caps = gst_caps_to_string(gst_type_find_factory_get_caps(tff));
-		char audio[] = "audio/";
-		char ogg[] = "application/ogg";
-		bool_t is_audio = (strncmp(caps, audio, sizeof(audio) - 1) == 0);
-		bool_t is_ogg = (strncmp(caps, ogg, sizeof(ogg) - 1) == 0);
-		g_free(caps);
-		if (!is_audio && !is_ogg)
+		bool_t has_audio = FALSE;
+		for ( unsigned i = 0; i < gst_caps_get_size(caps); ++i )
+		{
+			const gchar *mime = gst_structure_get_name(
+					gst_caps_get_structure(caps, i));
+			if (g_hash_table_lookup_extended(all_mimes, mime, NULL, NULL))
+			{
+				has_audio = TRUE;
+				break;
+			}
+		}
+		if (!has_audio)
 			continue;
 
 		gchar **exts = gst_type_find_factory_get_extensions(tff);
@@ -72,27 +119,32 @@ static bool_t pmng_fill_media_file_exts( pmng_t *pmng )
 	}
 	str_cat_cptr(media_exts, ";");
 	gst_plugin_feature_list_free(tffs);
+	g_hash_table_destroy(all_mimes);
 
 	pmng->m_media_file_exts = strdup(STR_TO_CPTR(media_exts));
 	str_free(media_exts);
 
-	/* Replace ';' with 0 */
-	for ( char *p = pmng->m_media_file_exts; *p; ++p )
-		if ((*p) == ';')
-			(*p) = 0;
+	logger_message(pmng->m_log, 1, _("Supported media file extensions: %s"),
+			pmng->m_media_file_exts);
 
-	/* Print extensions */
-	logger_message(pmng->m_log, 1, _("Supported media file extensions:"));
-	for ( char *i = pmng_first_media_ext(pmng); i; 
-			i = pmng_next_media_ext(i) )
+	/* Replace ';' with 0 and calculate maximal extension length */
+	size_t max_len = 0, len = 0;
+	for ( char *p = pmng->m_media_file_exts;; ++p, ++len )
 	{
-		logger_message(pmng->m_log, 1, "%s", i);
+		bool_t end = ((*p) == 0);
 
-		size_t len = strlen(i);
-		if (pmng->m_media_ext_max_len < len)
-			pmng->m_media_ext_max_len = len;
+		if ((*p) == ';' || end)
+		{
+			(*p) = 0;
+			if (len > max_len)
+				max_len = len;
+			len = 0;
+
+			if (end)
+				break;
+		}
 	}
-	logger_message(pmng->m_log, 1, "");
+	pmng->m_media_ext_max_len = max_len;
 
 	return TRUE;
 } /* End of 'pmng_fill_media_file_exts' function */
