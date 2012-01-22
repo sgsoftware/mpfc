@@ -27,23 +27,10 @@
 #include "plugin.h"
 
 struct tag_pmng_t;
-struct tag_song_info_t;
-
-/* If playlist contains some ready song metadata it sets it here
- * All these fields are optional */
-typedef struct
-{
-	char *m_title;
-	int m_len;
-	struct tag_song_info_t *m_song_info;
-	int m_start_time;
-	int m_end_time;
-} song_metadata_t;
-
-#define SONG_METADATA_EMPTY { NULL, -1, NULL, -1, -1 }
+struct tag_song_metadata_t;
 
 /* Callback function which is called for each play list item */
-typedef void (*plp_func_t)( void *ctx, char *name, song_metadata_t *metadata );
+typedef void (*plp_func_t)( void *ctx, char *name, struct tag_song_metadata_t *metadata );
 
 /* Status code */
 typedef int plp_status_t;

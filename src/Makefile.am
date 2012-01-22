@@ -8,7 +8,8 @@ mpfc_SOURCES = main.c types.h player.c player.h \
 					help_screen.h help_screen.c \
 					eqwnd.c eqwnd.h browser.c browser.h test.c test.h vfs.h \
 					logger.h logger_view.c logger_view.h plugin.h \
-					command.h xconvert.c xconvert.h main_types.h
+					command.h xconvert.c xconvert.h main_types.h \
+					file_utils.c file_utils.h
 EXTRA_DIST = .mpfcrc
 
 localedir = $(datadir)/locale

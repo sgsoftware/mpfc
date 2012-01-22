@@ -47,14 +47,11 @@ typedef struct tag_song_t
 	/* Song title */
 	str_t *m_title;
 
-	/* Song full name (i.e. with plugin prefix if it was specified) */
-	char *m_full_name;
+	/* Full name in an URI form (with prefix and escaped special symbols) */
+	char *m_fullname;
 
-	/* File name without plugin prefix. This is used for the most part */
-	char *m_file_name;
-
-	/* Short name and file extension */
-	char *m_short_name, *m_file_ext;
+	/* Real file name (might be null if the song has been created from an URI) */
+	char *m_filename;
 
 	/* Song length */
 	int m_len;
@@ -80,6 +77,19 @@ typedef struct tag_song_t
 	/* Song mutex */
 	pthread_mutex_t m_mutex;
 } song_t;
+
+/* Metadata for making a song 
+ * All these fields are optional */
+typedef struct tag_song_metadata_t
+{
+	char *m_title;
+	int m_len;
+	song_info_t *m_song_info;
+	int m_start_time;
+	int m_end_time;
+} song_metadata_t;
+
+#define SONG_METADATA_EMPTY { NULL, -1, NULL, -1, -1 }
 
 /* Play list type */
 typedef struct

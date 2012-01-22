@@ -378,18 +378,6 @@ void inp_spec_func( in_plugin_t *p, int index, char *filename )
 		p->m_pd.m_spec_funcs[index].m_func(filename);
 } /* End of 'inp_spec_func' function */
 
-/* Set song title */
-str_t *inp_set_song_title( in_plugin_t *p, char *filename )
-{
-	if (filename == NULL)
-		return NULL;
-	
-	if (p != NULL && p->m_pd.m_set_song_title != NULL)
-		return p->m_pd.m_set_song_title(filename);
-	else
-		return str_new(util_short_name(filename));
-} /* End of 'inp_set_song_title' function */
-
 /* Set next song name */
 void inp_set_next_song( in_plugin_t *p, char *name )
 {

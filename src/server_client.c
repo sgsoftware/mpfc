@@ -29,6 +29,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <json/json.h>
+#include "file_utils.h"
 #include "player.h"
 #include "server_client.h"
 #include "util.h"
@@ -210,80 +211,37 @@ static char *translate_file_name(char *name)
 	return util_strcat(r, name, NULL);
 } /* End of 'translate_file_name' function */
 
-/* Determine file type (regular or directory) resolving symlinks */
-static bool_t server_conn_file_type(char *name, bool_t *is_dir, int rec_level)
-{
-	struct stat st;
-	if (stat(name, &st))
-		return FALSE;
-
-	if (S_ISREG(st.st_mode))
-	{
-		(*is_dir) = FALSE;
-		return TRUE;
-	}
-	else if (S_ISDIR(st.st_mode))
-	{
-		(*is_dir) = TRUE;
-		return TRUE;
-	}
-	else if (S_ISLNK(st.st_mode))
-	{
-		/* Cyclic link? */
-		if (rec_level > 10)
-			return FALSE;
-
-		char linked_name[MAX_FILE_NAME];
-		if (readlink(name, linked_name, sizeof(linked_name)) < 0)
-			return FALSE;
-		return server_conn_file_type(linked_name, is_dir, rec_level + 1);
-	}
-
-	/* Special file which we are not interested in */
-	return FALSE;
-} /* End of 'server_conn_file_type' function */
-
 /* Execute 'list_dir' command */
 static void server_conn_list_dir(char *name, struct json_object *js)
 {
-	DIR *dir = NULL;
 	char *real_name = NULL;
-	struct dirent *de = NULL, *de_result = NULL;
-	
+	fu_dir_t *dir = NULL;
+
 	/* Translate virtual directory name */
 	real_name = translate_file_name(name);
 	if (!real_name)
 		goto finally;
 
 	/* Open directory */
-	dir = opendir(real_name);
+	dir = fu_opendir(real_name);
 	if (!dir)
-		goto finally;
-
-	/* Allocate dirent */
-	de = (struct dirent *)malloc(offsetof(struct dirent, d_name) +
-			pathconf(real_name, _PC_NAME_MAX) + 1);
-	if (!de)
 		goto finally;
 
 	for ( ;; )
 	{
-		if (readdir_r(dir, de, &de_result))
-			break;
-		if (!de_result)
+		struct dirent *de = fu_readdir(dir);
+		if (!de)
 			break;
 
 		/* Skip special dirs */
-		if (de->d_name[0] == '.' &&
-				(de->d_name[1] == 0 || 
-				 (de->d_name[1] == '.' && de->d_name[2] == 0)))
+		if (fu_is_special_dir(de->d_name))
 			continue;
 
 		/* Determine file type */
 		bool_t is_dir;
 		{
 			char *full_name = util_strcat(real_name, "/", de->d_name, NULL);
-			bool_t ok = server_conn_file_type(full_name, &is_dir, 0);
+			bool_t ok = fu_file_type(full_name, &is_dir);
 			free(full_name);
 			if (!ok)
 				continue;
@@ -297,10 +255,8 @@ static void server_conn_list_dir(char *name, struct json_object *js)
 	}
 
 finally:
-	if (de)
-		free(de);
 	if (dir)
-		closedir(dir);
+		fu_closedir(dir);
 	if (real_name)
 		free(real_name);
 } /* End of 'server_conn_list_dir' function */

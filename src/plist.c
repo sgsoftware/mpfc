@@ -21,14 +21,18 @@
  */
 
 #include <ctype.h>
+#include <errno.h>
 #include <glib.h>
+#include <glob.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#define __USE_GNU
 #include <unistd.h>
 #include "types.h"
 #include "file.h"
+#include "file_utils.h"
 #include "inp.h"
 #include "player.h"
 #include "plist.h"
@@ -38,9 +42,6 @@
 #include "undo.h"
 #include "wnd.h"
 #include "info_rw_thread.h"
-
-/* Number of files added by plist_add_set */
-int plist_num = 0;
 
 /* Create a new play list */
 plist_t *plist_new( int start_pos )
@@ -101,185 +102,6 @@ bool_t plist_add( plist_t *pl, char *filename )
 	return ret;
 } /* End of 'plist_add' function */
 
-typedef struct
-{
-	plist_t *pl;
-	char *m_pl_name;
-	int num_added;
-} plist_cb_ctx_t;
-
-/* Cue sheets often have a .wav file specified
- * while actually relating to an encoded file
- * Try to fix this.
- * By the way return full name */
-static bool_t plist_fix_wrong_file_ext( char *name )
-{
-	/* Find extension start */
-	int ext_pos = strlen(name) - 1;
-	for ( ; ext_pos >= 0; ext_pos-- )
-	{
-		/* No extension found */
-		if (name[ext_pos] == '/')
-		{
-			ext_pos = -1;
-			break;
-		}
-		if (name[ext_pos] == '.')
-			break;
-	}
-	if (ext_pos < 0)
-		return FALSE;
-	ext_pos++; /* after the dot */
-
-	/* Try supported extensions */
-	char *ext_start = name + ext_pos;
-	char *ext = pmng_first_media_ext(player_pmng);
-	for ( ; ext; ext = pmng_next_media_ext(ext) )
-	{
-		/* Try this extension */
-		strcpy(ext_start, ext);
-
-		struct stat st;
-		if (!stat(name, &st))
-		{
-			return TRUE;
-		}
-	}
-	assert(!ext);
-
-	return FALSE;
-} /* End of 'cue_fix_wrong_file_ext' function */
-
-/* Playlist item adding callback */
-static void plist_add_playlist_item( void *ctxv, char *name, song_metadata_t *metadata )
-{
-	plist_cb_ctx_t *ctx = (plist_cb_ctx_t *)ctxv;
-
-	/* Get full path relative to the play list if it is not absolute */
-	char *full_name = name;
-	if ((*name) != '/')
-	{
-		full_name = (char*)malloc(strlen(ctx->m_pl_name) + strlen(name) +
-				player_pmng->m_media_ext_max_len + 2);
-		strcpy(full_name, ctx->m_pl_name);
-		char *sep = strrchr(full_name, '/');
-		if (sep)
-			strcpy(sep + 1, name);
-		else
-			strcpy(full_name, name);
-	}
-
-	/* Fix extension if it is incorrect */
-	struct stat st;
-	if (stat(full_name, &st))
-	{
-		/* Enlarge memory for extension probing.
-		 * But only if it was not allocated in the abs path handling block
-		 * because there we already take this into account */
-		if (full_name == name)
-		{
-			full_name = (char*)malloc(strlen(name) +
-					player_pmng->m_media_ext_max_len + 1);
-		}
-
-		/* If neither extension worked don't add this item */
-		if (!plist_fix_wrong_file_ext(full_name))
-			goto finish;
-	}
-
-	vfs_file_t desc;
-	vfs_file_desc_init(player_vfs, &desc, full_name, NULL);
-	ctx->num_added += plist_add_one_file(ctx->pl, &desc, metadata, -1);
-
-finish:
-	if (full_name != name)
-		free(full_name);
-} /* End of 'plist_add_playlist_item' function */
-
-/* Add single file to play list */
-int plist_add_one_file( plist_t *pl, vfs_file_t *file, song_metadata_t *metadata,
-		int where )
-{
-	song_t *song;
-	int was_len;
-	assert(pl);
-
-	/* Choose if file is play list */
-	plist_plugin_t *plp = pmng_is_playlist(player_pmng, file->m_extension);
-	if (plp)
-	{
-		plist_cb_ctx_t ctx = { pl, file->m_name, 0 };
-		plp_status_t status = plp_for_each_item(plp, file->m_name,
-				&ctx, plist_add_playlist_item);
-		if (status != PLP_STATUS_OK)
-			return 0;
-
-		return ctx.num_added;
-	}
-
-	/* Lock play list */
-	plist_lock(pl);
-
-	/* Try to reallocate memory for play list */
-	was_len = pl->m_len;
-	pl->m_list = (song_t **)realloc(pl->m_list,
-			sizeof(song_t *) * (pl->m_len + 1));
-	if (pl->m_list == NULL)
-	{
-		pl->m_len = 0;
-		plist_unlock(pl);
-		return 0;
-	}
-
-	/* Initialize new song and add it to list */
-	song = song_new(file, metadata->m_title, metadata->m_len);
-	if (song == NULL)
-	{
-		plist_unlock(pl);
-		return 0;
-	}
-
-	/* Slice song */
-	if (metadata->m_start_time >= 0)
-	{
-		song->m_start_time = metadata->m_start_time;
-		song->m_end_time = metadata->m_end_time;
-	}
-
-	/* Set song info */
-	if (metadata->m_song_info)
-	{
-		song->m_info = metadata->m_song_info;
-		song->m_flags |= SONG_STATIC_INFO;
-	}
-
-	if (where < 0 || where >= pl->m_len)  
-		where = pl->m_len;
-	memmove(&pl->m_list[where + 1], &pl->m_list[where], 
-			sizeof(song_t *) * (pl->m_len - where));
-	pl->m_list[where] = song;
-	pl->m_len ++;
-
-	/* Update current song index */
-	if (pl->m_cur_song >= where)
-		pl->m_cur_song ++;
-
-	/* If list was empty - put cursor to the first song */
-	if (!was_len)
-	{
-		pl->m_sel_start = pl->m_sel_end = 0;
-		pl->m_visual = FALSE;
-	}
-
-	/* Unlock play list */
-	plist_unlock(pl);
-
-	/* Schedule song for setting its info and length */
-	if (!metadata->m_title)
-		pl->m_list[where]->m_flags |= SONG_SCHEDULE;
-	return 1;
-} /* End of 'plist_add_one_file' function */
-
 /* Save play list */
 bool_t plist_save( plist_t *pl, char *filename )
 {
@@ -313,13 +135,7 @@ bool_t plist_save_m3u( plist_t *pl, char *filename )
 		if (s->m_start_time >= 0)
 			fprintf(fd, "-%i", s->m_start_time);
 
-		char *name = s->m_full_name;
-		char file_prefix[] = "file://";
-		if (!strncmp(name, file_prefix, sizeof(file_prefix) - 1))
-			name = g_filename_from_uri(name, NULL, NULL);
-		fprintf(fd, ",%s\n%s\n", STR_TO_CPTR(s->m_title), name);
-		if (name && name != s->m_full_name)
-			g_free(name);
+		fprintf(fd, ",%s\n%s\n", STR_TO_CPTR(s->m_title), song_get_name(s));
 	}
 
 	/* Close file */
@@ -341,7 +157,7 @@ bool_t plist_save_pls( plist_t *pl, char *filename )
 	/* Write list head */
 	fprintf(fd, "[playlist]\nnumberofentries=%d\n", pl->m_len);
 	for ( i = 0; i < pl->m_len; i ++ )
-		fprintf(fd, "File%d=%s\n", i + 1, pl->m_list[i]->m_file_name);
+		fprintf(fd, "File%d=%s\n", i + 1, song_get_name(pl->m_list[i]));
 
 	/* Close file */
 	fclose(fd);
@@ -362,13 +178,14 @@ int plist_song_cmp( song_t *s1, song_t *s2, int criteria )
 	case PLIST_SORT_BY_TITLE:
 		return strcmp(STR_TO_CPTR(s1->m_title), STR_TO_CPTR(s2->m_title));
 	case PLIST_SORT_BY_NAME:
-		return strcmp(s1->m_short_name, s2->m_short_name);
+		return strcmp(util_short_name(song_get_name(s1)),
+				util_short_name(song_get_name(s2)));
 	case PLIST_SORT_BY_PATH:
-		return strcmp(s1->m_file_name, s2->m_file_name);
+		return strcmp(song_get_name(s1), song_get_name(s2));
 	case PLIST_SORT_BY_TRACK:
 		/* Compare directories first */
-		util_get_dir_name(dir1, s1->m_file_name);
-		util_get_dir_name(dir2, s2->m_file_name);
+		util_get_dir_name(dir1, song_get_name(s1));
+		util_get_dir_name(dir2, song_get_name(s2));
 		res = strcmp(dir1, dir2);
 		if (res != 0)
 			return res;
@@ -382,7 +199,8 @@ int plist_song_cmp( song_t *s1, song_t *s2, int criteria )
 		}
 
 		/* Now compare file names */
-		return strcmp(s1->m_short_name, s2->m_short_name);
+		return strcmp(util_short_name(song_get_name(s1)),
+				util_short_name(song_get_name(s2)));
 	}
 	return 0;
 } /* End of 'plist_song_cmp' function */
@@ -538,6 +356,7 @@ void plist_rem( plist_t *pl )
 		struct tag_undo_list_item_t *undo;
 		struct tag_undo_list_rem_t *data;
 		int j;
+		song_metadata_t metadata_empty = SONG_METADATA_EMPTY;
 		
 		undo = (struct tag_undo_list_item_t *)malloc(sizeof(*undo));
 		undo->m_type = UNDO_REM;
@@ -545,9 +364,30 @@ void plist_rem( plist_t *pl )
 		data = &undo->m_data.m_rem;
 		data->m_num_files = end - start + 1;
 		data->m_start_pos = start;
-		data->m_files = (char **)malloc(sizeof(char *) * data->m_num_files);
+		data->m_files = (struct song_name *)malloc(sizeof(struct song_name) * data->m_num_files);
 		for ( i = start, j = 0; i <= end; i ++, j ++ )
-			data->m_files[j] = strdup(pl->m_list[i]->m_file_name);
+		{
+			song_t *s = pl->m_list[i];
+			struct song_name *sn = &data->m_files[j];
+			if (s->m_filename)
+			{
+				sn->m_filename = strdup(s->m_filename);
+				sn->m_fullname = NULL;
+			}
+			else
+			{
+				sn->m_fullname = strdup(s->m_fullname);
+				sn->m_filename = NULL;
+			}
+
+			song_metadata_t *metadata = &sn->m_metadata;
+			(*metadata) = metadata_empty;
+			metadata->m_start_time = s->m_start_time;
+			metadata->m_end_time = s->m_end_time;
+			metadata->m_len = s->m_len;
+			if (s->m_default_title)
+				metadata->m_title = strdup(s->m_default_title);
+		}
 		undo_add(player_ul, undo);
 	}
 
@@ -916,13 +756,6 @@ void plist_reload_info( plist_t *pl, bool_t global )
 	}
 } /* End of 'plist_reload_info' function */
 
-/* Handle file returned by glob */
-void plist_glob_handler( vfs_file_t *file, void *data )
-{
-	song_metadata_t metadata = SONG_METADATA_EMPTY;
-	plist_num += plist_add_one_file((plist_t *)data, file, &metadata, -1);
-} /* End of 'plist_glob_handler' function */
-
 /* Check if specified file name belongs to an object */
 bool_t plist_is_obj( char *filename )
 {
@@ -950,25 +783,288 @@ void plist_flush_scheduled( plist_t *pl )
 	}
 } /* End of 'plist_flush_scheduled' function */
 
+typedef struct
+{
+	plist_t *pl;
+	char *m_pl_name;
+	int num_added;
+} plist_cb_ctx_t;
+
+/* Cue sheets often have a .wav file specified
+ * while actually relating to an encoded file
+ * Try to fix this.
+ * By the way return full name */
+static bool_t plist_fix_wrong_file_ext( char *name )
+{
+	/* Find extension start */
+	int ext_pos = strlen(name) - 1;
+	for ( ; ext_pos >= 0; ext_pos-- )
+	{
+		/* No extension found */
+		if (name[ext_pos] == '/')
+		{
+			ext_pos = -1;
+			break;
+		}
+		if (name[ext_pos] == '.')
+			break;
+	}
+	if (ext_pos < 0)
+		return FALSE;
+	ext_pos++; /* after the dot */
+
+	/* Try supported extensions */
+	char *ext_start = name + ext_pos;
+	char *ext = pmng_first_media_ext(player_pmng);
+	for ( ; ext; ext = pmng_next_media_ext(ext) )
+	{
+		/* Try this extension */
+		strcpy(ext_start, ext);
+
+		struct stat st;
+		if (!stat(name, &st))
+		{
+			return TRUE;
+		}
+	}
+	assert(!ext);
+
+	return FALSE;
+} /* End of 'cue_fix_wrong_file_ext' function */
+
+/* Playlist item adding callback */
+static void plist_add_playlist_item( void *ctxv, char *name, song_metadata_t *metadata )
+{
+	plist_cb_ctx_t *ctx = (plist_cb_ctx_t *)ctxv;
+
+	/* Get full path relative to the play list if it is not absolute */
+	char *full_name = name;
+	if ((*name) != '/')
+	{
+		full_name = (char*)malloc(strlen(ctx->m_pl_name) + strlen(name) +
+				player_pmng->m_media_ext_max_len + 2);
+		strcpy(full_name, ctx->m_pl_name);
+		char *sep = strrchr(full_name, '/');
+		if (sep)
+			strcpy(sep + 1, name);
+		else
+			strcpy(full_name, name);
+	}
+
+	/* Fix extension if it is incorrect */
+	struct stat st;
+	if (stat(full_name, &st))
+	{
+		/* Enlarge memory for extension probing.
+		 * But only if it was not allocated in the abs path handling block
+		 * because there we already take this into account */
+		if (full_name == name)
+		{
+			full_name = (char*)malloc(strlen(name) +
+					player_pmng->m_media_ext_max_len + 1);
+		}
+
+		/* If neither extension worked don't add this item */
+		if (!plist_fix_wrong_file_ext(full_name))
+			goto finish;
+	}
+
+	ctx->num_added += plist_add_one_file(ctx->pl, full_name, metadata, -1);
+
+finish:
+	if (full_name != name)
+		free(full_name);
+} /* End of 'plist_add_playlist_item' function */
+
+void plist_add_song( plist_t *pl, song_t *song, int where )
+{
+	/* Lock play list */
+	plist_lock(pl);
+
+	/* Try to reallocate memory for play list */
+	int was_len = pl->m_len;
+	pl->m_list = (song_t **)realloc(pl->m_list,
+			sizeof(song_t *) * (pl->m_len + 1));
+	if (pl->m_list == NULL)
+	{
+		pl->m_len = 0;
+		plist_unlock(pl);
+		return;
+	}
+
+	if (where < 0 || where >= pl->m_len)  
+		where = pl->m_len;
+	memmove(&pl->m_list[where + 1], &pl->m_list[where], 
+			sizeof(song_t *) * (pl->m_len - where));
+	pl->m_list[where] = song;
+	pl->m_len ++;
+
+	/* Update current song index */
+	if (pl->m_cur_song >= where)
+		pl->m_cur_song ++;
+
+	/* If list was empty - put cursor to the first song */
+	if (!was_len)
+	{
+		pl->m_sel_start = pl->m_sel_end = 0;
+		pl->m_visual = FALSE;
+	}
+
+	/* Unlock play list */
+	plist_unlock(pl);
+}
+
+/* Add single file to play list */
+int plist_add_one_file( plist_t *pl, char *file, song_metadata_t *metadata,
+		int where )
+{
+	song_t *song;
+	int was_len;
+	assert(pl);
+
+	/* Choose if file is play list */
+	char *ext = strrchr(file, '.');
+	plist_plugin_t *plp = pmng_is_playlist(player_pmng, ext ? ext + 1 : "");
+	if (plp)
+	{
+		plist_cb_ctx_t ctx = { pl, file, 0 };
+		plp_status_t status = plp_for_each_item(plp, file, &ctx,
+				plist_add_playlist_item);
+		if (status != PLP_STATUS_OK)
+			return 0;
+
+		return ctx.num_added;
+	}
+
+	/* Initialize new song and add it to list */
+	song = song_new_from_file(file, metadata);
+	if (song == NULL)
+	{
+		plist_unlock(pl);
+		return 0;
+	}
+
+	/* Schedule song for setting its info and length */
+	if (!metadata->m_title)
+		song->m_flags |= SONG_SCHEDULE;
+
+	plist_add_song(pl, song, where);
+
+	return 1;
+} /* End of 'plist_add_one_file' function */
+
+static int plist_add_file( plist_t *pl, char *full_path )
+{
+	song_metadata_t metadata = SONG_METADATA_EMPTY;
+	return plist_add_one_file(pl, full_path, &metadata, -1);
+}
+
+static int plist_add_dir( plist_t *pl, char *dir_path );
+
+static int plist_add_real_path( plist_t *pl, char *full_path )
+{
+	/* Check if this is a directory */
+	bool_t is_dir;
+	if (!fu_file_type(full_path, &is_dir))
+		return 0;
+
+	if (is_dir)
+		return plist_add_dir(pl, full_path);
+	else
+		return plist_add_file(pl, full_path);
+}
+
+static int plist_add_dir( plist_t *pl, char *dir_path )
+{
+	/* Open directory */
+	fu_dir_t *dir = fu_opendir(dir_path);
+	if (!dir)
+		return 0;
+
+	int num_added = 0;
+	for ( ;; )
+	{
+		struct dirent *de = fu_readdir(dir);
+		if (!de)
+			break;
+		char *name = de->d_name;
+
+		if (fu_is_special_dir(name))
+			continue;
+
+		char *full_path = util_strcat(dir_path, "/", name, NULL);
+		num_added += plist_add_real_path(pl, full_path);
+		free(full_path);
+	}
+
+	fu_closedir(dir);
+	return num_added;
+}
+
+static int plist_add_uri( plist_t *pl, char *uri )
+{
+	song_metadata_t metadata = SONG_METADATA_EMPTY;
+	song_t *s = song_new_from_uri(uri, &metadata);
+	assert(s);
+	plist_add_song(pl, s, -1);
+	return 1;
+}
+
+static int plist_add_path( plist_t *pl, char *path )
+{
+	/* This is an URI */
+	if (fu_is_prefixed(path))
+		return plist_add_uri(pl, path);
+
+	/* Construct absolute path */
+	char *full_path = path;
+	if ((*path) != '/')
+	{
+		char *dirname = get_current_dir_name();
+		if (!dirname)
+		{
+			logger_error(player_log, 1, "get_current_dir_name failed: %s", strerror(errno));
+			return 0;
+		}
+
+		full_path = util_strcat(dirname, path, NULL);
+		free(dirname);
+	}
+
+	int res = plist_add_real_path(pl, full_path);
+
+	if (full_path != path)
+		free(full_path);
+
+	return res;
+}
+
 /* Add a set of files to play list */
 bool_t plist_add_set( plist_t *pl, plist_set_t *set )
 {
-	int i, num = 0;
-	struct tag_plist_set_t *node;
-	vfs_glob_flags_t flags = 0;
-
 	/* Do nothing if set is empty */
 	if (pl == NULL || set == NULL)
 		return FALSE;
 
-	/* Add each file in the set */
-	if (!set->m_patterns)
-		flags |= VFS_GLOB_NOPATTERN;
-	plist_num = 0;
-	for ( node = set->m_head; node != NULL; node = node->m_next )
+	int plist_num = 0;
+
+	for ( struct tag_plist_set_t *node = set->m_head; node; node = node->m_next )
 	{
-		vfs_glob(player_vfs, node->m_name, plist_glob_handler, pl, 
-				VFS_LEVEL_INFINITE, flags);
+		/* glob patterns */
+		if (set->m_patterns && !fu_is_prefixed(node->m_name))
+		{
+			glob_t gl;
+			if (glob(node->m_name, GLOB_TILDE, NULL, &gl))
+				continue;
+
+			for ( char **path = gl.gl_pathv; *path; ++path )
+				plist_num += plist_add_path(pl, *path);
+
+			globfree(&gl);
+		}
+		/* or just a path */
+		else
+			plist_num += plist_add_path(pl, node->m_name);
 	}
 
 	/* Set info */
@@ -1008,7 +1104,6 @@ bool_t plist_add_set( plist_t *pl, plist_set_t *set )
 			plist_sort_bounds(pl, pl->m_len - plist_num, pl->m_len - 1, cr);
 		}
 	}
-	plist_num = 0;
 
 	return TRUE;
 } /* End of 'plist_add_set' function */

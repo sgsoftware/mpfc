@@ -92,7 +92,7 @@ char *util_extension( char *name )
 {
 	char *str = strrchr(name, '.');
 	if (str == NULL)
-		return name + strlen(name);
+		return "";
 	else
 		return str + 1;
 } /* End of 'util_get_ext' function */
@@ -112,6 +112,7 @@ void util_wait( void )
 {
 	util_delay(0, 10000000);
 } /* End of 'util_wait' function */
+
 /* Get file name without full path */
 char *util_short_name( char *name )
 {

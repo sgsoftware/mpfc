@@ -218,12 +218,12 @@ void undo_undo( struct tag_undo_list_item_t *item )
 		int i;
 		for ( i = 0; i < data->m_num_files; i ++ )
 		{
-			vfs_file_t desc;
-			vfs_file_desc_init(player_vfs, &desc, data->m_files[i], NULL);
+			struct song_name *sn = &data->m_files[i];
+			song_t *song = (sn->m_filename ?
+					song_new_from_file(sn->m_filename, &sn->m_metadata) :
+					song_new_from_uri(sn->m_fullname, &sn->m_metadata));
 			
-			song_metadata_t metadata = SONG_METADATA_EMPTY;
-			plist_add_one_file(player_plist, &desc, &metadata,
-					data->m_start_pos + i);
+			plist_add_song(player_plist, song, data->m_start_pos + i);
 		}
 		plist_flush_scheduled(player_plist);
 	}
@@ -289,7 +289,13 @@ void undo_free_list( struct tag_undo_list_item_t *l )
 			if (t->m_data.m_rem.m_files != NULL)
 			{
 				for ( i = 0; i < t->m_data.m_rem.m_num_files; i ++ )
-					free(t->m_data.m_rem.m_files[i]);
+				{
+					struct song_name *sn = &t->m_data.m_rem.m_files[i];
+					if (sn->m_fullname)
+						free(sn->m_fullname);
+					if (sn->m_filename)
+						free(sn->m_filename);
+				}
 				free(t->m_data.m_rem.m_files);
 			}
 			break;

@@ -28,7 +28,6 @@
 #include "main_types.h"
 #include "plp.h"
 #include "song.h"
-#include "vfs.h"
 #include "wnd.h"
 
 /* A set of files for adding */
@@ -89,8 +88,10 @@ bool_t plist_add( plist_t *pl, char *filename );
 bool_t plist_add_set( plist_t *pl, plist_set_t *set );
 
 /* Add single file to play list */
-int plist_add_one_file( plist_t *pl, vfs_file_t *file, song_metadata_t *metadata,
+int plist_add_one_file( plist_t *pl, char *file, song_metadata_t *metadata,
 		int where );
+
+void plist_add_song( plist_t *pl, song_t *song, int where );
 
 /* Add M3U play list */
 int plist_add_m3u( plist_t *pl, char *filename );
@@ -151,9 +152,6 @@ void plist_set_song_info( plist_t *pl, int index );
 
 /* Reload all songs information */
 void plist_reload_info( plist_t *pl, bool_t global );
-
-/* Handle file returned by glob */
-void plist_glob_handler( vfs_file_t *file, void *data );
 
 /* Set info for all scheduled songs */
 void plist_flush_scheduled( plist_t *pl );

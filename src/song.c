@@ -35,62 +35,94 @@
 #include "util.h"
 #include "vfs.h"
 
-static bool_t starts_with_prefix( const char *name )
+static song_t *song_new( song_metadata_t *metadata )
 {
-	const char *p = strchr(name, '/');
-	return (p != name && *(p - 1) == ':' && *(p + 1) == '/');
-}
-
-/* Create a new song */
-song_t *song_new( vfs_file_t *file, char *title, int len )
-{
-	song_t *song;
-	char *filename = file->m_name;
-
-	/* Is this a supported format */
-	if (file_get_type(filename) == FILE_TYPE_REGULAR)
-	{
-		if (!pmng_search_format(player_pmng, file->m_name, file->m_extension))
-			return NULL;
-	}
-	
 	/* Try to allocate memory for new song */
-	song = (song_t *)malloc(sizeof(song_t));
+	song_t *song = (song_t *)malloc(sizeof(song_t));
 	if (song == NULL)
 		return NULL;
 	memset(song, 0, sizeof(*song));
 
-	/* Set song fields */
-	song->m_ref_count = 0;
-	if (!starts_with_prefix(file->m_full_name))
-	{
-		song->m_full_name = gst_filename_to_uri(file->m_full_name, NULL);
-		if (!song->m_full_name)
-		{
-			free(song);
-			return NULL;
-		}
-	}
-	else
-		song->m_full_name = strdup(file->m_full_name);
-	song->m_file_name = song->m_full_name + (file->m_name - file->m_full_name);
-	song->m_short_name = song->m_full_name +
-		(file->m_short_name - file->m_full_name);
-	song->m_file_ext = song->m_full_name + 
-		(file->m_extension - file->m_full_name);
-	song->m_info = NULL;
-	song->m_flags = 0;
-	song->m_len = len;
-	song->m_title = NULL;
 	song->m_start_time = song->m_end_time = -1;
 	pthread_mutex_init(&song->m_mutex, NULL);
+
+	/* Slice song */
+	if (metadata->m_start_time >= 0)
+	{
+		song->m_start_time = metadata->m_start_time;
+		song->m_end_time = metadata->m_end_time;
+	}
+
+	/* Set song info */
+	if (metadata->m_song_info)
+	{
+		song->m_info = metadata->m_song_info;
+		song->m_flags |= SONG_STATIC_INFO;
+	}
+
+	return song;
+}
+
+static void song_set_title( song_t *s, song_metadata_t *metadata )
+{
+	char *title = metadata->m_title;
 	if (title == NULL)
-		song_update_title(song);
+		song_update_title(s);
 	else
 	{
-		song->m_title = str_new(title);
-		song->m_default_title = strdup(title);
+		s->m_title = str_new(title);
+		s->m_default_title = strdup(title);
 	}
+}
+
+/* Create a new song */
+song_t *song_new_from_file( char *filename, song_metadata_t *metadata )
+{
+	/* Must be an absolute path */
+	assert((*filename) == '/');
+
+	/* Is this a supported format? */
+	char *ext = strrchr(filename, '.');
+	if (!ext)
+		ext = "";
+	else
+		ext++;
+	if (!pmng_search_format(player_pmng, filename, ext))
+		return NULL;
+	
+	song_t *song = song_new(metadata);
+
+	/* Set various types of file name */
+	song->m_fullname = gst_filename_to_uri(filename, NULL);
+	if (!song->m_fullname)
+	{
+		free(song);
+		return NULL;
+	}
+	song->m_filename = strdup(filename);
+
+	song_set_title(song, metadata);
+
+	return song_add_ref(song);
+} /* End of 'song_new_from_file' function */
+
+/* Create a new song from an URI */
+song_t *song_new_from_uri( char *uri, song_metadata_t *metadata )
+{
+	song_t *song = song_new(metadata);
+
+	/* Set various types of file name */
+	song->m_fullname = strdup(uri);
+	/*
+	song->m_file_name = song->m_full_name;
+	song->m_short_name = song->m_full_name;
+	song->m_file_ext = strrchr(song->m_short_name, '.');
+	if (!song->m_file_ext)
+		song->m_file_ext = "";
+		*/
+
+	song_set_title(song, metadata);
+
 	return song_add_ref(song);
 } /* End of 'song_new' function */
 
@@ -117,7 +149,9 @@ void song_free( song_t *song )
 	{
 		str_free(song->m_title);
 		si_free(song->m_info);
-		free(song->m_full_name);
+		if (song->m_filename)
+			free(song->m_filename);
+		free(song->m_fullname);
 		if (song->m_default_title != NULL)
 			free(song->m_default_title);
 		pthread_mutex_destroy(&song->m_mutex);
@@ -135,7 +169,7 @@ void song_update_info( song_t *song )
 
 	song_lock(song);
 
-	song_info_t *new_info = inp_get_info(song->m_inp, song->m_file_name, 
+	song_info_t *new_info = inp_get_info(song->m_inp, song->m_fullname, 
 			&song->m_len);
 	if (!(song->m_flags & SONG_STATIC_INFO))
 	{
@@ -176,7 +210,7 @@ void song_update_title( song_t *song )
 	if (info == NULL || !(info->m_flags & SI_INITIALIZED) ||
 			(info->m_flags & SI_ONLY_OWN))
 	{
-		song->m_title = inp_set_song_title(song->m_inp, song->m_file_name);
+		song->m_title = str_new(util_short_name(song_get_name(song)));
 		if (cfg_get_var_int(cfg_list, "convert-underscores2spaces"))
 			str_replace_char(song->m_title, '_', ' ');
 		return;
@@ -185,6 +219,7 @@ void song_update_title( song_t *song )
 	/* Use specified title format */
 	fmt = cfg_get_var(cfg_list, "title-format");
 	str = song->m_title = str_new("");
+	char *filename = song_get_name(song);
 	if (fmt != NULL && (*fmt != 0))
 	{
 		for ( ; *fmt && !finish; fmt ++ )
@@ -203,13 +238,13 @@ void song_update_title( song_t *song )
 					str_cat_cptr(str, info->m_album);
 					break;
 				case 'f':
-					str_cat_cptr(str, song->m_short_name);
+					str_cat_cptr(str, util_short_name(filename));
 					break;
 				case 'F':
-					str_cat_cptr(str, song->m_file_name);
+					str_cat_cptr(str, filename);
 					break;
 				case 'e':
-					str_cat_cptr(str, song->m_file_ext);
+					str_cat_cptr(str, util_extension(filename));
 					break;
 				case 't':
 					str_cat_cptr(str, info->m_name);
@@ -246,11 +281,11 @@ void song_update_title( song_t *song )
 /* Write song info */
 void song_write_info( song_t *s )
 {
-	if (!inp_save_info(s->m_inp, s->m_file_name, s->m_info))
+	if (!inp_save_info(s->m_inp, s->m_fullname, s->m_info))
 	{
 		song_update_info(s);
 		logger_error(player_log, 0, _("Failed to save info to file %s"),
-				s->m_file_name);
+				s->m_fullname);
 	}
 	s->m_flags &= ~(SONG_INFO_READ | SONG_INFO_WRITE);
 } /* End of 'song_write_info' function */

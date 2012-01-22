@@ -30,10 +30,12 @@
 #include "main_types.h"
 #include "mystring.h"
 #include "song_info.h"
-#include "vfs.h"
 
 /* Create a new song */
-song_t *song_new( vfs_file_t *file, char *title, int len );
+song_t *song_new_from_file( char *file, song_metadata_t *metadata );
+
+/* Create a new song */
+song_t *song_new_from_uri( char *uri, song_metadata_t *metadata);
 
 /* Add a reference to the song object */
 song_t *song_add_ref( song_t *song );
@@ -49,6 +51,15 @@ void song_update_title( song_t *song );
 
 /* Write song info */
 void song_write_info( song_t *song );
+
+/* Get song file name or full name if it's uri-based */
+static inline char* song_get_name( song_t *song )
+{
+	char *name = song->m_filename;
+	if (!name)
+		name = song->m_fullname;
+	return name;
+}
 
 /* Get input plugin */
 in_plugin_t *song_get_inp( song_t *song, file_t **fd );

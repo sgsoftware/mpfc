@@ -60,7 +60,12 @@ typedef struct tag_undo_list_t
 			} m_add_obj;
 			struct tag_undo_list_rem_t
 			{
-				char **m_files;
+				struct song_name
+				{
+					char *m_fullname;
+					char *m_filename;
+					song_metadata_t m_metadata;
+				} *m_files;
 				int m_num_files;
 				int m_start_pos;
 			} m_rem;

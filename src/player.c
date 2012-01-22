@@ -1513,7 +1513,7 @@ void player_play( int song, int start_time )
 
 	/* Start new playing thread */
 	cfg_set_var(cfg_list, "cur-song-name", 
-			util_short_name(s->m_file_name));
+			util_short_name(song_get_name(s)));
 	cfg_set_var(cfg_list, "cur-song-title", STR_TO_CPTR(s->m_title));
 	player_plist->m_cur_song = song;
 	player_context->m_cur_time = start_time;
@@ -1884,7 +1884,7 @@ void *player_thread( void *arg )
 		//player_context->m_status = PLAYER_STATUS_PLAYING;
 		player_end_track = FALSE;
 	
-		logger_debug(player_log, "Playing track %s", s->m_full_name);
+		logger_debug(player_log, "Playing track %s", s->m_fullname);
 
 		/* Get song length and information */
 		logger_debug(player_log, "Updating song info");
@@ -1942,7 +1942,7 @@ void *player_thread( void *arg )
 		gst_object_unref(bus);
 		g_signal_connect(player_pipeline, "audio-changed", (GCallback)player_on_audio_changed, NULL);
 
-		g_object_set(G_OBJECT(player_pipeline), "uri", song_played->m_full_name, NULL);
+		g_object_set(G_OBJECT(player_pipeline), "uri", song_played->m_fullname, NULL);
 
 		/* Start playing */
 		gst_element_set_state(player_pipeline, GST_STATE_PLAYING);
@@ -2334,8 +2334,9 @@ bool_t player_info_dialog_fill( dialog_t *dlg, bool_t first_call )
 			genre && own_data);
 
 	/* Set items values */
-	file_name = cfg_get_var_int(cfg_list, "info-editor-show-full-name") ?
-		main_song->m_file_name : util_short_name(main_song->m_file_name);
+	file_name = song_get_name(main_song);
+	if (!cfg_get_var_int(cfg_list, "info-editor-show-full-name"))
+		file_name = util_short_name(file_name);
 	wnd_set_title(WND_OBJ(dlg), file_name);
 	player_info_eb_set(name, info->m_name, name_diff);
 	player_info_eb_set(artist, info->m_artist, artist_diff);
@@ -2895,6 +2896,7 @@ wnd_msg_retcode_t player_on_info_spec( wnd_t *wnd )
 	cb = CHECKBOX_OBJ(dialog_find_item(DIALOG_OBJ(dlg), "write_in_all"));
 	if (cb != NULL)
 		write_in_all = (cb->m_checked);
+	/*
 	for ( i = 0; i < num_songs; i ++ )
 	{
 		in_plugin_t *inp = songs_list[i]->m_inp;
@@ -2903,6 +2905,7 @@ wnd_msg_retcode_t player_on_info_spec( wnd_t *wnd )
 			continue;
 		inp_spec_func(inp, index, songs_list[i]->m_file_name);
 	}
+	*/
 
 	/* Reload the info */
 	if (!player_info_dialog_fill(DIALOG_OBJ(dlg), FALSE))

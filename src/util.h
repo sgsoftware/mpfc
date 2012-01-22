@@ -82,6 +82,9 @@ char *util_strcat( char *first, ... );
 
 int mbslen( char *str );
 
+/* Determine file type (regular or directory) resolving symlinks */
+bool_t util_file_type(char *name, bool_t *is_dir);
+
 #endif
 
 /* End of 'util.h' file */
