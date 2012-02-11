@@ -914,6 +914,12 @@ void plist_add_song( plist_t *pl, song_t *song, int where )
 	plist_unlock(pl);
 }
 
+static plist_plugin_t *is_playlist(char *file)
+{
+	char *ext = strrchr(file, '.');
+	return pmng_is_playlist(player_pmng, ext ? ext + 1 : "");
+}
+
 /* Add single file to play list */
 int plist_add_one_file( plist_t *pl, char *file, song_metadata_t *metadata,
 		int where )
@@ -923,8 +929,7 @@ int plist_add_one_file( plist_t *pl, char *file, song_metadata_t *metadata,
 	assert(pl);
 
 	/* Choose if file is play list */
-	char *ext = strrchr(file, '.');
-	plist_plugin_t *plp = pmng_is_playlist(player_pmng, ext ? ext + 1 : "");
+	plist_plugin_t *plp = is_playlist(file);
 	if (plp)
 	{
 		plist_cb_ctx_t ctx = { pl, file, 0 };
@@ -986,9 +991,40 @@ static int plist_add_dir( plist_t *pl, char *dir_path )
 	}
 
 	int num_added = 0;
+	int only_idx = -1;
+
+	/* Smart directory adding: scan directory for playlist and 
+	 * only one playlist if there is any */
+	if (cfg_get_var_bool(cfg_list, "smart-dir-add"))
+	{
+		int plist_idx = -1;
+		int rank = 0;
+		for ( int i = 0; i < n; i++ )
+		{
+			char *name = namelist[i]->d_name;
+
+			plist_plugin_t *plp = is_playlist(name);
+			if (!plp)
+				continue;
+
+			int this_rank = PLIST_RANK(plp);
+			if (plist_idx < 0 || this_rank > rank)
+			{
+				plist_idx = i;
+				rank = this_rank;
+			}
+		}
+
+		only_idx = plist_idx;
+	}
+
 	for ( int i = 0; i < n; i++ )
 	{
 		char *name = namelist[i]->d_name;
+
+		/* Skip everything except for playlist in the smart-add mode */
+		if (only_idx != -1 && only_idx != i)
+			goto finally;
 
 		if (fu_is_special_dir(name))
 			goto finally;

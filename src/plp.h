@@ -48,9 +48,14 @@ typedef struct
 
 	/* Get supported file formats */
 	void (*m_get_formats)( char *extensions, char *content_type );
+
+	/* Rank used when comparing against other play list types
+	 * Specified with the cfg system (plugins.plist.<name>.rank)
+	 * Used for smart directory adding */
+	int m_rank;
 	
 	/* Reserved */
-	byte m_reserved[120];
+	byte m_reserved[116];
 
 	/* Reserved data */
 	byte m_reserved1[64];
@@ -69,6 +74,7 @@ typedef struct tag_plist_plugin_t
 /* Helper macros */
 #define PLIST_PLUGIN(p) ((plist_plugin_t *)p)
 #define PLIST_DATA(pd) ((plp_data_t *)pd)
+#define PLIST_RANK(plp) (plp->m_pd.m_rank)
 
 /* Initialize playlist plugin */
 plugin_t *plp_init( char *name, struct tag_pmng_t *pmng );

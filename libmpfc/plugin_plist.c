@@ -36,12 +36,13 @@ plugin_t *plp_init( char *name, pmng_t *pmng )
 
 	/* Create plugin */
 	memset(&pd, 0, sizeof(pd));
-	p = plugin_init(pmng, name, PLUGIN_TYPE_PLIST, sizeof(effect_plugin_t), 
+	p = plugin_init(pmng, name, PLUGIN_TYPE_PLIST, sizeof(plist_plugin_t), 
 			PLUGIN_DATA(&pd));
 	if (p == NULL)
 		return NULL;
 
 	/* Set other fields */
+	pd.m_rank = cfg_get_var_int(p->m_cfg, "rank");
 	PLIST_PLUGIN(p)->m_pd = pd;
 	p->m_pd = PLUGIN_DATA(&PLIST_PLUGIN(p)->m_pd);
 	return p;
