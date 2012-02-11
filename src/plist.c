@@ -976,28 +976,35 @@ static int plist_add_real_path( plist_t *pl, char *full_path )
 
 static int plist_add_dir( plist_t *pl, char *dir_path )
 {
-	/* Open directory */
-	fu_dir_t *dir = fu_opendir(dir_path);
-	if (!dir)
+	/* Get sorted directory contents */
+	struct dirent **namelist;
+	int n = scandir(dir_path, &namelist, NULL, alphasort);
+	if (n < 0)
+	{
+		logger_error(player_log, 1, "scandir failed");
 		return 0;
+	}
 
 	int num_added = 0;
-	for ( ;; )
+	for ( int i = 0; i < n; i++ )
 	{
-		struct dirent *de = fu_readdir(dir);
-		if (!de)
-			break;
-		char *name = de->d_name;
+		char *name = namelist[i]->d_name;
 
 		if (fu_is_special_dir(name))
-			continue;
+			goto finally;
+		if ((*name) == '.' && cfg_get_var_bool(cfg_list, "skip-hidden-files"))
+			goto finally;
 
 		char *full_path = util_strcat(dir_path, "/", name, NULL);
 		num_added += plist_add_real_path(pl, full_path);
 		free(full_path);
+
+	finally:
+		free(namelist[i]);
 	}
 
-	fu_closedir(dir);
+	free(namelist);
+
 	return num_added;
 }
 
