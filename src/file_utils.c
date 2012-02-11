@@ -123,7 +123,7 @@ bool_t fu_is_special_dir(char *name)
 bool_t fu_is_prefixed(char *name)
 {
 	const char *p = strchr(name, '/');
-	return (p != name && *(p - 1) == ':' && *(p + 1) == '/');
+	return (p && p != name && *(p - 1) == ':' && *(p + 1) == '/');
 }
 
 /* End of 'file_utils.h' file */
