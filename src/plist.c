@@ -1070,7 +1070,9 @@ static int plist_add_path( plist_t *pl, char *path )
 			return 0;
 		}
 
-		full_path = util_strcat(dirname, path, NULL);
+		full_path = util_strcat(dirname,
+				(dirname[strlen(dirname) - 1] == '/') ? "" : "/",
+				 path, NULL);
 		free(dirname);
 	}
 
