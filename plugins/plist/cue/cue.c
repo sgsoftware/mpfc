@@ -88,12 +88,19 @@ plp_status_t cue_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 	for ( int i = 1; i <= num_tracks; ++i )
 	{
 		Track *track = cd_get_track(cd, i);
+		char *filename = track_get_filename(track);
 
 		song_metadata_t metadata = SONG_METADATA_EMPTY;
 
 		/* Set bounds */
 		long start = cue_get_track_begin(track);
-		long end = (i < num_tracks ? cue_get_track_begin(cd_get_track(cd, i + 1)) : -1);
+		long end = -1;
+		if (i < num_tracks)
+		{
+			Track *next_track = cd_get_track(cd, i + 1);
+			if (!strcmp(filename, track_get_filename(next_track)))
+				end = cue_get_track_begin(next_track);
+		}
 		logger_error(cue_log, 0, "start = %d, end = %d", start, end);
 		metadata.m_start_time = start / 75;
 		metadata.m_end_time = (end < 0 ? -1 : end / 75);
@@ -110,7 +117,7 @@ plp_status_t cue_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 		si_set_track(si, track_num_str);
 		metadata.m_song_info = si;
 
-		f(ctx, track_get_filename(track), &metadata);
+		f(ctx, filename, &metadata);
 	}
 
 	/* Free memory */
