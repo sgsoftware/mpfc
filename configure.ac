@@ -94,6 +94,17 @@ MATH_LIBS="-lm"
 AC_SUBST(MATH_LIBS)
 LIBS=$LIBS_save
 
+# Stuff for cue plugin
+AC_ARG_ENABLE(cue, 
+[	--disable-cue		Disable cue playlist plugin [default=enabled]],,
+		enable_cue="yes")
+if test "x$enable_cue" = xyes; then
+	LIBS_save=$LIBS
+	LIBS=$LIBS_save
+else
+	AC_MSG_RESULT([*** cue plugin disabled per user request ***])
+fi
+
 # Stuff for m3u plugin
 AC_ARG_ENABLE(m3u, 
 [	--disable-m3u		Disable m3u playlist plugin [default=enabled]],,

@@ -30,7 +30,7 @@
 #include <sys/types.h>
 #include <libgen.h>
 #include <dirent.h>
-#include <libcue/libcue.h>
+#include "libcue/libcue.h"
 #include "types.h"
 #include "plp.h"
 #include "pmng.h"
