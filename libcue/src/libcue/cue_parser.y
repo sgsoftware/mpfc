@@ -236,6 +236,20 @@ track_statement
 		int i = track_get_nindex(track);
 		long prev_length;
 
+		/* Handle non-compliant cuesheets, i.e. multi-file sheets where index 0
+		 * is at the end of the previous track file
+		 * In such cases we have a FILE occurence between index 0 and index 1.
+		 * Just discard that index 0 */
+		if (NULL != new_filename && 1 == i) {
+			/* Set correct file name */
+			track_set_filename(track, new_filename);
+			new_filename = NULL;
+
+			/* Discard indices */
+			track_remove_indices(track);
+			i = 0;
+		}
+
 		if (0 == i) {
 			/* first index */
 			track_set_start(track, $3);

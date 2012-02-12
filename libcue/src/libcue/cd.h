@@ -167,5 +167,6 @@ Rem* track_get_rem(Track* track);
 void track_add_index(Track *track, long index);
 int track_get_nindex(Track *track);
 long track_get_index(Track *track, int i);
+void track_remove_indices(Track *track);
 
 #endif

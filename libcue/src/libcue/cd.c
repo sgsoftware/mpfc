@@ -348,6 +348,11 @@ void track_add_index(Track *track, long ind)
 	track->index[track->nindex - 1] = ind;
 }
 
+void track_remove_indices(Track *track)
+{
+	track->nindex = 0;
+}
+
 int track_get_nindex(Track *track)
 {
 	return track->nindex;
