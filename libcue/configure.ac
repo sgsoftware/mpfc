@@ -1,4 +1,4 @@
-AC_INIT([libcue], [1.4.0], [jochen.keil@gmail.com])
+AC_INIT([libmpfccue], [1.4.0], [sergey.e.galanov@gmail.com])
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_MACRO_DIR([config])
 AM_INIT_AUTOMAKE([foreign 1.9 dist-bzip2])
@@ -11,12 +11,12 @@ m4_define([package_version], [package_major_version.package_minor_version.packag
 AM_INIT_AUTOMAKE
 
 # This makes sure the right substitution is done
-[LIBCUE_MAJOR_VERSION]=package_major_version
-[LIBCUE_MINOR_VERSION]=package_minor_version
-[LIBCUE_MICRO_VERSION]=package_micro_version
-AC_SUBST([LIBCUE_MAJOR_VERSION])
-AC_SUBST([LIBCUE_MINOR_VERSION])
-AC_SUBST([LIBCUE_MICRO_VERSION])
+[LIBMPFCCUE_MAJOR_VERSION]=package_major_version
+[LIBMPFCCUE_MINOR_VERSION]=package_minor_version
+[LIBMPFCCUE_MICRO_VERSION]=package_micro_version
+AC_SUBST([LIBMPFCCUE_MAJOR_VERSION])
+AC_SUBST([LIBMPFCCUE_MINOR_VERSION])
+AC_SUBST([LIBMPFCCUE_MICRO_VERSION])
 
 # CURRENT:REVISION:AGE
 #
@@ -29,14 +29,14 @@ AC_SUBST([LIBCUE_MICRO_VERSION])
 # implements. In other words, the library implements all the interface numbers in
 # the range from number current - age to current.
 
-LIBCUE_LIBRARY_NAME=libcue
-AC_SUBST(LIBCUE_LIBRARY_NAME)
+LIBMPFCCUE_LIBRARY_NAME=libmpfccue
+AC_SUBST(LIBMPFCCUE_LIBRARY_NAME)
 
-LIBCUE_LIBTOOL_VERSION=$LIBCUE_MAJOR_VERSION:$LIBCUE_MINOR_VERSION:$LIBCUE_MICRO_VERSION
-AC_SUBST(LIBCUE_LIBTOOL_VERSION)
+LIBMPFCCUE_LIBTOOL_VERSION=$LIBMPFCCUE_MAJOR_VERSION:$LIBMPFCCUE_MINOR_VERSION:$LIBMPFCCUE_MICRO_VERSION
+AC_SUBST(LIBMPFCCUE_LIBTOOL_VERSION)
 
-LIBCUE_API_VERSION=$LIBCUE_MAJOR_VERSION.$LIBCUE_MINOR_VERSION
-AC_SUBST(LIBCUE_API_VERSION)
+LIBMPFCCUE_API_VERSION=$LIBMPFCCUE_MAJOR_VERSION.$LIBMPFCCUE_MINOR_VERSION
+AC_SUBST(LIBMPFCCUE_API_VERSION)
 
 AC_CHECK_HEADERS([libintl.h, malloc.c, stddef.h])
 
@@ -58,5 +58,4 @@ AC_DEFINE_UNQUOTED([PARSER_BUFFER], [$parser_buffer], [Size of parser buffer])
 AC_OUTPUT([
 Makefile
 src/libcue/Makefile
-src/libcue/libcue.pc
 ])

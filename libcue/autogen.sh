@@ -14,6 +14,6 @@ automake --force --add-missing	|| exit 1
 echo "autoconf.."
 autoconf --force		|| exit 1
 
-if [ -f configure ]; then
-	./configure $*
-fi
+#if [ -f configure ]; then
+#	./configure $*
+#fi

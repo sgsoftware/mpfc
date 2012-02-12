@@ -1,16 +1,16 @@
 AM_YFLAGS		= -d
 
-EXTRA_DIST		= libcue.pc.in
+EXTRA_DIST		= # libcue.pc.in
 
-pkgconfigdir		= $(libdir)/pkgconfig
-pkgconfig_DATA		= libcue.pc
+#pkgconfigdir		= $(libdir)/pkgconfig
+#pkgconfig_DATA		= libcue.pc
 
 
 INCLUDES		=				\
 			-I.				\
 			-Wall -Wmissing-declarations
 
-libcue_la_SOURCES	=				\
+libmpfccue_la_SOURCES	=				\
 			cd.c				\
 			cdtext.c			\
 			rem.c				\
@@ -18,14 +18,14 @@ libcue_la_SOURCES	=				\
 			cue_parser.y			\
 			cue_scanner.l
 
-libcueinclude_HEADERS	= 				\
-			libcue.h			\
-			cd.h				\
-			cdtext.h			\
-			rem.h				\
-			time.h
+#libmpfccueinclude_HEADERS	= 				\
+#			libcue.h			\
+#			cd.h				\
+#			cdtext.h			\
+#			rem.h				\
+#			time.h
 
-lib_LTLIBRARIES		= libcue.la
+lib_LTLIBRARIES		= libmpfccue.la
 
-libcue_la_LDFLAGS	= -version-info @LIBCUE_LIBTOOL_VERSION@
-libcueincludedir	= $(includedir)/@LIBCUE_LIBRARY_NAME@-@LIBCUE_API_VERSION@/@LIBCUE_LIBRARY_NAME@
+libmpfccue_la_LDFLAGS	= -version-info @LIBMPFCCUE_LIBTOOL_VERSION@
+#libmpfccueincludedir	= $(includedir)/@LIBMPFCCUE_LIBRARY_NAME@
