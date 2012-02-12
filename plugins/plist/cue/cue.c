@@ -57,6 +57,13 @@ void cue_get_formats( char *extensions, char *content_type )
 		strcpy(content_type, "");
 } /* End of 'cue_get_formats' function */
 
+static long cue_get_track_begin( Track *track )
+{
+	/* Use index 1 */
+	int index = (track_get_nindex(track) == 1 ? 0 : 1);
+	return track_get_start(track) + track_get_index(track, index);
+}
+
 /* Parse playlist and handle its contents */
 plp_status_t cue_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 {
@@ -85,10 +92,11 @@ plp_status_t cue_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 		song_metadata_t metadata = SONG_METADATA_EMPTY;
 
 		/* Set bounds */
-		long start = track_get_start(track);
-		long len = track_get_length(track);
+		long start = cue_get_track_begin(track);
+		long end = (i < num_tracks ? cue_get_track_begin(cd_get_track(cd, i + 1)) : -1);
+		logger_error(cue_log, 0, "start = %d, end = %d", start, end);
 		metadata.m_start_time = start / 75;
-		metadata.m_end_time = (len == 0) ? -1 : (start + len) / 75;
+		metadata.m_end_time = (end < 0 ? -1 : end / 75);
 
 		/* Set song info */
 		song_info_t *si = si_new();
