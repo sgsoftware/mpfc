@@ -1,0 +1,1 @@
+#define PARSER_BUFFER 1024

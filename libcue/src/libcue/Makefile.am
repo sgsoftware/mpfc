@@ -27,5 +27,5 @@ libmpfccue_la_SOURCES	=				\
 
 lib_LTLIBRARIES		= libmpfccue.la
 
-libmpfccue_la_LDFLAGS	= -version-info @LIBMPFCCUE_LIBTOOL_VERSION@
+#libmpfccue_la_LDFLAGS	= -version-info @LIBMPFCCUE_LIBTOOL_VERSION@
 #libmpfccueincludedir	= $(includedir)/@LIBMPFCCUE_LIBRARY_NAME@

@@ -1,4 +1,4 @@
-SUBDIRS = doc intl po libmpfc libmpfcwnd src plugins 
+SUBDIRS = doc intl po libmpfc libmpfcwnd libcue src plugins 
 
 ACLOCAL_AMFLAGS = -I m4
 

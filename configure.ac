@@ -4,6 +4,10 @@ AC_PROG_CC_C99
 AC_C_BIGENDIAN
 AC_PROG_LIBTOOL
 
+# For libcue
+AM_PROG_LEX
+AC_PROG_YACC
+
 m4_include([m4/pkg.m4])
 PKG_PROG_PKG_CONFIG
 
@@ -90,24 +94,6 @@ MATH_LIBS="-lm"
 AC_SUBST(MATH_LIBS)
 LIBS=$LIBS_save
 
-# Stuff for cue plugin
-AC_ARG_ENABLE(cue, 
-[	--disable-cue		Disable cue input plugin [default=enabled]],,
-		enable_cue="yes")
-if test "x$enable_cue" = xyes; then
-	LIBS_save=$LIBS
-	LIBS=$LIBS_save
-
-	# Check for libcue
-	LIBS_save=$LIBS
-	CFLAGS_save=$CFLAGS
-	PKG_CHECK_MODULES([LIBCUE], [libcue])
-	CFLAGS=$CFLAGS_save
-	LIBS=$LIBS_save
-else
-	AC_MSG_RESULT([*** cue plugin disabled per user request ***])
-fi
-
 # Stuff for m3u plugin
 AC_ARG_ENABLE(m3u, 
 [	--disable-m3u		Disable m3u playlist plugin [default=enabled]],,
@@ -186,6 +172,8 @@ AC_OUTPUT(Makefile \
 		  intl/Makefile  \
 		  libmpfc/Makefile \
 		  libmpfcwnd/Makefile \
+		  libcue/Makefile \
+		  libcue/src/libcue/Makefile \
 		  po/Makefile.in  \
 		  src/Makefile \
 		  plugins/Makefile \
