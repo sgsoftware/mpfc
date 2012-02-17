@@ -35,6 +35,13 @@
 #include "util.h"
 #include "vfs.h"
 
+static void song_set_sliced_len( song_t *song )
+{
+	song->m_len = (song->m_end_time > -1) ? 
+		(song->m_end_time - song->m_start_time) : 
+			(song->m_len - song->m_start_time);
+}
+
 static song_t *song_new( song_metadata_t *metadata )
 {
 	/* Try to allocate memory for new song */
@@ -51,6 +58,7 @@ static song_t *song_new( song_metadata_t *metadata )
 	{
 		song->m_start_time = metadata->m_start_time;
 		song->m_end_time = metadata->m_end_time;
+		song_set_sliced_len(song);
 	}
 
 	/* Set song info */
@@ -110,16 +118,7 @@ song_t *song_new_from_file( char *filename, song_metadata_t *metadata )
 song_t *song_new_from_uri( char *uri, song_metadata_t *metadata )
 {
 	song_t *song = song_new(metadata);
-
-	/* Set various types of file name */
 	song->m_fullname = strdup(uri);
-	/*
-	song->m_file_name = song->m_full_name;
-	song->m_short_name = song->m_full_name;
-	song->m_file_ext = strrchr(song->m_short_name, '.');
-	if (!song->m_file_ext)
-		song->m_file_ext = "";
-		*/
 
 	song_set_title(song, metadata);
 
@@ -181,9 +180,7 @@ void song_update_info( song_t *song )
 
 	if (song->m_start_time > -1)
 	{
-		song->m_len = (song->m_end_time > -1) ? 
-			(song->m_end_time - song->m_start_time) : 
-				(song->m_len - song->m_start_time);
+		song_set_sliced_len(song);
 	}
 
 	song_update_title(song);

@@ -101,7 +101,6 @@ plp_status_t cue_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 			if (!strcmp(filename, track_get_filename(next_track)))
 				end = cue_get_track_begin(next_track);
 		}
-		logger_error(cue_log, 0, "start = %d, end = %d", start, end);
 		metadata.m_start_time = start / 75;
 		metadata.m_end_time = (end < 0 ? -1 : end / 75);
 
