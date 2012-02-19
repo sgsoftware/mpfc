@@ -216,10 +216,7 @@ static void player_load_state( void )
 	/* Load playlist */
 	struct json_object *js_plist = json_object_object_get(js_root, "plist");
 	if (js_plist)
-	{
 		plist_import_from_json(player_plist, js_plist);
-		json_object_put(js_plist);
-	}
 
 	/* Start playing from last stop */
 	if (cfg_get_var_int(cfg_list, "play-from-stop"))

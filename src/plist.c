@@ -1307,11 +1307,11 @@ void plist_import_from_json( plist_t *pl, struct json_object *js_plist )
 		if (!js_song)
 			continue;
 		if (!json_object_is_type(js_song, json_type_object))
-			goto finally;
+			continue;
 
 		char *name = js_get_string(js_song, "name", NULL);
 		if (!name)
-			goto finally;
+			continue;
 
 		song_metadata_t metadata = SONG_METADATA_EMPTY;
 		char *title = js_get_string(js_song, "title", NULL);
@@ -1341,12 +1341,6 @@ void plist_import_from_json( plist_t *pl, struct json_object *js_plist )
 		{
 			plist_add_song(pl, s, -1);
 		}
-
-		if (js_si)
-			json_object_put(js_si);
-
-	finally:
-		json_object_put(js_song);
 	}
 }
 
