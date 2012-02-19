@@ -30,6 +30,7 @@
 #include <string.h>
 #define __USE_GNU
 #include <unistd.h>
+#include <json/json.h>
 #include "types.h"
 #include "file.h"
 #include "file_utils.h"
@@ -1236,6 +1237,118 @@ void plist_clear( plist_t *pl )
 	plist_rem(pl);
 	pl->m_visual = FALSE;
 } /* End of 'plist_clear' function */
+
+/* Export play list to a json object */
+struct json_object *plist_export_to_json( plist_t *pl )
+{
+	struct json_object *js_plist = json_object_new_array();
+	for ( int i = 0; i < pl->m_len; i ++ )
+	{
+		song_t *s = pl->m_list[i];
+		struct json_object *js_song = json_object_new_object();
+
+		json_object_object_add(js_song, "name", json_object_new_string(song_get_name(s)));
+		json_object_object_add(js_song, "length", json_object_new_int(s->m_full_len));
+		json_object_object_add(js_song, "start_time", json_object_new_int(s->m_start_time));
+		json_object_object_add(js_song, "end_time", json_object_new_int(s->m_end_time));
+
+		if (s->m_default_title)
+			json_object_object_add(js_song, "title", json_object_new_string(s->m_default_title));
+
+		if ((s->m_flags & SONG_STATIC_INFO) && s->m_info)
+		{
+			song_info_t *si = s->m_info;
+			struct json_object *js_si = json_object_new_object();
+			json_object_object_add(js_si, "artist",		json_object_new_string(si->m_artist));
+			json_object_object_add(js_si, "name",		json_object_new_string(si->m_name));
+			json_object_object_add(js_si, "album",		json_object_new_string(si->m_album));
+			json_object_object_add(js_si, "year",		json_object_new_string(si->m_year));
+			json_object_object_add(js_si, "genre",		json_object_new_string(si->m_genre));
+			json_object_object_add(js_si, "comments",	json_object_new_string(si->m_comments));
+			json_object_object_add(js_si, "track",		json_object_new_string(si->m_track));
+			if (si->m_own_data)
+				json_object_object_add(js_si, "own_data",	json_object_new_string(si->m_own_data));
+			if (si->m_charset)
+				json_object_object_add(js_si, "charset",	json_object_new_string(si->m_charset));
+			json_object_object_add(js_song, "song_info", js_si);
+		}
+
+		json_object_array_add(js_plist, js_song);
+	}
+	return js_plist;
+}
+
+static char *js_get_string( struct json_object *obj, char *key, char *def )
+{
+	struct json_object *val = json_object_object_get(obj, key);
+	if (!obj)
+		return def;
+	return json_object_get_string(val);
+}
+
+static int js_get_int( struct json_object *obj, char *key, int def )
+{
+	struct json_object *val = json_object_object_get(obj, key);
+	if (!obj)
+		return def;
+	return json_object_get_int(val);
+}
+
+/* Import play list from a json object */
+void plist_import_from_json( plist_t *pl, struct json_object *js_plist )
+{
+	if (!json_object_is_type(js_plist, json_type_array))
+		return;
+
+	int num_songs = json_object_array_length(js_plist);
+	for ( int i = 0; i < num_songs; ++i )
+	{
+		struct json_object *js_song = json_object_array_get_idx(js_plist, i);
+		if (!js_song)
+			continue;
+		if (!json_object_is_type(js_song, json_type_object))
+			goto finally;
+
+		char *name = js_get_string(js_song, "name", NULL);
+		if (!name)
+			goto finally;
+
+		song_metadata_t metadata = SONG_METADATA_EMPTY;
+		char *title = js_get_string(js_song, "title", NULL);
+		if (title)
+			metadata.m_title = title;
+		metadata.m_len = js_get_int(js_song, "length", 0);
+		metadata.m_start_time = js_get_int(js_song, "start_time", -1);
+		metadata.m_end_time = js_get_int(js_song, "end_time", -1);
+		struct json_object *js_si = json_object_object_get(js_song, "song_info");
+		if (js_si && json_object_is_type(js_si, json_type_object))
+		{
+			song_info_t *si = si_new();
+			si_set_artist	(si, js_get_string(js_si, "artist", ""));
+			si_set_name		(si, js_get_string(js_si, "name", ""));
+			si_set_album	(si, js_get_string(js_si, "album", ""));
+			si_set_year		(si, js_get_string(js_si, "year", ""));
+			si_set_genre	(si, js_get_string(js_si, "genre", ""));
+			si_set_comments	(si, js_get_string(js_si, "comments", ""));
+			si_set_track	(si, js_get_string(js_si, "track", ""));
+			metadata.m_song_info = si;
+		}
+
+		song_t *s = fu_is_prefixed(name) ?
+			song_new_from_uri(name, &metadata) :
+			song_new_from_file(name, &metadata);
+		if (s)
+		{
+			plist_add_song(pl, s, -1);
+		}
+
+		if (js_si)
+			json_object_put(js_si);
+
+	finally:
+		json_object_put(js_song);
+	}
+}
 
 /* End of 'plist.c' file */
 

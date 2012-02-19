@@ -39,7 +39,7 @@ static void song_set_sliced_len( song_t *song )
 {
 	song->m_len = (song->m_end_time > -1) ? 
 		(song->m_end_time - song->m_start_time) : 
-			(song->m_len - song->m_start_time);
+			(song->m_full_len - song->m_start_time);
 }
 
 static song_t *song_new( song_metadata_t *metadata )
@@ -51,6 +51,7 @@ static song_t *song_new( song_metadata_t *metadata )
 	memset(song, 0, sizeof(*song));
 
 	song->m_start_time = song->m_end_time = -1;
+	song->m_len = song->m_full_len = metadata->m_len;
 	pthread_mutex_init(&song->m_mutex, NULL);
 
 	/* Slice song */
@@ -169,7 +170,8 @@ void song_update_info( song_t *song )
 	song_lock(song);
 
 	song_info_t *new_info = inp_get_info(song->m_inp, song->m_fullname, 
-			&song->m_len);
+			&song->m_full_len);
+	song->m_len = song->m_full_len;
 	if (!(song->m_flags & SONG_STATIC_INFO))
 	{
 		si_free(song->m_info);

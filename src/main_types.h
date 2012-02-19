@@ -53,8 +53,11 @@ typedef struct tag_song_t
 	/* Real file name (might be null if the song has been created from an URI) */
 	char *m_filename;
 
-	/* Song length */
+	/* Sliced song length */
 	int m_len;
+
+	/* Full song length */
+	int m_full_len;
 
 	/* Song start and end (for projected songs) */
 	int m_start_time, m_end_time;

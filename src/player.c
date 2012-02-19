@@ -30,6 +30,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <gst/gst.h>
+#include <json/json.h>
 #include "types.h"
 #include "browser.h"
 #include "cfg.h"
@@ -172,6 +173,115 @@ pthread_t player_main_tid = 0;
  * Initialization/deinitialization functions
  *
  *****/
+
+static int js_get_int( struct json_object *obj, char *key, int def )
+{
+	struct json_object *val = json_object_object_get(obj, key);
+	if (!obj)
+		return def;
+	return json_object_get_int(val);
+}
+
+/* Load player state */
+static void player_load_state( void )
+{
+	char *fname = util_strcat(getenv("HOME"), "/.mpfc/state", NULL);
+	if (!fname)
+		goto finally_fname;
+
+	/* Allocate buffer */
+	int sz = util_get_file_size(fname);
+	if (sz <= 0)
+		goto finally_fname;
+	char *buf = (char *)malloc(sz + 1);
+	if (!buf)
+		goto finally_buf;
+
+	/* Read */
+	FILE *fd = fopen(fname, "rt");
+	if (!fd)
+		goto finally_fd;
+	if (!fgets(buf, sz + 1, fd))
+		goto finally_fd;
+
+	/* Parse */
+	struct json_object *js_root = json_tokener_parse(buf);
+	if (is_error(js_root) || !json_object_is_type(js_root, json_type_object))
+	{
+		logger_error(player_log, 1, "unable to parse player state");
+		js_root = NULL;
+		goto finally_js;
+	}
+
+	/* Load playlist */
+	struct json_object *js_plist = json_object_object_get(js_root, "plist");
+	if (js_plist)
+	{
+		plist_import_from_json(player_plist, js_plist);
+		json_object_put(js_plist);
+	}
+
+	/* Start playing from last stop */
+	if (cfg_get_var_int(cfg_list, "play-from-stop"))
+	{
+		logger_debug(player_log, "Playing from stop");
+		player_context->m_status = js_get_int(js_root, "player-status", PLAYER_STATUS_STOPPED);
+		player_start = js_get_int(js_root, "player-start", 0) - 1;
+		player_end = js_get_int(js_root, "player-end", 0) - 1;
+		if (player_context->m_status != PLAYER_STATUS_STOPPED)
+			player_play(js_get_int(js_root, "cur-song", -1),
+					js_get_int(js_root, "cur-time", 0));
+	}
+
+	/* Load player state */
+	json_object_object_add(js_root, "cur-song", json_object_new_int(player_plist->m_cur_song));
+	json_object_object_add(js_root, "cur-time", json_object_new_int(player_context->m_cur_time));
+	json_object_object_add(js_root, "player-status", json_object_new_int(player_context->m_status));
+	json_object_object_add(js_root, "player-start", json_object_new_int(player_start + 1));
+	json_object_object_add(js_root, "player-end", json_object_new_int(player_end + 1));
+
+finally_js:
+	if (js_root)
+		json_object_put(js_root);
+finally_fd:
+	if (fd)
+		fclose(fd);
+finally_buf:
+	free(buf);
+finally_fname:
+	free(fname);
+}
+
+/* Save player state */
+static void player_save_state( void )
+{
+	/* We use JSON */
+	struct json_object *js_root = json_object_new_object();
+
+	/* Save playlist */
+	if (player_plist && cfg_get_var_int(cfg_list, "save-playlist-on-exit"))
+	{
+		json_object_object_add(js_root, "plist", plist_export_to_json(player_plist));
+	}
+
+	/* Save player state */
+	json_object_object_add(js_root, "cur-song", json_object_new_int(player_plist->m_cur_song));
+	json_object_object_add(js_root, "cur-time", json_object_new_int(player_context->m_cur_time));
+	json_object_object_add(js_root, "player-status", json_object_new_int(player_context->m_status));
+	json_object_object_add(js_root, "player-start", json_object_new_int(player_start + 1));
+	json_object_object_add(js_root, "player-end", json_object_new_int(player_end + 1));
+
+	/* Save to a file */
+	FILE *fd = fopen(util_strcat(getenv("HOME"), "/.mpfc/state", NULL), "wt");
+	if (fd)
+	{
+		fputs(json_object_get_string(js_root), fd);
+		fclose(fd);
+	}
+
+	/* Save some stuff through the cfg system */
+	player_save_cfg();
+}
 
 /* Initialize player */
 bool_t player_init( int argc, char *argv[] )
@@ -320,7 +430,7 @@ bool_t player_init( int argc, char *argv[] )
 	/* Load saved play list if files list is empty */
 	logger_debug(player_log, "Adding list.m3u");
 	if (!player_num_files)
-		plist_add(player_plist, "~/.mpfc/list.m3u");
+		player_load_state();
 
 	/* Initialize history lists */
 	logger_debug(player_log, "Initializing history");
@@ -344,18 +454,6 @@ bool_t player_init( int argc, char *argv[] )
 
 	/* Initialize equalizer */
 	player_eq_changed = FALSE;
-
-	/* Start playing from last stop */
-	if (cfg_get_var_int(cfg_list, "play-from-stop") && !player_num_files)
-	{
-		logger_debug(player_log, "Playing from stop");
-		player_context->m_status = cfg_get_var_int(cfg_list, "player-status");
-		player_start = cfg_get_var_int(cfg_list, "player-start") - 1;
-		player_end = cfg_get_var_int(cfg_list, "player-end") - 1;
-		if (player_context->m_status != PLAYER_STATUS_STOPPED)
-			player_play(cfg_get_var_int(cfg_list, "cur-song"),
-					cfg_get_var_int(cfg_list, "cur-time"));
-	}
 
 	/* Start server */
 	server_start();
@@ -408,15 +506,8 @@ void player_root_destructor( wnd_t *wnd )
 {
 	logger_debug(player_log, "In player_root_destructor");
 
-	/* Save information about place in song where we stop */
-	logger_debug(player_log, "Saving position to configuration");
-	cfg_set_var_int(cfg_list, "cur-song", 
-			player_plist->m_cur_song);
-	cfg_set_var_int(cfg_list, "cur-time", player_context->m_cur_time);
-	cfg_set_var_int(cfg_list, "player-status", player_context->m_status);
-	cfg_set_var_int(cfg_list, "player-start", player_start + 1);
-	cfg_set_var_int(cfg_list, "player-end", player_end + 1);
-	player_save_cfg();
+	/* Save player state */
+	player_save_state();
 	
 	/* End playing thread */
 	logger_debug(player_log, "Doing irw_free");
@@ -476,13 +567,6 @@ void player_deinit( void )
 	/* Destroy all objects */
 	if (player_plist != NULL)
 	{
-		/* Save play list */
-		if (cfg_get_var_int(cfg_list, "save-playlist-on-exit"))
-		{
-			logger_debug(player_log, "Saving play list");
-			plist_save(player_plist, "~/.mpfc/list.m3u");
-		}
-		
 		logger_debug(player_log, "Destroying play list");
 		plist_free(player_plist);
 		player_plist = NULL;
@@ -654,26 +738,11 @@ bool_t player_init_cfg( void )
 void player_save_cfg( void )
 {
 	FILE *fd;
-	char *names[] = 
-	{ 
-		"cur-song", "cur-time", "player-status", "player-start", "player-end",
-		"equalizer"
-	};
-	int num_vars = sizeof(names) / sizeof(*names), i;
 
 	/* Open file */
 	fd = fopen(player_cfg_autosave_file, "wt");
 	if (fd == NULL)
 		return;
-
-	/* Save the vars */
-	for ( i = 0; i < num_vars; i ++ )
-	{
-		cfg_node_t *node = cfg_search_node(cfg_list, names[i]);
-		if (node == NULL)
-			continue;
-		cfg_rcfile_save_node(fd, node, NULL);
-	}
 
 	/* Save plugins parameters if need */
 	if (cfg_get_var_bool(cfg_list, "autosave-plugins-params"))
