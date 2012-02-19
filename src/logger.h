@@ -26,8 +26,10 @@
 #include <pthread.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <pthread.h>
 #include "types.h"
 #include "cfg.h"
+#include "rd_with_notify.h"
 
 /* Log message types */
 typedef enum
@@ -73,6 +75,11 @@ typedef struct tag_logger_t
 
 	/* Log file name descriptor */
 	FILE *m_fd;
+
+	/* Stuff for stderr redirection */
+	int m_stderr_pipe[2];
+	rd_with_notify_t *m_stderr_rdwn;
+	pthread_t m_stderr_tid;
 
 	/* Handlers list */
 	struct logger_handler_t

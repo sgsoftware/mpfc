@@ -24,11 +24,81 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "types.h"
 #include "cfg.h"
 #include "logger.h"
 
 int logger_get_level( logger_t *log );
+
+static void *logger_stderr_thread( void *arg )
+{
+	logger_t *log = (logger_t *)arg;
+
+	for ( ;; )
+	{
+		int retv = rd_with_notify_wait(log->m_stderr_rdwn);
+		if (!retv)
+			break;
+
+		/* Exit notification */
+		if (retv & RDWN_NOTIFY_READY)
+			break;
+
+		/* Read from stderr */
+		char buf[1024];
+		int sz = read(RDWN_FD(log->m_stderr_rdwn), buf, sizeof(buf) - 1);
+		if (sz < 0)
+			continue;
+		buf[sz] = 0;
+
+		/* Add to the log */
+		logger_error(log, 0, "%s", buf);
+	}
+
+	return NULL;
+}
+
+static bool_t logger_redirect_stderr( logger_t *log )
+{
+	/* Create a pipe */
+	if (pipe(log->m_stderr_pipe) < 0)
+	{
+		log->m_stderr_pipe[0] = -1;
+		log->m_stderr_pipe[1] = -1;
+		return FALSE;
+	}
+
+	/* Replace stderr with the write side of the pipe */
+	if (dup2(log->m_stderr_pipe[1], STDERR_FILENO) < 0)
+		goto failed;
+	log->m_stderr_rdwn = rd_with_notify_new(log->m_stderr_pipe[0]);
+	if (!log->m_stderr_rdwn)
+		goto failed;
+
+	/* Create thread listening on the read side */
+	if (pthread_create(&log->m_stderr_tid, NULL, logger_stderr_thread, log))
+		goto failed;
+
+	return TRUE;
+failed:
+	if (log->m_stderr_rdwn)
+	{
+		rd_with_notify_free(log->m_stderr_rdwn);
+		log->m_stderr_rdwn = NULL;
+	}
+	if (log->m_stderr_pipe[0] >= 0)
+	{
+		close(log->m_stderr_pipe[0]);
+		log->m_stderr_pipe[0] = -1;
+	}
+	if (log->m_stderr_pipe[1] >= 0)
+	{
+		close(log->m_stderr_pipe[1]);
+		log->m_stderr_pipe[1] = -1;
+	}
+	return FALSE;
+}
 
 /* Initialize logger */
 logger_t *logger_new( cfg_node_t *cfg_list, char *file_name )
@@ -40,6 +110,7 @@ logger_t *logger_new( cfg_node_t *cfg_list, char *file_name )
 	if (log == NULL)
 		return NULL;
 	memset(log, 0, sizeof(*log));
+	log->m_stderr_tid = -1;
 	log->m_cfg = cfg_list;
 	log->m_level = logger_get_level(log);
 	cfg_set_var_handler(log->m_cfg, "log-level", logger_on_change_level, log);
@@ -50,6 +121,10 @@ logger_t *logger_new( cfg_node_t *cfg_list, char *file_name )
 
 	/* Create logger mutex */
 	pthread_mutex_init(&log->m_mutex, NULL);
+
+	/* We will redirect stuff written to stderr to the log */
+	logger_redirect_stderr(log);
+
 	return log;
 } /* End of 'logger_new' function */
 
@@ -60,6 +135,21 @@ void logger_free( logger_t *log )
 	struct logger_handler_t *h;
 
 	assert(log);
+
+	/* Close stderr redirection */
+	if (log->m_stderr_tid >= 0)
+	{
+		char msg = 0;
+		assert(log->m_stderr_rdwn);
+		write(RDWN_NOTIFY_WRITE_FD(log->m_stderr_rdwn), &msg, 1);
+		pthread_join(log->m_stderr_tid, NULL);
+	}
+	if (log->m_stderr_rdwn)
+		rd_with_notify_free(log->m_stderr_rdwn);
+	if (log->m_stderr_pipe[0] >= 0)
+		close(log->m_stderr_pipe[0]);
+	if (log->m_stderr_pipe[1] >= 0)
+		close(log->m_stderr_pipe[1]);
 
 	/* Free mutex */
 	pthread_mutex_destroy(&log->m_mutex);
