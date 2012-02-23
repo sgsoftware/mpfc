@@ -2142,7 +2142,6 @@ void player_add_dialog( void )
 	dlg = dialog_new(wnd_root, _("Add songs"));
 	eb = filebox_new_with_label(WND_OBJ(dlg->m_vbox), _("File &name: "), 
 			"name", "", 'n', 50);
-	eb->m_vfs = player_vfs;
 	EDITBOX_OBJ(eb)->m_history = player_hist_lists[PLAYER_HIST_LIST_ADD];
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_add);
 	dialog_arrange_children(dlg);

@@ -24,7 +24,6 @@
 #define __SG_MPFC_WND_FILEBOX_H__
 
 #include "types.h"
-#include "vfs.h"
 #include "wnd.h"
 #include "wnd_editbox.h"
 
@@ -32,7 +31,6 @@
 typedef enum
 {
 	FILEBOX_ONLY_DIRS = 1 << 0,
-	FILEBOX_NOPATTERN = 1 << 1,
 } filebox_flags_t;
 
 /* File box type */
@@ -54,9 +52,6 @@ typedef struct
 
 	/* Start of the text that we are inserting */
 	int m_insert_start;
-
-	/* Virtual file system data (used for auto-completion) */
-	vfs_t *m_vfs;
 
 	/* Names building temporary values */
 	str_t *m_pattern;
@@ -80,34 +75,6 @@ bool_t filebox_construct( filebox_t *fb, wnd_t *parent, char *id, char *text,
 /* Create an edit box with label */
 filebox_t *filebox_new_with_label( wnd_t *parent, char *title, char *id,
 		char *text, char letter, int width );
-
-/* Destructor */
-void filebox_destructor( wnd_t *wnd );
-
-/* 'action' message handler */
-wnd_msg_retcode_t filebox_on_action( wnd_t *wnd, char *action );
-
-/* Load names list */
-void filebox_load_names( filebox_t *fb );
-
-/* Insert next entry in the file names */
-void filebox_insert_next( filebox_t *fb );
-
-/* Free names list */
-void filebox_free_names( filebox_t *fb );
-
-/* Handler for glob */
-void filebox_glob_handler( vfs_file_t *file, void *data );
-
-/* 
- * Class functions
- */
-
-/* Initialize file box class */
-wnd_class_t *filebox_class_init( wnd_global_data_t *global );
-
-/* Set file box class default styles */
-void filebox_class_set_default_styles( cfg_node_t *list );
 
 #endif
 

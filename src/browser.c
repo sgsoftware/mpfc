@@ -951,8 +951,7 @@ void fb_cd_dialog( browser_t *fb )
 	dlg = dialog_new(WND_OBJ(fb), _("Change directory"));
 	eb = filebox_new_with_label(WND_OBJ(dlg->m_vbox), _("&Directory: "), 
 			"dir", "", 'd', 50);
-	eb->m_vfs = player_vfs;
-	eb->m_flags |= (FILEBOX_ONLY_DIRS | FILEBOX_NOPATTERN);
+	eb->m_flags |= FILEBOX_ONLY_DIRS;
 	EDITBOX_OBJ(eb)->m_history = player_hist_lists[PLAYER_HIST_FB_CD];
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", fb_on_cd);
 	dialog_arrange_children(dlg);
