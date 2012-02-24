@@ -25,7 +25,6 @@
 
 #include "types.h"
 #include "song_info.h"
-#include "vfs.h"
 #include "wnd.h"
 
 /* File browser window type */
@@ -117,9 +116,6 @@ void fb_move_cursor( browser_t *fb, int pos, bool_t rel );
 /* Reload directory files list */
 void fb_load_files( browser_t *fb );
 
-/* Add a file to list */
-void fb_add_file( browser_t *fb, vfs_file_t *file );
-
 /* Free files list */
 void fb_free_files( browser_t *fb );
 
@@ -173,9 +169,6 @@ wnd_class_t *fb_class_init( wnd_global_data_t *global );
 
 /* Set browser class default styles */
 void fb_class_set_default_styles( cfg_node_t *list );
-
-/* Handle glob */
-void fb_glob_handler( vfs_file_t *file, void *data );
 
 #endif
 

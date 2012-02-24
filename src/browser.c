@@ -22,7 +22,7 @@
 
 #include <stdlib.h>
 #include <fnmatch.h>
-#include <glob.h>
+#include <dirent.h>
 #include <string.h>
 #include <sys/types.h>
 #include "types.h"
@@ -451,13 +451,60 @@ void fb_move_cursor( browser_t *fb, int pos, bool_t rel )
 	}
 } /* End of 'fb_move_cursor' function */
 
+/* Add a file to list */
+static void fb_add_file( browser_t *fb, char *name )
+{
+	struct browser_list_item *item;
+	bool_t isdir = FALSE;
+	assert(fb);
+
+	char *full_name = util_strcat(fb->m_cur_dir, name, NULL);
+	struct stat st;
+	if (stat(full_name, &st))
+	{
+		free(full_name);
+		return;
+	}
+	
+	/* Get file type */
+	if (S_ISDIR(st.st_mode))
+		isdir = TRUE;
+
+	/* Rellocate memory for files list */
+	fb->m_files = (struct browser_list_item *)realloc(fb->m_files,
+			(fb->m_num_files + 1) * sizeof(*fb->m_files));
+
+	/* If we have a directory - insert it before normal files */
+	if (isdir)
+	{
+		int i;
+		for ( i = 0; i < fb->m_num_files; i ++ )
+			if (!(fb->m_files[i].m_type & FB_ITEM_DIR))
+			{
+				memmove(&fb->m_files[i + 1], &fb->m_files[i], 
+						(fb->m_num_files - i) * sizeof(*fb->m_files));
+				break;
+			}
+		item = &fb->m_files[i];
+	}
+	else
+		item = &fb->m_files[fb->m_num_files];
+
+	/* Set file data */
+	item->m_type = isdir ? FB_ITEM_DIR : 0;
+	item->m_full_name = full_name;
+	item->m_name = util_short_name(full_name);
+	item->m_y = -1;
+	item->m_info = NULL;
+	item->m_len = 0;
+	if (!strcmp(item->m_name, ".."))
+		item->m_type |= FB_ITEM_UPDIR;
+	fb->m_num_files ++;
+} /* End of 'fb_add_file' function */
+
 /* Reload directory files list */
 void fb_load_files( browser_t *fb )
 {
-	glob_t gl;
-	int i;
-	char pattern[MAX_FILE_NAME];
-
 	assert(fb);
 
 	/* Free current files list */
@@ -468,9 +515,26 @@ void fb_load_files( browser_t *fb )
 	fb->m_num_files = 0;
 
 	/* Find files */
-	vfs_glob(player_vfs, fb->m_cur_dir, fb_glob_handler, fb, 1,
-			VFS_GLOB_NOPATTERN | VFS_GLOB_RETURN_DIRS | 
-			VFS_GLOB_RETURN_SPEC_LINKS | VFS_GLOB_AT_LEVEL_ONLY);
+	struct dirent **namelist;
+	int n = scandir(fb->m_cur_dir, &namelist, NULL, alphasort);
+	if (n >= 0)
+	{
+		for ( int i = 0; i < n; ++i )
+		{
+			char *name = namelist[i]->d_name;
+
+			/* Filter */
+			if (strcmp(name, "..") && name[0] == '.')
+				goto next;
+			
+			/* Add this file */
+			fb_add_file(fb, name);
+
+		next:
+			free(namelist[i]);
+		}
+		free(namelist);
+	}
 
 	/* Load info if we are in info mode */
 	if (fb->m_info_mode)
@@ -494,50 +558,6 @@ void fb_free_files( browser_t *fb )
 	fb->m_files = NULL;
 	fb->m_num_files = 0;
 } /* End of 'fb_free_files' function */
-
-/* Add a file to list */
-void fb_add_file( browser_t *fb, vfs_file_t *file )
-{
-	struct browser_list_item *item;
-	bool_t isdir = FALSE;
-	int i;
-	assert(fb);
-	assert(file);
-	
-	/* Get file type */
-	if (S_ISDIR(file->m_stat.st_mode))
-		isdir = TRUE;
-
-	/* Rellocate memory for files list */
-	fb->m_files = (struct browser_list_item *)realloc(fb->m_files,
-			(fb->m_num_files + 1) * sizeof(*fb->m_files));
-
-	/* If we have a directory - insert it before normal files */
-	if (isdir)
-	{
-		for ( i = 0; i < fb->m_num_files; i ++ )
-			if (!(fb->m_files[i].m_type & FB_ITEM_DIR))
-			{
-				memmove(&fb->m_files[i + 1], &fb->m_files[i], 
-						(fb->m_num_files - i) * sizeof(*fb->m_files));
-				break;
-			}
-		item = &fb->m_files[i];
-	}
-	else
-		item = &fb->m_files[fb->m_num_files];
-
-	/* Set file data */
-	item->m_type = isdir ? FB_ITEM_DIR : 0;
-	item->m_full_name = strdup(file->m_full_name);
-	item->m_name = item->m_full_name + (file->m_short_name - file->m_full_name);
-	item->m_y = -1;
-	item->m_info = NULL;
-	item->m_len = 0;
-	if (!strcmp(item->m_name, ".."))
-		item->m_type |= FB_ITEM_UPDIR;
-	fb->m_num_files ++;
-} /* End of 'fb_add_file' function */
 
 /* Go to the directory under cursor */
 void fb_go_to_dir( browser_t *fb )
@@ -676,7 +696,12 @@ void fb_change_dir( browser_t *fb, char *dir )
 	if (fb == NULL)
 		return;
 
-	util_strncpy(fb->m_cur_dir, dir, sizeof(fb->m_cur_dir));
+	/* Handle tilde expansion */
+	if (dir[0] == '~' && (dir[1] == 0 || dir[1] == '/'))
+		snprintf(fb->m_cur_dir, sizeof(fb->m_cur_dir),
+				"%s%s", getenv("HOME"), dir + 1);
+	else
+		util_strncpy(fb->m_cur_dir, dir, sizeof(fb->m_cur_dir));
 	if (fb->m_cur_dir[strlen(fb->m_cur_dir) - 1] != '/')
 		strcat(fb->m_cur_dir, "/");
 	fb_load_files(fb);
@@ -930,17 +955,6 @@ void fb_class_set_default_styles( cfg_node_t *list )
 	cfg_set_var(list, "kbind.deselect_pattern", "-");
 	cfg_set_var(list, "kbind.help", "?");
 } /* End of 'fb_class_set_default_styles' function */
-
-/* Handle glob */
-void fb_glob_handler( vfs_file_t *file, void *data )
-{
-	/* Filter */
-	if (strcmp(file->m_short_name, "..") && file->m_short_name[0] == '.')
-		return;
-	
-	/* Add this file */
-	fb_add_file((browser_t *)data, file);
-} /* End of 'fb_glob_handler' function */
 
 /* Launch change directory dialog */
 void fb_cd_dialog( browser_t *fb )
