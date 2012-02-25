@@ -64,16 +64,6 @@ msgstr "Заполняю буфер: %d%%"
 msgid "Plugin %s has no 'plugin_exchange_data'"
 msgstr "Плагин %s не имеет 'plugin_exchange_data'"
 
-#: libmpfc/vfs.c:142 libmpfc/vfs.c:245
-#, c-format
-msgid "Unable to read directory %s"
-msgstr "Не могу прочитать каталог %s"
-
-#: libmpfc/vfs.c:214
-#, c-format
-msgid "Unable to stat file %s"
-msgstr "Не могу получить информацию о файле %s"
-
 #: libmpfcwnd/wnd.c:747
 msgid "No children\n"
 msgstr "Нет детей\n"
