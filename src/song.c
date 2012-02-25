@@ -33,7 +33,6 @@
 #include "song.h"
 #include "song_info.h"
 #include "util.h"
-#include "vfs.h"
 
 static void song_set_sliced_len( song_t *song )
 {

@@ -48,7 +48,6 @@
 #include "test.h"
 #include "undo.h"
 #include "util.h"
-#include "vfs.h"
 #include "wnd.h"
 #include "wnd_button.h"
 #include "wnd_checkbox.h"
@@ -157,9 +156,6 @@ logger_view_t *player_logview = NULL;
 
 /* Standard value for edit boxes width */
 #define PLAYER_EB_WIDTH	50
-
-/* VFS data */
-vfs_t *player_vfs = NULL;
 
 /* enqueued songs */
 int queued_songs[PLAYER_MAX_ENQUEUED];
@@ -374,15 +370,6 @@ bool_t player_init( int argc, char *argv[] )
 	player_pmng->m_player_wnd = player_wnd;
 	player_pmng->m_player_context = player_context;
 
-	/* Initialize VFS */
-	logger_debug(player_log, "Initializing VFS");
-	player_vfs = vfs_init(player_pmng);
-	if (player_vfs == NULL)
-	{
-		logger_fatal(player_log, 0, _("Unable to initialize VFS module"));
-		return FALSE;
-	}
-
 	/* Initialize info read/write thread */
 	logger_debug(player_log, "Initializing info read/write thread");
 	if (!irw_init())
@@ -571,8 +558,6 @@ void player_deinit( void )
 	logger_debug(player_log, "Freeing undo information");
 	undo_free(player_ul);
 	player_ul = NULL;
-	logger_debug(player_log, "Freeing VFS");
-	vfs_free(player_vfs);
 	if (player_context != NULL)
 	{
 		free(player_context);

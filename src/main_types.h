@@ -30,7 +30,6 @@
 #include "inp.h"
 #include "mystring.h"
 #include "song_info.h"
-#include "vfs.h"
 
 /* Song flags */
 typedef enum

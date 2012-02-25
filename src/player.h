@@ -33,7 +33,6 @@
 #include "pmng.h"
 #include "undo.h"
 #include "wnd.h"
-#include "vfs.h"
 #include "wnd_dialog.h"
 #include "wnd_editbox.h"
 
@@ -121,9 +120,6 @@ extern cfg_node_t *cfg_list;
 /* Logger */
 extern logger_t *player_log;
 extern logger_view_t *player_logview;
-
-/* VFS data */
-extern vfs_t *player_vfs;
 
 /* enqueued songs - max of PLAYER_MAX_ENQUEUED */
 extern int queued_songs[PLAYER_MAX_ENQUEUED];

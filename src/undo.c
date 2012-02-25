@@ -25,7 +25,6 @@
 #include "types.h"
 #include "player.h"
 #include "plist.h"
-#include "vfs.h"
 #include "undo.h"
 
 /* Initialize undo list */

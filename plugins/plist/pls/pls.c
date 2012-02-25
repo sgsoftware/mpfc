@@ -185,8 +185,6 @@ plp_status_t pls_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 
 		if (name != NULL)
 		{
-			vfs_file_t desc;
-
 			song_metadata_t metadata = SONG_METADATA_EMPTY;
 			metadata.m_title = title;
 			metadata.m_len = len < 0 ? 0 : len;

@@ -24,6 +24,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+#include <fts.h>
 #include <gst/gst.h>
 #include "types.h"
 #include "cfg.h"
@@ -36,7 +37,6 @@
 #include "plugin.h"
 #include "pmng.h"
 #include "util.h"
-#include "vfs.h"
 
 /* Build supported media file extensions list */
 static bool_t pmng_fill_media_file_exts( pmng_t *pmng )
@@ -306,64 +306,15 @@ plugin_t *pmng_search_by_name( pmng_t *pmng, char *name,
 	return NULL;
 } /* End of 'pmng_search_by_name' function */
 
-/* Load plugins */
-bool_t pmng_load_plugins( pmng_t *pmng )
-{
-	char path[MAX_FILE_NAME];
-	struct 
-	{
-		plugin_type_t m_type;
-		pmng_t *pmng;
-	} data = {0, pmng};
-	struct
-	{
-		plugin_type_t m_type;
-		char *m_dir;
-	} types[] = { { PLUGIN_TYPE_INPUT, "input" }, 
-				{ PLUGIN_TYPE_OUTPUT, "output" },
-				{ PLUGIN_TYPE_EFFECT, "effect" },
-				{ PLUGIN_TYPE_CHARSET, "charset" },
-				{ PLUGIN_TYPE_PLIST, "plist" },
-				{ PLUGIN_TYPE_GENERAL, "general" } };
-	int num_types, i;
-	if (pmng == NULL)
-		return FALSE;
-
-	/* Load plugins of all types */
-	num_types = sizeof(types) / sizeof(types[0]);
-	for ( i = 0; i < num_types; i ++ )
-	{
-		data.m_type = types[i].m_type;
-		snprintf(path, sizeof(path), "%s/%s", 
-				cfg_get_var(pmng->m_cfg_list, "lib-dir"), types[i].m_dir);
-		vfs_glob(NULL, path, pmng_glob_handler, &data, VFS_LEVEL_INFINITE, 
-				VFS_GLOB_NOPATTERN);
-	}
-	return TRUE;
-} /* End of 'pmng_load_plugins' function */
-
 /* Plugin glob handler */
-void pmng_glob_handler( vfs_file_t *file, void *data )
+static void pmng_glob_handler( pmng_t *pmng, plugin_type_t type, const char *path )
 {
-	struct data_t
-	{
-		plugin_type_t m_type;
-		pmng_t *m_pmng;
-	} *pmng_data;
-	pmng_t *pmng;
-	plugin_type_t type;
-	char *name;
 	plugin_t *p = NULL;
 
 	/* Filter files */
-	if (strcmp(file->m_extension, "so"))
+	if (strcmp(util_extension((char*)path), "so"))
 		return;
-	name = file->m_name;
-
-	/* Get data */
-	pmng_data = (struct data_t *)data;
-	pmng = pmng_data->m_pmng;
-	type = pmng_data->m_type;
+	char *name = (char*)path;
 
 	/* Check if this plugin is not loaded already */
 	if (pmng_is_loaded(pmng, name, type))
@@ -400,7 +351,55 @@ void pmng_glob_handler( vfs_file_t *file, void *data )
 		if (out_plugin != NULL && !strcmp(PLUGIN(op)->m_name, out_plugin))
 			pmng->m_cur_out = op;
 	}
+	return;
 } /* End of 'pmng_glob_handler' function */
+
+/* Load plugins */
+bool_t pmng_load_plugins( pmng_t *pmng )
+{
+	char path[MAX_FILE_NAME];
+	struct
+	{
+		plugin_type_t m_type;
+		char *m_dir;
+	} types[] = { { PLUGIN_TYPE_INPUT, "input" }, 
+				{ PLUGIN_TYPE_OUTPUT, "output" },
+				{ PLUGIN_TYPE_EFFECT, "effect" },
+				{ PLUGIN_TYPE_CHARSET, "charset" },
+				{ PLUGIN_TYPE_PLIST, "plist" },
+				{ PLUGIN_TYPE_GENERAL, "general" } };
+	int num_types, i;
+	if (pmng == NULL)
+		return FALSE;
+
+	/* Load plugins of all types */
+	num_types = sizeof(types) / sizeof(types[0]);
+	for ( i = 0; i < num_types; i ++ )
+	{
+		snprintf(path, sizeof(path), "%s/%s", 
+				cfg_get_var(pmng->m_cfg_list, "lib-dir"), types[i].m_dir);
+
+		/* Walk file tree */
+		char *names[2];
+		names[0] = path;
+		names[1] = NULL;
+		FTS *fts = fts_open(names, FTS_NOCHDIR, NULL);
+		if (!fts)
+			continue;
+		for ( ;; )
+		{
+			FTSENT *ent = fts_read(fts);
+			if (!ent)
+				break;
+			if (ent->fts_info != FTS_F && ent->fts_info != FTS_SL)
+				continue;
+
+			pmng_glob_handler(pmng, types[i].m_type, ent->fts_path);
+		}
+		fts_close(fts);
+	}
+	return TRUE;
+} /* End of 'pmng_load_plugins' function */
 
 /* Check if specified plugin is already loaded */
 bool_t pmng_is_loaded( pmng_t *pmng, char *name, plugin_type_t type )
