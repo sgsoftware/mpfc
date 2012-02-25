@@ -43,6 +43,9 @@ song_t *song_add_ref( song_t *song );
 /* Free song */
 void song_free( song_t *song );
 
+/* Set current song info */
+void song_set_info( song_t *song, song_info_t *si );
+
 /* Update song information */
 void song_update_info( song_t *song );
 

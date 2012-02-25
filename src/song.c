@@ -158,6 +158,25 @@ void song_free( song_t *song )
 	}
 } /* End of 'song_free' function */
 
+/* Set current song info */
+void song_set_info( song_t *song, song_info_t *si )
+{
+	if (song == NULL || (song->m_flags & SONG_INFO_WRITE))
+	{
+		return;
+	}
+
+	song_lock(song);
+
+	if (song->m_info)
+		si_free(song->m_info);
+	song->m_info = si;
+
+	song_update_title(song);
+
+	song_unlock(song);
+}
+
 /* Update song information */
 void song_update_info( song_t *song )
 {

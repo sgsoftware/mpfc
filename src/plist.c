@@ -1255,7 +1255,7 @@ struct json_object *plist_export_to_json( plist_t *pl )
 		if (s->m_default_title)
 			json_object_object_add(js_song, "title", json_object_new_string(s->m_default_title));
 
-		if ((s->m_flags & SONG_STATIC_INFO) && s->m_info)
+		if (s->m_info && (s->m_info->m_flags & SI_INITIALIZED))
 		{
 			song_info_t *si = s->m_info;
 			struct json_object *js_si = json_object_new_object();
@@ -1271,6 +1271,9 @@ struct json_object *plist_export_to_json( plist_t *pl )
 			if (si->m_charset)
 				json_object_object_add(js_si, "charset",	json_object_new_string(si->m_charset));
 			json_object_object_add(js_song, "song_info", js_si);
+
+			if (s->m_flags & SONG_STATIC_INFO)
+				json_object_object_add(js_song, "static_info", json_object_new_int(1));
 		}
 
 		json_object_array_add(js_plist, js_song);
@@ -1320,10 +1323,12 @@ void plist_import_from_json( plist_t *pl, struct json_object *js_plist )
 		metadata.m_len = js_get_int(js_song, "length", 0);
 		metadata.m_start_time = js_get_int(js_song, "start_time", -1);
 		metadata.m_end_time = js_get_int(js_song, "end_time", -1);
+
 		struct json_object *js_si = json_object_object_get(js_song, "song_info");
+		song_info_t *si = NULL;
 		if (js_si && json_object_is_type(js_si, json_type_object))
 		{
-			song_info_t *si = si_new();
+			si = si_new();
 			si_set_artist	(si, js_get_string(js_si, "artist", ""));
 			si_set_name		(si, js_get_string(js_si, "name", ""));
 			si_set_album	(si, js_get_string(js_si, "album", ""));
@@ -1331,14 +1336,19 @@ void plist_import_from_json( plist_t *pl, struct json_object *js_plist )
 			si_set_genre	(si, js_get_string(js_si, "genre", ""));
 			si_set_comments	(si, js_get_string(js_si, "comments", ""));
 			si_set_track	(si, js_get_string(js_si, "track", ""));
-			metadata.m_song_info = si;
 		}
+
+		bool_t is_static_info = js_get_int(js_song, "static_info", 0);
+		if (is_static_info)
+			metadata.m_song_info = si;
 
 		song_t *s = fu_is_prefixed(name) ?
 			song_new_from_uri(name, &metadata) :
 			song_new_from_file(name, &metadata);
 		if (s)
 		{
+			if (!is_static_info && si)
+				song_set_info(s, si);
 			plist_add_song(pl, s, -1);
 		}
 	}
