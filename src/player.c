@@ -164,6 +164,9 @@ int num_queued_songs = 0;
 /* Main thread ID */
 pthread_t player_main_tid = 0; 
 
+/* TODO: make it logarithmic? */
+#define VOLUME_SLIDER_RANGE (VOLUME_DEF * 2)
+
 /*****
  *
  * Initialization/deinitialization functions
@@ -176,6 +179,14 @@ static int js_get_int( struct json_object *obj, char *key, int def )
 	if (!obj)
 		return def;
 	return json_object_get_int(val);
+}
+
+static double js_get_double( struct json_object *obj, char *key, double def )
+{
+	struct json_object *val = json_object_object_get(obj, key);
+	if (!obj)
+		return def;
+	return json_object_get_double(val);
 }
 
 /* Load player state */
@@ -224,14 +235,8 @@ static void player_load_state( void )
 		if (player_context->m_status != PLAYER_STATUS_STOPPED)
 			player_play(js_get_int(js_root, "cur-song", -1),
 					js_get_int(js_root, "cur-time", 0));
+		player_context->m_volume = js_get_double(js_root, "volume", VOLUME_DEF);
 	}
-
-	/* Load player state */
-	json_object_object_add(js_root, "cur-song", json_object_new_int(player_plist->m_cur_song));
-	json_object_object_add(js_root, "cur-time", json_object_new_int(player_context->m_cur_time));
-	json_object_object_add(js_root, "player-status", json_object_new_int(player_context->m_status));
-	json_object_object_add(js_root, "player-start", json_object_new_int(player_start + 1));
-	json_object_object_add(js_root, "player-end", json_object_new_int(player_end + 1));
 
 finally_js:
 	if (js_root)
@@ -263,6 +268,7 @@ static void player_save_state( void )
 	json_object_object_add(js_root, "player-status", json_object_new_int(player_context->m_status));
 	json_object_object_add(js_root, "player-start", json_object_new_int(player_start + 1));
 	json_object_object_add(js_root, "player-end", json_object_new_int(player_end + 1));
+	json_object_object_add(js_root, "volume", json_object_new_double(player_context->m_volume));
 
 	/* Save to a file */
 	FILE *fd = fopen(util_strcat(getenv("HOME"), "/.mpfc/state", NULL), "wt");
@@ -324,8 +330,7 @@ bool_t player_init( int argc, char *argv[] )
 	player_context->m_freq = 0;
 	player_context->m_channels = 0;
 	player_context->m_status = PLAYER_STATUS_STOPPED;
-	player_context->m_volume = 0;
-	player_context->m_balance = 0;
+	player_context->m_volume = VOLUME_DEF;
 
 	/* Parse command line */
 	logger_debug(player_log, "In player_init");
@@ -428,9 +433,6 @@ bool_t player_init( int argc, char *argv[] )
 		logger_fatal(player_log, 0, _("Unable to initialize player thread"));
 		return FALSE;
 	}
-
-	/* Get volume */
-	player_read_volume();
 
 	/* Initialize marks */
 	for ( i = 0; i < PLAYER_NUM_MARKS; i ++ )
@@ -864,22 +866,17 @@ wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action, int repval )
 	/* Increase volume */
 	else if (!strcasecmp(action, "vol_fw"))
 	{
-		player_set_vol((rp == 0) ? 5 : 5 * rp, TRUE);
+		player_set_vol((rp == 0) ? VOLUME_STEP : VOLUME_STEP * rp, TRUE);
 	}
 	/* Decrease volume */
 	else if (!strcasecmp(action, "vol_bw"))
 	{
-		player_set_vol((rp == 0) ? -5 : -5 * rp, TRUE);
+		player_set_vol((rp == 0) ? -VOLUME_STEP : -VOLUME_STEP * rp, TRUE);
 	}
-	/* Increase balance */
-	else if (!strcasecmp(action, "bal_fw"))
+	/* Set volume to default */
+	else if (!strcasecmp(action, "vol_def"))
 	{
-		player_set_bal((rp == 0) ? 5 : 5 * rp, TRUE);
-	}
-	/* Decrease balance */
-	else if (!strcasecmp(action, "bal_bw"))
-	{
-		player_set_bal((rp == 0) ? -5 : -5 * rp, TRUE);
+		player_set_vol(VOLUME_DEF, FALSE);
 	}
 	/* Centrize view */
 	else if (!strcasecmp(action, "centrize"))
@@ -1154,16 +1151,8 @@ wnd_msg_retcode_t player_on_mouse_ldown( wnd_t *wnd, int x, int y,
 	else if (y == PLAYER_SLIDER_VOL_Y && x >= PLAYER_SLIDER_VOL_X &&
 				x <= PLAYER_SLIDER_VOL_X + PLAYER_SLIDER_VOL_W)
 	{
-		player_set_vol((x - PLAYER_SLIDER_VOL_X) * 100 / 
+		player_set_vol((x - PLAYER_SLIDER_VOL_X) * VOLUME_SLIDER_RANGE / 
 				PLAYER_SLIDER_VOL_W, FALSE);
-		wnd_invalidate(wnd);
-	}
-	/* Set balance */
-	else if (y == PLAYER_SLIDER_BAL_Y && x >= PLAYER_SLIDER_BAL_X &&
-				x <= PLAYER_SLIDER_BAL_X + PLAYER_SLIDER_BAL_W)
-	{
-		player_set_bal((x - PLAYER_SLIDER_BAL_X) * 100 / 
-				PLAYER_SLIDER_BAL_W, FALSE);
 		wnd_invalidate(wnd);
 	}
 	/* Set time */
@@ -1311,30 +1300,6 @@ wnd_msg_retcode_t player_on_command( wnd_t *wnd, char *cmd,
 		player_context->m_volume = cmd_next_int_param(params);
 		player_update_vol();
 	}
-	/* Set balance */
-	else if (!strcmp(cmd, "set-balance"))
-	{
-		player_context->m_balance = cmd_next_int_param(params);
-		player_update_vol();
-	}
-	/* Set volume with both channels specification */
-	else if (!strcmp(cmd, "set-volume-full"))
-	{
-		int left = cmd_next_int_param(params);
-		int right = cmd_next_int_param(params);
-		if (left < 0)
-			left = 0;
-		else if (left > 100)
-			left = 100;
-		if (right < 0)
-			right = 0;
-		else if (right > 100)
-			right = 100;
-#if 0
-		outp_set_volume(player_cur_outp, left, right);
-#endif
-		player_read_volume();
-	}
 	/* Simulate an action */
 	else if (!strcmp(cmd, "action"))
 	{
@@ -1446,18 +1411,16 @@ wnd_msg_retcode_t player_on_display( wnd_t *wnd )
 		aparams_ptr += sprintf(aparams_ptr, "%d Hz ", player_context->m_freq);
 	if (player_context->m_channels)
 		aparams_ptr += sprintf(aparams_ptr, "%d-chan", player_context->m_channels);
-	wnd_move(wnd, 0, PLAYER_SLIDER_BAL_X - strlen(aparams) - 1, 
-			PLAYER_SLIDER_BAL_Y);
+	wnd_move(wnd, 0, WND_WIDTH(player_wnd) - strlen(aparams) - 1, 
+			PLAYER_SLIDER_VOL_Y - 1);
 	wnd_apply_style(wnd, "audio-params-style");
 	wnd_printf(wnd, 0, 0, "%s", aparams);
 
 	/* Display various slidebars */
-	player_display_slider(wnd, PLAYER_SLIDER_BAL_X, PLAYER_SLIDER_BAL_Y,
-			PLAYER_SLIDER_BAL_W, player_context->m_balance, 100.);
 	player_display_slider(wnd, PLAYER_SLIDER_TIME_X, PLAYER_SLIDER_TIME_Y, 
-			PLAYER_SLIDER_TIME_W, player_context->m_cur_time, (s == NULL) ? 0 : s->m_len);
+			PLAYER_SLIDER_TIME_W, player_context->m_cur_time, (s == NULL) ? -1 : s->m_len);
 	player_display_slider(wnd, PLAYER_SLIDER_VOL_X, PLAYER_SLIDER_VOL_Y,
-			PLAYER_SLIDER_VOL_W, player_context->m_volume, 100.);
+			PLAYER_SLIDER_VOL_W, player_context->m_volume, VOLUME_SLIDER_RANGE);
 	
 	/* Display play list */
 	plist_display(player_plist, wnd);
@@ -1474,14 +1437,12 @@ wnd_msg_retcode_t player_on_display( wnd_t *wnd )
 
 /* Display slider */
 void player_display_slider( wnd_t *wnd, int x, int y, int width, 
-		int pos, int range )
+		double pos, double range )
 {
-	int i, slider_pos;
-	
 	wnd_move(wnd, 0, x, y);
-	slider_pos = (range) ? (pos * width / range) : 0;
+	int slider_pos = (range >= 0) ? (pos * width / range) : 0;
 	wnd_apply_style(wnd, "slider-style");
-	for ( i = 0; i <= width; i ++ )
+	for ( int i = 0; i <= width; i ++ )
 	{
 		if (i == slider_pos)
 			wnd_putchar(wnd, 0, 'O');
@@ -1624,78 +1585,27 @@ void player_set_track( int track )
 } /* End of 'player_set_track' function */
 
 /* Set volume */
-void player_set_vol( int vol, bool_t rel )
+void player_set_vol( double vol, bool_t rel )
 {
 	player_context->m_volume = (rel) ? player_context->m_volume + vol : vol;
-	if (player_context->m_volume < 0)
-		player_context->m_volume = 0;
-	else if (player_context->m_volume > 100)
-		player_context->m_volume = 100;
+	if (player_context->m_volume < VOLUME_MIN)
+		player_context->m_volume = VOLUME_MIN;
+	else if (player_context->m_volume > VOLUME_MAX)
+		player_context->m_volume = VOLUME_MAX;
 	player_update_vol();
 
 	pmng_hook(player_pmng, "volume");
 } /* End of 'player_set_vol' function */
 
-/* Set balance */
-void player_set_bal( int bal, bool_t rel )
-{
-	player_context->m_balance = (rel) ? player_context->m_balance + bal : bal;
-	if (player_context->m_balance < 0)
-		player_context->m_balance = 0;
-	else if (player_context->m_balance > 100)
-		player_context->m_balance = 100;
-	player_update_vol();
-
-	pmng_hook(player_pmng, "balance");
-} /* End of 'player_set_bal' function */
-
 /* Update volume */
 void player_update_vol( void )
 {
-	int l, r;
-
-	if (player_context->m_balance < 50)
+	if (player_pipeline)
 	{
-		l = player_context->m_volume;
-		r = player_context->m_volume * 
-			player_context->m_balance / 50;
+		gdouble v = player_context->m_volume;
+		g_object_set(G_OBJECT(player_pipeline), "volume", v, NULL);
 	}
-	else
-	{
-		r = player_context->m_volume;
-		l = player_context->m_volume * 
-			(100 - player_context->m_balance) / 50;
-	}
-	outp_set_volume(player_pmng->m_cur_out, l, r);
 } /* End of 'player_update_vol' function */
-
-/* Read volume from plugin */
-void player_read_volume( void )
-{
-	int l, r;
-
-	logger_debug(player_log, "Getting volume");
-	outp_set_mixer_type(player_pmng->m_cur_out, PLUGIN_MIXER_DEFAULT);
-	outp_get_volume(player_pmng->m_cur_out, &l, &r);
-	if (l == 0 && r == 0)
-	{
-		player_context->m_volume = 0;
-		player_context->m_balance = 0;
-	}
-	else
-	{
-		if (l > r)
-		{
-			player_context->m_volume = l;
-			player_context->m_balance = r * 50 / l;
-		}
-		else
-		{
-			player_context->m_volume = r;
-			player_context->m_balance = 100 - l * 50 / r;
-		}
-	}
-} /* End of 'player_read_volume' function */
 
 /* Skip some songs */
 int player_skip_songs( int num, bool_t play )
@@ -1982,6 +1892,9 @@ void *player_thread( void *arg )
 		/* Set fake videosink */
 		GstElement *videosink = gst_element_factory_make("fakesink", "videosink");
 		g_object_set(G_OBJECT(player_pipeline), "video-sink", videosink, NULL);
+
+		/* Set volume */
+		player_update_vol();
 
 		/* Set bus message handler */
 		bus = gst_pipeline_get_bus(GST_PIPELINE(player_pipeline));
@@ -3417,8 +3330,7 @@ void player_class_set_default_styles( cfg_node_t *list )
 	cfg_set_var(list, "kbind.time_move", "gt");
 	cfg_set_var(list, "kbind.vol_fw", "+;lv");
 	cfg_set_var(list, "kbind.vol_bw", "-;hv");
-	cfg_set_var(list, "kbind.bal_fw", "];lb");
-	cfg_set_var(list, "kbind.bal_bw", "[;hb");
+	cfg_set_var(list, "kbind.vol_def", "=");
 	cfg_set_var(list, "kbind.info", "i");
 	cfg_set_var(list, "kbind.add", "a");
 	cfg_set_var(list, "kbind.rem", "r");
