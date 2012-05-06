@@ -785,14 +785,14 @@ void plist_flush_scheduled( plist_t *pl )
 } /* End of 'plist_flush_scheduled' function */
 
 /* First see if this is a playlist prefix */
-static int plist_add_prefixed(plist_t *pl, char *name)
+static int plist_add_prefixed(plist_t *pl, char *name, song_metadata_t *metadata)
 {
 	/* First see if this is a playlist prefix */
 	plist_plugin_t *plp = pmng_is_playlist_prefix(player_pmng, name);
 	if (plp)
 		return plist_add_plist(pl, plp, name);
 
-	return plist_add_uri(pl, name);
+	return plist_add_uri(pl, name, metadata);
 }
 
 typedef struct
@@ -852,7 +852,7 @@ static void plist_add_playlist_item( void *ctxv, char *name, song_metadata_t *me
 	/* Handle URI in a playlist */
 	if (fu_is_prefixed(name))
 	{
-		ctx->num_added += plist_add_prefixed(ctx->pl, name);
+		ctx->num_added += plist_add_prefixed(ctx->pl, name, metadata);
 		return;
 	}
 
@@ -1070,11 +1070,15 @@ static int plist_add_dir( plist_t *pl, char *dir_path )
 	return num_added;
 }
 
-int plist_add_uri( plist_t *pl, char *uri )
+int plist_add_uri( plist_t *pl, char *uri, song_metadata_t *metadata )
 {
-	song_metadata_t metadata = SONG_METADATA_EMPTY;
-	song_t *s = song_new_from_uri(uri, &metadata);
+	song_t *s = song_new_from_uri(uri, metadata);
 	assert(s);
+
+	/* Schedule song for setting its info and length */
+	if (!metadata->m_title)
+		s->m_flags |= SONG_SCHEDULE;
+
 	plist_add_song(pl, s, -1);
 	return 1;
 }
@@ -1084,7 +1088,8 @@ static int plist_add_path( plist_t *pl, char *path )
 	/* This is an URI */
 	if (fu_is_prefixed(path))
 	{
-		return plist_add_prefixed(pl, path);
+		song_metadata_t metadata = SONG_METADATA_EMPTY;
+		return plist_add_prefixed(pl, path, &metadata);
 	}
 
 	/* Construct absolute path */
