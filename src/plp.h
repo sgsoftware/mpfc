@@ -54,8 +54,11 @@ typedef struct
 	 * Used for smart directory adding */
 	int m_rank;
 	
+	/* Get a prefix for virtual playlists (e.g. audiocd://) */
+	char *(*m_get_prefix)( void );
+
 	/* Reserved */
-	byte m_reserved[116];
+	byte m_reserved[112];
 
 	/* Reserved data */
 	byte m_reserved1[64];
@@ -84,6 +87,9 @@ plp_status_t plp_for_each_item( plist_plugin_t *p, char *pl_name, void *ctx, plp
 
 /* Get supported file formats */
 void plp_get_formats( plist_plugin_t *p, char *extensions, char *content_type );
+	
+/* Get plugin prefix */
+char * plp_get_prefix( plist_plugin_t *p );
 	
 #endif
 

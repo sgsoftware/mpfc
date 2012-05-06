@@ -645,7 +645,31 @@ char *pmng_next_media_ext( char *iter )
 } /* End of 'pmng_next_media_exts' function */
 
 /* Check if file is a play list managed by a plugin */
-plist_plugin_t *pmng_is_playlist( pmng_t *pmng, char *format )
+plist_plugin_t *pmng_is_playlist_prefix( pmng_t *pmng, char *name )
+{
+	if (!pmng)
+		return NULL;
+
+	logger_debug(pmng->m_log, "pmng_is_playlist_prefix(%s)", name);
+
+	pmng_iterator_t iter = pmng_start_iteration(pmng, PLUGIN_TYPE_PLIST);
+	for ( ;; )
+	{
+		plist_plugin_t *plp = PLIST_PLUGIN(pmng_iterate(&iter));
+		if (!plp)
+			break;
+
+		char *prefix = plp_get_prefix(plp);
+		if (!prefix)
+			continue;
+		if (!strncmp(name, prefix, strlen(prefix)))
+			return plp;
+	}
+	return NULL;
+}
+
+/* Check if file is a play list managed by a plugin */
+plist_plugin_t *pmng_is_playlist_extension( pmng_t *pmng, char *format )
 {
 	if (!pmng)
 		return NULL;

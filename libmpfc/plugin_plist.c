@@ -70,5 +70,14 @@ void plp_get_formats( plist_plugin_t *p, char *extensions, char *content_type )
 	}
 } /* End of 'plp_get_formats' function */
 	
+/* Get plugin prefix */
+char *plp_get_prefix( plist_plugin_t *p )
+{
+	if (p != NULL && (p->m_pd.m_get_prefix != NULL))
+		return p->m_pd.m_get_prefix();
+	else
+		return NULL;
+} /* End of 'plp_get_formats' function */
+	
 /* End of 'plugin_plist.c' file */
 

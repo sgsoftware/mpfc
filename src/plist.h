@@ -92,6 +92,7 @@ int plist_add_one_file( plist_t *pl, char *file, song_metadata_t *metadata,
 		int where );
 
 int plist_add_uri( plist_t *pl, char *uri );
+int plist_add_plist( plist_t *pl, plist_plugin_t *plp, char *file );
 
 void plist_add_song( plist_t *pl, song_t *song, int where );
 

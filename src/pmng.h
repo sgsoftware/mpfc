@@ -179,7 +179,8 @@ char *pmng_first_media_ext( pmng_t *pmng );
 char *pmng_next_media_ext( char *iter );
 
 /* Check if file is a play list managed by a plugin */
-plist_plugin_t *pmng_is_playlist( pmng_t *pmng, char *format );
+plist_plugin_t *pmng_is_playlist_prefix( pmng_t *pmng, char *name );
+plist_plugin_t *pmng_is_playlist_extension( pmng_t *pmng, char *ext );
 
 #endif
 

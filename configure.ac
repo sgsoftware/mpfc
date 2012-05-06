@@ -127,6 +127,17 @@ else
 	AC_MSG_RESULT([*** pls plugin disabled per user request ***])
 fi
 
+# Stuff for audiocd plugin
+AC_ARG_ENABLE(audiocd, 
+[	--disable-audiocd		Disable audiocd playlist plugin [default=enabled]],,
+		enable_audiocd="yes")
+if test "x$enable_audiocd" = xyes; then
+	LIBS_save=$LIBS
+	LIBS=$LIBS_save
+else
+	AC_MSG_RESULT([*** audiocd plugin disabled per user request ***])
+fi
+
 # Choose charset plugins
 ALL_CHARSET_PLUGINS=""
 for plugin in $ALL_CHARSET_PLUGINS; do
@@ -154,7 +165,7 @@ for plugin in $ALL_GENERAL_PLUGINS; do
 done
 
 # Choose playlist plugins
-ALL_PLIST_PLUGINS="m3u pls cue"
+ALL_PLIST_PLUGINS="m3u pls cue audiocd"
 for plugin in $ALL_PLIST_PLUGINS; do
 	name="\$enable_$plugin"
 	value=`eval echo $name`
@@ -194,6 +205,7 @@ AC_OUTPUT(Makefile \
 		  plugins/plist/m3u/Makefile \
 		  plugins/plist/pls/Makefile \
 		  plugins/plist/cue/Makefile \
+		  plugins/plist/audiocd/Makefile \
 		  po/Makefile \
 		  mpfc.pc)
 

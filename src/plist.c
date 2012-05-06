@@ -784,6 +784,17 @@ void plist_flush_scheduled( plist_t *pl )
 	}
 } /* End of 'plist_flush_scheduled' function */
 
+/* First see if this is a playlist prefix */
+static int plist_add_prefixed(plist_t *pl, char *name)
+{
+	/* First see if this is a playlist prefix */
+	plist_plugin_t *plp = pmng_is_playlist_prefix(player_pmng, name);
+	if (plp)
+		return plist_add_plist(pl, plp, name);
+
+	return plist_add_uri(pl, name);
+}
+
 typedef struct
 {
 	plist_t *pl;
@@ -841,7 +852,7 @@ static void plist_add_playlist_item( void *ctxv, char *name, song_metadata_t *me
 	/* Handle URI in a playlist */
 	if (fu_is_prefixed(name))
 	{
-		ctx->num_added += plist_add_uri(ctx->pl, name);
+		ctx->num_added += plist_add_prefixed(ctx->pl, name);
 		return;
 	}
 
@@ -924,8 +935,23 @@ void plist_add_song( plist_t *pl, song_t *song, int where )
 
 static plist_plugin_t *is_playlist(char *file)
 {
+	plist_plugin_t *plp = pmng_is_playlist_prefix(player_pmng, file);
+	if (plp)
+		return plp;
+
 	char *ext = strrchr(file, '.');
-	return pmng_is_playlist(player_pmng, ext ? ext + 1 : "");
+	return pmng_is_playlist_extension(player_pmng, ext ? ext + 1 : "");
+}
+
+int plist_add_plist( plist_t *pl, plist_plugin_t *plp, char *file )
+{
+	plist_cb_ctx_t ctx = { pl, file, 0 };
+	plp_status_t status = plp_for_each_item(plp, file, &ctx,
+			plist_add_playlist_item);
+	if (status != PLP_STATUS_OK)
+		return 0;
+
+	return ctx.num_added;
 }
 
 /* Add single file to play list */
@@ -939,15 +965,7 @@ int plist_add_one_file( plist_t *pl, char *file, song_metadata_t *metadata,
 	/* Choose if file is play list */
 	plist_plugin_t *plp = is_playlist(file);
 	if (plp)
-	{
-		plist_cb_ctx_t ctx = { pl, file, 0 };
-		plp_status_t status = plp_for_each_item(plp, file, &ctx,
-				plist_add_playlist_item);
-		if (status != PLP_STATUS_OK)
-			return 0;
-
-		return ctx.num_added;
-	}
+		return plist_add_plist(pl, plp, file);
 
 	/* Initialize new song and add it to list */
 	song = song_new_from_file(file, metadata);
@@ -1065,7 +1083,9 @@ static int plist_add_path( plist_t *pl, char *path )
 {
 	/* This is an URI */
 	if (fu_is_prefixed(path))
-		return plist_add_uri(pl, path);
+	{
+		return plist_add_prefixed(pl, path);
+	}
 
 	/* Construct absolute path */
 	char *full_path = path;
