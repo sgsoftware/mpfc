@@ -190,9 +190,15 @@ void song_update_info( song_t *song )
 	song_unlock(song);
 } /* End of 'song_update_info' function */
 
+/* Get short filename but only if it is not uri-based */
+char* song_get_short_name( song_t *s )
+{
+	return (s->m_filename ? util_short_name(s->m_filename) : s->m_fullname);
+}
+
 static str_t *song_default_title( song_t *s )
 {
-	str_t *title = str_new(util_short_name(song_get_name(s)));
+	str_t *title = str_new(song_get_short_name(s));
 	if (cfg_get_var_int(cfg_list, "convert-underscores2spaces"))
 		str_replace_char(title, '_', ' ');
 	return title;

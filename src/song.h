@@ -61,6 +61,9 @@ static inline char* song_get_name( song_t *song )
 	return name;
 }
 
+/* Get short filename but only if it is not uri-based */
+char* song_get_short_name( song_t *s );
+
 /* Get input plugin */
 in_plugin_t *song_get_inp( song_t *song, file_t **fd );
 

@@ -1578,8 +1578,7 @@ void player_play( int song, int start_time )
 	}
 
 	/* Start new playing thread */
-	cfg_set_var(cfg_list, "cur-song-name", 
-			util_short_name(song_get_name(s)));
+	cfg_set_var(cfg_list, "cur-song-name", song_get_short_name(s));
 	cfg_set_var(cfg_list, "cur-song-title", STR_TO_CPTR(s->m_title));
 	player_plist->m_cur_song = song;
 	player_context->m_cur_time = start_time;
@@ -2400,9 +2399,10 @@ bool_t player_info_dialog_fill( dialog_t *dlg, bool_t first_call )
 			genre && own_data);
 
 	/* Set items values */
-	file_name = song_get_name(main_song);
-	if (!cfg_get_var_int(cfg_list, "info-editor-show-full-name"))
-		file_name = util_short_name(file_name);
+	if (cfg_get_var_int(cfg_list, "info-editor-show-full-name"))
+		file_name = song_get_name(main_song);
+	else
+		file_name = song_get_short_name(main_song);
 	wnd_set_title(WND_OBJ(dlg), file_name);
 	player_info_eb_set(name, info->m_name, name_diff);
 	player_info_eb_set(artist, info->m_artist, artist_diff);
