@@ -1,0 +1,16 @@
+Main programming:
+	Sergey E. Galanov			<sergey.e.galanov@gmail.com>
+
+Contributors:
+	Derek Davis (songs queueing)
+	Pascal Bleser (build process fixes, a buffer overflow fix, change gethostbyname with getaddrinfo)
+
+Plugins writing:
+	Thadeu Lima de Souza Cascardo (ALSA and ESD plugins)
+	Heikki Orsila (ALSA patches)
+
+People who helped to find bugs:
+	Alexey Tourbin
+	Igmar Palsenber
+	Luis Felipe Strano Moraes
+	Heikki Orsila

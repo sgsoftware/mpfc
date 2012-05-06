@@ -1,0 +1,1912 @@
+2011-01-04 19:29  sg2
+
+	* src/player.c: Fixed a crash occuring when --title-format is
+	  specified at startup.
+
+2011-01-04 19:18  sg2
+
+	* plugins/output/disk_writer/writer.c: disk writer plugin:
+	  introduce the name-as-title cfg option to let the output file be
+	  named as the song title.
+
+2011-01-04 19:12  sg2
+
+	* plugins/input/cue/cue.c: cue plugin: set correct track number in
+	  the song info.
+
+2011-01-04 19:11  sg2
+
+	* src/player.c: Introduce the cur-song-title cfg variable.
+
+2010-09-22 12:03  sg2
+
+	* libmpfc/Makefile.am, src/Makefile.am: Linking problems fix.
+
+2010-09-21 16:01  sg2
+
+	* plugins/output/alsa/alsa.c: Added an option
+	  plugins.output.alsa.mixer-card-name to select mixer card (e.g.
+	  "hw:1").
+
+2010-06-23 17:35  sg2
+
+	* libmpfc/util.c: Increase wait interval (a temporary solution).
+
+2010-03-07 22:10  sg2
+
+	* plugins/input/cue/cue.c, plugins/input/cue/cue_sheet.c,
+	  plugins/input/ogg/ogg.c: Fixed some compiler warnings.
+
+2010-03-07 22:01  sg2
+
+	* configure.ac, plugins/input/Makefile.am, plugins/input/cue,
+	  plugins/input/cue/Makefile.am, plugins/input/cue/cue.c,
+	  plugins/input/cue/cue_sheet.c, plugins/input/cue/cue_sheet.h,
+	  plugins/input/cue/test.c: cue plugin added to the default
+	  distribution.
+
+2010-03-07 21:56  sg2
+
+	* configure.ac, plugins/input/Makefile.am, plugins/input/flac,
+	  plugins/input/flac/Makefile.am, plugins/input/flac/flac.c: FLAC
+	  plugin added to the default distribution.
+
+2010-03-06 23:40  sg2
+
+	* plugins/input/audiocd/audiocd.c: Compilation fix.
+
+2010-01-05 20:36  sg2
+
+	* src/player.c: Fixed a problem with audio parameters printing (bug
+	  #2827602).
+
+2009-08-09 16:52  sg2
+
+	* plugins/output/alsa/alsa.c: Change ALSA buffer parameter (as in
+	  libao).
+
+2009-08-08 18:41  sg2
+
+	* libmpfc/id3.c, plugins/input/mp3/mp3.c, src/myid3.h: Skip ID3
+	  tags when decoding mp3.
+
+2009-08-08 17:24  sg2
+
+	* libmpfc/id3.c: Debug logging removed.
+
+2009-08-08 14:23  sg2
+
+	* libmpfc/id3.c: Unicode ID3 tags support.
+
+2009-08-08 12:48  sg2
+
+	* libmpfc/Makefile.am: Installation fixed.
+
+2009-08-08 12:33  sg2
+
+	* configure.ac, libmpfcwnd/Makefile.am, libmpfcwnd/wnd_print.c: 1.
+	  Use ICU library.
+	  2. Fixed a problem with composing unicode characters.
+
+2009-04-29 07:42  sg2
+
+	* src/player.c: Don't flush output if stopping was initiated by
+	  user.
+
+2008-11-23 12:50  sg2
+
+	* libmpfcwnd/wnd.c, libmpfcwnd/wnd.h,
+	  libmpfcwnd/wnd_def_handlers.c, libmpfcwnd/wnd_print.c,
+	  libmpfcwnd/wnd_print.h, libmpfcwnd/wnd_scrollable.c: Line
+	  graphics fixed.
+
+2008-11-08 21:46  sg2
+
+	* libmpfcwnd/wnd.c: Add mutex around resizeterm call (otherwise it
+	  usually crashes :).
+
+2008-09-10 23:29  sg2
+
+	* libmpfcwnd/wnd_def_handlers.c, libmpfcwnd/wnd_dlgitem.c: Fixed
+	  warnings.
+
+2008-02-14 21:19  sg2
+
+	* src/player.c: Set mixer type at start.
+
+2008-02-08 22:12  sg2
+
+	* AUTHORS, doc/mpfc.texi, src/player.c, src/player.h, src/plist.c:
+	  Songs queueing implemented (a patch by Derek Davis).
+
+2007-09-21 20:45  sg2
+
+	* configure.ac: Switched to a newer gettext version.
+
+2007-09-21 19:42  sg2
+
+	* libmpfc/vfs.c: Added an option to disable traversing hidden
+	  files.
+
+2007-09-21 19:41  sg2
+
+	* configure.ac, libmpfc/util.c, libmpfcwnd/wnd.c, libmpfcwnd/wnd.h,
+	  libmpfcwnd/wnd_combobox.c, libmpfcwnd/wnd_editbox.c,
+	  libmpfcwnd/wnd_filebox.c, libmpfcwnd/wnd_print.c,
+	  plugins/input/audiocd/cddb.c, po/ru.po, src/util.h: Partial
+	  unicode support.
+
+2006-06-06 10:08  sg2
+
+	* libmpfc/command.c, libmpfc/file_reg.c, libmpfc/logger.c,
+	  libmpfc/plugin.c, libmpfc/plugin_general.c,
+	  libmpfcwnd/wnd_checkbox.c, libmpfcwnd/wnd_hbox.c,
+	  libmpfcwnd/wnd_kbd.c, libmpfcwnd/wnd_kbind.c,
+	  libmpfcwnd/wnd_mouse.c, libmpfcwnd/wnd_multiview_dialog.c,
+	  libmpfcwnd/wnd_radio.c, libmpfcwnd/wnd_scrollable.c,
+	  libmpfcwnd/wnd_vbox.c, libmpfcwnd/wnd_views.c,
+	  plugins/input/mp3/mp3.c, plugins/output/alsa/alsa.c,
+	  plugins/output/disk_writer/writer.c, src/eqwnd.c,
+	  src/logger_view.c, src/xconvert.c: Fixed compilation warnings.
+
+2006-06-06 10:00  sg2
+
+	* libmpfc/plugin_input.c, plugins/input/audiocd/audiocd.c,
+	  plugins/input/audiocd/audiocd.h, src/inp.h: Audio CD digital
+	  playback mode implemented.
+
+2006-06-06 09:51  sg2
+
+	* ChangeLog, Makefile.am, autogen.sh, configure.ac,
+	  libmpfcwnd/wnd_repval.c, libmpfcwnd/wnd_repval.h,
+	  src/main_types.h: Fixed some problems.
+
+2006-06-05 22:18  sg2
+
+	* Makefile.am, Makefile.am.shared, Makefile.am.static,
+	  configure.ac, configure.in.shared, configure.in.static,
+	  src/Makefile.am, src/Makefile.am.shared, src/Makefile.am.static:
+	  Removed static/shared stuff.
+
+2006-02-14 13:06  sg2
+
+	* configure.in.shared, po/ru.po: MPFC 1.3.7 release.
+
+2006-02-14 13:02  sg2
+
+	* src/player.c: Fixed 'seek backwards' bug.
+
+2006-02-04 10:34  sg2
+
+	* configure.in.shared: MPFC 1.3.7 RC2.
+
+2006-02-04 09:21  sg2
+
+	* libmpfc/command.c, po/ru.po, src/command.h, src/player.c,
+	  src/player.h, src/xconvert.c: 'plist-del', 'set-volume',
+	  'set-balance', 'set-volume-full', 'seek' and 'cfg' player
+	  commands implemented.
+
+2006-02-02 00:49  sg2
+
+	* libmpfc/Makefile.am, libmpfc/command.c, libmpfc/plugin_general.c,
+	  libmpfc/plugin_mng.c, po/ru.po, src/Makefile.am.shared,
+	  src/command.c, src/genp.h, src/player.c, src/player.h,
+	  src/plist.c, src/plist.h, src/plugin.h, src/pmng.h, src/song.c,
+	  src/song.h: 1. Hooks implemented.
+	  2. Moved commands module to libmpfc.
+	  3. Made play list and player context available for plugins.
+
+2006-01-08 12:31  sg2
+
+	* NEWS: MPFC 1.3.7 RC1 release.
+
+2006-01-08 11:40  sg2
+
+	* libmpfcwnd/Makefile.am, libmpfcwnd/wnd_basic.c,
+	  libmpfcwnd/wnd_basic.h, libmpfcwnd/wnd_kbind.c, po/ru.po,
+	  src/player.c, src/player.h: 'action' player command added.
+
+2006-01-07 18:20  sg2
+
+	* libmpfc/plugin_output.c, plugins/output/alsa/alsa.c, po/ru.po,
+	  src/Makefile.am.shared, src/outp.h, src/player.c, src/xconvert.c,
+	  src/xconvert.h: Resampling of audio stream which doesn't fit into
+	  output plugin capabilities implemented.
+
+2006-01-07 18:19  sg2
+
+	* plugins/input/wav/wav.c: Fixed troubles with amd64.
+
+2006-01-06 17:23  sg2
+
+	* libmpfc/plugin_mng.c, libmpfc/vfs.c, po/ru.po: Improved
+	  compatibility with cue plugin (now it can be used without
+	  'cue://' specification).
+
+2006-01-05 23:36  sg2
+
+	* libmpfc/plugin_input.c, libmpfc/plugin_mng.c,
+	  plugins/input/ogg/ogg.c, src/browser.c, src/inp.h, src/player.c,
+	  src/player.h, src/pmng.h, src/song.c, src/song.h: 1. Song
+	  redirection implemented.
+	  2. Song projection implemented.
+	  3. Input plugin 'inp_is_our_file' function added.
+
+2006-01-02 01:13  sg2
+
+	* libmpfc/logger.c, plugins/output/alsa/alsa.c, po/ru.po,
+	  src/player.c: Fixed logger bug (long messages have been displayed
+	  incorrectly.)
+
+2005-12-02 20:50  sg2
+
+	* NEWS, libmpfc/cfg.c, libmpfcwnd/wnd.c,
+	  plugins/output/disk_writer/writer.c, po/ru.po, src/cfg.h,
+	  src/player.c, src/test.c, src/types.h: Fixed amd64 bug.
+
+2005-09-12 07:11  sg2
+
+	* configure.in.shared: MPFC 1.3.6 release.
+
+2005-09-10 19:51  sg2
+
+	* plugins/input/audiocd/audiocd.c, plugins/input/audiocd/audiocd.h,
+	  plugins/input/audiocd/cddb.c, po/ru.po: Improved AudioCD plugin.
+
+2005-09-09 22:40  sg2
+
+	* src/player.c: 'goback' after cursor positioning with mouse and
+	  'view follows song' support implemented.
+
+2005-09-09 22:12  sg2
+
+	* libmpfc/plugin_input.c, libmpfc/plugin_output.c,
+	  plugins/input/audiocd/audiocd.c, plugins/output/alsa/alsa.c,
+	  plugins/output/oss/oss.c, po/ru.po, src/inp.h, src/outp.h,
+	  src/player.c, src/plugin.h: 1. Audiocd plugin tracks skipping bug
+	  is fixed.
+	  2. Extended plugins interface to allow input plugins tell output
+	  ones what kind of mixer they want to use.
+
+2005-09-04 18:41  sg2
+
+	* plugins/output/alsa/alsa.c, po/ru.po: ALSA mixer proper element
+	  choosing patch by Heikki Orsila.
+
+2005-08-28 20:33  sg2
+
+	* plugins/output/alsa/alsa.c, po/ru.po: ALSA recover from broken
+	  pipe done.
+
+2005-08-27 23:22  sg2
+
+	* configure.in.shared: Made configure script printing
+	  enabled/disabled plugins summary.
+
+2005-08-27 22:49  sg2
+
+	* doc/mpfc.texi, src/player.c: 1. Made 'search-nocase' 1 by default
+	  2. Added 'view-follows-cur-song' option
+	  3. Added 'time_long_fw' and 'time_long_bw' actions
+	  4. Added list of configuration options in the documentation
+
+2005-08-25 21:39  sg2
+
+	* libmpfc/id3.c, src/myid3.h, src/song.c: ID3 frames size bug
+	  fixed.
+
+2005-08-21 22:38  sg2
+
+	* AUTHORS, configure.in.shared, configure.in.static, doc/mpfc.texi,
+	  plugins/output/alsa/alsa.c: ALSA plugin improved.
+
+2005-03-28 09:29  sg2
+
+	* plugins/input/mp3/mp3.c, plugins/input/mp3/mp3.h: Optimized mp3
+	  header reading by skipping ID3 tag immediately (really speeds
+	  up get_info on songs with lengthy ID3 tags).
+
+2005-02-22 23:34  sg2
+
+	* configure.in.shared, libmpfc/plugin_mng.c, po/ru.po,
+	  src/Makefile.am.shared, src/command.c, src/command.h,
+	  src/player.c, src/player.h, src/pmng.h: Player command message
+	  implemented.
+
+2005-02-21 18:36  sg2
+
+	* libmpfc/cfg.c, libmpfc/cfg_rcfile.c, libmpfc/charset.c,
+	  libmpfc/file.c, libmpfc/file_http.c, libmpfc/file_http.h,
+	  libmpfc/file_reg.c, libmpfc/file_reg.h, libmpfc/genre_list.c,
+	  libmpfc/id3.c, libmpfc/logger.c, libmpfc/plugin.c,
+	  libmpfc/plugin_charset.c, libmpfc/plugin_effect.c,
+	  libmpfc/plugin_general.c, libmpfc/plugin_input.c,
+	  libmpfc/plugin_mng.c, libmpfc/plugin_output.c,
+	  libmpfc/song_info.c, libmpfc/string.c, libmpfc/util.c,
+	  libmpfc/vfs.c, libmpfcwnd/wnd.c, libmpfcwnd/wnd.h,
+	  libmpfcwnd/wnd_basic.c, libmpfcwnd/wnd_basic.h,
+	  libmpfcwnd/wnd_button.c, libmpfcwnd/wnd_button.h,
+	  libmpfcwnd/wnd_checkbox.c, libmpfcwnd/wnd_checkbox.h,
+	  libmpfcwnd/wnd_class.c, libmpfcwnd/wnd_class.h,
+	  libmpfcwnd/wnd_combobox.c, libmpfcwnd/wnd_combobox.h,
+	  libmpfcwnd/wnd_def_handlers.c, libmpfcwnd/wnd_def_handlers.h,
+	  libmpfcwnd/wnd_dialog.c, libmpfcwnd/wnd_dialog.h,
+	  libmpfcwnd/wnd_dlgitem.c, libmpfcwnd/wnd_dlgitem.h,
+	  libmpfcwnd/wnd_editbox.c, libmpfcwnd/wnd_editbox.h,
+	  libmpfcwnd/wnd_filebox.c, libmpfcwnd/wnd_filebox.h,
+	  libmpfcwnd/wnd_hbox.c, libmpfcwnd/wnd_hbox.h,
+	  libmpfcwnd/wnd_kbd.c, libmpfcwnd/wnd_kbd.h,
+	  libmpfcwnd/wnd_kbind.c, libmpfcwnd/wnd_kbind.h,
+	  libmpfcwnd/wnd_label.c, libmpfcwnd/wnd_label.h,
+	  libmpfcwnd/wnd_listbox.c, libmpfcwnd/wnd_listbox.h,
+	  libmpfcwnd/wnd_mouse.c, libmpfcwnd/wnd_mouse.h,
+	  libmpfcwnd/wnd_msg.c, libmpfcwnd/wnd_msg.h,
+	  libmpfcwnd/wnd_multiview_dialog.c,
+	  libmpfcwnd/wnd_multiview_dialog.h, libmpfcwnd/wnd_print.c,
+	  libmpfcwnd/wnd_print.h, libmpfcwnd/wnd_radio.c,
+	  libmpfcwnd/wnd_radio.h, libmpfcwnd/wnd_root.c,
+	  libmpfcwnd/wnd_root.h, libmpfcwnd/wnd_scrollable.c,
+	  libmpfcwnd/wnd_scrollable.h, libmpfcwnd/wnd_types.h,
+	  libmpfcwnd/wnd_vbox.c, libmpfcwnd/wnd_vbox.h,
+	  libmpfcwnd/wnd_views.c, libmpfcwnd/wnd_views.h,
+	  plugins/input/audiocd/audiocd.c, plugins/input/audiocd/audiocd.h,
+	  plugins/input/audiocd/cddb.c, plugins/input/audiocd/cddb.h,
+	  plugins/input/mp3/mp3.c, plugins/input/mp3/mp3.h,
+	  plugins/input/ogg/ogg.c, plugins/input/ogg/vcedit.c,
+	  plugins/input/wav/wav.c, plugins/input/wav/wav.h,
+	  plugins/output/disk_writer/writer.c, plugins/output/oss/oss.c,
+	  src/browser.c, src/browser.h, src/cfg.h, src/charset.h,
+	  src/csp.h, src/ep.h, src/eqwnd.c, src/eqwnd.h, src/file.h,
+	  src/genp.h, src/genre_list.h, src/help_screen.c,
+	  src/help_screen.h, src/history.c, src/history.h,
+	  src/info_rw_thread.c, src/info_rw_thread.h, src/inp.h,
+	  src/logger.h, src/logger_view.c, src/logger_view.h, src/main.c,
+	  src/myid3.h, src/mystring.h, src/outp.h, src/player.c,
+	  src/player.h, src/plist.c, src/plist.h, src/plugin.h, src/pmng.h,
+	  src/song.c, src/song.h, src/song_info.h, src/test.c, src/test.h,
+	  src/types.h, src/undo.c, src/undo.h, src/util.h, src/vfs.h:
+	  Changed source head format.
+
+2005-02-21 16:44  sg2
+
+	* po/POTFILES.in, po/ru.po: Fix after previous commit.
+
+2005-02-21 16:38  sg2
+
+	* configure.in.shared, doc/mpfc.texi, plugins/Makefile.am,
+	  plugins/charset/Makefile.am, plugins/charset/ru,
+	  plugins/effect/Makefile.am, plugins/effect/echo, plugins/general,
+	  plugins/general/Makefile.am, plugins/input/Makefile.am,
+	  plugins/input/radio, plugins/input/recorder,
+	  plugins/input/timidi, plugins/output/Makefile.am,
+	  plugins/output/esd: Removed non-essential plugins.
+
+2005-02-21 16:07  sg2
+
+	* src/cfg, src/file, src/glist, src/myid3, src/plugin, src/util:
+	  Removed legacy subdirectories.
+
+2005-02-21 15:59  sg2
+
+	* libmpfc/plugin_general.c, po/ru.po, src/genp.h: Addition to the
+	  previous commit.
+
+2005-02-21 14:47  sg2
+
+	* ChangeLog, libmpfc/Makefile.am, libmpfc/cfg_rcfile.c,
+	  libmpfc/plugin.c, libmpfc/plugin_mng.c, libmpfcwnd/wnd_listbox.c,
+	  libmpfcwnd/wnd_listbox.h, plugins/Makefile.am,
+	  plugins/input/audiocd/audiocd.c, po/ru.po, src/player.c,
+	  src/player.h, src/plugin.h, src/pmng.h: General plugins support
+	  implemented.
+
+2005-02-14 20:58  sg2
+
+	* src/player.c: Fixed bug: current output plugin was not selected
+	  in plugins manager.
+
+2005-02-14 20:43  sg2
+
+	* doc/mpfc.texi, plugins/output/disk_writer/writer.c: Disk writer
+	  encoding capability implemented.
+
+2005-02-14 16:55  sg2
+
+	* src/player.c: Fixed bug: play is paused, we change output plugin
+	  and start playing (caused
+	  hang up because outp_resume applied to the new output plugin)
+
+2004-11-10 13:55  sg2
+
+	* ChangeLog, libmpfc/vfs.c, plugins/input/mp3/mp3.c,
+	  plugins/input/ogg/ogg.c, plugins/output/alsa/alsa.c,
+	  po/POTFILES.in, po/ru.po, src/player.c, src/player.h,
+	  src/plist.c, src/song.c: MPFC 1.3.5 release.
+
+2004-11-08 15:10  sg2
+
+	* ChangeLog, libmpfc/id3.c, libmpfc/plugin_input.c,
+	  libmpfcwnd/wnd_kbd.c, plugins/input/audiocd/audiocd.c,
+	  plugins/input/audiocd/cddb.c, plugins/input/audiocd/cddb.h,
+	  plugins/input/mp3/mp3.c, plugins/input/ogg/ogg.c, po/ru.po,
+	  src/Makefile.am.shared, src/info_rw_thread.c,
+	  src/info_rw_thread.h, src/inp.h, src/iwt.c, src/iwt.h,
+	  src/myid3.h, src/player.c, src/plist.c, src/sat.c, src/sat.h,
+	  src/song.c, src/song.h: Info read/write thread implemented.
+	  Made 'inp_save_info' function return the success code.
+
+2004-11-08 15:10  sg2
+
+	* ChangeLog: Info read/write thread implemented.
+
+2004-11-03 23:43  sg2
+
+	* ChangeLog, libmpfcwnd/wnd.c, libmpfcwnd/wnd.h,
+	  libmpfcwnd/wnd_kbd.c: Screen messing up bug fixed.
+
+2004-11-03 16:17  sg2
+
+	* plugins/output/alsa/alsa.c: Moved ALSA plugin error output to the
+	  logger.
+
+2004-11-01 15:17  sg2
+
+	* ChangeLog, configure.in.shared, doc/mpfc.texi, libmpfc/plugin.c,
+	  libmpfc/plugin_mng.c, libmpfcwnd/Makefile.am,
+	  libmpfcwnd/wnd_dialog.c, libmpfcwnd/wnd_dialog.h,
+	  libmpfcwnd/wnd_dlgitem.c, libmpfcwnd/wnd_editbox.c,
+	  libmpfcwnd/wnd_editbox.h, libmpfcwnd/wnd_label.c,
+	  libmpfcwnd/wnd_label.h, libmpfcwnd/wnd_listbox.c,
+	  libmpfcwnd/wnd_listbox.h, libmpfcwnd/wnd_multiview_dialog.c,
+	  libmpfcwnd/wnd_multiview_dialog.h, libmpfcwnd/wnd_views.c,
+	  libmpfcwnd/wnd_views.h, plugins/effect/echo/echo.c,
+	  plugins/input/audiocd/audiocd.c, plugins/input/audiocd/cddb.c,
+	  plugins/input/audiocd/cddb.h, plugins/input/mp3/mp3.c,
+	  plugins/input/ogg/ogg.c, plugins/input/radio/radio.c,
+	  plugins/output/alsa/alsa.c, plugins/output/disk_writer/writer.c,
+	  plugins/output/esd/esd.c, plugins/output/oss/oss.c,
+	  po/POTFILES.in, po/ru.po, src/help_screen.c, src/player.c,
+	  src/player.h, src/plugin.h, src/pmng.h: Multiview dialog and list
+	  box support implemented.
+	  Plugins manager and configuration written.
+
+2004-10-25 14:07  sg2
+
+	* ChangeLog, NEWS: ChangeLog and NEWS updated.
+
+2004-10-25 12:37  sg2
+
+	* configure.in.shared, libmpfcwnd/wnd_kbd.c: Releasing 1.3.4.
+
+2004-10-24 10:04  sg2
+
+	* configure.in.shared, libmpfc/Makefile.am, libmpfcwnd/wnd_kbd.c,
+	  src/types.h: Backspace bug fixed.
+
+2004-10-24 08:58  sg2
+
+	* Makefile.am.shared, configure.in.shared, doc/mpfc.texi,
+	  libmpfc/Makefile.am, libmpfcwnd/Makefile.am, mpfc.pc.in,
+	  po/ru.po, src/sat.c: implemeted pkg-config stuff for writing
+	  plugins.
+
+2004-10-21 13:00  sg2
+
+	* configure.in.shared, libmpfc/Makefile.am, libmpfc/cfg_rcfile.c,
+	  libmpfc/file.c, libmpfc/file_reg.c, libmpfc/util.c,
+	  libmpfcwnd/Makefile.am, libmpfcwnd/wnd.c, libmpfcwnd/wnd.h,
+	  libmpfcwnd/wnd_basic.c, libmpfcwnd/wnd_basic.h,
+	  libmpfcwnd/wnd_button.c, libmpfcwnd/wnd_button.h,
+	  libmpfcwnd/wnd_checkbox.c, libmpfcwnd/wnd_checkbox.h,
+	  libmpfcwnd/wnd_class.c, libmpfcwnd/wnd_class.h,
+	  libmpfcwnd/wnd_combobox.c, libmpfcwnd/wnd_def_handlers.c,
+	  libmpfcwnd/wnd_dialog.c, libmpfcwnd/wnd_dialog.h,
+	  libmpfcwnd/wnd_dlgitem.c, libmpfcwnd/wnd_dlgitem.h,
+	  libmpfcwnd/wnd_editbox.c, libmpfcwnd/wnd_editbox.h,
+	  libmpfcwnd/wnd_filebox.c, libmpfcwnd/wnd_hbox.c,
+	  libmpfcwnd/wnd_kbd.c, libmpfcwnd/wnd_kbd.h,
+	  libmpfcwnd/wnd_kbind.c, libmpfcwnd/wnd_label.c,
+	  libmpfcwnd/wnd_mouse.c, libmpfcwnd/wnd_mouse.h,
+	  libmpfcwnd/wnd_msg.c, libmpfcwnd/wnd_msg.h,
+	  libmpfcwnd/wnd_radio.c, libmpfcwnd/wnd_root.c,
+	  libmpfcwnd/wnd_root.h, libmpfcwnd/wnd_scrollable.c,
+	  libmpfcwnd/wnd_scrollable.h, libmpfcwnd/wnd_vbox.c,
+	  plugins/charset/ru/Makefile.am, plugins/effect/echo/Makefile.am,
+	  plugins/input/audiocd/Makefile.am, plugins/input/mp3/Makefile.am,
+	  plugins/input/ogg/Makefile.am, plugins/input/radio/Makefile.am,
+	  plugins/input/recorder/Makefile.am,
+	  plugins/input/timidi/Makefile.am, plugins/input/wav/Makefile.am,
+	  plugins/output/alsa/Makefile.am,
+	  plugins/output/disk_writer/Makefile.am,
+	  plugins/output/esd/Makefile.am, plugins/output/oss/Makefile.am,
+	  src/Makefile.am.shared, src/browser.c, src/eqwnd.c,
+	  src/help_screen.c, src/iwt.c, src/logger_view.c, src/main.c,
+	  src/player.c, src/player.h, src/plist.c, src/sat.c, src/song.c,
+	  src/test.c: Fixed many bugs.
+
+2004-10-17 10:12  sg2
+
+	* libmpfcwnd/wnd.c, libmpfcwnd/wnd_kbd.c: Fixed aterm backspace
+	  bug.
+
+2004-10-17 10:00  sg2
+
+	* libmpfcwnd/wnd.h, libmpfcwnd/wnd_kbd.c: *** empty log message ***
+
+2004-10-17 10:00  sg2
+
+	* libmpfcwnd/wnd.c: force-terminal-bg option added
+
+2004-10-15 20:43  sg2
+
+	* configure.in.shared, libmpfcwnd/wnd_mouse.c: Mouse initialization
+	  bug fixed.
+
+2004-10-15 20:33  sg2
+
+	* configure.in.shared, po/ru.po: *** empty log message ***
+
+2004-10-14 08:07  sg2
+
+	* configure.in.shared, libmpfc/cfg_rcfile.c, libmpfcwnd/wnd.c,
+	  libmpfcwnd/wnd_basic.c, libmpfcwnd/wnd_basic.h,
+	  libmpfcwnd/wnd_filebox.c, plugins/input/ogg/ogg.c,
+	  plugins/output/disk_writer/writer.c, src/player.c: Implemeted
+	  "+=" and "-=" from command line.
+
+2004-10-14 07:34  sg2
+
+	* doc/mpfc.texi: Documentation updated.
+
+2004-10-11 07:06  sg2
+
+	* libmpfc/logger.c, po/ru.po, src/eqwnd.c, src/help_screen.c,
+	  src/player.c, src/plist.c: Updated translations.
+
+2004-10-11 06:23  sg2
+
+	* libmpfc/Makefile.am, libmpfc/file_http.c, libmpfc/logger.c,
+	  libmpfc/plugin.c, libmpfc/plugin_charset.c,
+	  libmpfc/plugin_effect.c, libmpfc/plugin_input.c,
+	  libmpfc/plugin_mng.c, libmpfc/plugin_output.c, libmpfc/vfs.c,
+	  libmpfcwnd/wnd_button.c, libmpfcwnd/wnd_button.h,
+	  libmpfcwnd/wnd_checkbox.c, libmpfcwnd/wnd_checkbox.h,
+	  libmpfcwnd/wnd_dlgitem.c, libmpfcwnd/wnd_dlgitem.h,
+	  libmpfcwnd/wnd_kbd.c, libmpfcwnd/wnd_radio.c,
+	  libmpfcwnd/wnd_radio.h, plugins/charset/ru/Makefile.am,
+	  plugins/charset/ru/ru.c, plugins/effect/echo/Makefile.am,
+	  plugins/effect/echo/echo.c, plugins/input/audiocd/Makefile.am,
+	  plugins/input/audiocd/audiocd.c, plugins/input/audiocd/audiocd.h,
+	  plugins/input/audiocd/cddb.c, plugins/input/mp3/Makefile.am,
+	  plugins/input/mp3/mp3.c, plugins/input/mp3/mp3.h,
+	  plugins/input/ogg/Makefile.am, plugins/input/ogg/ogg.c,
+	  plugins/input/radio/Makefile.am, plugins/input/radio/radio.c,
+	  plugins/input/recorder/Makefile.am,
+	  plugins/input/recorder/recorder.c,
+	  plugins/input/timidi/Makefile.am, plugins/input/timidi/timidi.c,
+	  plugins/input/wav/Makefile.am, plugins/input/wav/wav.c,
+	  plugins/input/wav/wav.h, plugins/output/alsa/Makefile.am,
+	  plugins/output/alsa/alsa.c,
+	  plugins/output/disk_writer/Makefile.am,
+	  plugins/output/disk_writer/writer.c,
+	  plugins/output/esd/Makefile.am, plugins/output/esd/esd.c,
+	  plugins/output/oss/Makefile.am, plugins/output/oss/oss.c,
+	  po/ru.po, src/Makefile.am.shared, src/browser.c, src/colors.c,
+	  src/colors.h, src/csp.h, src/ep.h, src/help_screen.c, src/inp.h,
+	  src/iwt.c, src/logger.h, src/logger_view.c, src/outp.h,
+	  src/player.c, src/player.h, src/plist.c, src/plugin.h,
+	  src/pmng.h, src/undo.c: Plugin structure changed.
+
+2004-10-06 22:04  sg2
+
+	* configure.in.shared, libmpfc/Makefile.am, libmpfc/cfg.c,
+	  libmpfc/cfg_rcfile.c, libmpfc/file.c, libmpfc/file_http.c,
+	  libmpfc/file_http.h, libmpfc/file_reg.c, libmpfc/file_reg.h,
+	  libmpfc/util.c, libmpfcwnd/wnd.c, libmpfcwnd/wnd_combobox.c,
+	  libmpfcwnd/wnd_editbox.c, libmpfcwnd/wnd_filebox.c,
+	  libmpfcwnd/wnd_kbd.c, libmpfcwnd/wnd_kbd.h,
+	  libmpfcwnd/wnd_kbind.c, plugins/input/mp3/mp3.c,
+	  src/Makefile.am.shared, src/cfg.h, src/eqwnd.c, src/eqwnd.h,
+	  src/file.h, src/logger_view.c, src/player.c, src/player.h,
+	  src/test.c, src/util.h: rcfiles load improved.
+
+2004-09-30 08:11  sg2
+
+	* configure.in.shared, libmpfc/cfg.c, libmpfcwnd/Makefile.am,
+	  libmpfcwnd/wnd.c, libmpfcwnd/wnd.h, libmpfcwnd/wnd_basic.c,
+	  libmpfcwnd/wnd_basic.h, libmpfcwnd/wnd_button.c,
+	  libmpfcwnd/wnd_button.h, libmpfcwnd/wnd_checkbox.c,
+	  libmpfcwnd/wnd_checkbox.h, libmpfcwnd/wnd_combobox.c,
+	  libmpfcwnd/wnd_combobox.h, libmpfcwnd/wnd_def_handlers.c,
+	  libmpfcwnd/wnd_def_handlers.h, libmpfcwnd/wnd_dialog.c,
+	  libmpfcwnd/wnd_dialog.h, libmpfcwnd/wnd_dlgitem.c,
+	  libmpfcwnd/wnd_dlgitem.h, libmpfcwnd/wnd_editbox.c,
+	  libmpfcwnd/wnd_editbox.h, libmpfcwnd/wnd_filebox.c,
+	  libmpfcwnd/wnd_filebox.h, libmpfcwnd/wnd_hbox.c,
+	  libmpfcwnd/wnd_hbox.h, libmpfcwnd/wnd_kbind.c,
+	  libmpfcwnd/wnd_kbind.h, libmpfcwnd/wnd_msg.h,
+	  libmpfcwnd/wnd_radio.c, libmpfcwnd/wnd_radio.h,
+	  libmpfcwnd/wnd_root.c, libmpfcwnd/wnd_vbox.c,
+	  libmpfcwnd/wnd_vbox.h, src/Makefile.am.shared,
+	  src/Makefile.am.static, src/browser.c, src/browser.h, src/cfg.h,
+	  src/eqwnd.c, src/eqwnd.h, src/help_screen.c, src/help_screen.h,
+	  src/key_bind.c, src/key_bind.h, src/logger_view.c,
+	  src/logger_view.h, src/player.c, src/player.h: Key bindings
+	  implemented.
+
+2004-09-29 08:48  sg2
+
+	* configure.in.shared, doc/mpfc.texi, po/ru.po: MPFC 1.3.2
+
+2004-09-26 17:09  sg2
+
+	* libmpfc/cfg.c, libmpfc/logger.c, po/POTFILES.in, po/ru.po,
+	  src/cfg.h, src/logger.h, src/logger_view.c, src/player.c,
+	  src/player.h: Log level implemented.
+
+2004-09-26 16:10  sg2
+
+	* Makefile.am.shared, src/Makefile.am.shared, src/player.c,
+	  src/player.h: System configuration file installation through
+	  autoconf and automake implemented.
+
+2004-09-26 13:40  sg2
+
+	* configure.in.shared, src/browser.c, src/eqwnd.c,
+	  src/help_screen.c, src/main.c, src/player.c, src/player.h:
+	  Implemented signal handlers.
+
+2004-09-26 12:25  sg2
+
+	* libmpfc/vfs.c, libmpfcwnd/wnd_print.c, libmpfcwnd/wnd_print.h,
+	  libmpfcwnd/wnd_scrollable.h, plugins/output/alsa/alsa.c,
+	  src/logger.h, src/logger_view.c, src/logger_view.h, src/player.c,
+	  src/vfs.h: Logger improved.
+
+2004-09-24 20:19  sg2
+
+	* libmpfc/logger.c, libmpfcwnd/Makefile.am,
+	  libmpfcwnd/wnd_scrollable.c, libmpfcwnd/wnd_scrollable.h,
+	  src/key_bind.c, src/key_bind.h, src/logger.h, src/logger_view.c,
+	  src/logger_view.h, src/player.c, src/player.h: Scrolling logger
+	  implemented.
+
+2004-09-22 20:12  sg2
+
+	* libmpfc/Makefile.am, libmpfc/file.c, libmpfc/file_http.c,
+	  libmpfc/logger.c, libmpfc/plugin_mng.c, libmpfcwnd/wnd.c,
+	  libmpfcwnd/wnd.h, plugins/input/audiocd/audiocd.c,
+	  plugins/input/audiocd/audiocd.h, plugins/input/audiocd/cddb.c,
+	  plugins/input/mp3/mp3.c, plugins/input/ogg/ogg.c,
+	  src/Makefile.am.shared, src/browser.c, src/eqwnd.c, src/error.c,
+	  src/error.h, src/file.h, src/help_screen.c, src/history.c,
+	  src/iwt.c, src/logger.h, src/logger_view.c, src/logger_view.h,
+	  src/main.c, src/player.c, src/player.h, src/plist.c, src/pmng.h,
+	  src/song.c: Logger and logger view implemented.
+
+2004-09-21 04:41  sg2
+
+	* configure.in.shared, libmpfcwnd/wnd.c: xterm resize bug fixed.
+
+2004-09-20 21:15  sg2
+
+	* Makefile.am.shared, configure.in.shared, doc/mpfc.texi,
+	  libmpfc/Makefile.am, plugins/input/radio/radio.c, po/ru.po,
+	  src/Makefile.am.shared, src/Makefile.am.static,
+	  src/help_screen.c, src/plist.c: Updated documentation.
+
+2004-09-20 17:57  sg2
+
+	* ChangeLog, configure.in.shared, libmpfc/Makefile.am,
+	  libmpfc/finder.c, libmpfc/plugin_input.c, libmpfc/plugin_mng.c,
+	  libmpfc/plugin_output.c, libmpfc/string.c, libmpfc/util.c,
+	  libmpfc/vfs.c, libmpfcwnd/wnd_filebox.c,
+	  libmpfcwnd/wnd_filebox.h, plugins/input/audiocd/audiocd.c,
+	  plugins/input/audiocd/audiocd.h, plugins/input/radio/radio.c,
+	  plugins/input/recorder/recorder.c, plugins/output/alsa/alsa.c,
+	  po/ru.po, src/Makefile.am.shared, src/browser.c, src/browser.h,
+	  src/finder.h, src/help_screen.c, src/inp.h, src/mystring.h,
+	  src/outp.h, src/player.c, src/player.h, src/plist.c, src/plist.h,
+	  src/pmng.h, src/song.c, src/song.h, src/undo.c, src/util.h,
+	  src/vfs.h: Virtual file system implemented.
+
+2004-09-18 13:50  sg2
+
+	* plugins/output/alsa/alsa.c: ALSA volume bug fixed.
+
+2004-09-15 06:50  sg2
+
+	* ChangeLog, Makefile.am.shared, build_rcfile.pl, po/ru.po: Rcfile
+	  building utility is written.
+
+2004-09-15 06:29  sg2
+
+	* po/ru.po: Updated translations.
+
+2004-09-15 06:28  sg2
+
+	* ChangeLog, configure.in.shared, plugins/input/wav/wav.h,
+	  po/ru.po: Improved configuration.
+
+2004-09-13 13:10  sg2
+
+	* plugins/output/alsa/alsa.c: Improved alsa plugin.
+
+2004-09-13 07:35  sg2
+
+	* configure.in.shared, plugins/output/alsa/alsa.c, po/ru.po: Fixed
+	  bug in alsa plugin.
+
+2004-09-13 05:11  sg2
+
+	* configure.in.shared, libmpfcwnd/wnd_dlgitem.c, po/POTFILES.in,
+	  po/ru.po: Some translations updated.
+
+2004-09-12 21:46  sg2
+
+	* libmpfcwnd/wnd.c, libmpfcwnd/wnd_dialog.c, po/ru.po,
+	  src/browser.c, src/eqwnd.c, src/help_screen.c, src/player.c:
+	  Added items describing window library key bindings into help
+	  screen.
+
+2004-09-12 16:12  sg2
+
+	* libmpfc/cfg.c, libmpfcwnd/wnd.c, libmpfcwnd/wnd.h,
+	  libmpfcwnd/wnd_basic.c, libmpfcwnd/wnd_button.c,
+	  libmpfcwnd/wnd_button.h, libmpfcwnd/wnd_checkbox.c,
+	  libmpfcwnd/wnd_checkbox.h, libmpfcwnd/wnd_class.c,
+	  libmpfcwnd/wnd_class.h, libmpfcwnd/wnd_combobox.c,
+	  libmpfcwnd/wnd_combobox.h, libmpfcwnd/wnd_dialog.c,
+	  libmpfcwnd/wnd_dlgitem.c, libmpfcwnd/wnd_dlgitem.h,
+	  libmpfcwnd/wnd_editbox.c, libmpfcwnd/wnd_editbox.h,
+	  libmpfcwnd/wnd_filebox.c, libmpfcwnd/wnd_hbox.c,
+	  libmpfcwnd/wnd_label.c, libmpfcwnd/wnd_radio.c,
+	  libmpfcwnd/wnd_radio.h, libmpfcwnd/wnd_root.c,
+	  libmpfcwnd/wnd_vbox.c, src/browser.c, src/browser.h, src/cfg.h,
+	  src/eqwnd.c, src/eqwnd.h, src/help_screen.c, src/help_screen.h,
+	  src/player.c, src/player.h: 1. Setting default configuration list
+	  variables values.
+	  2. Made it possible to set variables while parent lists are not
+	  yet created.
+
+2004-09-11 15:16  sg2
+
+	* Makefile.am, Makefile.am.shared, Makefile.am.static,
+	  configure.in, configure.in.shared, configure.in.static,
+	  libmpfcwnd/wnd.c, libmpfcwnd/wnd.h, libmpfcwnd/wnd_basic.c,
+	  libmpfcwnd/wnd_basic.h, libmpfcwnd/wnd_def_handlers.c,
+	  libmpfcwnd/wnd_dialog.c, libmpfcwnd/wnd_root.c,
+	  libmpfcwnd/wnd_root.h, po/ru.po, src/Makefile.am,
+	  src/Makefile.am.shared, src/Makefile.am.static, src/key_bind.c,
+	  src/key_bind.h, src/player.c, src/player.h, src/test.c,
+	  src/test.h: 1. Optimized windows visibility information building.
+	  2. Fixed window bar.
+
+2004-09-06 07:25  sg2
+
+	* configure.in, libmpfc/string.c, libmpfcwnd/wnd_editbox.c,
+	  libmpfcwnd/wnd_editbox.h, po/ru.po, src/mystring.h, src/player.c,
+	  src/player.h: Edit box history implemented.
+
+2004-08-31 13:23  sg2
+
+	* libmpfcwnd/wnd.c, libmpfcwnd/wnd.h, libmpfcwnd/wnd_button.c,
+	  libmpfcwnd/wnd_checkbox.c, libmpfcwnd/wnd_class.c,
+	  libmpfcwnd/wnd_class.h, libmpfcwnd/wnd_combobox.c,
+	  libmpfcwnd/wnd_combobox.h, libmpfcwnd/wnd_dlgitem.c,
+	  libmpfcwnd/wnd_dlgitem.h, libmpfcwnd/wnd_editbox.c,
+	  libmpfcwnd/wnd_filebox.c, libmpfcwnd/wnd_filebox.h,
+	  libmpfcwnd/wnd_hbox.c, libmpfcwnd/wnd_hbox.h,
+	  libmpfcwnd/wnd_label.c, libmpfcwnd/wnd_label.h,
+	  libmpfcwnd/wnd_radio.c, libmpfcwnd/wnd_radio.h,
+	  libmpfcwnd/wnd_vbox.c, libmpfcwnd/wnd_vbox.h, src/browser.c,
+	  src/browser.h, src/eqwnd.c, src/eqwnd.h, src/help_screen.c,
+	  src/help_screen.h, src/player.c, src/player.h, src/plist.c:
+	  Improved the window styles configurability.
+
+2004-08-29 16:49  sg2
+
+	* libmpfcwnd/wnd.c, libmpfcwnd/wnd_kbd.c, libmpfcwnd/wnd_kbd.h:
+	  Updated keyboard module.
+
+2004-08-29 01:01  sg2
+
+	* libmpfcwnd/wnd_button.c, libmpfcwnd/wnd_button.h,
+	  libmpfcwnd/wnd_checkbox.c, libmpfcwnd/wnd_checkbox.h,
+	  libmpfcwnd/wnd_combobox.c, libmpfcwnd/wnd_combobox.h,
+	  libmpfcwnd/wnd_dialog.c, libmpfcwnd/wnd_dlgitem.c,
+	  libmpfcwnd/wnd_dlgitem.h, libmpfcwnd/wnd_editbox.c,
+	  libmpfcwnd/wnd_editbox.h, libmpfcwnd/wnd_filebox.c,
+	  libmpfcwnd/wnd_filebox.h, libmpfcwnd/wnd_hbox.c,
+	  libmpfcwnd/wnd_kbd.h, libmpfcwnd/wnd_label.c,
+	  libmpfcwnd/wnd_label.h, libmpfcwnd/wnd_radio.c,
+	  libmpfcwnd/wnd_radio.h, libmpfcwnd/wnd_vbox.c, src/browser.c,
+	  src/eqwnd.c, src/player.c: Fast jumping to dialog items
+	  implemented.
+
+2004-08-28 16:37  sg2
+
+	* libmpfc/song_info.c, plugins/input/audiocd/audiocd.c,
+	  plugins/input/radio/radio.c, plugins/input/recorder/recorder.c:
+	  Fixed some bugs with song info production.
+
+2004-08-28 16:06  sg2
+
+	* libmpfc/file_http.c, libmpfc/plugin_input.c,
+	  plugins/input/mp3/mp3.c, plugins/input/ogg/ogg.c, src/inp.h,
+	  src/iwt.c, src/player.c, src/plist.c, src/song.c, src/song.h:
+	  Written a proper PLS file loading and improved the streaming
+	  capabilities.
+
+2004-08-26 22:05  sg2
+
+	* libmpfcwnd/wnd.c, libmpfcwnd/wnd.h, libmpfcwnd/wnd_checkbox.c,
+	  libmpfcwnd/wnd_checkbox.h, libmpfcwnd/wnd_combobox.c,
+	  libmpfcwnd/wnd_editbox.c, libmpfcwnd/wnd_editbox.h,
+	  libmpfcwnd/wnd_filebox.c, libmpfcwnd/wnd_label.c,
+	  libmpfcwnd/wnd_label.h, src/browser.c, src/cfg.h, src/eqwnd.c,
+	  src/iwt.c, src/iwt.h, src/player.c, src/player.h, src/plist.c,
+	  src/song.c, src/song.h: Implemented info dialog.
+
+2004-08-25 15:47  sg2
+
+	* libmpfcwnd/wnd.c, libmpfcwnd/wnd.h: Some optimization done in
+	  window invalidation.
+
+2004-08-25 15:28  sg2
+
+	* libmpfcwnd/Makefile.am, libmpfcwnd/wnd.c, libmpfcwnd/wnd.h,
+	  libmpfcwnd/wnd_basic.c, libmpfcwnd/wnd_basic.h,
+	  libmpfcwnd/wnd_combobox.c, libmpfcwnd/wnd_combobox.h,
+	  libmpfcwnd/wnd_dialog.c, libmpfcwnd/wnd_editbox.c,
+	  libmpfcwnd/wnd_editbox.h, libmpfcwnd/wnd_filebox.c,
+	  libmpfcwnd/wnd_filebox.h, libmpfcwnd/wnd_print.c,
+	  libmpfcwnd/wnd_print.h: Combo box implemented.
+
+2004-08-19 14:07  sg2
+
+	* libmpfc/string.c, libmpfcwnd/Makefile.am, libmpfcwnd/wnd.c,
+	  libmpfcwnd/wnd.h, libmpfcwnd/wnd_checkbox.c,
+	  libmpfcwnd/wnd_checkbox.h, libmpfcwnd/wnd_dialog.c,
+	  libmpfcwnd/wnd_dlgitem.c, libmpfcwnd/wnd_dlgitem.h,
+	  libmpfcwnd/wnd_editbox.c, libmpfcwnd/wnd_editbox.h,
+	  libmpfcwnd/wnd_filebox.c, libmpfcwnd/wnd_filebox.h,
+	  libmpfcwnd/wnd_hbox.c, libmpfcwnd/wnd_hbox.h,
+	  libmpfcwnd/wnd_kbd.h, libmpfcwnd/wnd_label.c,
+	  libmpfcwnd/wnd_label.h, libmpfcwnd/wnd_radio.c,
+	  libmpfcwnd/wnd_radio.h, libmpfcwnd/wnd_vbox.c,
+	  libmpfcwnd/wnd_vbox.h, src/browser.c, src/browser.h, src/eqwnd.c,
+	  src/eqwnd.h, src/help_screen.c, src/help_screen.h,
+	  src/key_bind.c, src/mystring.h, src/player.c, src/player.h:
+	  Implemented full-featured edit box, file box, check box and radio
+	  button;
+	  used them in player dialogs.
+
+2004-08-17 14:37  sg2
+
+	* libmpfcwnd/Makefile.am, libmpfcwnd/wnd.c, libmpfcwnd/wnd.h,
+	  libmpfcwnd/wnd_button.c, libmpfcwnd/wnd_button.h,
+	  libmpfcwnd/wnd_def_handlers.c, libmpfcwnd/wnd_dialog.c,
+	  libmpfcwnd/wnd_dialog.h, libmpfcwnd/wnd_dlgitem.c,
+	  libmpfcwnd/wnd_dlgitem.h, libmpfcwnd/wnd_editbox.c,
+	  libmpfcwnd/wnd_editbox.h, libmpfcwnd/wnd_hbox.c,
+	  libmpfcwnd/wnd_hbox.h, libmpfcwnd/wnd_mouse.c,
+	  libmpfcwnd/wnd_vbox.c, libmpfcwnd/wnd_vbox.h, src/browser.c,
+	  src/eqwnd.c, src/help_screen.c, src/player.c: Vertical and
+	  horizontal boxes implemented.
+
+2004-08-16 09:29  sg2
+
+	* configure.in, libmpfcwnd/wnd.c, libmpfcwnd/wnd.h,
+	  libmpfcwnd/wnd_def_handlers.c, libmpfcwnd/wnd_print.c,
+	  libmpfcwnd/wnd_print.h, libmpfcwnd/wnd_types.h, src/Makefile.am,
+	  src/iwt.c, src/key_bind.c, src/sat.c: Optimized window painting.
+
+2004-08-13 21:46  sg2
+
+	* libmpfcwnd/Makefile.am, libmpfcwnd/wnd.c, libmpfcwnd/wnd.h,
+	  libmpfcwnd/wnd_button.c, libmpfcwnd/wnd_button.h,
+	  libmpfcwnd/wnd_dialog.c, libmpfcwnd/wnd_dialog.h,
+	  libmpfcwnd/wnd_dlgitem.c, libmpfcwnd/wnd_dlgitem.h,
+	  libmpfcwnd/wnd_editbox.c, libmpfcwnd/wnd_editbox.h,
+	  src/browser.c, src/eqwnd.c, src/help_screen.c, src/player.c,
+	  src/player.h: A simple version of edit box implemented.
+
+2004-08-13 17:48  sg2
+
+	* libmpfcwnd/wnd.c, libmpfcwnd/wnd.h,
+	  libmpfcwnd/wnd_def_handlers.c, libmpfcwnd/wnd_print.c,
+	  libmpfcwnd/wnd_print.h: 'wnd_pos_visible' rewrittern.
+
+2004-08-13 14:41  sg2
+
+	* libmpfcwnd/wnd.c, libmpfcwnd/wnd.h, libmpfcwnd/wnd_basic.c,
+	  libmpfcwnd/wnd_basic.h, libmpfcwnd/wnd_button.c,
+	  libmpfcwnd/wnd_button.h, libmpfcwnd/wnd_def_handlers.c,
+	  libmpfcwnd/wnd_def_handlers.h, libmpfcwnd/wnd_dialog.c,
+	  libmpfcwnd/wnd_dialog.h, libmpfcwnd/wnd_kbd.c,
+	  libmpfcwnd/wnd_kbd.h, libmpfcwnd/wnd_root.c,
+	  libmpfcwnd/wnd_root.h, src/browser.c, src/browser.h, src/eqwnd.c,
+	  src/eqwnd.h, src/help_screen.c, src/help_screen.h, src/player.c,
+	  src/player.h: Changed key representation.
+
+2004-08-13 13:19  sg2
+
+	* libmpfcwnd/Makefile.am, libmpfcwnd/wnd.c, libmpfcwnd/wnd.h,
+	  libmpfcwnd/wnd_basic.c, libmpfcwnd/wnd_basic.h,
+	  libmpfcwnd/wnd_button.c, libmpfcwnd/wnd_button.h,
+	  libmpfcwnd/wnd_class.c, libmpfcwnd/wnd_class.h,
+	  libmpfcwnd/wnd_dialog.c, libmpfcwnd/wnd_dialog.h,
+	  libmpfcwnd/wnd_kbd.c, libmpfcwnd/wnd_mouse.c,
+	  libmpfcwnd/wnd_msg.c, libmpfcwnd/wnd_msg.h,
+	  libmpfcwnd/wnd_root.c, libmpfcwnd/wnd_root.h, src/player.c,
+	  src/player.h: Implemented dialog and button window classes.
+
+2004-08-11 14:50  sg2
+
+	* Makefile.am, configure.in, libmpfcwnd/Makefile.am,
+	  libmpfcwnd/wnd.c, libmpfcwnd/wnd.h, libmpfcwnd/wnd_basic.c,
+	  libmpfcwnd/wnd_basic.h, libmpfcwnd/wnd_class.c,
+	  libmpfcwnd/wnd_class.h, libmpfcwnd/wnd_common_msg.c,
+	  libmpfcwnd/wnd_common_msg.h, libmpfcwnd/wnd_def_handlers.c,
+	  libmpfcwnd/wnd_kbd.c, libmpfcwnd/wnd_mouse.c,
+	  libmpfcwnd/wnd_mouse.h, libmpfcwnd/wnd_msg.c,
+	  libmpfcwnd/wnd_msg.h, libmpfcwnd/wnd_root.c,
+	  libmpfcwnd/wnd_root.h, libmpfcwnd/wnd_types.h,
+	  plugins/output/oss/oss.c, src/browser.c, src/eqwnd.c,
+	  src/help_screen.c, src/main.c, src/player.c: 1. Introduced window
+	  classes.
+	  2. Made messages with text identifiers.
+
+2004-08-07 21:47  sg2
+
+	* Makefile.am, configure.in, libmpfc/cfg.c, libmpfc/plugin_mng.c,
+	  libmpfc/util.c, libmpfcwnd, libmpfcwnd/Makefile.am,
+	  libmpfcwnd/wnd.c, libmpfcwnd/wnd.h, libmpfcwnd/wnd_common_msg.c,
+	  libmpfcwnd/wnd_common_msg.h, libmpfcwnd/wnd_def_handlers.c,
+	  libmpfcwnd/wnd_def_handlers.h, libmpfcwnd/wnd_kbd.c,
+	  libmpfcwnd/wnd_kbd.h, libmpfcwnd/wnd_mouse.c,
+	  libmpfcwnd/wnd_mouse.h, libmpfcwnd/wnd_msg.c,
+	  libmpfcwnd/wnd_msg.h, libmpfcwnd/wnd_print.c,
+	  libmpfcwnd/wnd_print.h, libmpfcwnd/wnd_root.c,
+	  libmpfcwnd/wnd_root.h, plugins/input/audiocd/audiocd.c, po/ru.po,
+	  src/Makefile.am, src/browser.c, src/browser.h, src/button.c,
+	  src/button.h, src/cfg.c, src/cfg.h, src/choice_ctrl.c,
+	  src/choice_ctrl.h, src/colors.c, src/colors.h, src/combobox.c,
+	  src/combobox.h, src/dlg_ctrl.c, src/dlg_ctrl.h, src/dlgbox.c,
+	  src/dlgbox.h, src/editbox.c, src/editbox.h, src/eqwnd.c,
+	  src/eqwnd.h, src/file_input.c, src/file_input.h,
+	  src/help_screen.c, src/help_screen.h, src/key_bind.c,
+	  src/label.c, src/label.h, src/listbox.c, src/listbox.h,
+	  src/player.c, src/player.h, src/plist.c, src/plist.h, src/pmng.h,
+	  src/song.c, src/types.h, src/util.h, src/window.c, src/window.h:
+	  Merged libmpfcwnd into the base MPFC source and used it instead
+	  of the
+	  old window library.
+
+2004-05-22 17:25  sg2
+
+	* AUTHORS, configure.in, plugins/input/audiocd/audiocd.c,
+	  plugins/input/mp3/mp3.c, plugins/output/Makefile.am,
+	  plugins/output/esd, plugins/output/esd/Makefile.am,
+	  plugins/output/esd/esd.c, po/ru.po, src/player.c, src/window.c,
+	  src/window.h: esd output plugin added.
+
+2004-04-29 10:20  sg2
+
+	* doc/mpfc.texi: Updated documentation.
+
+2004-04-29 10:15  sg2
+
+	* configure.in, doc/mpfc.texi, plugins/output/Makefile.am,
+	  plugins/output/alsa, plugins/output/alsa/Makefile.am,
+	  plugins/output/alsa/alsa.c, po/ru.po, src/window.c: ALSA plugin
+	  added.
+
+2004-04-29 09:59  sg2
+
+	* src/browser.c, src/dlgbox.c, src/editbox.c, src/eqwnd.c,
+	  src/help_screen.c, src/listbox.c, src/player.c, src/player.h,
+	  src/plist.c, src/plist.h, src/window.c, src/window.h: Improved
+	  work under xterm.
+
+2004-04-23 19:35  sg2
+
+	* src/player.c: Oops... The same bug.
+
+2004-04-23 19:29  sg2
+
+	* src/browser.c, src/key_bind.c, src/player.c, src/player.h,
+	  src/window.c: Fixed bug with displaying `loop' label.
+
+2004-03-24 06:36  sg2
+
+	* src/main.c: Added random numbers generator initialization.
+
+2004-03-16 09:57  sg2
+
+	* plugins/input/timidi/timidi.c: A bug with file name fixed.
+
+2004-03-11 18:31  sg2
+
+	* po/ru.po, src/browser.c, src/browser.h, src/help_screen.c,
+	  src/player.c, src/plist.c, src/plist.h: Improvements to the file
+	  browser (search mode and saving previous position)
+
+2004-03-11 12:55  sg2
+
+	* src/song.c: Another bug with info management fixed.
+
+2004-03-11 10:29  sg2
+
+	* libmpfc/id3.c: Another mp3 info saving bug fixed.
+
+2004-03-11 09:22  sg2
+
+	* configure.in, libmpfc/id3.c, libmpfc/util.c: A bug with saving
+	  mp3 info fixed.
+
+2004-03-10 19:25  sg2
+
+	* src/song.c: Bug with not playing streamed audio fixed.
+
+2004-02-29 19:15  sg2
+
+	* configure.in, plugins/charset/ru/ru.c, plugins/output/oss/oss.c,
+	  po/ru.po, src/main.c, src/player.c, src/plist.c: Some bugs fixed.
+
+2004-02-28 19:02  sg2
+
+	* doc/mpfc.texi, libmpfc/file_http.c, libmpfc/id3.c,
+	  libmpfc/plugin_mng.c, libmpfc/util.c,
+	  plugins/input/audiocd/audiocd.c, plugins/input/audiocd/cddb.c,
+	  plugins/input/mp3/mp3.c, plugins/input/ogg/ogg.c,
+	  plugins/input/radio/radio.c, plugins/input/recorder/recorder.c,
+	  plugins/input/timidi/timidi.c, plugins/input/wav/wav.c,
+	  plugins/output/disk_writer/writer.c, src/browser.c,
+	  src/file_input.c, src/player.c, src/plist.c, src/util.h: Some
+	  bugs fixed.
+
+2004-02-21 19:44  sg2
+
+	* configure.in, plugins/input/audiocd/audiocd.c,
+	  plugins/input/audiocd/cddb.c, po/ru.po: Moved to version 1.2-2
+
+2004-02-21 16:25  sg2
+
+	* plugins/input/ogg/ogg.c: Bug with saving info in song being
+	  played is fixed.
+
+2004-02-12 11:12  sg2
+
+	* configure.in, doc/mpfc.texi, libmpfc/util.c,
+	  plugins/input/recorder/recorder.c, po/POTFILES.in, po/ru.po,
+	  src/browser.c, src/browser.h, src/eqwnd.c, src/eqwnd.h,
+	  src/help_screen.c, src/help_screen.h, src/player.c: Made help
+	  screen for browser and equalizer.
+
+2004-02-11 18:59  sg2
+
+	* src/dlgbox.c, src/help_screen.c, src/player.c, src/plist.c,
+	  src/window.c, src/window.h: Printing optimizations done.
+
+2004-02-11 16:42  sg2
+
+	* src/player.c, src/plist.c, src/plist.h, src/undo.c, src/undo.h,
+	  src/util.h: Sorting on load done.
+
+2004-02-11 08:51  sg2
+
+	* doc/mpfc.texi, plugins/input/recorder/recorder.c: Documentation
+	  updated.
+
+2004-02-10 17:44  sg2
+
+	* po/POTFILES.in, po/ru.po: Updated russification.
+
+2004-02-10 17:30  sg2
+
+	* configure.in, libmpfc/Makefile.am, libmpfc/finder.c,
+	  libmpfc/util.c, plugins/charset/Makefile.am,
+	  plugins/charset/ru/ru.c, plugins/effect/Makefile.am,
+	  plugins/input/Makefile.am, plugins/input/audiocd/Makefile.am,
+	  plugins/input/mp3/Makefile.am, plugins/input/ogg/Makefile.am,
+	  plugins/input/ogg/ogg.c, plugins/input/timidi/timidi.c,
+	  plugins/output/Makefile.am, plugins/output/disk_writer/writer.c,
+	  po/ru.po, src/Makefile.am, src/listbox.c, src/player.c,
+	  src/plist.c, src/util.h: Made normal stuff with linking against
+	  libraries plus some bugfixes.
+
+2004-02-09 13:06  sg2
+
+	* configure.in, plugins/input/Makefile.am, plugins/input/recorder,
+	  plugins/input/recorder/Makefile.am,
+	  plugins/input/recorder/recorder.c: Recorder input plugin added.
+
+2004-02-09 12:29  sg2
+
+	* libmpfc/plugin_output.c, plugins/input/audiocd/audiocd.c,
+	  plugins/input/radio/radio.c, plugins/input/timidi/timidi.c,
+	  plugins/output/disk_writer/writer.c, po/ru.po, src/browser.c,
+	  src/inp.h, src/outp.h, src/player.c, src/plist.c, src/window.c,
+	  src/window.h: Writing support added for AudioCD and radio.
+
+2004-02-08 14:45  sg2
+
+	* src/browser.c, src/browser.h, src/cfg.c, src/player.c,
+	  src/plist.c, src/window.c, src/window.h: Improved browser:
+	  implemented song info mode plus some other features.
+
+2004-02-08 10:03  sg2
+
+	* src/history.c, src/player.c: Some bugs fixed.
+
+2004-02-07 21:06  sg2
+
+	* libmpfc/Makefile.am, libmpfc/string.c, po/POTFILES.in, po/ru.po,
+	  src/mystring.h: Strings are allocated by portions now.
+
+2004-02-07 20:54  sg2
+
+	* src/player.c: Fixed bug in variables saving.
+
+2004-02-07 20:48  sg2
+
+	* plugins/input/mp3/Makefile.am, plugins/input/mp3/getlen.c,
+	  plugins/input/mp3/getlen.h, plugins/input/mp3/mp3.c,
+	  plugins/input/mp3/mp3.h: Length getting function is rewritten.
+
+2004-02-07 15:16  sg2
+
+	* libmpfc/Makefile.am, libmpfc/cfg.c, libmpfc/charset.c,
+	  libmpfc/file.c, libmpfc/file_http.c, libmpfc/file_http.h,
+	  libmpfc/file_reg.c, libmpfc/file_reg.h, libmpfc/genre_list.c,
+	  libmpfc/id3.c, libmpfc/plugin_charset.c, libmpfc/plugin_effect.c,
+	  libmpfc/plugin_input.c, libmpfc/plugin_mng.c,
+	  libmpfc/plugin_output.c, libmpfc/song_info.c, libmpfc/string.c,
+	  libmpfc/util.c, plugins/charset/ru/ru.c,
+	  plugins/effect/echo/echo.c, plugins/input/audiocd/audiocd.c,
+	  plugins/input/audiocd/audiocd.h, plugins/input/audiocd/cddb.c,
+	  plugins/input/audiocd/cddb.h, plugins/input/mp3/getlen.c,
+	  plugins/input/mp3/mp3.c, plugins/input/mp3/mp3.h,
+	  plugins/input/ogg/ogg.c, plugins/input/radio/radio.c,
+	  plugins/input/timidi/timidi.c, plugins/input/timidi/timidi.h,
+	  plugins/input/wav/wav.c, plugins/output/disk_writer/writer.c,
+	  plugins/output/oss/oss.c, src/Makefile.am, src/browser.c,
+	  src/browser.h, src/button.c, src/button.h, src/cfg.c, src/cfg.h,
+	  src/charset.h, src/choice_ctrl.c, src/choice_ctrl.h,
+	  src/colors.c, src/colors.h, src/combobox.c, src/combobox.h,
+	  src/csp.h, src/dlgbox.c, src/dlgbox.h, src/editbox.c,
+	  src/editbox.h, src/ep.h, src/eqwnd.c, src/file.h,
+	  src/file_input.c, src/file_input.h, src/genre_list.h,
+	  src/help_screen.c, src/help_screen.h, src/history.c,
+	  src/history.h, src/inp.h, src/iwt.c, src/listbox.c,
+	  src/listbox.h, src/menu.c, src/menu.h, src/myid3.h,
+	  src/mystring.h, src/outp.h, src/player.c, src/player.h,
+	  src/plist.c, src/pmng.h, src/song.c, src/song.h, src/song_info.h,
+	  src/types.h, src/undo.c, src/undo.h, src/util.h, src/window.c,
+	  src/window.h: Changed char arrays to pointr where it is possible
+	  and restructured
+	  plugins.
+
+2004-02-02 11:30  sg2
+
+	* Makefile.am, configure.in, libmpfc, libmpfc/Makefile.am,
+	  libmpfc/cfg.c, libmpfc/charset.c, libmpfc/file.c,
+	  libmpfc/file_http.c, libmpfc/file_http.h, libmpfc/file_reg.c,
+	  libmpfc/file_reg.h, libmpfc/finder.c, libmpfc/genre_list.c,
+	  libmpfc/id3.c, libmpfc/plugin_charset.c, libmpfc/plugin_effect.c,
+	  libmpfc/plugin_input.c, libmpfc/plugin_mng.c,
+	  libmpfc/plugin_output.c, libmpfc/util.c, plugins/Makefile.am,
+	  plugins/charset, plugins/charset/Makefile.am, plugins/charset/ru,
+	  plugins/charset/ru/Makefile.am, plugins/charset/ru/ru.c,
+	  plugins/effect/echo/Makefile.am,
+	  plugins/input/audiocd/Makefile.am, plugins/input/mp3/Makefile.am,
+	  plugins/input/mp3/mp3.c, plugins/input/ogg/Makefile.am,
+	  plugins/input/radio/Makefile.am,
+	  plugins/input/timidi/Makefile.am, plugins/input/wav/Makefile.am,
+	  plugins/output/disk_writer/Makefile.am,
+	  plugins/output/oss/Makefile.am, po/ru.po, src/Makefile.am,
+	  src/charset.h, src/finder.c, src/myid3.h, src/player.c,
+	  src/pmng.h, src/song.c, src/window.c: 1. Made one shared libmpfc
+	  library instead of many static libraries.
+	  2. Written charset plugins.
+
+2004-01-31 17:00  sg2
+
+	* plugins/input/mp3/Makefile.am, plugins/input/mp3/getlen.c,
+	  plugins/input/mp3/getlen.h, plugins/input/mp3/mp3.c: Proper song
+	  length obtaining.
+
+2004-01-31 14:31  sg2
+
+	* configure.in, plugins/input/radio/radio.c, po/ru.po,
+	  src/Makefile.am, src/ep.c, src/ep.h, src/inp.c, src/inp.h,
+	  src/outp.c, src/outp.h, src/player.c, src/player.h, src/plist.c,
+	  src/plugin, src/plugin/Makefile.am, src/plugin/ep.c,
+	  src/plugin/inp.c, src/plugin/outp.c, src/plugin/pmng.c,
+	  src/pmng.c, src/pmng.h, src/song.c: Made a plugin management
+	  functions.
+
+2004-01-31 12:19  sg2
+
+	* plugins/input/mp3/mp3.c, plugins/input/ogg/ogg.c, src/inp.c,
+	  src/inp.h, src/player.c, src/window.c, src/window.h: Current
+	  audio parameters (bitrate, sample rate and number of channels)
+	  displaying implemented.
+
+2004-01-17 21:35  sg2
+
+	* configure.in, doc/mpfc.texi, plugins/input/Makefile.am,
+	  plugins/input/timidi, plugins/input/timidi/Makefile.am,
+	  plugins/input/timidi/timidi.c, plugins/input/timidi/timidi.h,
+	  po/ru.po: TiMidi plugin introduced.
+
+2004-01-14 10:26  sg2
+
+	* src/editbox.c, src/plist.c, src/plist.h: A little bug in edit box
+	  fixed.
+
+2004-01-07 11:41  sg2
+
+	* src/plist.c: Fixed a little bug with songs which info wasn't
+	  reloaded after undoing
+	  their removing.
+
+2004-01-06 21:09  sg2
+
+	* configure.in, po/ru.po, src/browser.c, src/player.c, src/plist.c:
+	  Moved to 1.1.1 version.
+
+2004-01-02 08:47  sg2
+
+	* doc/mpfc.texi, po/ru.po, src/browser.c: Removed possibility to
+	  exit file browser by escape.
+
+2004-01-01 22:15  sg2
+
+	* doc/mpfc.texi, plugins/input/wav/wav.c, po/POTFILES.in, po/ru.po,
+	  src/Makefile.am, src/browser.c, src/browser.h, src/help_screen.c,
+	  src/key_bind.c, src/key_bind.h, src/player.c, src/player.h,
+	  src/window.c, src/window.h: File browser tool implemented.
+
+2003-12-31 09:55  sg2
+
+	* plugins/input/mp3/mp3.c: Bug with equalizer in mp3 plugin fixed
+	  (it didn't apply)
+
+2003-12-31 09:48  sg2
+
+	* src/pmng.c: Fixed a bug with effects (they were not applied)
+
+2003-12-28 14:44  sg2
+
+	* src/player.c, src/player.h: Some bugs fixed.
+
+2003-12-28 14:10  sg2
+
+	* plugins/input/mp3/mp3.c: A bug with info string overflow fixed.
+
+2003-12-21 17:15  sg2
+
+	* doc/mpfc.texi: Documentation updated.
+
+2003-12-21 17:12  sg2
+
+	* plugins/input/audiocd/audiocd.c, po/ru.po, src/inp.c, src/inp.h,
+	  src/player.c, src/player.h, src/window.c: 1. Smooth CD playing.
+	  2. Mouse in xterm enabled.
+
+2003-12-21 12:17  sg2
+
+	* plugins/output/oss/oss.c: Variable controlling dsp device name
+	  added.
+
+2003-12-20 21:33  sg2
+
+	* src/eqwnd.c, src/eqwnd.h: Added mouse support in equalizer
+	  window.
+
+2003-12-18 17:19  sg2
+
+	* plugins/input/mp3/mp3.c, po/ru.po, src/Makefile.am, src/iwt.c,
+	  src/iwt.h, src/myid3/id3.c, src/player.c, src/sat.h, src/song.h:
+	  Song info writer thread module implemented.
+
+2003-12-18 09:40  sg2
+
+	* src/myid3/id3.c: Writing track in ID3 enabled.
+
+2003-12-17 19:42  sg2
+
+	* src/myid3.h, src/myid3/id3.c: Added track number support in ID3V1
+	  tags.
+
+2003-12-15 19:01  sg2
+
+	* doc/mpfc.texi, plugins/input/audiocd/audiocd.c,
+	  plugins/input/mp3/mp3.c, po/ru.po, src/combobox.c, src/editbox.c,
+	  src/myid3/id3.c, src/player.c, src/plist.c, src/song.c,
+	  src/util.h, src/util/util.c, src/window.c, src/window.h: Bugs in
+	  ID3 fixed.
+
+2003-11-27 17:33  sg2
+
+	* po/ru.po: Updated russification.
+
+2003-11-27 17:30  sg2
+
+	* doc/mpfc.texi: Updated info page.
+
+2003-11-27 11:59  sg2
+
+	* plugins/input/audiocd/cddb.c, plugins/input/audiocd/cddb.h,
+	  src/inp.c, src/player.c, src/window.c: CDDB submit function
+	  implemented.
+
+2003-11-23 17:07  sg2
+
+	* configure.in, doc/Makefile.am, plugins/input/audiocd/audiocd.c,
+	  plugins/input/audiocd/audiocd.h, plugins/input/audiocd/cddb.c,
+	  plugins/input/mp3/Makefile.am, plugins/input/mp3/mp3.c,
+	  po/POTFILES.in, po/ru.po, src/cfg.c, src/help_screen.c,
+	  src/inp.c, src/inp.h, src/player.c, src/player.h, src/plist.c,
+	  src/window.c: Some features implemented.
+
+2003-11-20 16:25  sg2
+
+	* configure.in, po/ru.po, src/Makefile.am, src/combobox.c,
+	  src/combobox.h, src/dlg_ctrl.c, src/dlg_ctrl.h, src/dlgbox.c,
+	  src/dlgbox.h, src/editbox.c, src/editbox.h, src/player.c,
+	  src/player.h, src/plist.c, src/plist.h, src/window.c,
+	  src/window.h: Mouse support implemented.
+
+2003-11-14 20:11  sg2
+
+	* src/player.c, src/plist.c, src/plist.h: Fixed some bugs with
+	  undoing object removing.
+
+2003-11-14 19:45  sg2
+
+	* plugins/input/audiocd/audiocd.c, plugins/input/audiocd/audiocd.h,
+	  plugins/input/audiocd/cddb.c, plugins/input/audiocd/cddb.h,
+	  plugins/input/radio/radio.c, po/ru.po, src/inp.c, src/inp.h,
+	  src/player.c, src/plist.c, src/plist.h, src/song.c: Improved
+	  objects support.
+
+2003-11-11 12:21  sg2
+
+	* plugins/input/mp3/mp3.c, src/inp.c, src/inp.h, src/label.c,
+	  src/label.h, src/myid3.h, src/myid3/id3.c, src/player.c,
+	  src/player.h, src/window.c, src/window.h: Special input plugin
+	  functions support and clear ID3 tags in mp3 plugin
+	  function implemented.
+
+2003-11-09 18:07  sg2
+
+	* src/player.c, src/player.h, src/plist.c, src/plist.h: Local info
+	  reload implemented.
+
+2003-11-09 18:00  sg2
+
+	* src/myid3/id3.c: Some bugs in ID3 support fixed.
+
+2003-11-09 15:08  sg2
+
+	* po/ru.po, src/combobox.c, src/combobox.h, src/editbox.c,
+	  src/editbox.h, src/myid3/id3.c, src/player.c, src/plist.h:
+	  Grouped info editing implemented.
+
+2003-11-08 20:19  sg2
+
+	* configure.in, plugins/input/mp3/Makefile.am,
+	  plugins/input/mp3/mp3.c, plugins/input/mp3/mp3.h,
+	  src/Makefile.am, src/file/http.c, src/inp.c, src/myid3,
+	  src/myid3.h, src/myid3/Makefile.am, src/myid3/id3.c: Own ID3 tags
+	  support implemented.
+
+2003-11-01 19:15  sg2
+
+	* src/editbox.c, src/editbox.h, src/file_input.c, src/window.c:
+	  Edit box C-u, C-k and C-y operations implemented.
+
+2003-11-01 06:14  sg2
+
+	* README, plugins/input/mp3/mp3.c, plugins/input/ogg/ogg.c,
+	  plugins/input/wav/wav.c, po/ru.po, src/plist.c: A bug with moving
+	  selection fixed.
+
+2003-10-31 19:11  sg2
+
+	* src/cfg.c, src/player.c: 1. Bug with skipping songs fixed.
+	  2. Configuration variables information updated.
+
+2003-10-31 18:59  sg2
+
+	* src/cfg.c, src/choice_ctrl.c, src/combobox.c, src/dlgbox.c,
+	  src/editbox.c, src/eqwnd.c, src/file/file.c, src/file/http.c,
+	  src/file/http.h, src/file/reg.c, src/file/reg.h,
+	  src/help_screen.c, src/label.c, src/menu.c, src/player.c,
+	  src/player.h, src/plist.c, src/plist.h, src/util.h,
+	  src/util/util.c, src/window.c, src/window.h: Some little bugs
+	  fixed.
+
+2003-10-22 16:09  sg2
+
+	* doc/Makefile.am, doc/mpfc.1, doc/mpfc.texi: Written documentation
+	  in Texinfo format.
+
+2003-10-17 14:53  sg2
+
+	* configure.in, plugins/input/mp3/Makefile.am,
+	  plugins/input/mp3/mp3.c, plugins/input/ogg/Makefile.am,
+	  plugins/input/ogg/ogg.c, plugins/input/wav/Makefile.am,
+	  src/Makefile.am, src/cfg.c, src/file, src/file/Makefile.am,
+	  src/file/file.c, src/file/http.c, src/file/http.h,
+	  src/file/reg.c, src/file/reg.h, src/finder.c, src/inp.c,
+	  src/inp.h, src/player.c, src/player.h, src/plist.c, src/plist.h,
+	  src/pmng.c, src/pmng.h, src/song.c, src/song.h, src/util.h,
+	  src/util/util.c: Network support added.
+
+2003-10-05 19:29  sg2
+
+	* plugins/effect/echo/echo.c, plugins/input/mp3/mp3.c,
+	  plugins/output/disk_writer/writer.c, plugins/output/oss/oss.c,
+	  po/ru.po, src/cfg.c, src/eqwnd.c, src/key_bind.c, src/player.c,
+	  src/plist.c, src/pmng.c, src/song.c: Changed '_' in variables
+	  names to '-'.
+
+2003-10-02 17:19  sg2
+
+	* src/Makefile.am, src/cfg.c, src/finder.c, src/finder.h,
+	  src/help_screen.c, src/key_bind.c, src/key_bind.h, src/player.c,
+	  src/plist.c, src/plist.h, src/pmng.c, src/pmng.h: General file
+	  finder interface written.
+	  Plugins reload implemented.
+
+2003-10-02 15:58  sg2
+
+	* po/ru.po, src/Makefile.am, src/cfg.h, src/cfg/cfg.c,
+	  src/help_screen.c, src/help_screen.h, src/key_bind.c,
+	  src/player.c: Russification updated.
+
+2003-10-02 09:03  sg2
+
+	* src/plist.c: Normal file adder implemented.
+
+2003-09-30 06:36  sg2
+
+	* src/key_bind.c, src/key_bind.h, src/player.c, src/player.h: Time
+	  jumping one-level undo implemented.
+
+2003-09-29 16:52  sg2
+
+	* src/cfg.h, src/cfg/cfg.c, src/eqwnd.c, src/player.c,
+	  src/player.h, src/plist.c, src/song.c, src/song_info.h:
+	  Configuration variables setting handlers support implemented.
+
+2003-09-27 15:15  sg2
+
+	* src/key_bind.c, src/key_bind.h, src/player.c, src/player.h,
+	  src/plist.c, src/plist.h, src/util/util.c: Advaned search
+	  implemented.
+
+2003-09-27 13:05  sg2
+
+	* src/plist.c, src/util.h, src/util/util.c: Play list search with
+	  regular expressions support implemented.
+
+2003-09-27 05:50  sg2
+
+	* src/key_bind.c, src/key_bind.h, src/player.c, src/player.h,
+	  src/plist.c: Play list marks support implemented.
+
+2003-09-27 05:06  sg2
+
+	* src/plist.c: Now undo removes currently playing song.
+
+2003-09-26 07:01  sg2
+
+	* plugins/effect/echo/echo.c, plugins/input/audiocd/audiocd.c,
+	  plugins/input/audiocd/audiocd.h, plugins/input/audiocd/cddb.c,
+	  plugins/input/audiocd/cddb.h, plugins/input/mp3/mp3.c,
+	  plugins/input/mp3/mp3.h, plugins/input/ogg/ogg.c,
+	  plugins/input/radio/radio.c, plugins/input/wav/wav.c,
+	  plugins/output/disk_writer/writer.c, plugins/output/oss/oss.c,
+	  src/choice_ctrl.c, src/choice_ctrl.h, src/combobox.c,
+	  src/combobox.h, src/dlgbox.c, src/dlgbox.h, src/editbox.c,
+	  src/editbox.h, src/eqwnd.c, src/eqwnd.h, src/file_input.c,
+	  src/file_input.h, src/help_screen.c, src/help_screen.h,
+	  src/inp.c, src/inp.h, src/key_bind.c, src/label.c, src/label.h,
+	  src/menu.c, src/menu.h, src/outp.c, src/outp.h, src/player.c,
+	  src/player.h, src/plist.c, src/plist.h, src/pmng.c, src/pmng.h,
+	  src/sat.c, src/sat.h, src/song.c, src/song.h, src/song_info.h,
+	  src/types.h, src/util.h, src/util/util.c, src/window.c,
+	  src/window.h: 1. Changed bool to bool_t
+	  2. Fixed bugs in adding songs
+
+2003-09-11 14:56  sg2
+
+	* configure.in, plugins/input/audiocd/Makefile.am,
+	  plugins/input/audiocd/audiocd.c, plugins/input/audiocd/audiocd.h,
+	  plugins/input/audiocd/cddb.c, plugins/input/audiocd/cddb.h,
+	  plugins/input/mp3/mp3.c, plugins/input/ogg/Makefile.am, po/ru.po,
+	  src/player.c, src/plist.c, src/song.c, src/window.c,
+	  src/window.h: CDDB support implemented.
+
+2003-09-07 17:28  sg2
+
+	* src/player.c: Saving play status and bounds to cfg file on exit.
+
+2003-09-07 17:17  sg2
+
+	* configure.in, plugins/input/mp3/mp3.c,
+	  plugins/input/ogg/Makefile.am, plugins/input/ogg/ogg.c,
+	  plugins/input/ogg/vcedit.c, plugins/input/ogg/vcedit.h, po/ru.po,
+	  src/combobox.c, src/inp.c, src/player.c, src/song.c,
+	  src/song_info.h: OggVorbis song info saving.
+
+2003-09-06 20:18  sg2
+
+	* src/key_bind.c, src/key_bind.h, src/player.c, src/player.h: Outer
+	  commands execution implemented.
+
+2003-09-06 13:13  sg2
+
+	* po/ru.po, src/key_bind.c, src/key_bind.h, src/player.c,
+	  src/plist.c, src/plist.h, src/song.c: Play bounds specification
+	  support implemented.
+
+2003-09-03 19:19  sg2
+
+	* src/player.c, src/song.c: Showing remaining song time instead of
+	  current option implemented.
+
+2003-09-03 19:06  sg2
+
+	* src/song.c, src/song.h: Manual song title format specification
+	  option implemented.
+
+2003-09-03 18:21  sg2
+
+	* src/song.c, src/util.h, src/util/util.c: Option to convert
+	  underscores to spaces in song titles implemented.
+
+2003-09-03 16:17  sg2
+
+	* src/label.c, src/label.h: Addition to the previous.
+
+2003-09-02 19:24  sg2
+
+	* plugins/input/mp3/mp3.c, plugins/input/mp3/mp3.h,
+	  plugins/input/ogg/ogg.c, plugins/input/wav/wav.c,
+	  src/Makefile.am, src/choice_ctrl.c, src/choice_ctrl.h,
+	  src/dlgbox.c, src/dlgbox.h, src/editbox.c, src/editbox.h,
+	  src/ep.c, src/ep.h, src/error.c, src/error.h, src/file_input.c,
+	  src/file_input.h, src/inp.c, src/inp.h, src/main.c, src/menu.c,
+	  src/menu.h, src/outp.c, src/outp.h, src/player.c, src/player.h,
+	  src/plist.h, src/pmng.c, src/pmng.h, src/song.c, src/song.h,
+	  src/song_info.h, src/types.h, src/util.h, src/util/Makefile.am,
+	  src/util/util.c, src/window.c, src/window.h: Audio parameters
+	  information is included to song info.
+
+2003-08-30 19:47  sg2
+
+	* plugins/input/mp3/mp3.c, plugins/input/mp3/mp3.h,
+	  plugins/input/ogg/ogg.c, plugins/input/wav/wav.c, po/ru.po,
+	  src/cfg.h, src/player.c, src/player.h, src/song_info.h: Added a
+	  feature to start playing from last stop.
+
+2003-08-16 20:47  sg2
+
+	* plugins/output/oss/oss.c, po/ru.po, src/help_screen.c, src/inp.c,
+	  src/key_bind.c, src/outp.c, src/outp.h, src/player.c,
+	  src/player.h, src/pmng.c: Balance regulation implemented.
+
+2003-08-15 17:45  sg2
+
+	* src/Makefile.am, src/help_screen.c, src/key_bind.c,
+	  src/key_bind.h, src/player.c, src/player.h, src/plist.c,
+	  src/plist.h, src/sat.c, src/sat.h, src/song.c, src/song.h: Undo
+	  support for play list operations implemented.
+
+2003-08-13 13:58  sg2
+
+	* configure.in, plugins/input/mp3/mp3.c, plugins/input/ogg/ogg.c,
+	  po/ru.po, src/Makefile.am, src/combobox.c, src/combobox.h,
+	  src/genre_list.h, src/player.c, src/song.c, src/song_info.h: 1.
+	  Implemented combo box.
+	  2. Implemented feature to set any genres.
+
+2003-08-12 13:07  sg2
+
+	* configure.in, plugins/input/Makefile.am, plugins/input/ogg,
+	  plugins/input/ogg/Makefile.am, plugins/input/ogg/ogg.c,
+	  src/genre_list.h, src/glist/genre_list.c, src/plist.c,
+	  src/pmng.c: Implemented OggVorbis input plugin (without saving
+	  info feature).
+
+2003-08-11 17:13  sg2
+
+	* plugins/output/disk_writer,
+	  plugins/output/disk_writer/Makefile.am,
+	  plugins/output/disk_writer/writer.c: *** empty log message ***
+
+2003-08-11 16:51  sg2
+
+	* configure.in, plugins/output/Makefile.am,
+	  plugins/output/oss/oss.c, po/ru.po, src/cfg.h, src/cfg/cfg.c,
+	  src/eqwnd.c, src/outp.c, src/player.c: Disk writer output plugin
+	  implemented.
+
+2003-08-11 13:13  sg2
+
+	* plugins/input/mp3/mp3.c, plugins/input/mp3/mp3.h, po/ru.po,
+	  src/cfg.h, src/cfg/cfg.c, src/eqwnd.c, src/help_screen.c,
+	  src/player.c, src/player.h, src/plist.c, src/util.h,
+	  src/util/Makefile.am, src/util/buf.c, src/util/util.c,
+	  src/window.c: Fixed bugs etc.
+
+2003-08-09 14:00  sg2
+
+	* src/Makefile.am, src/cfg/cfg.c, src/dlgbox.c, src/dlgbox.h,
+	  src/editbox.c, src/editbox.h, src/help_screen.c, src/key_bind.c,
+	  src/key_bind.h, src/player.c, src/player.h, src/window.c,
+	  src/window.h: Advanced variables manager implemented.
+
+2003-08-08 15:03  sg2
+
+	* configure.in, plugins/input/audiocd/audiocd.c,
+	  plugins/input/mp3/mp3.c, plugins/input/wav/wav.c,
+	  plugins/output/oss/oss.c, po/ru.po, src/inp.c, src/inp.h,
+	  src/player.c: Correct get song current time function implemented.
+
+2003-08-06 10:35  sg2
+
+	* src/Makefile.am, src/editbox.c, src/editbox.h, src/file_input.c,
+	  src/history.c, src/history.h, src/player.c, src/player.h,
+	  src/util/util.c: Edit boxes history implemented.
+
+2003-08-05 12:51  sg2
+
+	* src/Makefile.am, src/plist.c: A bug in sorting fixed.
+
+2003-08-05 09:20  sg2
+
+	* src/help_screen.c, src/key_bind.c, src/key_bind.h, src/player.c,
+	  src/plist.c, src/plist.h: Play list parts moving implemented.
+
+2003-08-04 12:50  sg2
+
+	* src/Makefile.am, src/dlgbox.c, src/editbox.c, src/help_screen.c,
+	  src/key_bind.c, src/key_bind.h, src/player.c, src/plist.c,
+	  src/window.c, src/window.h: Added colored UI support.
+
+2003-08-03 08:37  sg2
+
+	* src/key_bind.c, src/key_bind.h: Added feature of setting key
+	  bindings through configuration variables.
+
+2003-08-02 22:10  sg2
+
+	* src/Makefile.am, src/key_bind.c, src/key_bind.h, src/player.c,
+	  src/player.h, src/plist.c: Key bindings implemented.
+
+2003-08-01 13:23  sg2
+
+	* doc/mpfc.1, plugins/output/oss/oss.c, src/player.c: Some minor
+	  changes.
+
+2003-08-01 12:55  sg2
+
+	* configure.in, plugins/input/Makefile.am, plugins/input/radio,
+	  plugins/input/radio/Makefile.am, plugins/input/radio/radio.c:
+	  Radio plugin implemented.
+
+2003-08-01 10:44  sg2
+
+	* src/player.c: Implemented feature for adding objects from command
+	  line.
+
+2003-08-01 09:46  sg2
+
+	* plugins/input/audiocd/audiocd.c, src/inp.c, src/inp.h,
+	  src/player.c: Improved Audio-CD support (pause and seek
+	  included).
+
+2003-07-29 13:29  sg2
+
+	* configure.in, plugins/input/Makefile.am, plugins/input/audiocd,
+	  plugins/input/audiocd/Makefile.am,
+	  plugins/input/audiocd/audiocd.c, po/ru.po, src/inp.c, src/inp.h,
+	  src/player.c, src/player.h, src/plist.c, src/plist.h, src/pmng.c,
+	  src/pmng.h, src/song.c, src/window.c, src/window.h: Audio CD
+	  Input plugin implemented.
+
+2003-07-27 20:16  sg2
+
+	* src/cfg/cfg.c: A little change.
+
+2003-07-27 19:45  sg2
+
+	* configure.in, doc/mpfc.1, plugins/Makefile.am, plugins/effect,
+	  plugins/effect/Makefile.am, plugins/effect/echo,
+	  plugins/effect/echo/Makefile.am, plugins/effect/echo/echo.c,
+	  po/ru.po, src/Makefile.am, src/ep.c, src/ep.h, src/error.c,
+	  src/error.h, src/inp.c, src/inp.h, src/outp.c, src/outp.h,
+	  src/player.c, src/pmng.c, src/pmng.h, src/util.h,
+	  src/util/util.c: Added support for effect plugins and echo effect
+	  plugin implemented.
+
+2003-07-27 08:30  sg2
+
+	* src/help_screen.c, src/player.c, src/player.h: Simple variables
+	  manager implemented.
+
+2003-07-27 08:15  sg2
+
+	* src/cfg/cfg.c, src/player.c: Added feature of saving play list on
+	  exit.
+
+2003-07-27 08:08  sg2
+
+	* src/help_screen.c, src/player.c, src/player.h: Added shuffle and
+	  loop play modes.
+
+2003-07-26 16:14  sg2
+
+	* configure.in, plugins/input/mp3/mp3.c, plugins/input/mp3/mp3.h,
+	  src/cfg.h, src/cfg/cfg.c, src/eqwnd.c, src/eqwnd.h, src/inp.c,
+	  src/inp.h, src/player.c, src/plist.c, src/util.h,
+	  src/util/util.c: Improved equalizer support. Saving parameters
+	  and loading presets implemented.
+
+2003-07-12 18:27  sg2
+
+	* doc/mpfc.1, plugins/input/mp3/mp3.c, plugins/input/wav/wav.c,
+	  po/ru.po, src/inp.c, src/inp.h, src/outp.c, src/outp.h,
+	  src/player.c, src/song.c: Safe functions for plugins are written.
+
+2003-07-12 16:04  sg2
+
+	* configure.in, plugins/input/mp3/mp3.c, plugins/input/mp3/mp3.h,
+	  plugins/input/wav/wav.c, src/Makefile.am, src/eqwnd.c,
+	  src/eqwnd.h, src/inp.h, src/player.c, src/player.h: Equalizer
+	  support added.
+
+2003-07-06 13:11  sg2
+
+	* configure.in, plugins/input/mp3/mp3.c, plugins/input/mp3/mp3.h,
+	  po/ru.po, src/player.c, src/plist.c, src/song.c, src/song_info.h:
+	  Added ID3 v2 support.
+
+2003-07-04 13:26  sg2
+
+	* README, src/player.c: Some text is written in README.
+
+2003-07-04 13:23  sg2
+
+	* po/ru.po: Updated russification.
+
+2003-07-04 12:07  sg2
+
+	* doc, doc/Makefile.am, doc/mpfc.1: Written manual page for mpfc.
+
+2003-07-04 09:51  sg2
+
+	* po/ru.po, src/player.c: Russification updated.
+
+2003-07-03 16:38  sg2
+
+	* plugins/input/mp3/Makefile.am, plugins/input/wav/Makefile.am,
+	  po/ru.po, src/Makefile.am, src/cfg/Makefile.am, src/cfg/cfg.c:
+	  Some less reasonable changes made.
+
+2003-07-03 14:48  sg2
+
+	* src/player.c: Some small bugs fixed.
+
+2003-07-03 14:46  sg2
+
+	* configure.in, plugins/input/mp3/Makefile.am,
+	  plugins/input/mp3/mp3.c, plugins/input/mp3/mp3.h,
+	  plugins/input/mp3/new_mp3.c, plugins/input/mp3/old_mp3.c,
+	  plugins/input/wav/Makefile.am, plugins/input/wav/wav.c,
+	  plugins/output/oss/Makefile.am, plugins/output/oss/oss.c,
+	  src/Makefile.am, src/cfg, src/cfg.c, src/cfg.h,
+	  src/cfg/Makefile.am, src/cfg/cfg.c, src/error.c, src/error.h,
+	  src/file_input.c, src/help_screen.c, src/inp.c, src/inp.h,
+	  src/outp.h, src/player.c, src/player.h, src/plist.c, src/plist.h,
+	  src/pmng.c, src/sat.c, src/sat.h, src/util, src/util.c,
+	  src/util.h, src/util/Makefile.am, src/util/util.c: Added normal
+	  mp3 plugin!
+
+2003-05-09 14:58  sg2
+
+	* src/plist.c: Fixed bug when currently playing song index in play
+	  list was not changing
+	  when sorting.
+
+2003-05-03 12:47  sg2
+
+	* src/player.c, src/plist.c, src/plist.h, src/util.c, src/util.h:
+	  1) Added possibility to enable/disable full file name displaying
+	  in song info
+	  editor.
+	  2) Sorting by file name implemented.
+
+2003-05-03 09:53  sg2
+
+	* src/player.c: Some improvements done.
+
+2003-05-02 19:51  sg2
+
+	* src/player.c: A little fix in song info editor.
+
+2003-05-02 17:02  sg2
+
+	* plugins/input/mp3/mp3.c, src/player.c: Fixed some bugs in ID3 tag
+	  editor.
+
+2003-05-02 16:30  sg2
+
+	* Makefile.am, configure.in, src/editbox.c, src/player.c,
+	  src/player.h, src/util.c, src/util.h, src/window.c: Fixed bug
+	  with updating root window when other windows are displayed.
+
+2003-04-29 15:45  sg2
+
+	* po/POTFILES.in, src/Makefile.am, src/cfg.c, src/cfg.h,
+	  src/options.c, src/options.h, src/player.c, src/pmng.c: Added
+	  configuration variables handling stuff.
+
+2003-04-28 06:31  sg2
+
+	* src/Makefile.am, src/help_screen.c, src/help_screen.h,
+	  src/player.c, src/player.h, src/window.c, src/window.h: Help
+	  screen added.
+
+2003-04-27 17:32  sg2
+
+	* configure.in, plugins/input/mp3/Makefile.am,
+	  plugins/input/mp3/mp3.c, plugins/input/mp3/mp3.h,
+	  src/Makefile.am, src/choice_ctrl.c, src/choice_ctrl.h,
+	  src/dlgbox.c, src/dlgbox.h, src/editbox.c, src/editbox.h,
+	  src/error.c, src/file_input.c, src/file_input.h,
+	  src/genre_list.h, src/glist, src/glist/Makefile.am,
+	  src/glist/genre_list.c, src/inp.c, src/inp.h, src/menu.c,
+	  src/menu.h, src/player.c, src/player.h, src/song.c,
+	  src/song_info.h, src/window.c, src/window.h: Added file info
+	  editor.
+
+2003-04-20 16:41  sg2
+
+	* ChangeLog, Makefile.am, configure.in, plugins/input/Makefile.am,
+	  po, po/LINGUAS, po/POTFILES.in, po/ru.po, src/Makefile.am,
+	  src/player.c, src/pmng.c, src/song.c: Added codepages conversion.
+
+2003-04-20 08:17  sg2
+
+	* AUTHORS, ChangeLog, Makefile.am, NEWS, README, configure.in,
+	  plugins, plugins/Makefile.am, plugins/input, plugins/input/mp3,
+	  plugins/input/mp3/Makefile.am, plugins/input/mp3/mp3.c,
+	  plugins/input/mp3/mp3.h, plugins/input/mp3/new_mp3.c,
+	  plugins/input/mp3/old_mp3.c, plugins/input/wav,
+	  plugins/input/wav/Makefile.am, plugins/input/wav/wav.c,
+	  plugins/output, plugins/output/Makefile.am, plugins/output/oss,
+	  plugins/output/oss/Makefile.am, plugins/output/oss/oss.c, src,
+	  src/Makefile.am, src/choice_ctrl.c, src/choice_ctrl.h,
+	  src/dlgbox.c, src/dlgbox.h, src/editbox.c, src/editbox.h,
+	  src/error.c, src/error.h, src/file_input.c, src/file_input.h,
+	  src/inp.c, src/inp.h, src/main.c, src/menu.c, src/menu.h,
+	  src/options.c, src/options.h, src/outp.c, src/outp.h,
+	  src/player.c, src/player.h, src/plist.c, src/plist.h, src/pmng.c,
+	  src/pmng.h, src/song.c, src/song.h, src/song_info.h, src/types.h,
+	  src/util.c, src/util.h, src/window.c, src/window.h: Initial
+	  revision
+
+2003-04-20 08:17  
+
+	* .: New repository initialized by cvs2svn.
+

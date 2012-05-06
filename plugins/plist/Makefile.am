@@ -1,0 +1,2 @@
+ALL_PLUGINS = m3u pls cue
+SUBDIRS = @PLIST_PLUGINS@
