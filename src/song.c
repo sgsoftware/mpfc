@@ -190,6 +190,14 @@ void song_update_info( song_t *song )
 	song_unlock(song);
 } /* End of 'song_update_info' function */
 
+static str_t *song_default_title( song_t *s )
+{
+	str_t *title = str_new(util_short_name(song_get_name(s)));
+	if (cfg_get_var_int(cfg_list, "convert-underscores2spaces"))
+		str_replace_char(title, '_', ' ');
+	return title;
+}
+
 /* Fill song title from data from song info and other parameters */
 void song_update_title( song_t *song )
 {
@@ -209,9 +217,7 @@ void song_update_title( song_t *song )
 	if (info == NULL || !(info->m_flags & SI_INITIALIZED) ||
 			(info->m_flags & SI_ONLY_OWN))
 	{
-		song->m_title = str_new(util_short_name(song_get_name(song)));
-		if (cfg_get_var_int(cfg_list, "convert-underscores2spaces"))
-			str_replace_char(song->m_title, '_', ' ');
+		song->m_title = song_default_title(song);
 		return;
 	}
 
@@ -219,6 +225,7 @@ void song_update_title( song_t *song )
 	fmt = cfg_get_var(cfg_list, "title-format");
 	str = song->m_title = str_new("");
 	char *filename = song_get_name(song);
+	bool_t empty_title = TRUE;
 	if (fmt != NULL && (*fmt != 0))
 	{
 		for ( ; *fmt && !finish; fmt ++ )
@@ -228,41 +235,48 @@ void song_update_title( song_t *song )
 			if (*fmt == '%')
 			{
 				fmt ++;
+				char *item = NULL;
 				switch (*fmt)
 				{
 				case 'p':
-					str_cat_cptr(str, info->m_artist);
+					item = info->m_artist;
 					break;
 				case 'a':
-					str_cat_cptr(str, info->m_album);
+					item = info->m_album;
 					break;
 				case 'f':
-					str_cat_cptr(str, util_short_name(filename));
+					item = util_short_name(filename);
 					break;
 				case 'F':
-					str_cat_cptr(str, filename);
+					item = filename;
 					break;
 				case 'e':
-					str_cat_cptr(str, util_extension(filename));
+					item = util_extension(filename);
 					break;
 				case 't':
-					str_cat_cptr(str, info->m_name);
+					item = info->m_name;
 					break;
 				case 'n':
-					str_cat_cptr(str, info->m_track);
+					item = info->m_track;
 					break;
 				case 'y':
-					str_cat_cptr(str, info->m_year);
+					item = info->m_year;
 					break;
 				case 'g':
-					str_cat_cptr(str, info->m_genre);
+					item = info->m_genre;
 					break;
 				case 'c':
-					str_cat_cptr(str, info->m_comments);
+					item = info->m_comments;
 					break;
 				case 0:
 					finish = TRUE;
 					break;
+				}
+
+				if (item && (*item))
+				{
+					str_cat_cptr(str, item);
+					empty_title = FALSE;
 				}
 			}
 			else
@@ -274,6 +288,16 @@ void song_update_title( song_t *song )
 	else
 	{
 		str_printf(str, "%s - %s", info->m_artist, info->m_name);
+		if (*(info->m_artist) || *(info->m_name))
+			empty_title = FALSE;
+	}
+
+	/* If all info items participating in forming the title are empty,
+	 * use the default (filename-based) one */
+	if (empty_title)
+	{
+		str_free(song->m_title);
+		song->m_title = song_default_title(song);
 	}
 } /* End of 'song_get_title_from_info' function */
 
