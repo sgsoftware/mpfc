@@ -3432,6 +3432,7 @@ void player_time_back( void )
 		player_seek(player_last_song_time, FALSE);
 	else
 		player_play(player_last_song, player_last_song_time);
+	pmng_hook(player_pmng, "player-status");
 } /* End of 'player_time_back' function */
 
 /* Save current song and time */
