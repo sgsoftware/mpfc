@@ -30,7 +30,6 @@
 #include "inp.h"
 #include "mystring.h"
 #include "song_info.h"
-#include "vfs.h"
 
 /* Song flags */
 typedef enum
@@ -139,9 +138,12 @@ typedef struct
 	/* Player status */
 	int m_status;
 
-	/* Current volume and balance */
-	int m_volume;
-	int m_balance;
+	/* Current volume */
+#define VOLUME_MIN 0.
+#define VOLUME_DEF 1.
+#define VOLUME_MAX 10.
+#define VOLUME_STEP 0.05
+	double m_volume;
 } player_context_t;
 
 #endif

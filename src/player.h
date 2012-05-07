@@ -33,7 +33,6 @@
 #include "pmng.h"
 #include "undo.h"
 #include "wnd.h"
-#include "vfs.h"
 #include "wnd_dialog.h"
 #include "wnd_editbox.h"
 
@@ -56,9 +55,6 @@
 #define PLAYER_SLIDER_VOL_Y  2
 #define PLAYER_SLIDER_VOL_X  (WND_WIDTH(player_wnd) - 22)
 #define PLAYER_SLIDER_VOL_W  20
-#define PLAYER_SLIDER_BAL_Y  1
-#define PLAYER_SLIDER_BAL_X  (WND_WIDTH(player_wnd) - 22)
-#define PLAYER_SLIDER_BAL_W  20
 
 /* Player window user messages IDs */
 #define PLAYER_MSG_INFO			0
@@ -122,9 +118,6 @@ extern cfg_node_t *cfg_list;
 extern logger_t *player_log;
 extern logger_view_t *player_logview;
 
-/* VFS data */
-extern vfs_t *player_vfs;
-
 /* enqueued songs - max of PLAYER_MAX_ENQUEUED */
 extern int queued_songs[PLAYER_MAX_ENQUEUED];
 extern int num_queued_songs;
@@ -166,7 +159,7 @@ wnd_msg_retcode_t player_on_display( wnd_t *wnd );
 
 /* Display slider */
 void player_display_slider( wnd_t *wnd, int x, int y, int width, 
-	   int pos, int range );
+	   double pos, double range );
 
 /* Handle new log message */
 void player_on_log_msg( logger_t *log, void *data, 
@@ -220,16 +213,10 @@ void player_next_track( void );
 void player_set_track( int track );
 
 /* Set volume */
-void player_set_vol( int vol, bool_t rel );
-
-/* Set balance */
-void player_set_bal( int bal, bool_t rel );
+void player_set_vol( double vol, bool_t rel );
 
 /* Update volume */
 void player_update_vol( void );
-
-/* Read volume from plugin */
-void player_read_volume( void );
 
 /* End play song thread */
 void player_end_play( bool_t rem_cur_song );

@@ -16,7 +16,6 @@ libmpfc/plugin_output.c
 libmpfc/song_info.c
 libmpfc/string.c
 libmpfc/util.c
-libmpfc/vfs.c
 libmpfcwnd/wnd.c
 libmpfcwnd/wnd_basic.c
 libmpfcwnd/wnd_button.c

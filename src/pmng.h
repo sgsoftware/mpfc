@@ -34,7 +34,6 @@
 #include "outp.h"
 #include "plp.h"
 #include "plugin.h"
-#include "vfs.h"
 #include "wnd.h"
 
 /* Plugin manager type */
@@ -109,9 +108,6 @@ int pmng_apply_effects( pmng_t *pmng, byte *data, int len, int fmt,
 /* Search for plugin with a specified name */
 plugin_t *pmng_search_by_name( pmng_t *pmng, char *name, 
 		plugin_type_t type_mask );
-
-/* Plugin glob handler */
-void pmng_glob_handler( struct tag_vfs_file_t *file, void *data );
 
 /* Check if specified plugin is already loaded */
 bool_t pmng_is_loaded( pmng_t *pmng, char *name, plugin_type_t type_mask );

@@ -21,11 +21,14 @@
  */
 
 #include <sys/types.h>
+#include <dirent.h>
 #include <fnmatch.h>
 #include <stdio.h>
 #include <stdlib.h>
 #define __USE_GNU
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include "types.h"
 #include "mystring.h"
@@ -36,85 +39,113 @@
 #include "wnd_label.h"
 #include "util.h"
 
-/* Create a new file box */
-filebox_t *filebox_new( wnd_t *parent, char *id, char *text, char letter,
-		int width )
+/* Free names list */
+static void filebox_free_names( filebox_t *fb )
 {
-	filebox_t *fb;
+	struct filebox_name_t *item, *next;
 
-	/* Allocate memory */
-	fb = (filebox_t *)malloc(sizeof(*fb));
-	if (fb == NULL)
-		return NULL;
-	memset(fb, 0, sizeof(*fb));
-	WND_OBJ(fb)->m_class = filebox_class_init(WND_GLOBAL(parent));
-
-	/* Initialize file box */
-	if (!filebox_construct(fb, parent, id, text, letter, width))
+	assert(fb);
+	fb->m_names_valid = FALSE;
+	if (fb->m_names == NULL)
+		return;
+	for ( item = fb->m_names;; )
 	{
-		free(fb);
-		return NULL;
+		next = item->m_next;
+		free(item->m_name);
+		free(item);
+		item = next;
+		if (item == fb->m_names)
+			break;
 	}
-	WND_FLAGS(fb) |= WND_FLAG_INITIALIZED;
-	return fb;
-} /* End of 'filebox_new' function */
+	fb->m_names = NULL;
+} /* End of 'filebox_free_names' function */
 
-/* File box constructor */
-bool_t filebox_construct( filebox_t *fb, wnd_t *parent, char *id, char *text, 
-		char letter, int width )
+/* Handler for glob */
+static void filebox_scandir( filebox_t *fb, char *dirname )
 {
-	wnd_t *wnd = WND_OBJ(fb);
-
-	/* Initialize edit box part */
-	if (!editbox_construct(EDITBOX_OBJ(fb), parent, id, text, letter, width))
-		return FALSE;
-
-	/* Set message map */
-	wnd_msg_add_handler(wnd, "action", filebox_on_action);
-	wnd_msg_add_handler(wnd, "destructor", filebox_destructor);
-	return TRUE;
-} /* End of 'filebox_construct' function */
-
-/* Create an edit box with label */
-filebox_t *filebox_new_with_label( wnd_t *parent, char *title, char *id,
-		char *text, char letter, int width )
-{
-	hbox_t *hbox;
-	hbox = hbox_new(parent, NULL, 0);
-	label_new(WND_OBJ(hbox), title, "", 0);
-	return filebox_new(WND_OBJ(hbox), id, text, letter - mbslen(title), width);
-} /* End of 'filebox_new_with_label' function */
-
-/* Destructor */
-void filebox_destructor( wnd_t *wnd )
-{
-	filebox_free_names(FILEBOX_OBJ(wnd));
-} /* End of 'filebox_destructor' function */
-
-/* 'action' message handler */
-wnd_msg_retcode_t filebox_on_action( wnd_t *wnd, char *action )
-{
-	filebox_t *fb = FILEBOX_OBJ(wnd);
-
-	/* Do completion */
-	if (!strcasecmp(action, "complete"))
+	/* Expand tilde */
+	char *real_name = dirname;
+	if (dirname[0] == '~' && (dirname[1] == 0 || dirname[1] == '/'))
 	{
-		/* Free if something has changed */
-		if (EDITBOX_OBJ(wnd)->m_state_changed)
+		char *home = getenv("HOME");
+		if (home)
+			real_name = util_strcat(home, dirname + 1, NULL);
+	}
+
+	struct dirent **namelist;
+	int n = scandir(real_name, &namelist, NULL, alphasort);
+	if (n < 0)
+		goto finally;
+
+	for ( int i = 0; i < n; ++i )
+	{
+		char *name = namelist[i]->d_name;
+
+		struct stat st;
+		char *fullname = util_strcat(real_name, "/", name, NULL);
+		int st_ret = stat(fullname, &st);
+		free(fullname);
+		if (st_ret)
+			goto next;
+
+		/* Filter file */
+		if (name[0] == '.' ||
+				strncmp(STR_TO_CPTR(fb->m_pattern), name, STR_LEN(fb->m_pattern)))
+			goto next;
+		if (fb->m_command_box && !fb->m_not_first)
 		{
-			filebox_free_names(fb);
+			if (!(st.st_mode & S_IXUSR))
+				goto next;
+		}
+		if ((fb->m_flags & FILEBOX_ONLY_DIRS) && !S_ISDIR(st.st_mode))
+			goto next;
+
+		/* Escape when in command mode */
+		bool_t escape = FALSE;
+		size_t sz = strlen(name) + 2;
+		if (fb->m_command_box)
+		{
+			escape = TRUE;
+			sz *= 2;
 		}
 
-		/* Insert next name */
-		filebox_insert_next(fb);
-		wnd_msg_send(wnd, "changed", editbox_changed_new());
-		wnd_invalidate(wnd);
+		/* Create names list item */
+		struct filebox_name_t *item = (struct filebox_name_t *)malloc(sizeof(*item));
+		item->m_name = (char *)malloc(sz);
+		if (escape)
+			util_escape_fname(item->m_name, name);
+		else
+			strcpy(item->m_name, name);
+		if (S_ISDIR(st.st_mode))
+			strcat(item->m_name, "/");
+
+		/* It's the first name */
+		if (fb->m_names == NULL)
+		{
+			item->m_next = item;
+			item->m_prev = item;
+			fb->m_names = item;
+		}
+		else
+		{
+			item->m_next = fb->m_names;
+			item->m_prev = fb->m_names->m_prev;
+			fb->m_names->m_prev->m_next = item;
+			fb->m_names->m_prev = item;
+		}
+
+	next:
+		free(namelist[i]);
 	}
-	return WND_MSG_RETCODE_OK;
-} /* End of 'filebox_on_action' function */
+	free(namelist);
+
+finally:
+	if (real_name != dirname)
+		free(real_name);
+} /* End of 'filebox_scandir' function */
 
 /* Load names list */
-void filebox_load_names( filebox_t *fb )
+static void filebox_load_names( filebox_t *fb )
 {
 	str_t *text = EDITBOX_OBJ(fb)->m_text, *dirname = NULL;
 	int cursor = EDITBOX_OBJ(fb)->m_cursor;
@@ -122,15 +153,7 @@ void filebox_load_names( filebox_t *fb )
 	int field_begin = 0;
 	bool_t not_first = FALSE;
 	bool_t use_global = FALSE;
-	vfs_glob_flags_t glob_flags;
 	assert(fb);
-
-	/* Set glob flags */
-	glob_flags = VFS_GLOB_AT_LEVEL_ONLY | VFS_GLOB_RETURN_DIRS;
-	if (fb->m_flags & FILEBOX_NOPATTERN) 
-		glob_flags |= VFS_GLOB_NOPATTERN;
-	else
-		glob_flags |= VFS_GLOB_OUTPUT_ESCAPED;
 
 	/* In case of command box mode multiple fields are allowed */
 	if (fb->m_command_box)
@@ -151,7 +174,6 @@ void filebox_load_names( filebox_t *fb )
 		}
 		ch = STR_AT(text, field_begin);
 		use_global = (!not_first && !(ch == '.' || ch == '/' || ch == '~'));
-		glob_flags |= VFS_GLOB_SPACE_IS_SPECIAL;
 	}
 
 	/* Get directory name */
@@ -174,8 +196,7 @@ void filebox_load_names( filebox_t *fb )
 	fb->m_use_global = use_global;
 	if (!use_global)
 	{
-		vfs_glob(fb->m_vfs, STR_TO_CPTR(dirname), filebox_glob_handler, fb,
-				1, glob_flags);
+		filebox_scandir(fb, STR_TO_CPTR(dirname));
 	}
 	/* List global executables */
 	else
@@ -186,7 +207,7 @@ void filebox_load_names( filebox_t *fb )
 			char *s = strchr(path, ':');
 			if (s != NULL)
 				(*s) = 0;
-			vfs_glob(fb->m_vfs, path, filebox_glob_handler, fb, 1, glob_flags);
+			filebox_scandir(fb, path);
 			if (s != NULL)
 			{
 				(*s) = ':';
@@ -205,7 +226,7 @@ void filebox_load_names( filebox_t *fb )
 } /* End of 'filebox_load_names' function */
 
 /* Insert next entry in the file names */
-void filebox_insert_next( filebox_t *fb )
+static void filebox_insert_next( filebox_t *fb )
 {
 	assert(fb);
 
@@ -237,81 +258,95 @@ void filebox_insert_next( filebox_t *fb )
 	}
 } /* End of 'filebox_insert_next' function */
 
-/* Free names list */
-void filebox_free_names( filebox_t *fb )
+/* 'action' message handler */
+static wnd_msg_retcode_t filebox_on_action( wnd_t *wnd, char *action )
 {
-	struct filebox_name_t *item, *next;
+	filebox_t *fb = FILEBOX_OBJ(wnd);
 
-	assert(fb);
-	fb->m_names_valid = FALSE;
-	if (fb->m_names == NULL)
-		return;
-	for ( item = fb->m_names;; )
+	/* Do completion */
+	if (!strcasecmp(action, "complete"))
 	{
-		next = item->m_next;
-		free(item->m_name);
-		free(item);
-		item = next;
-		if (item == fb->m_names)
-			break;
-	}
-	fb->m_names = NULL;
-} /* End of 'filebox_free_names' function */
+		/* Free if something has changed */
+		if (EDITBOX_OBJ(wnd)->m_state_changed)
+		{
+			filebox_free_names(fb);
+		}
 
-/* Handler for glob */
-void filebox_glob_handler( vfs_file_t *file, void *data )
+		/* Insert next name */
+		filebox_insert_next(fb);
+		wnd_msg_send(wnd, "changed", editbox_changed_new());
+		wnd_invalidate(wnd);
+	}
+	return WND_MSG_RETCODE_OK;
+} /* End of 'filebox_on_action' function */
+
+/* Destructor */
+static void filebox_destructor( wnd_t *wnd )
 {
-	struct filebox_name_t *item;
-	filebox_t *fb = (filebox_t *)data;
+	filebox_free_names(FILEBOX_OBJ(wnd));
+} /* End of 'filebox_destructor' function */
 
-	/* Filter file */
-	if (file->m_short_name[0] == '.' ||
-			strncmp(STR_TO_CPTR(fb->m_pattern), file->m_short_name, 
-				STR_LEN(fb->m_pattern)))
-		return;
-	if (fb->m_command_box && !fb->m_not_first)
-	{
-		if (!(file->m_stat.st_mode & S_IXUSR))
-			return;
-	}
-	if ((fb->m_flags & FILEBOX_ONLY_DIRS) && !S_ISDIR(file->m_stat.st_mode))
-		return;
+/* File box constructor */
+bool_t filebox_construct( filebox_t *fb, wnd_t *parent, char *id, char *text, 
+		char letter, int width )
+{
+	wnd_t *wnd = WND_OBJ(fb);
 
-	/* Create names list item */
-	item = (struct filebox_name_t *)malloc(sizeof(*item));
-	item->m_name = (char *)malloc(strlen(file->m_short_name) + 2);
-	strcpy(item->m_name, file->m_short_name);
-	if (S_ISDIR(file->m_stat.st_mode))
-		strcat(item->m_name, "/");
+	/* Initialize edit box part */
+	if (!editbox_construct(EDITBOX_OBJ(fb), parent, id, text, letter, width))
+		return FALSE;
 
-	/* It's the first name */
-	if (fb->m_names == NULL)
-	{
-		item->m_next = item;
-		item->m_prev = item;
-		fb->m_names = item;
-	}
-	else
-	{
-		item->m_next = fb->m_names;
-		item->m_prev = fb->m_names->m_prev;
-		fb->m_names->m_prev->m_next = item;
-		fb->m_names->m_prev = item;
-	}
-} /* End of 'filebox_glob_handler' function */
+	/* Set message map */
+	wnd_msg_add_handler(wnd, "action", filebox_on_action);
+	wnd_msg_add_handler(wnd, "destructor", filebox_destructor);
+	return TRUE;
+} /* End of 'filebox_construct' function */
+
+/* Set file box class default styles */
+static void filebox_class_set_default_styles( cfg_node_t *list )
+{
+	cfg_set_var(list, "kbind.complete", "<Tab>");
+} /* End of 'filebox_class_set_default_styles' function */
 
 /* Initialize file box class */
-wnd_class_t *filebox_class_init( wnd_global_data_t *global )
+static wnd_class_t *filebox_class_init( wnd_global_data_t *global )
 {
 	return wnd_class_new(global, "filebox", editbox_class_init(global), NULL,
 			NULL, filebox_class_set_default_styles);
 } /* End of 'filebox_class_init' function */
 
-/* Set file box class default styles */
-void filebox_class_set_default_styles( cfg_node_t *list )
+/* Create a new file box */
+filebox_t *filebox_new( wnd_t *parent, char *id, char *text, char letter,
+		int width )
 {
-	cfg_set_var(list, "kbind.complete", "<Tab>");
-} /* End of 'filebox_class_set_default_styles' function */
+	filebox_t *fb;
+
+	/* Allocate memory */
+	fb = (filebox_t *)malloc(sizeof(*fb));
+	if (fb == NULL)
+		return NULL;
+	memset(fb, 0, sizeof(*fb));
+	WND_OBJ(fb)->m_class = filebox_class_init(WND_GLOBAL(parent));
+
+	/* Initialize file box */
+	if (!filebox_construct(fb, parent, id, text, letter, width))
+	{
+		free(fb);
+		return NULL;
+	}
+	WND_FLAGS(fb) |= WND_FLAG_INITIALIZED;
+	return fb;
+} /* End of 'filebox_new' function */
+
+/* Create an edit box with label */
+filebox_t *filebox_new_with_label( wnd_t *parent, char *title, char *id,
+		char *text, char letter, int width )
+{
+	hbox_t *hbox;
+	hbox = hbox_new(parent, NULL, 0);
+	label_new(WND_OBJ(hbox), title, "", 0);
+	return filebox_new(WND_OBJ(hbox), id, text, letter - mbslen(title), width);
+} /* End of 'filebox_new_with_label' function */
 
 /* End of 'filebox.c' file */
 
