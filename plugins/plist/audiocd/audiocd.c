@@ -25,7 +25,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <gst/gst.h>
-#include <gst/cdda/gstcddabasesrc.h>
 #include "types.h"
 #include "file.h"
 #include "plp.h"
@@ -53,7 +52,7 @@ guint64 audiocd_get_num_tracks( void )
 	guint64 num_tracks = 0;
 
 	/* Create cdda element */
-	GstElement *cdda = gst_element_make_from_uri(GST_URI_SRC, "cdda://", NULL);
+	GstElement *cdda = gst_element_make_from_uri(GST_URI_SRC, "cdda://", NULL, NULL);
 	if (!cdda)
 	{
 		logger_error(audiocd_log, 0, _("Unable to load Audio CD"));
@@ -83,8 +82,7 @@ guint64 audiocd_get_num_tracks( void )
 	}
 
 	GstFormat fmt = gst_format_get_by_nick("track");
-	GstFormat out_fmt = fmt;
-	if (!gst_element_query_duration(cdda, &out_fmt, &num_tracks) || out_fmt != fmt)
+	if (!gst_element_query_duration(cdda, fmt, &num_tracks))
 	{
 		logger_error(audiocd_log, 0, _("Unable to load Audio CD"));
 		goto finally;

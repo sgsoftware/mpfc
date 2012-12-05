@@ -216,9 +216,8 @@ song_info_t *inp_get_info( in_plugin_t *p, char *full_name, int *len )
 	}
 
 	/* Get song length */
-	GstFormat fmt = GST_FORMAT_TIME;
 	gint64 gst_len;
-	if (gst_element_query_duration(dec, &fmt, &gst_len))
+	if (gst_element_query_duration(dec, GST_FORMAT_TIME, &gst_len))
 		(*len) = gst_len / 1000000000;
 
 	/* Convert charset*/

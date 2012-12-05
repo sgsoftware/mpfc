@@ -184,8 +184,8 @@ AC_SUBST(INPUT_PLUGINS)
 AC_SUBST(OUTPUT_PLUGINS)
 AC_SUBST(PLIST_PLUGINS)
 
-GSTREAMER_CFLAGS=`pkg-config --cflags gstreamer-0.10`
-GSTREAMER_LIBS=`pkg-config --libs gstreamer-0.10`
+GSTREAMER_CFLAGS=`pkg-config --cflags gstreamer-1.0`
+GSTREAMER_LIBS=`pkg-config --libs gstreamer-1.0`
 AC_SUBST(GSTREAMER_CFLAGS)
 AC_SUBST(GSTREAMER_LIBS)
 

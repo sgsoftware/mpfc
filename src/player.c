@@ -1732,7 +1732,7 @@ static gboolean player_gst_bus_call( GstBus *bus, GstMessage *msg, gpointer data
 /* Handle audio caps setting */
 static void player_on_caps_set(GObject *obj, GParamSpec *pspec, gpointer user_data)
 {
-	GstCaps *caps = gst_pad_get_negotiated_caps(GST_PAD(obj));
+	GstCaps *caps = gst_pad_get_current_caps(GST_PAD(obj));
 	if (!caps)
 		return;
 
@@ -1875,7 +1875,7 @@ void *player_thread( void *arg )
 			logger_error(player_log, 1, "g_main_loop_new failed");
 			goto cleanup;
 		}
-		player_pipeline = gst_element_factory_make("playbin2", "play");
+		player_pipeline = gst_element_factory_make("playbin", "play");
 		if (!player_pipeline)
 		{
 			logger_error(player_log, 1, "gstreamer: unable to create playbin");
@@ -1951,11 +1951,10 @@ void *player_thread( void *arg )
 
 			if (player_context->m_status == PLAYER_STATUS_PLAYING)
 			{
-				GstFormat fmt = GST_FORMAT_TIME;
 				guint64 tm;
 
 				/* Update time */
-				if (gst_element_query_position(player_pipeline, &fmt, &tm))
+				if (gst_element_query_position(player_pipeline, GST_FORMAT_TIME, &tm))
 				{
 					tm /= 1000000000;
 					tm = player_translate_time(song_played, tm, FALSE);

@@ -43,7 +43,7 @@ static bool_t pmng_fill_media_file_exts( pmng_t *pmng )
 {
 	/* First collect all mimetypes which might correspond to audio */
 	GHashTable *all_mimes = g_hash_table_new(g_str_hash, g_str_equal);
-    GList* factories = gst_registry_get_feature_list(gst_registry_get_default(),
+    GList* factories = gst_registry_get_feature_list(gst_registry_get(),
 			GST_TYPE_ELEMENT_FACTORY);
     for ( GList* iter = g_list_first(factories); iter; iter = g_list_next(iter) )
 	{
