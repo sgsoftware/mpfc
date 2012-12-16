@@ -100,26 +100,14 @@ song_info_t *inp_get_info( in_plugin_t *p, char *full_name, int *len )
 	(*len) = 0;
 
 	/* Create decoding pipeline */
-	pipe = gst_pipeline_new("pipeline");
+	pipe = gst_element_factory_make("playbin", "play");
 	if (!pipe)
 		goto finally;
-	GstElement *dec = gst_element_factory_make("uridecodebin", NULL);
-	if (!dec)
-		goto finally;
-	g_object_set(dec, "uri", full_name, NULL);
-	if (!gst_bin_add(GST_BIN(pipe), dec))
-	{
-		gst_object_unref(dec);
-		goto finally;
-	}
 	GstElement *sink = gst_element_factory_make("fakesink", NULL);
 	if (!sink)
 		goto finally;
-	if (!gst_bin_add(GST_BIN(pipe), sink))
-	{
-		gst_object_unref(sink);
-		goto finally;
-	}
+	g_object_set(G_OBJECT(pipe), "audio-sink", sink, NULL);
+	g_object_set(G_OBJECT(pipe), "uri", full_name, NULL);
 	gst_element_set_state(pipe, GST_STATE_PAUSED);
 
 	si = si_new();
@@ -215,10 +203,19 @@ song_info_t *inp_get_info( in_plugin_t *p, char *full_name, int *len )
 		gst_message_unref(msg);
 	}
 
-	/* Get song length */
-	gint64 gst_len;
-	if (gst_element_query_duration(dec, GST_FORMAT_TIME, &gst_len))
-		(*len) = gst_len / 1000000000;
+	for ( int i = 0; i < 5; i++ )
+	{
+		/* Get song length */
+		gint64 gst_len;
+		if (gst_element_query_duration(pipe, GST_FORMAT_TIME, &gst_len))
+		{
+			(*len) = gst_len / 1000000000;
+			break;
+		}
+
+		/* Try again */
+		util_wait();
+	}
 
 	/* Convert charset*/
 	/* TODO: gstreamer
