@@ -940,7 +940,9 @@ static plist_plugin_t *is_playlist(char *file)
 		return plp;
 
 	char *ext = strrchr(file, '.');
-	return pmng_is_playlist_extension(player_pmng, ext ? ext + 1 : "");
+	if (!ext || !(*++ext))
+		return NULL;
+	return pmng_is_playlist_extension(player_pmng, ext);
 }
 
 int plist_add_plist( plist_t *pl, plist_plugin_t *plp, char *file )
