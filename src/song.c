@@ -328,7 +328,9 @@ void song_update_title( song_t *song )
 /* Write song info */
 void song_write_info( song_t *s )
 {
-	if (!inp_save_info(s->m_inp, s->m_fullname, s->m_info))
+	char *name = s->m_filename;
+	bool_t is_sliced = s->m_start_time > 0 || s->m_end_time >= 0;
+	if (!name || is_sliced || !inp_save_info(s->m_inp, name, s->m_info))
 	{
 		song_update_info(s);
 		logger_error(player_log, 0, _("Failed to save info to file %s"),

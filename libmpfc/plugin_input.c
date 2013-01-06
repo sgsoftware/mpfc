@@ -28,6 +28,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <gst/gst.h>
+#include <tag_c.h>
 #include "types.h"
 #include "inp.h"
 #include "mystring.h"
@@ -235,22 +236,43 @@ finally:
 /* Save song information function */
 bool_t inp_save_info( in_plugin_t *p, char *file_name, song_info_t *info )
 {
-	bool_t ret = FALSE;
-	if (p != NULL && (p->m_pd.m_save_info != NULL) && info != NULL)
-	{
-		/* Convert charset */
-		char *was_cs = (info->m_charset == NULL ? NULL : 
-				strdup(info->m_charset));
-		pmng_t *pmng = plugin_get_pmng(PLUGIN(p));
-		
-		si_convert_cs(info, cfg_get_var(pmng_get_cfg(pmng), 
-					"charset-save-info"), pmng);
-		ret = p->m_pd.m_save_info(file_name, info);
-		si_convert_cs(info, was_cs, pmng);
-		if (was_cs != NULL)
-			free(was_cs);
-	}
-	return ret;
+	TagLib_File *file = taglib_file_new(file_name);
+	if (!file)
+		return FALSE;
+
+	TagLib_Tag *tag = taglib_file_tag(file);
+
+	taglib_tag_set_title(tag, info->m_name);
+	taglib_tag_set_artist(tag, info->m_artist);
+	taglib_tag_set_album(tag, info->m_album);
+	taglib_tag_set_comment(tag, info->m_comments);
+	taglib_tag_set_genre(tag, info->m_genre);
+
+	long year = strtol(info->m_year, NULL, 10);
+	if (year >= 0 && year < LONG_MAX)
+		taglib_tag_set_year(tag, year);
+
+	long track = strtol(info->m_track, NULL, 10);
+	if (track >= 0 && track < LONG_MAX)
+		taglib_tag_set_track(tag, track);
+
+	bool_t saved = taglib_file_save(file);
+	taglib_file_free(file);
+	return saved;
+
+	/* Convert charset */
+	/* TODO: gstreamer/taglib
+	char *was_cs = (info->m_charset == NULL ? NULL : 
+			strdup(info->m_charset));
+	pmng_t *pmng = plugin_get_pmng(PLUGIN(p));
+	
+	si_convert_cs(info, cfg_get_var(pmng_get_cfg(pmng), 
+				"charset-save-info"), pmng);
+	ret = p->m_pd.m_save_info(file_name, info);
+	si_convert_cs(info, was_cs, pmng);
+	if (was_cs != NULL)
+		free(was_cs);
+		*/
 } /* End of 'inp_save_info' function */
 	
 /* Get supported file formats */

@@ -18,5 +18,5 @@ libmpfc_la_SOURCES = cfg.c charset.c file.c file_http.c file_reg.c \
 					 plugin.c plugin_general.c plugin_plist.c command.c \
 					 $(libmpfchdr_HEADERS)
 libmpfc_la_LIBADD = @COMMON_LIBS@ @RESOLV_LIBS@ @DL_LIBS@
-INCLUDES = -I$(top_builddir)/src -I$(top_builddir)/libmpfcwnd @GSTREAMER_CFLAGS@
+INCLUDES = -I$(top_builddir)/src -I$(top_builddir)/libmpfcwnd @GSTREAMER_CFLAGS@ @TAGLIB_CFLAGS@
 localedir = $(datadir)/locale

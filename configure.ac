@@ -184,10 +184,13 @@ AC_SUBST(INPUT_PLUGINS)
 AC_SUBST(OUTPUT_PLUGINS)
 AC_SUBST(PLIST_PLUGINS)
 
-GSTREAMER_CFLAGS=`pkg-config --cflags gstreamer-1.0`
-GSTREAMER_LIBS=`pkg-config --libs gstreamer-1.0`
+PKG_CHECK_MODULES(GSTREAMER, gstreamer-1.0,, [AC_MSG_ERROR(*** GStreamer 1.0 not found ***)])
 AC_SUBST(GSTREAMER_CFLAGS)
 AC_SUBST(GSTREAMER_LIBS)
+
+PKG_CHECK_MODULES(TAGLIB, taglib_c,, [AC_MSG_ERROR(*** Taglib not found ***)])
+AC_SUBST(TAGLIB_CFLAGS)
+AC_SUBST(TAGLIB_LIBS)
 
 AC_OUTPUT(Makefile \
 		  doc/Makefile \
