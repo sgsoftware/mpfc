@@ -92,13 +92,11 @@ void inp_end( in_plugin_t *p )
 		p->m_pd.m_end();
 } /* End of 'inp_end' function */
 
-/* Get song information function */
-song_info_t *inp_get_info( in_plugin_t *p, char *full_name, int *len )
+/* Get song information using gstreamer */
+static song_info_t *inp_get_info_gst( char *full_name, int *len )
 {
 	GstElement *pipe = NULL;
 	song_info_t *si = NULL;
-
-	(*len) = 0;
 
 	/* Create decoding pipeline */
 	pipe = gst_element_factory_make("playbin", "play");
@@ -190,6 +188,39 @@ song_info_t *inp_get_info( in_plugin_t *p, char *full_name, int *len )
 				g_date_free(date);
 			}
 
+			GstDateTime *dt;
+			if (gst_tag_list_get_date_time(tags, GST_TAG_DATE_TIME, &dt))
+			{
+				char year[100] = "";
+				char *p = year;
+				size_t sz = sizeof(year);
+
+				if (gst_date_time_has_year(dt))
+				{
+					gint y = gst_date_time_get_year(dt);
+					size_t len = snprintf(p, sz, "%d", y);
+
+					if (gst_date_time_has_month(dt))
+					{
+						gint m = gst_date_time_get_month(dt);
+						p += len;
+						sz -= len;
+						len = snprintf(p, sz, "/%02d", m);
+
+						if (gst_date_time_has_day(dt))
+						{
+							GDateDay d = gst_date_time_get_day(dt);
+							p += len;
+							sz -= len;
+							snprintf(p, sz, "/%02d", d);
+						}
+					}
+				}
+				si_set_year(si, year);
+
+				gst_date_time_unref(dt);
+			}
+
 			unsigned track;
 			if (gst_tag_list_get_uint(tags, GST_TAG_TRACK_NUMBER, &track))
 			{
@@ -197,6 +228,7 @@ song_info_t *inp_get_info( in_plugin_t *p, char *full_name, int *len )
 				snprintf(trackstr, sizeof(trackstr), "%02d", track);
 				si_set_track(si, trackstr);
 			}
+
 
 			gst_tag_list_free(tags);
 		}
@@ -231,8 +263,69 @@ finally:
 		gst_object_unref(pipe);
 	}
 	return si;
-} /* End of 'inp_get_info' function */
+} /* End of 'inp_get_info_gst' function */
 	
+/* Get song information using taglib */
+static song_info_t *inp_get_info_taglib( char *file_name, int *len )
+{
+	TagLib_File *file = taglib_file_new(file_name);
+	if (!file)
+		return NULL;
+	if (!taglib_file_is_valid(file))
+	{
+		taglib_file_free(file);
+		return NULL;
+	}
+
+	TagLib_Tag *tag = taglib_file_tag(file);
+
+	song_info_t *si = si_new();
+	si_set_name(si, taglib_tag_title(tag));
+	si_set_artist(si, taglib_tag_artist(tag));
+	si_set_album(si, taglib_tag_album(tag));
+	si_set_comments(si, taglib_tag_comment(tag));
+	si_set_genre(si, taglib_tag_genre(tag));
+
+	unsigned year = taglib_tag_year(tag);
+	if (year > 0)
+	{
+		char y[32];
+		snprintf(y, sizeof(y), "%d", year);
+		si_set_year(si, y);
+	}
+
+	unsigned track = taglib_tag_track(tag);
+	if (track > 0)
+	{
+		char t[32];
+		snprintf(t, sizeof(t), "%d", track);
+		si_set_track(si, t);
+	}
+
+	(*len) = taglib_audioproperties_length(taglib_file_audioproperties(file));
+
+	taglib_tag_free_strings();
+	taglib_file_free(file);
+	return si;
+} /* End of 'inp_get_info_taglib' function */
+	
+/* Get song information function */
+song_info_t *inp_get_info( char *file_name, char *full_uri, int *len )
+{
+	(*len) = 0;
+	
+	if (file_name)
+	{
+		song_info_t *si = inp_get_info_taglib(file_name, len);
+		if (si)
+			return si;
+	}
+
+	if (full_uri)
+		return inp_get_info_gst(full_uri, len);
+	return NULL;
+} /* End of 'inp_get_info' function */
+
 /* Save song information function */
 bool_t inp_save_info( in_plugin_t *p, char *file_name, song_info_t *info )
 {

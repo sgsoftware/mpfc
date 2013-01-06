@@ -187,8 +187,8 @@ void song_update_info( song_t *song )
 
 	song_lock(song);
 
-	song_info_t *new_info = inp_get_info(song->m_inp, song->m_fullname, 
-			&song->m_full_len);
+	song_info_t *new_info = inp_get_info(song->m_filename,
+			song->m_fullname, &song->m_full_len);
 	song->m_len = song->m_full_len;
 	if (!(song->m_flags & SONG_STATIC_INFO))
 	{
