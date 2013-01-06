@@ -167,6 +167,8 @@ pthread_t player_main_tid = 0;
 /* TODO: make it logarithmic? */
 #define VOLUME_SLIDER_RANGE (VOLUME_DEF * 2)
 
+static void player_info_dialog_set_if_readonly( dialog_t *dlg );
+
 /*****
  *
  * Initialization/deinitialization functions
@@ -2167,6 +2169,7 @@ bool_t player_info_dialog_fill( dialog_t *dlg, bool_t first_call )
 		   year_diff = FALSE, track_diff = FALSE, comment_diff = FALSE,
 		   genre_diff = FALSE;
 	genre_list_t *glist;
+	bool_t main_readonly, all_readonly;
 	assert(dlg);
 
 	/* Generate selected songs list when calling for the first time */
@@ -2206,6 +2209,7 @@ bool_t player_info_dialog_fill( dialog_t *dlg, bool_t first_call )
 		}
 
 		/* Update songs info */
+		all_readonly = TRUE;
 		for ( i = start, num_songs = 0; i <= end; i ++ )
 		{
 			/* Read info */
@@ -2213,6 +2217,8 @@ bool_t player_info_dialog_fill( dialog_t *dlg, bool_t first_call )
 			song_update_info(song);
 			if (song->m_info == NULL)
 				continue;
+			if (!(song->m_flags & SONG_STATIC_INFO))
+				all_readonly = FALSE;
 
 			/* Save this song in the list */
 			songs_list[num_songs ++] = song_add_ref(song);
@@ -2228,10 +2234,18 @@ bool_t player_info_dialog_fill( dialog_t *dlg, bool_t first_call )
 			return FALSE;
 		}
 
+		assert(main_song);
+		main_readonly = (main_song->m_flags & SONG_STATIC_INFO);
+
 		/* Save the list in dialog data */
 		cfg_set_var_ptr(WND_OBJ(dlg)->m_cfg_list, "songs_list", songs_list);
 		cfg_set_var_ptr(WND_OBJ(dlg)->m_cfg_list, "main_song", main_song);
 		cfg_set_var_int(WND_OBJ(dlg)->m_cfg_list, "num_songs", num_songs);
+		cfg_set_var_bool(WND_OBJ(dlg)->m_cfg_list, "main_readonly", main_readonly);
+		cfg_set_var_bool(WND_OBJ(dlg)->m_cfg_list, "all_readonly", all_readonly);
+
+		/* Set fields read-only if necessary */
+		player_info_dialog_set_if_readonly(dlg);
 	}
 	/* Get the list */
 	else
@@ -2239,6 +2253,8 @@ bool_t player_info_dialog_fill( dialog_t *dlg, bool_t first_call )
 		songs_list = cfg_get_var_ptr(WND_OBJ(dlg)->m_cfg_list, "songs_list");
 		num_songs = cfg_get_var_int(WND_OBJ(dlg)->m_cfg_list, "num_songs");
 		main_song = cfg_get_var_ptr(WND_OBJ(dlg)->m_cfg_list, "main_song");
+		main_readonly = cfg_get_var_bool(WND_OBJ(dlg)->m_cfg_list, "main_readonly");
+		all_readonly = cfg_get_var_bool(WND_OBJ(dlg)->m_cfg_list, "all_readonly");
 		song_update_info(main_song);
 		info = main_song->m_info;
 		assert(songs_list && main_song && info && (num_songs > 0));
@@ -2897,8 +2913,32 @@ wnd_msg_retcode_t player_on_info_cb_clicked( wnd_t *wnd )
 			cfg_get_var_bool(WND_OBJ(dlg)->m_cfg_list, "comment_diff"));
 	player_info_dlg_change_eb_gray(dlg, "genre", not_check ? FALSE :
 			cfg_get_var_bool(WND_OBJ(dlg)->m_cfg_list, "genre_diff"));
+
+	/* Set fields read-only if necessary */
+	player_info_dialog_set_if_readonly(dlg);
 	return WND_MSG_RETCODE_OK;
 } /* End of 'player_on_info_cb_clicked' function */
+
+/* Update read-only status of info dialog fields */
+static void player_info_dialog_set_if_readonly( dialog_t *dlg )
+{
+	bool_t in_all = FALSE;
+	dlgitem_t *in_all_cb = dialog_find_item(dlg, "write_in_all");
+	if (in_all_cb)
+		in_all = CHECKBOX_OBJ(in_all_cb)->m_checked;
+
+	bool_t is_readonly = in_all ?
+		cfg_get_var_bool(WND_OBJ(dlg)->m_cfg_list, "all_readonly") :
+		cfg_get_var_bool(WND_OBJ(dlg)->m_cfg_list, "main_readonly");
+
+	EDITBOX_OBJ(dialog_find_item(dlg, "name"))->m_editable = !is_readonly;
+	EDITBOX_OBJ(dialog_find_item(dlg, "artist"))->m_editable = !is_readonly;
+	EDITBOX_OBJ(dialog_find_item(dlg, "album"))->m_editable = !is_readonly;
+	EDITBOX_OBJ(dialog_find_item(dlg, "year"))->m_editable = !is_readonly;
+	EDITBOX_OBJ(dialog_find_item(dlg, "track"))->m_editable = !is_readonly;
+	EDITBOX_OBJ(dialog_find_item(dlg, "comments"))->m_editable = !is_readonly;
+	EDITBOX_OBJ(dialog_find_item(dlg, "genre"))->m_editable = !is_readonly;
+} /* End of 'player_info_dialog_set_if_readonly' function */
 
 /* Handle 'ok_clicked' for search dialog */
 wnd_msg_retcode_t player_on_search( wnd_t *wnd )
