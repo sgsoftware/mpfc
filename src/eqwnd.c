@@ -191,13 +191,13 @@ int eqwnd_display_slider( eq_wnd_t *eq, int x, bool_t hl, float val, char *str )
 		wnd_move(wnd, 0, x, y);
 		if (i == pos)
 		{
-			wnd_putchar(wnd, 0, ACS_BLOCK);
-			wnd_putchar(wnd, 0, ACS_BLOCK);
+			wnd_put_special(wnd, ACS_BLOCK);
+			wnd_put_special(wnd, ACS_BLOCK);
 		}
 		else
 		{
-			wnd_putchar(wnd, 0, ACS_VLINE);
-			wnd_putchar(wnd, 0, ACS_VLINE);
+			wnd_put_special(wnd, ACS_VLINE);
+			wnd_put_special(wnd, ACS_VLINE);
 		}
 	}
 	wnd_move(wnd, 0, x - 1, EQWND_SLIDER_END(eq) + 1);

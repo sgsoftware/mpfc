@@ -865,7 +865,7 @@ void fb_print_info_col( browser_t *fb, int id, struct browser_list_item *item )
 	}
 	wnd_move(wnd, WND_MOVE_ADVANCE, right, WND_MOVE_DONT_CHANGE);
 	if (next_size > 0)
-		wnd_putchar(wnd, 0, ACS_VLINE);
+		wnd_put_special(wnd, ACS_VLINE);
 } /* End of 'fb_print_info_col' function */
 
 /* Show help screen */
