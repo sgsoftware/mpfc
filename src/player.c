@@ -1449,7 +1449,7 @@ void player_display_slider( wnd_t *wnd, int x, int y, int width,
 		if (i == slider_pos)
 			wnd_putchar(wnd, 0, 'O');
 		else 
-			wnd_putchar(wnd, 0,  '=');
+			wnd_put_special(wnd, ACS_HLINE);
 	}
 } /* End of 'player_display_slider' function */
 
