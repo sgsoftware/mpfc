@@ -29,13 +29,13 @@
 struct tag_pmng_t;
 struct tag_song_metadata_t;
 
-/* Callback function which is called for each play list item */
-typedef void (*plp_func_t)( void *ctx, char *name, struct tag_song_metadata_t *metadata );
-
 /* Status code */
 typedef int plp_status_t;
 #define PLP_STATUS_OK 0
 #define PLP_STATUS_FAILED 1
+
+/* Callback function which is called for each play list item */
+typedef plp_status_t (*plp_func_t)( void *ctx, char *name, struct tag_song_metadata_t *metadata );
 
 /* Data for exchange */
 typedef struct

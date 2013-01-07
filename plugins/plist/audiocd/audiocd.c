@@ -106,7 +106,10 @@ plp_status_t audiocd_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 		snprintf(name, sizeof(name), "cdda://%llu", i + 1);
 		logger_error(audiocd_log, 0, _("adding %s"), name);
 		song_metadata_t metadata = SONG_METADATA_EMPTY;
-		f(ctx, name, &metadata);
+
+		plp_status_t res = f(ctx, name, &metadata);
+		if (res != PLP_STATUS_OK)
+			return res;
 	}
 	return PLP_STATUS_OK;
 } /* End of 'audiocd_for_each_item' function */

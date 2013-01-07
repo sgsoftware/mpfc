@@ -85,6 +85,7 @@ plp_status_t cue_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 
 	/* Handle tracks */
 	int num_tracks = cd_get_ntrack(cd);
+	plp_status_t res = PLP_STATUS_OK;
 	for ( int i = 1; i <= num_tracks; ++i )
 	{
 		Track *track = cd_get_track(cd, i);
@@ -116,12 +117,17 @@ plp_status_t cue_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 		si_set_track(si, track_num_str);
 		metadata.m_song_info = si;
 
-		f(ctx, filename, &metadata);
+		plp_status_t st = f(ctx, filename, &metadata);
+		if (st != PLP_STATUS_OK)
+		{
+			res = st;
+			break;
+		}
 	}
 
 	/* Free memory */
 	cd_delete(cd);
-	return PLP_STATUS_OK;
+	return res;
 } /* End of 'cue_for_each_item' function */
 
 /* Exchange data with main program */

@@ -82,6 +82,7 @@ plp_status_t m3u_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 		fseek(fd, 0, SEEK_SET);
 		
 	/* Read file contents */
+	plp_status_t res = PLP_STATUS_OK;
 	while (!feof(fd))
 	{
 		/* Read file name if no extended info is supplied */
@@ -93,7 +94,12 @@ plp_status_t m3u_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 			util_del_nl(str, str);
 
 			song_metadata_t metadata = SONG_METADATA_EMPTY;
-			f(ctx, str, &metadata);
+			plp_status_t st = f(ctx, str, &metadata);
+			if (st != PLP_STATUS_OK)
+			{
+				res = st;
+				break;
+			}
 			continue;
 		}
 		
@@ -128,13 +134,19 @@ plp_status_t m3u_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 			metadata.m_start_time = song_start;
 			metadata.m_end_time = song_start + song_len - 1;
 		}
-		f(ctx, str, &metadata);
+		plp_status_t st = f(ctx, str, &metadata);
 		free(title);
+
+		if (st != PLP_STATUS_OK)
+		{
+			res = st;
+			break;
+		}
 	}
 
 	/* Close file */
 	fclose(fd);
-	return PLP_STATUS_OK;
+	return res;
 } /* End of 'm3u_for_each_item' function */
 
 /* Exchange data with main program */

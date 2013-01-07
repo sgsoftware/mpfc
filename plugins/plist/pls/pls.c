@@ -175,6 +175,7 @@ plp_status_t pls_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 	fclose(fd);
 
 	/* Add the value to the play list */
+	plp_status_t res = PLP_STATUS_OK;
 	for ( i = 0; i < num_entries; i ++ )
 	{
 		char *name = entries[i].name;
@@ -186,18 +187,24 @@ plp_status_t pls_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 			song_metadata_t metadata = SONG_METADATA_EMPTY;
 			metadata.m_title = title;
 			metadata.m_len = len < 0 ? 0 : len;
-			f(ctx, name, &metadata);
+			plp_status_t st = f(ctx, name, &metadata);
 
 			/* Free this entry */
 			free(name);
 			if (title != NULL)
 				free(title);
+
+			if (st != PLP_STATUS_OK)
+			{
+				res = st;
+				break;
+			}
 		}
 		else if (title != NULL)
 			free(title);
 	}
 	free(entries);
-	return PLP_STATUS_OK;
+	return res;
 } /* End of 'pls_for_each_item' function */
 
 /* Exchange data with main program */

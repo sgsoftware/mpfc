@@ -784,13 +784,16 @@ void plist_flush_scheduled( plist_t *pl )
 	}
 } /* End of 'plist_flush_scheduled' function */
 
+#define PLIST_TOO_NESTED -1
+#define PLP_STATUS_TOO_NESTED -1
+
 /* First see if this is a playlist prefix */
-static int plist_add_prefixed(plist_t *pl, char *name, song_metadata_t *metadata)
+static int plist_add_prefixed(plist_t *pl, char *name, song_metadata_t *metadata, int recc_level)
 {
 	/* First see if this is a playlist prefix */
 	plist_plugin_t *plp = pmng_is_playlist_prefix(player_pmng, name);
 	if (plp)
-		return plist_add_plist(pl, plp, name);
+		return plist_add_plist(pl, plp, name, recc_level);
 
 	return plist_add_uri(pl, name, metadata);
 }
@@ -800,6 +803,7 @@ typedef struct
 	plist_t *pl;
 	char *m_pl_name;
 	int num_added;
+	int recc_level;
 } plist_cb_ctx_t;
 
 /* Cue sheets often have a .wav file specified
@@ -845,15 +849,21 @@ static bool_t plist_fix_wrong_file_ext( char *name )
 } /* End of 'cue_fix_wrong_file_ext' function */
 
 /* Playlist item adding callback */
-static void plist_add_playlist_item( void *ctxv, char *name, song_metadata_t *metadata )
+static plp_status_t plist_add_playlist_item( void *ctxv, char *name, song_metadata_t *metadata )
 {
 	plist_cb_ctx_t *ctx = (plist_cb_ctx_t *)ctxv;
+	plp_status_t ret = PLP_STATUS_OK;
 
 	/* Handle URI in a playlist */
 	if (fu_is_prefixed(name))
 	{
-		ctx->num_added += plist_add_prefixed(ctx->pl, name, metadata);
-		return;
+		int res = plist_add_prefixed(ctx->pl, name, metadata, ctx->recc_level);
+		if (res == PLIST_TOO_NESTED)
+			return PLP_STATUS_TOO_NESTED;
+
+		assert(res >= 0);
+		ctx->num_added += res;
+		return PLP_STATUS_OK;
 	}
 
 	/* Get full path relative to the play list if it is not absolute */
@@ -888,11 +898,19 @@ static void plist_add_playlist_item( void *ctxv, char *name, song_metadata_t *me
 			goto finish;
 	}
 
-	ctx->num_added += plist_add_one_file(ctx->pl, full_name, metadata, -1);
+	int res = plist_add_one_file(ctx->pl, full_name, metadata, -1, ctx->recc_level);
+	if (res == PLIST_TOO_NESTED)
+		ret = PLP_STATUS_TOO_NESTED;
+	else
+	{
+		assert(res >= 0);
+		ctx->num_added += res;
+	}
 
 finish:
 	if (full_name != name)
 		free(full_name);
+	return ret;
 } /* End of 'plist_add_playlist_item' function */
 
 void plist_add_song( plist_t *pl, song_t *song, int where )
@@ -945,20 +963,24 @@ static plist_plugin_t *is_playlist(char *file)
 	return pmng_is_playlist_extension(player_pmng, ext);
 }
 
-int plist_add_plist( plist_t *pl, plist_plugin_t *plp, char *file )
+int plist_add_plist( plist_t *pl, plist_plugin_t *plp, char *file, int recc_level )
 {
-	plist_cb_ctx_t ctx = { pl, file, 0 };
+	/* Check recursion level */
+	if (recc_level++ > 16)
+		return PLIST_TOO_NESTED;
+
+	plist_cb_ctx_t ctx = { pl, file, 0, recc_level };
 	plp_status_t status = plp_for_each_item(plp, file, &ctx,
 			plist_add_playlist_item);
 	if (status != PLP_STATUS_OK)
-		return 0;
+		return (status == PLP_STATUS_TOO_NESTED ? PLIST_TOO_NESTED : 0);
 
 	return ctx.num_added;
 }
 
 /* Add single file to play list */
 int plist_add_one_file( plist_t *pl, char *file, song_metadata_t *metadata,
-		int where )
+		int where, int recc_level )
 {
 	song_t *song;
 	int was_len;
@@ -967,7 +989,7 @@ int plist_add_one_file( plist_t *pl, char *file, song_metadata_t *metadata,
 	/* Choose if file is play list */
 	plist_plugin_t *plp = is_playlist(file);
 	if (plp)
-		return plist_add_plist(pl, plp, file);
+		return plist_add_plist(pl, plp, file, recc_level);
 
 	/* Initialize new song and add it to list */
 	song = song_new_from_file(file, metadata);
@@ -986,10 +1008,26 @@ int plist_add_one_file( plist_t *pl, char *file, song_metadata_t *metadata,
 	return 1;
 } /* End of 'plist_add_one_file' function */
 
+static int plist_report_if_too_nested_and_continue( int res, char *path )
+{
+	if (res == PLIST_TOO_NESTED)
+	{
+		logger_error(player_log, 0,
+				"Unable to add '%s' because nesting level is too high. "
+				"It is likely to be a recursive playlist", path);
+		return 0;
+	}
+	return res;
+}
+
 static int plist_add_file( plist_t *pl, char *full_path )
 {
 	song_metadata_t metadata = SONG_METADATA_EMPTY;
-	return plist_add_one_file(pl, full_path, &metadata, -1);
+	int res = plist_add_one_file(pl, full_path, &metadata, -1, 0);
+	res = plist_report_if_too_nested_and_continue(res, full_path);
+
+	assert(res >= 0);
+	return res;
 }
 
 static int plist_add_dir( plist_t *pl, char *dir_path );
@@ -1091,7 +1129,11 @@ static int plist_add_path( plist_t *pl, char *path )
 	if (fu_is_prefixed(path))
 	{
 		song_metadata_t metadata = SONG_METADATA_EMPTY;
-		return plist_add_prefixed(pl, path, &metadata);
+		int res = plist_add_prefixed(pl, path, &metadata, 0);
+		res = plist_report_if_too_nested_and_continue(res, path);
+
+		assert(res >= 0);
+		return res;
 	}
 
 	/* Construct absolute path */
@@ -1112,10 +1154,10 @@ static int plist_add_path( plist_t *pl, char *path )
 	}
 
 	int res = plist_add_real_path(pl, full_path);
-
 	if (full_path != path)
 		free(full_path);
 
+	assert(res >= 0);
 	return res;
 }
 
