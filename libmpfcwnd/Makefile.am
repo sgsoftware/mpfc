@@ -18,5 +18,5 @@ libmpfcwnd_la_SOURCES = wnd.c wnd_print.c wnd_msg.c wnd_kbd.c \
 						wnd_repval.c \
 						$(libmpfcwndhdr_HEADERS)
 libmpfcwnd_la_LIBADD = @COMMON_LIBS@ @GPM_LIBS@ @PTHREAD_LIBS@ @CURSES_LIBS@ @ICU_LIBS@
-INCLUDES = -I$(top_builddir)/src
+INCLUDES = -I$(top_srcdir)/src
 localedir = $(datadir)/locale

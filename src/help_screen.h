@@ -46,7 +46,6 @@ typedef struct
 /* Help screen types */
 #define HELP_PLAYER 0
 #define HELP_BROWSER 1
-#define HELP_EQWND 2
 
 /* Create new help screen */
 help_screen_t *help_new( wnd_t *parent, int type );
@@ -71,9 +70,6 @@ void help_init_player( help_screen_t *h );
 
 /* Initialize help screen in browser mode */
 void help_init_browser( help_screen_t *h );
-
-/* Initialize help screen in equalizer window mode */
-void help_init_eqwnd( help_screen_t *h );
 
 /* Initialize help screen class */
 wnd_class_t *help_class_init( wnd_global_data_t *global );

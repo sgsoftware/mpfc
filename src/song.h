@@ -1,5 +1,5 @@
 /******************************************************************
- * Copyright (C) 2003 - 2005 by SG Software.
+ * Copyright (C) 2003 - 2013 by SG Software.
  *
  * SG MPFC. Interface for songs manipulation functions.
  * $Id$
@@ -26,7 +26,6 @@
 #include <pthread.h>
 #include "types.h"
 #include "file.h"
-#include "inp.h"
 #include "main_types.h"
 #include "mystring.h"
 #include "song_info.h"
@@ -66,9 +65,6 @@ static inline const char* song_get_name( song_t *song )
 
 /* Get short filename but only if it is not uri-based */
 const char* song_get_short_name( song_t *s );
-
-/* Get input plugin */
-in_plugin_t *song_get_inp( song_t *song, file_t **fd );
 
 /* Lock/unlock song */
 #define song_lock(s) (pthread_mutex_lock(&((s)->m_mutex)))

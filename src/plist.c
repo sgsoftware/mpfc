@@ -28,13 +28,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #define __USE_GNU
 #include <unistd.h>
 #include <json/json.h>
 #include "types.h"
 #include "file.h"
 #include "file_utils.h"
-#include "inp.h"
 #include "player.h"
 #include "plist.h"
 #include "pmng.h"

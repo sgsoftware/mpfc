@@ -24,10 +24,12 @@
 #include <fnmatch.h>
 #include <dirent.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include "types.h"
 #include "browser.h"
 #include "help_screen.h"
+#include "metadata_io.h"
 #include "player.h"
 #include "plist.h"
 #include "song_info.h"
@@ -733,7 +735,6 @@ void fb_load_info( browser_t *fb )
 	{
 		struct browser_list_item *item = &fb->m_files[i];
 		char *ext;
-		in_plugin_t *inp;
 
 		/* Don't load info if it is already loaded */
 		if (item->m_info != NULL && item->m_len)
@@ -750,7 +751,7 @@ void fb_load_info( browser_t *fb )
 		/* TODO: m_full_name has to have prefix */
 		/* Load info */
 		si_free(item->m_info);
-		item->m_info = inp_get_info(item->m_full_name, NULL, &item->m_len);
+		item->m_info = md_get_info(item->m_full_name, NULL, &item->m_len);
 	}
 } /* End of 'fb_load_info' function */
 

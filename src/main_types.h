@@ -27,7 +27,6 @@
 #include "types.h"
 #include "types.h"
 #include "file.h"
-#include "inp.h"
 #include "mystring.h"
 #include "song_info.h"
 
@@ -72,9 +71,6 @@ typedef struct tag_song_t
 
 	/* Default title (used when no info is found) */
 	char *m_default_title;
-
-	/* Input plugin being used to play this song */
-	in_plugin_t *m_inp;
 
 	/* Song mutex */
 	pthread_mutex_t m_mutex;

@@ -1,5 +1,5 @@
 /******************************************************************
- * Copyright (C) 2003 - 2005 by SG Software.
+ * Copyright (C) 2003 - 2013 by SG Software.
  *
  * SG MPFC. Songs manipulation functions implementation.
  * $Id$
@@ -26,7 +26,7 @@
 #include "types.h"
 #include "cfg.h"
 #include "file.h"
-#include "inp.h"
+#include "metadata_io.h"
 #include "mystring.h"
 #include "player.h"
 #include "pmng.h"
@@ -187,7 +187,7 @@ void song_update_info( song_t *song )
 
 	song_lock(song);
 
-	song_info_t *new_info = inp_get_info(song->m_filename,
+	song_info_t *new_info = md_get_info(song->m_filename,
 			song->m_fullname, &song->m_full_len);
 	song->m_len = song->m_full_len;
 	if (!(song->m_flags & SONG_STATIC_INFO))
@@ -330,7 +330,7 @@ void song_write_info( song_t *s )
 {
 	char *name = s->m_filename;
 	bool_t is_sliced = s->m_start_time > 0 || s->m_end_time >= 0;
-	if (!name || is_sliced || !inp_save_info(s->m_inp, name, s->m_info))
+	if (!name || is_sliced || !md_save_info(name, s->m_info))
 	{
 		song_update_info(s);
 		logger_error(player_log, 0, _("Failed to save info to file %s"),
@@ -338,36 +338,6 @@ void song_write_info( song_t *s )
 	}
 	s->m_flags &= ~(SONG_INFO_READ | SONG_INFO_WRITE);
 } /* End of 'song_write_info' function */
-
-/* Get input plugin */
-in_plugin_t *song_get_inp( song_t *song, file_t **fd )
-{
-	return NULL;
-#if 0
-	/* Do nothing if we already no plugin */
-	if (fd != NULL)
-		(*fd) = NULL;
-	if (song->m_inp != NULL)
-		return song->m_inp;
-
-	/* Choose appropriate input plugin */
-	if (*song->m_file_ext)
-		song->m_inp = pmng_search_format(player_pmng, song->m_file_name, song->m_file_ext);
-	if (song->m_inp == NULL)
-	{
-		file_t *cfd = file_open(song->m_file_name, "rb", player_log);
-		if (cfd == NULL)
-			return NULL;
-		song->m_inp = pmng_search_content_type(player_pmng,
-				file_get_content_type(cfd));
-		if (fd != NULL)
-			(*fd) = cfd;
-		else
-			file_close(cfd);
-	}
-	return song->m_inp;
-#endif
-} /* End of 'song_get_inp' function */
 
 /* End of 'song.c' file */
 

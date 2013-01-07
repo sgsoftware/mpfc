@@ -35,7 +35,6 @@
 #include "browser.h"
 #include "cfg.h"
 #include "command.h"
-#include "eqwnd.h"
 #include "file.h"
 #include "help_screen.h"
 #include "logger.h"
@@ -61,9 +60,7 @@
 #include "wnd_radio.h"
 #include "wnd_root.h"
 #include "wnd_repval.h"
-#include "xconvert.h"
 #include "info_rw_thread.h"
-#include "inp.h"
 #include "genp.h"
 
 /*****
@@ -103,9 +100,6 @@ player_context_t *player_context = NULL;
 
 bool_t player_end_of_stream = FALSE;
 GstElement *player_pipeline = NULL;
-
-/* Has equalizer value changed */
-bool_t player_eq_changed = FALSE;
 
 /* Edit boxes history lists */
 editbox_history_t *player_hist_lists[PLAYER_NUM_HIST_LISTS];
@@ -443,9 +437,6 @@ bool_t player_init( int argc, char *argv[] )
 	for ( i = 0; i < PLAYER_NUM_MARKS; i ++ )
 		player_marks[i] = -1;
 
-	/* Initialize equalizer */
-	player_eq_changed = FALSE;
-
 	/* Start server */
 	server_start();
 
@@ -707,7 +698,6 @@ bool_t player_init_cfg( void )
 	cfg_set_var_int(cfg_list, "save-playlist-on-exit", 1);
 	cfg_set_var_int(cfg_list, "play-from-stop", 1);
 	cfg_set_var(cfg_list, "lib-dir", LIBDIR"/mpfc");
-	cfg_set_var_bool(cfg_list, "equalizer.enable-on-change", TRUE);
 	cfg_set_var_bool(cfg_list, "autosave-plugins-params", TRUE);
 	cfg_set_var_bool(cfg_list, "search-nocase", TRUE);
 	cfg_set_var_bool(cfg_list, "view-follows-cur-song", TRUE);
@@ -977,11 +967,6 @@ wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action, int repval )
 					_("String `%s' found at position %d"), player_search_string,
 					player_plist->m_sel_end);
 		long_jump = TRUE;
-	}
-	/* Show equalizer dialog */
-	else if (!strcasecmp(action, "equalizer"))
-	{
-		eqwnd_new(wnd_root);
 	}
 	/* Set/unset shuffle mode */
 	else if (!strcasecmp(action, "shuffle"))
@@ -1565,10 +1550,6 @@ void player_next_track( void )
 	int next_track;
 	
 	next_track = player_skip_songs(1, FALSE);
-	/*
-	inp_set_next_song(player_inp, next_track >= 0 ?
-		player_plist->m_list[next_track]->m_file_name : NULL);
-		*/
 	player_set_track(next_track);
 } /* End of 'player_next_track' function */
 
@@ -2308,20 +2289,6 @@ bool_t player_info_dialog_fill( dialog_t *dlg, bool_t first_call )
 	player_info_eb_set(EDITBOX_OBJ(genre), info->m_genre, genre_diff);
 	combo_synch_list(genre);
 	label_set_text(own_data, info->m_own_data);
-
-	/* Add the special functions buttons */
-	if (first_call)
-	{
-		int num = inp_get_num_specs(main_song->m_inp);
-		for ( i = 0; i < num; i ++ )
-		{
-			char *title = inp_get_spec_title(main_song->m_inp, i);
-			button_t *btn = button_new(WND_OBJ(dlg->m_hbox), title, "",
-					0);
-			cfg_set_var_int(WND_OBJ(btn)->m_cfg_list, "fn_index", i);
-			wnd_msg_add_handler(WND_OBJ(btn), "clicked", player_on_info_spec);
-		}
-	}
 	return TRUE;
 } /* End of 'player_info_dialog_fill' function */
 
@@ -2795,53 +2762,6 @@ wnd_msg_retcode_t player_on_info_dlg_reload( wnd_t *wnd )
 	return WND_MSG_RETCODE_OK;
 } /* End of 'player_on_info_dlg_reload' function */
 
-/* Handle 'clicked' for info dialog special function button */
-wnd_msg_retcode_t player_on_info_spec( wnd_t *wnd )
-{
-	dlgitem_t *di;
-	wnd_t *dlg;
-	checkbox_t *cb;
-	song_t **songs_list, *main_song;
-	int num_songs;
-	bool_t write_in_all = FALSE;
-	int i, index;
-
-	/* Get songs list */
-	di = DLGITEM_OBJ(wnd);
-	dlg = di->m_dialog;
-	songs_list = cfg_get_var_ptr(dlg->m_cfg_list, "songs_list");
-	main_song = cfg_get_var_ptr(dlg->m_cfg_list, "main_song");
-	num_songs = cfg_get_var_int(dlg->m_cfg_list, "num_songs");
-	assert(songs_list && main_song && (num_songs > 0));
-
-	/* Get the function index */
-	index = cfg_get_var_int(wnd->m_cfg_list, "fn_index");
-
-	/* Save info if need */
-	if (inp_get_spec_flags(main_song->m_inp, index) & INP_SPEC_SAVE_INFO)
-		player_save_info_dialog(DIALOG_OBJ(dlg));
-
-	/* Execute special function */
-	cb = CHECKBOX_OBJ(dialog_find_item(DIALOG_OBJ(dlg), "write_in_all"));
-	if (cb != NULL)
-		write_in_all = (cb->m_checked);
-	/*
-	for ( i = 0; i < num_songs; i ++ )
-	{
-		in_plugin_t *inp = songs_list[i]->m_inp;
-		if ((!write_in_all && (songs_list[i] != main_song)) ||
-				(inp != main_song->m_inp))
-			continue;
-		inp_spec_func(inp, index, songs_list[i]->m_file_name);
-	}
-	*/
-
-	/* Reload the info */
-	if (!player_info_dialog_fill(DIALOG_OBJ(dlg), FALSE))
-		wnd_close(dlg);
-	return WND_MSG_RETCODE_OK;
-} /* End of 'player_on_info_spec' function */
-
 /* Handle 'clicked' for info dialog write-in-all checkbox */
 wnd_msg_retcode_t player_on_info_cb_clicked( wnd_t *wnd )
 {
@@ -3272,7 +3192,6 @@ void player_class_set_default_styles( cfg_node_t *list )
 	cfg_set_var(list, "kbind.next_match", "n");
 	cfg_set_var(list, "kbind.prev_match", "N");
 	cfg_set_var(list, "kbind.help", "?");
-	cfg_set_var(list, "kbind.equalizer", "e");
 	cfg_set_var(list, "kbind.shuffle", "R");
 	cfg_set_var(list, "kbind.var_manager", "o");
 	cfg_set_var(list, "kbind.plist_down", "J");

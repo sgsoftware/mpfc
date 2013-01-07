@@ -58,9 +58,7 @@ bool_t help_construct( help_screen_t *help, wnd_t *parent, int type )
 	
 	/* Initialize window part */
 	if (!wnd_construct(wnd, parent, type == HELP_PLAYER ? 
-				_("MPFC Default Key Bindings") : (type == HELP_EQWND ?
-					_("Equalizer Key Bindings") : 
-					_("File Browser Key Bindings")), 
+				_("MPFC Default Key Bindings") : _("File Browser Key Bindings"), 
 				0, 0, 0, 0, WND_FLAG_FULL_BORDER | WND_FLAG_MAXIMIZED))
 		return FALSE;
 
@@ -83,9 +81,6 @@ bool_t help_construct( help_screen_t *help, wnd_t *parent, int type )
 		break;
 	case HELP_BROWSER:
 		help_init_browser(help);
-		break;
-	case HELP_EQWND:
-		help_init_eqwnd(help);
 		break;
 	}
 	help->m_type = type;
@@ -200,7 +195,6 @@ void help_init_player( help_screen_t *help )
 	help_add(help, _("\\:\t\t Advanced search"));
 	help_add(help, _("n:\t\t Go to next search match"));
 	help_add(help, _("N:\t\t Go to previous search match"));
-	help_add(help, _("e:\t\t Launch equalizer window"));
 	help_add(help, _("R:\t\t Set/unset shuffle play mode"));
 	help_add(help, _("L:\t\t Set/unset loop play mode"));
 	help_add(help, _("o:\t\t Variables manager"));
@@ -253,18 +247,6 @@ void help_init_browser( help_screen_t *help )
 	help_add(help, _("s:\t\t Toggle search mode"));
 	help_add(help, _("?:\t\t This help screen"));
 } /* End of 'help_init_browser' function */
-
-/* Initialize help screen in equalizer window mode */
-void help_init_eqwnd( help_screen_t *help )
-{
-	help_add(help, _("q or <Esc>:\t Return to player"));
-	help_add(help, _("h or <Left>:\t Move cursor left"));
-	help_add(help, _("l or <Right>:\t Move cursor right"));
-	help_add(help, _("j or <Down>:\t Move cursor down"));
-	help_add(help, _("k or <Up>:\t Move cursor up"));
-	help_add(help, _("p:\t\t Load Winamp EQF preset"));
-	help_add(help, _("?:\t\t This help screen"));
-} /* End of 'help_init_eqwnd' function */
 
 /* Initialize help screen class */
 wnd_class_t *help_class_init( wnd_global_data_t *global )

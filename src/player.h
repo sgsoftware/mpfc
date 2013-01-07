@@ -78,9 +78,6 @@ typedef struct
  * Global variables
  ***/
 
-/* Equalizer information */
-extern bool_t player_eq_changed;
-
 /* Undo list */
 extern undo_list_t *player_ul;
 
@@ -309,9 +306,6 @@ void player_on_info_close( wnd_t *wnd );
 
 /* Handle 'clicked' for info dialog reload button */
 wnd_msg_retcode_t player_on_info_dlg_reload( wnd_t *wnd );
-
-/* Handle 'clicked' for info dialog special function button */
-wnd_msg_retcode_t player_on_info_spec( wnd_t *wnd );
 
 /* Handle 'clicked' for info dialog write-in-all checkbox */
 wnd_msg_retcode_t player_on_info_cb_clicked( wnd_t *wnd );

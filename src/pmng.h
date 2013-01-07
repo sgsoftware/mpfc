@@ -27,11 +27,8 @@
 #include "cfg.h"
 #include "csp.h"
 #include "command.h"
-#include "ep.h"
-#include "inp.h"
 #include "logger.h"
 #include "main_types.h"
-#include "outp.h"
 #include "plp.h"
 #include "plugin.h"
 #include "wnd.h"
@@ -42,9 +39,6 @@ typedef struct tag_pmng_t
 	/* Plugin list */
 	int m_num_plugins;
 	plugin_t **m_plugins;
-
-	/* Current output plugin */
-	out_plugin_t *m_cur_out;
 
 	/* Configuration variables list */
 	cfg_node_t *m_cfg_list;
@@ -97,9 +91,6 @@ void pmng_autostart_general( pmng_t *pmng );
 
 /* Search for input plugin supporting given format */
 bool_t pmng_search_format( pmng_t *pmng, const char *filename, const char *ext );
-
-/* Search for input plugin supporting given content-type */
-in_plugin_t *pmng_search_content_type( pmng_t *pmng, char *content );
 
 /* Apply effect plugins */
 int pmng_apply_effects( pmng_t *pmng, byte *data, int len, int fmt, 
