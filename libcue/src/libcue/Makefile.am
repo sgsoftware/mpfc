@@ -6,7 +6,7 @@ EXTRA_DIST		= # libcue.pc.in
 #pkgconfig_DATA		= libcue.pc
 
 
-INCLUDES		=				\
+AM_CPPFLAGS =				\
 			-I.				\
 			-Wall -Wmissing-declarations
 
