@@ -1,5 +1,5 @@
 /******************************************************************
- * Copyright (C) 2003 - 2005 by SG Software.
+ * Copyright (C) 2003 - 2013 by SG Software.
  *
  * SG MPFC. Main player functions implementation.
  * $Id$
@@ -63,7 +63,6 @@
 #include "wnd_repval.h"
 #include "xconvert.h"
 #include "info_rw_thread.h"
-#include "outp.h"
 #include "inp.h"
 #include "genp.h"
 
@@ -167,7 +166,11 @@ pthread_t player_main_tid = 0;
 /* TODO: make it logarithmic? */
 #define VOLUME_SLIDER_RANGE (VOLUME_DEF * 2)
 
+/* Forward decls */
 static void player_info_dialog_set_if_readonly( dialog_t *dlg );
+static bool_t player_handle_var_title_format( cfg_node_t *var, char *value, void *data );
+static bool_t player_handle_color_scheme( cfg_node_t *var, char *value, void *data );
+static bool_t player_handle_kbind_scheme( cfg_node_t *var, char *value, void *data );
 
 /*****
  *
@@ -692,8 +695,6 @@ bool_t player_init_cfg( void )
 	cfg_new_var(cfg_list, "player-end", CFG_NODE_RUNTIME, NULL, NULL);
 	cfg_new_var(cfg_list, "title-format", 0, NULL, 
 			player_handle_var_title_format);
-	cfg_new_var(cfg_list, "output-plugin", 0, NULL, 
-			player_handle_var_outp);
 	cfg_new_var(cfg_list, "color-scheme", 0, NULL,
 			player_handle_color_scheme);
 	cfg_new_var(cfg_list, "kbind-scheme", 0, NULL, 
@@ -703,7 +704,6 @@ bool_t player_init_cfg( void )
 	log_file = util_strcat(getenv("HOME"), "/.mpfc/log", NULL);
 	cfg_set_var(cfg_list, "log-file", log_file);
 	free(log_file);
-	cfg_set_var(cfg_list, "output-plugin", "oss");
 	cfg_set_var_int(cfg_list, "save-playlist-on-exit", 1);
 	cfg_set_var_int(cfg_list, "play-from-stop", 1);
 	cfg_set_var(cfg_list, "lib-dir", LIBDIR"/mpfc");
@@ -1550,9 +1550,6 @@ void player_end_play( bool_t rem_cur_song )
 	int was_song = player_plist->m_cur_song;
 	
 	player_save_time();
-#if 0
-	outp_resume(player_cur_outp);
-#endif
 	player_plist->m_cur_song = -1;
 	player_end_track = TRUE;
 //	player_context->m_status = PLAYER_STATUS_STOPPED;
@@ -1851,23 +1848,6 @@ void *player_thread( void *arg )
 		/* Get song length and information */
 		logger_debug(player_log, "Updating song info");
 		song_update_info(s);
-
-		/* Start output plugin */
-		/*
-		logger_debug(player_log, "Starting output plugin");
-		if (!no_outp && (player_pmng->m_cur_out == NULL || 
-				(!cfg_get_var_int(cfg_list, "silent-mode") && 
-					!outp_start(player_pmng->m_cur_out))))
-		{
-			logger_error(player_log, 1, 
-					_("Output plugin initialization failed"));
-//			wnd_send_msg(wnd_root, WND_MSG_USER, PLAYER_MSG_END_TRACK);
-			inp_end(inp);
-			player_context->m_status = PLAYER_STATUS_STOPPED;
-			wnd_invalidate(player_wnd);
-			continue;
-		}
-		*/
 
 		/* Create gstreamer stuff */
 		player_end_of_stream = FALSE;
@@ -2462,9 +2442,7 @@ void player_test_dialog( void )
 /* Data for plugins manager */
 enum
 {
-	PLAYER_PMNG_INPUT = 0,
-	PLAYER_PMNG_OUTPUT,
-	PLAYER_PMNG_EFFECT,
+	PLAYER_PMNG_PLIST = 0,
 	PLAYER_PMNG_GENERAL,
 	PLAYER_PMNG_CHARSET,
 	PLAYER_PMNG_COUNT
@@ -2496,18 +2474,10 @@ void player_pmng_dialog( void )
 	/* Initialize basic views data */
 	views = (player_pmng_view_t *)malloc(sizeof(*views) * PLAYER_PMNG_COUNT);
 	memset(views, 0, sizeof(*views) * PLAYER_PMNG_COUNT);
-	views[PLAYER_PMNG_INPUT].m_title = _("Input");
-	views[PLAYER_PMNG_INPUT].m_btn_title = _("&Input");
-	views[PLAYER_PMNG_INPUT].m_name = "input";
-	views[PLAYER_PMNG_INPUT].m_letter = 'i';
-	views[PLAYER_PMNG_OUTPUT].m_title = _("Output");
-	views[PLAYER_PMNG_OUTPUT].m_btn_title = _("&Output");
-	views[PLAYER_PMNG_OUTPUT].m_name = "output";
-	views[PLAYER_PMNG_OUTPUT].m_letter = 'o';
-	views[PLAYER_PMNG_EFFECT].m_title = _("Effect");
-	views[PLAYER_PMNG_EFFECT].m_btn_title = _("&Effect");
-	views[PLAYER_PMNG_EFFECT].m_name = "effect";
-	views[PLAYER_PMNG_EFFECT].m_letter = 'e';
+	views[PLAYER_PMNG_PLIST].m_title = _("Playlist");
+	views[PLAYER_PMNG_PLIST].m_btn_title = _("&Playlist");
+	views[PLAYER_PMNG_PLIST].m_name = "playlist";
+	views[PLAYER_PMNG_PLIST].m_letter = 'p';
 	views[PLAYER_PMNG_GENERAL].m_title = _("General");
 	views[PLAYER_PMNG_GENERAL].m_btn_title = _("&General");
 	views[PLAYER_PMNG_GENERAL].m_name = "general";
@@ -2540,11 +2510,7 @@ void player_pmng_dialog( void )
 
 		v->m_hbox = hbox_new(WND_OBJ(v->m_view), NULL, 1);
 		snprintf(list_id, sizeof(list_id), "%s_list", v->m_name);
-		v->m_list = listbox_new(WND_OBJ(v->m_hbox), NULL, list_id, 'l', 
-				i == PLAYER_PMNG_OUTPUT ? LISTBOX_SELECTABLE : 0, 20, 10);
-		if (i == PLAYER_PMNG_OUTPUT)
-			wnd_msg_add_handler(WND_OBJ(v->m_list), "selection_changed",
-					player_pmng_dialog_on_list_sel_change);
+		v->m_list = listbox_new(WND_OBJ(v->m_hbox), NULL, list_id, 'l', 0, 20, 10);
 		wnd_msg_add_handler(WND_OBJ(v->m_list), "changed", 
 				player_pmng_dialog_on_list_change);
 		v->m_vbox = vbox_new(WND_OBJ(v->m_hbox), NULL, 0);
@@ -2554,33 +2520,21 @@ void player_pmng_dialog( void )
 	iter = pmng_start_iteration(player_pmng, PLUGIN_TYPE_ALL);
 	for ( ;; )
 	{
-		int index = 0, pos;
+		int index = 0;
 		plugin_t *p = pmng_iterate(&iter);
 		if (p == NULL)
 			break;
 
-		if (p->m_type == PLUGIN_TYPE_INPUT)
-			index = PLAYER_PMNG_INPUT;
-		else if (p->m_type == PLUGIN_TYPE_OUTPUT)
-			index = PLAYER_PMNG_OUTPUT;
-		else if (p->m_type == PLUGIN_TYPE_EFFECT)
-			index = PLAYER_PMNG_EFFECT;
+		if (p->m_type == PLUGIN_TYPE_PLIST)
+			index = PLAYER_PMNG_PLIST;
 		else if (p->m_type == PLUGIN_TYPE_GENERAL)
 			index = PLAYER_PMNG_GENERAL;
 		else if (p->m_type == PLUGIN_TYPE_CHARSET)
 			index = PLAYER_PMNG_CHARSET;
-		pos = listbox_add(views[index].m_list, p->m_name, p);
-		if (p->m_type == PLUGIN_TYPE_OUTPUT && 
-				p == (plugin_t *)player_pmng->m_cur_out)
-			listbox_sel_item(views[index].m_list, pos);
+		listbox_add(views[index].m_list, p->m_name, p);
 	}
 
 	/* Set plugins info controls */
-	views[PLAYER_PMNG_EFFECT].m_enabled_cb = cb =
-		checkbox_new(WND_OBJ(views[PLAYER_PMNG_EFFECT].m_vbox),
-				_("Effect is ena&bled"), "enabled", 'b', FALSE);
-	wnd_msg_add_handler(WND_OBJ(cb), "clicked",
-			player_pmng_dialog_on_effect_clicked);
 	for ( i = 0; i < PLAYER_PMNG_COUNT; i ++ )
 	{
 		char desc_id[20], author_id[20], conf_id[20];
@@ -2640,10 +2594,7 @@ void player_pmng_dialog_sync( dialog_t *dlg )
 		editbox_set_text(v->m_author, author == NULL ? "" : author);
 		editbox_set_text(v->m_desc, desc == NULL ? "" : desc);
 
-		/* Synchronize effect checkbox */
-		if (i == PLAYER_PMNG_EFFECT)
-			v->m_enabled_cb->m_checked = pmng_is_effect_enabled(player_pmng, p);
-		else if (i == PLAYER_PMNG_GENERAL)
+		if (i == PLAYER_PMNG_GENERAL)
 		{
 			bool_t started = genp_is_started(GENERAL_PLUGIN(p));
 			wnd_set_title(WND_OBJ(v->m_start_stop_btn), started ? _("S&top") :
@@ -3101,42 +3052,6 @@ wnd_msg_retcode_t player_pmng_dialog_on_list_change( wnd_t *wnd, int index )
 	return WND_MSG_RETCODE_OK;
 } /* End of 'player_pmng_dialog_on_list_change' function */
 
-/* Handle 'selection_changed' message for plugins manager list box */
-wnd_msg_retcode_t player_pmng_dialog_on_list_sel_change( wnd_t *wnd, 
-		int index )
-{
-	player_pmng_view_t *views;
-	wnd_t *dlg;
-
-	dlg = DLGITEM_OBJ(wnd)->m_dialog;
-	views = (player_pmng_view_t *)cfg_get_var_ptr(dlg->m_cfg_list, "views");
-	assert(views);
-	player_pmng->m_cur_out = index < 0 ? NULL :
-		OUTPUT_PLUGIN(views[PLAYER_PMNG_OUTPUT].m_list->m_list[index].m_data);
-	return WND_MSG_RETCODE_OK;
-} /* End of 'player_pmng_dialog_on_list_sel_change' function */
-
-/* Handle 'clicked' message for plugins manager 'enable effect' checkbox */
-wnd_msg_retcode_t player_pmng_dialog_on_effect_clicked( wnd_t *wnd )
-{
-	plugin_t *ep;
-	checkbox_t *cb = CHECKBOX_OBJ(wnd);
-	wnd_t *dlg;
-	player_pmng_view_t *views;
-	listbox_t *lb;
-
-	/* Enable/disable effect */
-	dlg = DLGITEM_OBJ(wnd)->m_dialog;
-	views = (player_pmng_view_t *)cfg_get_var_ptr(dlg->m_cfg_list, "views");
-	assert(views);
-	lb = views[PLAYER_PMNG_EFFECT].m_list;
-	if (!lb->m_list_size)
-		return WND_MSG_RETCODE_OK;
-	ep = (plugin_t *)lb->m_list[lb->m_cursor].m_data;
-	pmng_enable_effect(player_pmng, ep, cb->m_checked);
-	return WND_MSG_RETCODE_OK;
-} /* End of 'player_pmng_dialog_on_effect_clicked' function */
-
 /* Handle 'clicked' message for plugins manager configure buttons */
 wnd_msg_retcode_t player_pmng_dialog_on_configure( wnd_t *wnd )
 {
@@ -3226,7 +3141,7 @@ void player_pmng_dialog_destructor( wnd_t *wnd )
  *****/
 
 /* Handle 'title_format' variable setting */
-bool_t player_handle_var_title_format( cfg_node_t *var, char *value, 
+static bool_t player_handle_var_title_format( cfg_node_t *var, char *value, 
 		void *data )
 {
 	int i;
@@ -3240,33 +3155,8 @@ bool_t player_handle_var_title_format( cfg_node_t *var, char *value,
 	return TRUE;
 } /* End of 'player_handle_var_title_format' function */
 
-/* Handle 'output_plugin' variable setting */
-bool_t player_handle_var_outp( cfg_node_t *var, char *value, void *data )
-{
-	pmng_iterator_t iter;
-
-	if (player_pmng == NULL)
-		return TRUE;
-
-	/* Choose new output plugin */
-	iter = pmng_start_iteration(player_pmng, PLUGIN_TYPE_OUTPUT);
-	for ( ;; )
-	{
-		plugin_t *p = pmng_iterate(&iter);
-		if (p == NULL)
-			break;
-
-		if (!strcmp(p->m_name, cfg_get_var(cfg_list, "output-plugin")))
-		{
-			player_pmng->m_cur_out = OUTPUT_PLUGIN(p);
-			break;
-		}
-	}
-	return TRUE;
-} /* End of 'player_handle_var_outp' function */
-
 /* Handle 'color-scheme' variable setting */
-bool_t player_handle_color_scheme( cfg_node_t *node, char *value, 
+static bool_t player_handle_color_scheme( cfg_node_t *node, char *value, 
 		void *data )
 {
 	char fname[MAX_FILE_NAME];
@@ -3280,7 +3170,7 @@ bool_t player_handle_color_scheme( cfg_node_t *node, char *value,
 } /* End of 'player_handle_color_scheme' function */
 
 /* Handle 'kbind-scheme' variable setting */
-bool_t player_handle_kbind_scheme( cfg_node_t *node, char *value, 
+static bool_t player_handle_kbind_scheme( cfg_node_t *node, char *value, 
 		void *data )
 {
 	char fname[MAX_FILE_NAME];

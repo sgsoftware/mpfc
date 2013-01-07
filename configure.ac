@@ -179,9 +179,6 @@ done
 
 AC_SUBST(GENERAL_PLUGINS)
 AC_SUBST(CHARSET_PLUGINS)
-AC_SUBST(EFFECT_PLUGINS)
-AC_SUBST(INPUT_PLUGINS)
-AC_SUBST(OUTPUT_PLUGINS)
 AC_SUBST(PLIST_PLUGINS)
 
 PKG_CHECK_MODULES(GSTREAMER, gstreamer-1.0,, [AC_MSG_ERROR(*** GStreamer 1.0 not found ***)])
@@ -211,10 +208,6 @@ AC_OUTPUT(Makefile \
 		  plugins/plist/audiocd/Makefile \
 		  po/Makefile \
 		  mpfc.pc)
-
-# Configure rcfiles
-./build_rcfile.pl "$OUTPUT_PLUGINS" "local" > src/.mpfcrc
-./build_rcfile.pl "$OUTPUT_PLUGINS" "global" > mpfcrc
 
 # Print plugins summary
 echo -e "\n****** Plugins summary ******\n"

@@ -1,5 +1,5 @@
 /******************************************************************
- * Copyright (C) 2003 - 2005 by SG Software.
+ * Copyright (C) 2003 - 2013 by SG Software.
  *
  * MPFC Library. Common plugins functions implementation.
  * $Id$
@@ -59,18 +59,12 @@ plugin_t *plugin_init( pmng_t *pmng, char *name, plugin_type_t type, int size,
 	}
 
 	/* Create plugin configuration list */
-	if (type == PLUGIN_TYPE_INPUT)
-		prefix = "plugins.input";
-	else if (type == PLUGIN_TYPE_OUTPUT)
-		prefix = "plugins.output";
-	else if (type == PLUGIN_TYPE_EFFECT)
-		prefix = "plugins.effect";
+	if (type == PLUGIN_TYPE_PLIST)
+		prefix = "plugins.plist";
 	else if (type == PLUGIN_TYPE_CHARSET)
 		prefix = "plugins.charset";
 	else if (type == PLUGIN_TYPE_GENERAL)
 		prefix = "plugins.general";
-	else if (type == PLUGIN_TYPE_PLIST)
-		prefix = "plugins.plist";
 	else
 	{
 		plugin_free(p);

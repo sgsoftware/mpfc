@@ -34,25 +34,11 @@ struct tag_pmng_t;
 /* Plugin types */
 typedef enum
 {
-	PLUGIN_TYPE_INPUT = 1 << 0,
-	PLUGIN_TYPE_OUTPUT = 1 << 1,
-	PLUGIN_TYPE_EFFECT = 1 << 2,
-	PLUGIN_TYPE_CHARSET = 1 << 3,
-	PLUGIN_TYPE_GENERAL = 1 << 4,
-	PLUGIN_TYPE_PLIST = 1 << 5,
+	PLUGIN_TYPE_CHARSET = 1 << 1,
+	PLUGIN_TYPE_GENERAL = 1 << 2,
+	PLUGIN_TYPE_PLIST = 1 << 3,
 	PLUGIN_TYPE_ALL = 0xFFFFFF
 } plugin_type_t;
-
-/* Plugin mixer types */
-typedef enum
-{
-	PLUGIN_MIXER_DEFAULT,
-	PLUGIN_MIXER_MASTER,
-	PLUGIN_MIXER_PCM,
-	PLUGIN_MIXER_LINE,
-	PLUGIN_MIXER_CD,
-	PLUGIN_MIXER_MIC
-} plugin_mixer_type_t;
 
 /* Common plugin data for exchange with plugin */
 typedef struct

@@ -1,5 +1,5 @@
 /******************************************************************
- * Copyright (C) 2003 - 2005 by SG Software.
+ * Copyright (C) 2003 - 2013 by SG Software.
  *
  * SG MPFC. Plugins manager functions implementation.
  * $Id$
@@ -30,10 +30,7 @@
 #include "cfg.h"
 #include "command.h"
 #include "csp.h"
-#include "ep.h"
-#include "inp.h"
 #include "genp.h"
-#include "outp.h"
 #include "plugin.h"
 #include "pmng.h"
 #include "util.h"
@@ -242,7 +239,7 @@ void pmng_autostart_general( pmng_t *pmng )
 	}
 } /* End of 'pmng_autostart_general' function */
 
-/* Search for input plugin supporting given format */
+/* Search if a given format is supported */
 bool_t pmng_search_format( pmng_t *pmng, const char *filename, const char *format )
 {
 	if (pmng == NULL || (!(*filename) && !(*format)))
@@ -258,31 +255,6 @@ bool_t pmng_search_format( pmng_t *pmng, const char *filename, const char *forma
 	}
 	return FALSE;
 } /* End of 'pmng_search_format' function */
-
-/* Apply effect plugins */
-int pmng_apply_effects( pmng_t *pmng, byte *data, int len, int fmt, 
-		int freq, int channels )
-{
-	int l = len;
-	pmng_iterator_t iter;
-
-	if (pmng == NULL)
-		return 0;
-
-	iter = pmng_start_iteration(pmng, PLUGIN_TYPE_EFFECT);
-	for ( ;; )
-	{
-		plugin_t *ep;
-		
-		/* Apply effect plugin if it is enabled */
-		ep = pmng_iterate(&iter);
-		if (ep == NULL)
-			break;
-		if (pmng_is_effect_enabled(pmng, ep))
-			l = ep_apply(EFFECT_PLUGIN(ep), data, l, fmt, freq, channels);
-	}
-	return l;
-} /* End of 'pmng_apply_effects' function */
 
 /* Search for plugin with a specified name */
 plugin_t *pmng_search_by_name( pmng_t *pmng, char *name, 
@@ -321,37 +293,17 @@ static void pmng_glob_handler( pmng_t *pmng, plugin_type_t type, const char *pat
 		return;
 
 	/* Initialize plugin */
-	if (type == PLUGIN_TYPE_INPUT)
-		p = inp_init(name, pmng);
-	else if (type == PLUGIN_TYPE_OUTPUT)
-		p = outp_init(name, pmng);
-	else if (type == PLUGIN_TYPE_EFFECT)
-		p = ep_init(name, pmng);
+	if (type == PLUGIN_TYPE_PLIST)
+		p = plp_init(name, pmng);
 	else if (type == PLUGIN_TYPE_CHARSET)
 		p = csp_init(name, pmng);
 	else if (type == PLUGIN_TYPE_GENERAL)
 		p = genp_init(name, pmng);
-	else if (type == PLUGIN_TYPE_PLIST)
-		p = plp_init(name, pmng);
 	if (p == NULL)
 		return;
 
 	/* Add plugin to the list */
 	pmng_add_plugin(pmng, p);
-
-	/* Extra work for output plugins */
-	if (type == PLUGIN_TYPE_OUTPUT)
-	{
-		char *out_plugin;
-		out_plugin_t *op = OUTPUT_PLUGIN(p);
-
-		if (pmng->m_cur_out == NULL)
-			pmng->m_cur_out = op;
-		out_plugin = cfg_get_var(pmng->m_cfg_list, "output-plugin");
-		if (out_plugin != NULL && !strcmp(PLUGIN(op)->m_name, out_plugin))
-			pmng->m_cur_out = op;
-	}
-	return;
 } /* End of 'pmng_glob_handler' function */
 
 /* Load plugins */
@@ -362,12 +314,9 @@ bool_t pmng_load_plugins( pmng_t *pmng )
 	{
 		plugin_type_t m_type;
 		char *m_dir;
-	} types[] = { { PLUGIN_TYPE_INPUT, "input" }, 
-				{ PLUGIN_TYPE_OUTPUT, "output" },
-				{ PLUGIN_TYPE_EFFECT, "effect" },
-				{ PLUGIN_TYPE_CHARSET, "charset" },
-				{ PLUGIN_TYPE_PLIST, "plist" },
-				{ PLUGIN_TYPE_GENERAL, "general" } };
+	} types[] = { { PLUGIN_TYPE_CHARSET, "charset" },
+				  { PLUGIN_TYPE_PLIST, "plist" },
+				  { PLUGIN_TYPE_GENERAL, "general" } };
 	int num_types, i;
 	if (pmng == NULL)
 		return FALSE;
@@ -425,42 +374,6 @@ bool_t pmng_is_loaded( pmng_t *pmng, const char *name, plugin_type_t type )
 	}
 	return FALSE;
 } /* End of 'pmng_is_loaded' function */
-
-/* Search plugin for content-type */
-in_plugin_t *pmng_search_content_type( pmng_t *pmng, char *content )
-{
-	pmng_iterator_t iter;
-
-	if (content == NULL || pmng == NULL)
-		return NULL;
-
-	iter = pmng_start_iteration(pmng, PLUGIN_TYPE_INPUT);
-	for ( ;; )
-	{
-		char types[256], type[80];
-		int j, k = 0;
-		in_plugin_t *inp = INPUT_PLUGIN(pmng_iterate(&iter));
-		if (inp == NULL)
-			break;
-
-		inp_get_formats(inp, NULL, types);
-		if (types == NULL)
-			continue;
-		for ( j = 0;; type[k ++] = types[j ++] )
-		{
-			if (types[j] == 0 || types[j] == ';')
-			{
-				type[k] = 0;
-				if (!strcasecmp(type, content))
-					return inp;
-				k = 0;
-			}
-			if (!types[j])
-				break;
-		}
-	}
-	return NULL;
-} /* End of 'pmng_search_content_type' function */
 
 /* Find charset plugin which supports specified set */
 cs_plugin_t *pmng_find_charset( pmng_t *pmng, char *name, int *index )
@@ -571,22 +484,6 @@ plugin_t *pmng_iterate( pmng_iterator_t *iter )
 	return (iter->m_index >= pmng->m_num_plugins ? NULL : 
 			pmng->m_plugins[iter->m_index ++]);
 } /* End of 'pmng_iterate' function */
-
-/* Check if effect is enabled */
-bool_t pmng_is_effect_enabled( pmng_t *pmng, plugin_t *ep )
-{
-	char name[256];
-	snprintf(name, sizeof(name), "enable-effect-%s", ep->m_name);
-	return cfg_get_var_bool(pmng->m_cfg_list, name);
-} /* End of 'pmng_is_effect_enabled' function */
-
-/* Enable/disable effect */
-void pmng_enable_effect( pmng_t *pmng, plugin_t *ep, bool_t enable )
-{
-	char name[256];
-	snprintf(name, sizeof(name), "enable-effect-%s", ep->m_name);
-	cfg_set_var_bool(pmng->m_cfg_list, name, enable);
-} /* End of 'pmng_enable_effect' function */
 
 /* Install a hook handler */
 int pmng_add_hook_handler( pmng_t *pmng, void (*handler)(char*) )

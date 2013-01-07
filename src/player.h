@@ -1,5 +1,5 @@
 /******************************************************************
- * Copyright (C) 2003 - 2005 by SG Software.
+ * Copyright (C) 2003 - 2013 by SG Software.
  *
  * SG MPFC. Interface for main player functions.
  * $Id$
@@ -346,13 +346,6 @@ wnd_msg_retcode_t player_logview_on_close( wnd_t *wnd );
 /* Handle 'changed' message for plugins manager list boxes */
 wnd_msg_retcode_t player_pmng_dialog_on_list_change( wnd_t *wnd, int index );
 
-/* Handle 'selection_changed' message for plugins manager list box */
-wnd_msg_retcode_t player_pmng_dialog_on_list_sel_change( wnd_t *wnd, 
-		int index );
-
-/* Handle 'clicked' message for plugins manager 'enable effect' checkbox */
-wnd_msg_retcode_t player_pmng_dialog_on_effect_clicked( wnd_t *wnd );
-
 /* Handle 'clicked' message for plugins manager configure buttons */
 wnd_msg_retcode_t player_pmng_dialog_on_configure( wnd_t *wnd );
 
@@ -365,26 +358,6 @@ wnd_msg_retcode_t player_pmng_dialog_on_reload( wnd_t *wnd );
 
 /* Destructor for plugins manager */
 void player_pmng_dialog_destructor( wnd_t *wnd );
-
-/***
- * Variables change handlers
- ***/
-
-/* Handle 'title-format' variable setting */
-bool_t player_handle_var_title_format( cfg_node_t *var, char *value, 
-		void *data );
-
-/* Handle 'output-plugin' variable setting */
-bool_t player_handle_var_outp( cfg_node_t *var, char *value, 
-		void *data );
-
-/* Handle 'color-scheme' variable setting */
-bool_t player_handle_color_scheme( cfg_node_t *var, char *value, 
-		void *data );
-
-/* Handle 'kbind-scheme' variable setting */
-bool_t player_handle_kbind_scheme( cfg_node_t *var, char *value, 
-		void *data );
 
 /***
  * Player window class functions
