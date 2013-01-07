@@ -130,7 +130,7 @@ void editbox_get_desired_size( dlgitem_t *di, int *width, int *height )
 } /* End of 'editbox_get_desired_size' function */
 
 /* Set edit box text */
-void editbox_set_text( editbox_t *eb, char *text )
+void editbox_set_text( editbox_t *eb, const char *text )
 {
 	assert(eb);
 	str_copy_cptr(eb->m_text, text == NULL ? "" : text);

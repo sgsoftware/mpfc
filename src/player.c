@@ -147,7 +147,7 @@ logger_t *player_log = NULL;
 logger_view_t *player_logview = NULL;
 
 /* Standard value for edit boxes width */
-#define PLAYER_EB_WIDTH	50
+#define PLAYER_EB_WIDTH	(2 * WND_WIDTH(player_wnd) / 3)
 
 /* enqueued songs */
 int queued_songs[PLAYER_MAX_ENQUEUED];
@@ -2069,7 +2069,6 @@ void player_info_dialog( void )
 	char *file_name;
 	wnd_t *vbox;
 	hbox_t *hbox;
-	button_t *reload;
 
 	/* First create dialog */
 	dlg = dialog_new(wnd_root, "");
@@ -2090,7 +2089,10 @@ void player_info_dialog( void )
 	combo_new_with_label(vbox, _("&Genre: "), "genre", "", 'g',
 			PLAYER_EB_WIDTH, 10);
 	label_new(WND_OBJ(hbox), "", "own_data", LABEL_NOBOLD);
-	reload = button_new(WND_OBJ(dlg->m_hbox), _("&Reload info"), "reload", 'r');
+	editbox_t *path = editbox_new_with_label(vbox, _("Full &path: "), "full_path", "", 'p',
+			PLAYER_EB_WIDTH);
+	path->m_editable = FALSE;
+	button_t *reload = button_new(WND_OBJ(dlg->m_hbox), _("&Reload info"), "reload", 'r');
 
 	/* Fill items with values */
 	if (!player_info_dialog_fill(dlg, TRUE))
@@ -2117,14 +2119,13 @@ void player_info_eb_set( editbox_t *eb, char *val, bool_t diff )
 /* Fill info dialog with values */
 bool_t player_info_dialog_fill( dialog_t *dlg, bool_t first_call )
 {
-	editbox_t *name, *artist, *album, *year, *track, *comments;
+	editbox_t *name, *artist, *album, *year, *track, *comments, *full_path_eb;
 	combo_t *genre;
 	label_t *own_data;
 	song_t **songs_list;
 	song_t *main_song;
 	int num_songs, i, j;
 	song_info_t *info;
-	const char *file_name;
 	bool_t name_diff = FALSE, artist_diff = FALSE, album_diff = FALSE,
 		   year_diff = FALSE, track_diff = FALSE, comment_diff = FALSE,
 		   genre_diff = FALSE;
@@ -2267,15 +2268,12 @@ bool_t player_info_dialog_fill( dialog_t *dlg, bool_t first_call )
 	comments = EDITBOX_OBJ(dialog_find_item(dlg, "comments"));
 	genre = COMBO_OBJ(dialog_find_item(dlg, "genre"));
 	own_data = LABEL_OBJ(dialog_find_item(dlg, "own_data"));
+	full_path_eb = EDITBOX_OBJ(dialog_find_item(dlg, "full_path"));
 	assert(name && artist && album && year && track && comments &&
-			genre && own_data);
+			genre && own_data && full_path_eb);
 
 	/* Set items values */
-	if (cfg_get_var_int(cfg_list, "info-editor-show-full-name"))
-		file_name = song_get_name(main_song);
-	else
-		file_name = song_get_short_name(main_song);
-	wnd_set_title(WND_OBJ(dlg), file_name);
+	wnd_set_title(WND_OBJ(dlg), song_get_short_name(main_song));
 	player_info_eb_set(name, info->m_name, name_diff);
 	player_info_eb_set(artist, info->m_artist, artist_diff);
 	player_info_eb_set(album, info->m_album, album_diff);
@@ -2288,6 +2286,7 @@ bool_t player_info_dialog_fill( dialog_t *dlg, bool_t first_call )
 	player_info_eb_set(EDITBOX_OBJ(genre), info->m_genre, genre_diff);
 	combo_synch_list(genre);
 	label_set_text(own_data, info->m_own_data);
+	editbox_set_text(full_path_eb, song_get_name(main_song));
 	return TRUE;
 } /* End of 'player_info_dialog_fill' function */
 

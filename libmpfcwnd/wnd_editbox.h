@@ -105,7 +105,7 @@ void editbox_destructor( wnd_t *wnd );
 void editbox_get_desired_size( dlgitem_t *di, int *width, int *height );
 
 /* Set edit box text */
-void editbox_set_text( editbox_t *eb, char *text );
+void editbox_set_text( editbox_t *eb, const char *text );
 
 /* Add character into the current cursor position */
 void editbox_addch( editbox_t *eb, char ch );
