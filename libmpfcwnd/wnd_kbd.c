@@ -225,6 +225,21 @@ void wnd_kbd_init_seq( wnd_kbd_data_t *data )
 	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "&8"), KEY_UNDO);
 	wnd_kbd_add_seq(data, wnd_kbd_ti_val(list, "ku"), KEY_UP);
 	wnd_kbd_add_seq(data, /*wnd_kbd_ti_val(list, "kM")*/"\033[M", KEY_MOUSE);
+
+	/* Some terminals (e.g. xterm) don't honour terminfo.
+	 * Add some common escape sequences by hand */
+	wnd_kbd_add_seq(data, "\033[A", KEY_UP);
+	wnd_kbd_add_seq(data, "\033OA", KEY_UP);
+	wnd_kbd_add_seq(data, "\033[B", KEY_DOWN);
+	wnd_kbd_add_seq(data, "\033OB", KEY_DOWN);
+	wnd_kbd_add_seq(data, "\033[C", KEY_RIGHT);
+	wnd_kbd_add_seq(data, "\033OC", KEY_RIGHT);
+	wnd_kbd_add_seq(data, "\033[D", KEY_LEFT);
+	wnd_kbd_add_seq(data, "\033OD", KEY_LEFT);
+	wnd_kbd_add_seq(data, "\033[H", KEY_HOME);
+	wnd_kbd_add_seq(data, "\033OH", KEY_HOME);
+	wnd_kbd_add_seq(data, "\033[F", KEY_END);
+	wnd_kbd_add_seq(data, "\033OF", KEY_END);
 } /* End of 'wnd_kbd_init_seq' function */
 
 /* Add a sequence to the list */
