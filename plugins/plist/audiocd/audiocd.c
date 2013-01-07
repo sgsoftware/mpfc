@@ -101,7 +101,7 @@ plp_status_t audiocd_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 		return PLP_STATUS_FAILED;
 
 	/* Now add 'cdda://idx' elements */
-	for ( guint64 i = 0; i < num_tracks; i++ )
+	for ( unsigned long long i = 0; i < num_tracks; i++ )
 	{
 		char name[64];
 		snprintf(name, sizeof(name), "cdda://%llu", i + 1);
