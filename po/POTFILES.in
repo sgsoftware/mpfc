@@ -5,7 +5,6 @@ libmpfc/genre_list.c
 libmpfc/logger.c
 libmpfc/plugin.c
 libmpfc/plugin_charset.c
-libmpfc/plugin_input.c
 libmpfc/plugin_mng.c
 libmpfc/song_info.c
 libmpfc/string.c
