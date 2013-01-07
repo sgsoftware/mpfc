@@ -34,7 +34,6 @@
 #include <unistd.h>
 #include <json/json.h>
 #include "types.h"
-#include "file.h"
 #include "file_utils.h"
 #include "player.h"
 #include "plist.h"

@@ -154,6 +154,15 @@ FILE *util_fopen( char *filename, char *flags )
 	return fd;
 } /* End of 'util_fopen' function */
 
+/* Wrapper around fgets */
+str_t *util_fgets( FILE *fd )
+{
+	char s[1024] = "";
+	if (fgets(s, sizeof(s), fd) == NULL)
+		return NULL;
+	return str_new(s);
+} /* End of 'util_fgets' function */
+
 /* Get short plugin name */
 char *util_get_plugin_short_name( char *dest, char *src )
 {

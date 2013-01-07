@@ -35,7 +35,6 @@
 #include "browser.h"
 #include "cfg.h"
 #include "command.h"
-#include "file.h"
 #include "help_screen.h"
 #include "logger.h"
 #include "logger_view.h"

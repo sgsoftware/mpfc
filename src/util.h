@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include "types.h"
+#include "mystring.h"
 
 /* Write message to log file */
 void util_log( char *format, ... );
@@ -58,6 +59,9 @@ FILE *util_fopen( char *filename, char *flags );
 
 /* Get file size */
 int util_get_file_size( char *filename );
+
+/* Wrapper around fgets */
+str_t *util_fgets( FILE *fd );
 
 /* Replace characters */
 void util_replace_char( char *str, char from, char to );

@@ -25,7 +25,6 @@
 #include <string.h>
 #include <ctype.h>
 #include "types.h"
-#include "file.h"
 #include "plp.h"
 #include "logger.h"
 #include "pmng.h"
@@ -51,7 +50,6 @@ void pls_get_formats( char *extensions, char *content_type )
 /* Parse playlist and handle its contents */
 plp_status_t pls_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 {
-	file_t *fd;
 	int num = 0;
 	char str[1024];
 	int num_entries;
@@ -64,7 +62,7 @@ plp_status_t pls_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 	int i;
 
 	/* Try to open file */
-	fd = file_open(pl_name, "rt", NULL);
+	FILE *fd = fopen(pl_name, "rt");
 	if (fd == NULL)
 	{
 		logger_error(pls_log, 0, _("Unable to open file %s"), pl_name);
@@ -72,22 +70,22 @@ plp_status_t pls_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 	}
 
 	/* Read header */
-	file_gets(str, sizeof(str), fd);
+	fgets(str, sizeof(str), fd);
 	util_del_nl(str, str);
 	if (strcasecmp(str, "[playlist]"))
 	{
-		file_close(fd);
+		fclose(fd);
 		logger_error(pls_log, 1, _("%s: missing play list header"), 
 				pl_name);
 		return PLP_STATUS_FAILED;
 	}
 
 	/* Read number of entries */
-	file_gets(str, sizeof(str), fd);
+	fgets(str, sizeof(str), fd);
 	util_del_nl(str, str);
 	if (strncasecmp(str, "numberofentries=", 16))
 	{
-		file_close(fd);
+		fclose(fd);
 		logger_error(pls_log, 1, _("%s: missing `numberofentries' tag"), 
 				pl_name);
 		return 0;
@@ -98,14 +96,14 @@ plp_status_t pls_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 	entries = (struct pls_entry_t *)malloc(sizeof(*entries) * num_entries);
 	if (entries == NULL)
 	{
-		file_close(fd);
+		fclose(fd);
 		logger_error(pls_log, 0, _("No enough memory"));
 		return 0;
 	}
 	memset(entries, 0, sizeof(*entries) * num_entries);
 
 	/* Read data */
-	while (!file_eof(fd))
+	while (!feof(fd))
 	{
 		char *value;
 		enum
@@ -118,7 +116,7 @@ plp_status_t pls_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 		char *s = str;
 		
 		/* Read line */
-		file_gets(str, sizeof(str), fd);
+		fgets(str, sizeof(str), fd);
 		util_del_nl(str, str);
 
 		/* Determine line type */
@@ -174,7 +172,7 @@ plp_status_t pls_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 	}
 
 	/* Close file */
-	file_close(fd);
+	fclose(fd);
 
 	/* Add the value to the play list */
 	for ( i = 0; i < num_entries; i ++ )

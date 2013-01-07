@@ -26,7 +26,6 @@
 #include <pthread.h>
 #include "types.h"
 #include "types.h"
-#include "file.h"
 #include "mystring.h"
 #include "song_info.h"
 

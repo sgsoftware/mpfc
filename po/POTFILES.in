@@ -1,9 +1,6 @@
 libmpfc/cfg.c
 libmpfc/cfg_rcfile.c
 libmpfc/charset.c
-libmpfc/file.c
-libmpfc/file_http.c
-libmpfc/file_reg.c
 libmpfc/genre_list.c
 libmpfc/logger.c
 libmpfc/plugin.c
@@ -39,7 +36,6 @@ libmpfcwnd/wnd_scrollable.c
 libmpfcwnd/wnd_vbox.c
 libmpfcwnd/wnd_views.c
 src/browser.c
-src/eqwnd.c
 src/help_screen.c
 src/history.c
 src/info_rw_thread.c

@@ -25,7 +25,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "types.h"
-#include "file.h"
 #include "plp.h"
 #include "logger.h"
 #include "pmng.h"
@@ -65,12 +64,11 @@ static int m3u_read_int( char **s )
 /* Parse playlist and handle its contents */
 plp_status_t m3u_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 {
-	file_t *fd;
 	char str[1024];
 	bool_t ext_info;
 
 	/* Try to open file */
-	fd = file_open(pl_name, "rt", NULL);
+	FILE *fd = fopen(pl_name, "rt");
 	if (fd == NULL)
 	{
 		logger_error(m3u_log, 0, _("Unable to read %s file"), pl_name);
@@ -78,19 +76,19 @@ plp_status_t m3u_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 	}
 
 	/* Read file head */
-	file_gets(str, sizeof(str), fd);
+	fgets(str, sizeof(str), fd);
 	ext_info = !strncmp(str, "#EXTM3U", 7);
 	if (!ext_info)
-		file_seek(fd, 0, SEEK_SET);
+		fseek(fd, 0, SEEK_SET);
 		
 	/* Read file contents */
-	while (!file_eof(fd))
+	while (!feof(fd))
 	{
 		/* Read file name if no extended info is supplied */
 		if (!ext_info)
 		{
-			file_gets(str, sizeof(str), fd);
-			if (file_eof(fd))
+			fgets(str, sizeof(str), fd);
+			if (feof(fd))
 				break;
 			util_del_nl(str, str);
 
@@ -100,8 +98,8 @@ plp_status_t m3u_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 		}
 		
 		/* Read song length and title string */
-		file_gets(str, sizeof(str), fd);
-		if (file_eof(fd) || strlen(str) < 10)
+		fgets(str, sizeof(str), fd);
+		if (feof(fd) || strlen(str) < 10)
 			break;
 
 		/* Extract song length and starting position from string read */
@@ -119,7 +117,7 @@ plp_status_t m3u_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 		util_del_nl(title, title);
 
 		/* Read song file name */
-		file_gets(str, sizeof(str), fd);
+		fgets(str, sizeof(str), fd);
 		util_del_nl(str, str);
 
 		song_metadata_t metadata = SONG_METADATA_EMPTY;
@@ -135,7 +133,7 @@ plp_status_t m3u_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 	}
 
 	/* Close file */
-	file_close(fd);
+	fclose(fd);
 	return PLP_STATUS_OK;
 } /* End of 'm3u_for_each_item' function */
 

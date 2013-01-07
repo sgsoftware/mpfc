@@ -25,7 +25,6 @@
 #include <gst/gst.h>
 #include "types.h"
 #include "cfg.h"
-#include "file.h"
 #include "metadata_io.h"
 #include "mystring.h"
 #include "player.h"

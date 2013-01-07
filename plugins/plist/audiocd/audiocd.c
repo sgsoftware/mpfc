@@ -26,7 +26,6 @@
 #include <string.h>
 #include <gst/gst.h>
 #include "types.h"
-#include "file.h"
 #include "plp.h"
 #include "logger.h"
 #include "pmng.h"

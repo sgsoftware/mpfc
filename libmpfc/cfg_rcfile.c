@@ -27,7 +27,6 @@
 #include <string.h>
 #include "types.h"
 #include "cfg.h"
-#include "file.h"
 #include "mystring.h"
 #include "util.h"
 
@@ -197,22 +196,19 @@ static char cfg_rcfile_var_skipper( char **str )
 /* Full version of reading configuration file function */
 static void _cfg_rcfile_read( cfg_node_t *list, const char *name, bool_t nonrec )
 {
-	file_t *fd;
 	assert(list);
 	assert(name);
 
 	/* Try to open file */
-	fd = file_open(name, "rt", NULL);
+	FILE *fd = fopen(name, "rt");
 	if (fd == NULL)
 		return;
 
 	/* Read */
-	while (!file_eof(fd))
+	while (!feof(fd))
 	{
-		str_t *str;
-		
 		/* Read line */
-		str = file_get_str(fd);
+		str_t *str = util_fgets(fd);
 		if (str == NULL)
 			break;
 
@@ -230,7 +226,7 @@ static void _cfg_rcfile_read( cfg_node_t *list, const char *name, bool_t nonrec 
 	}
 
 	/* Close file */
-	file_close(fd);
+	fclose(fd);
 
 	/* Free stack */
 	if (nonrec)
