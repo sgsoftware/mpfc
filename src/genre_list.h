@@ -55,7 +55,7 @@ char *glist_get_name_by_id( genre_list_t *l, int id );
 byte glist_get_id_by_name( genre_list_t *l, char *name );
 
 /* Convert genre string to id */
-int glist_str2num( char *str );
+int glist_str2num( const char *str );
 
 #endif
 

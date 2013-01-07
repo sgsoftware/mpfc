@@ -32,10 +32,10 @@
 #include "song_info.h"
 
 /* Create a new song */
-song_t *song_new_from_file( char *file, song_metadata_t *metadata );
+song_t *song_new_from_file( const char *file, song_metadata_t *metadata );
 
 /* Create a new song */
-song_t *song_new_from_uri( char *uri, song_metadata_t *metadata);
+song_t *song_new_from_uri( const char *uri, song_metadata_t *metadata);
 
 /* Add a reference to the song object */
 song_t *song_add_ref( song_t *song );
@@ -56,7 +56,7 @@ void song_update_title( song_t *song );
 void song_write_info( song_t *song );
 
 /* Get song file name or full name if it's uri-based */
-static inline char* song_get_name( song_t *song )
+static inline const char* song_get_name( song_t *song )
 {
 	char *name = song->m_filename;
 	if (!name)
@@ -65,7 +65,7 @@ static inline char* song_get_name( song_t *song )
 }
 
 /* Get short filename but only if it is not uri-based */
-char* song_get_short_name( song_t *s );
+const char* song_get_short_name( song_t *s );
 
 /* Get input plugin */
 in_plugin_t *song_get_inp( song_t *song, file_t **fd );

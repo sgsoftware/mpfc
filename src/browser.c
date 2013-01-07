@@ -202,7 +202,7 @@ wnd_msg_retcode_t fb_on_keydown( wnd_t *wnd, wnd_key_t key )
 	else if (key >= ' ' && key <= 0xFF)
 	{
 		struct browser_list_item *item;
-		char *str;
+		const char *str;
 
 		fb->m_search_str[fb->m_search_str_len ++] = key;
 		fb->m_search_str[fb->m_search_str_len] = 0;
@@ -744,8 +744,7 @@ void fb_load_info( browser_t *fb )
 
 		/* Determine file type and its associated plugin */
 		ext = util_extension(item->m_name);
-		inp = pmng_search_format(player_pmng, item->m_name, ext);
-		if (inp == NULL)
+		if (!pmng_search_format(player_pmng, item->m_name, ext))
 			continue;
 
 		/* TODO: m_full_name has to have prefix */

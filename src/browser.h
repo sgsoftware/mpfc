@@ -39,7 +39,7 @@ typedef struct
 	/* Directory contents */
 	struct browser_list_item
 	{
-		char *m_name;
+		const char *m_name;
 		char *m_full_name;
 		song_info_t *m_info;
 		int m_len;

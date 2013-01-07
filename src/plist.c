@@ -1315,7 +1315,7 @@ struct json_object *plist_export_to_json( plist_t *pl )
 	return js_plist;
 }
 
-static char *js_get_string( struct json_object *obj, char *key, char *def )
+static const char *js_get_string( struct json_object *obj, char *key, char *def )
 {
 	struct json_object *val = json_object_object_get(obj, key);
 	if (!obj)
@@ -1346,12 +1346,12 @@ void plist_import_from_json( plist_t *pl, struct json_object *js_plist )
 		if (!json_object_is_type(js_song, json_type_object))
 			continue;
 
-		char *name = js_get_string(js_song, "name", NULL);
+		const char *name = js_get_string(js_song, "name", NULL);
 		if (!name)
 			continue;
 
 		song_metadata_t metadata = SONG_METADATA_EMPTY;
-		char *title = js_get_string(js_song, "title", NULL);
+		const char *title = js_get_string(js_song, "title", NULL);
 		if (title)
 			metadata.m_title = title;
 		metadata.m_len = js_get_int(js_song, "length", 0);

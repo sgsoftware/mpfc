@@ -96,7 +96,7 @@ void pmng_player_command( pmng_t *pmng, char *cmd, char *params_fmt, ... );
 void pmng_autostart_general( pmng_t *pmng );
 
 /* Search for input plugin supporting given format */
-bool_t pmng_search_format( pmng_t *pmng, char *filename, char *ext );
+bool_t pmng_search_format( pmng_t *pmng, const char *filename, const char *ext );
 
 /* Search for input plugin supporting given content-type */
 in_plugin_t *pmng_search_content_type( pmng_t *pmng, char *content );
@@ -110,7 +110,7 @@ plugin_t *pmng_search_by_name( pmng_t *pmng, char *name,
 		plugin_type_t type_mask );
 
 /* Check if specified plugin is already loaded */
-bool_t pmng_is_loaded( pmng_t *pmng, char *name, plugin_type_t type_mask );
+bool_t pmng_is_loaded( pmng_t *pmng, const char *name, plugin_type_t type_mask );
 
 /* Find charset plugin which supports specified set */
 cs_plugin_t *pmng_find_charset( pmng_t *pmng, char *name, int *index );
@@ -122,7 +122,7 @@ cfg_node_t *pmng_get_cfg( pmng_t *pmng );
 logger_t *pmng_get_logger( pmng_t *pmng );
 
 /* Create a plugin name */
-char *pmng_create_plugin_name( char *filename );
+char *pmng_create_plugin_name( const char *filename );
 
 /* Stop all general plugins */
 void pmng_stop_general_plugins( pmng_t *pmng );

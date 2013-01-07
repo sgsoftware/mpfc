@@ -59,28 +59,28 @@ song_info_t *si_dup( song_info_t *si );
 void si_free( song_info_t *si );
 
 /* Set song name */
-void si_set_name( song_info_t *si, char *name );
+void si_set_name( song_info_t *si, const char *name );
 
 /* Set artist name */
-void si_set_artist( song_info_t *si, char *artist );
+void si_set_artist( song_info_t *si, const char *artist );
 
 /* Set album name */
-void si_set_album( song_info_t *si, char *album );
+void si_set_album( song_info_t *si, const char *album );
 
 /* Set year */
-void si_set_year( song_info_t *si, char *year );
+void si_set_year( song_info_t *si, const char *year );
 
 /* Set track */
-void si_set_track( song_info_t *si, char *track );
+void si_set_track( song_info_t *si, const char *track );
 
 /* Set comments */
-void si_set_comments( song_info_t *si, char *comments );
+void si_set_comments( song_info_t *si, const char *comments );
 
 /* Set genre */
-void si_set_genre( song_info_t *si, char *genre );
+void si_set_genre( song_info_t *si, const char *genre );
 
 /* Set own data */
-void si_set_own_data( song_info_t *si, char *own_data );
+void si_set_own_data( song_info_t *si, const char *own_data );
 
 /* Set charset */
 void si_set_charset( song_info_t *si, char *cs );

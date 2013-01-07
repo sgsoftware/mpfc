@@ -73,7 +73,7 @@ static song_t *song_new( song_metadata_t *metadata )
 
 static void song_set_title( song_t *s, song_metadata_t *metadata )
 {
-	char *title = metadata->m_title;
+	const char *title = metadata->m_title;
 	if (title == NULL)
 		song_update_title(s);
 	else
@@ -84,13 +84,13 @@ static void song_set_title( song_t *s, song_metadata_t *metadata )
 }
 
 /* Create a new song */
-song_t *song_new_from_file( char *filename, song_metadata_t *metadata )
+song_t *song_new_from_file( const char *filename, song_metadata_t *metadata )
 {
 	/* Must be an absolute path */
 	assert((*filename) == '/');
 
 	/* Is this a supported format? */
-	char *ext = strrchr(filename, '.');
+	const char *ext = strrchr(filename, '.');
 	if (!ext)
 		ext = "";
 	else
@@ -115,7 +115,7 @@ song_t *song_new_from_file( char *filename, song_metadata_t *metadata )
 } /* End of 'song_new_from_file' function */
 
 /* Create a new song from an URI */
-song_t *song_new_from_uri( char *uri, song_metadata_t *metadata )
+song_t *song_new_from_uri( const char *uri, song_metadata_t *metadata )
 {
 	song_t *song = song_new(metadata);
 	song->m_fullname = strdup(uri);
@@ -209,7 +209,7 @@ void song_update_info( song_t *song )
 } /* End of 'song_update_info' function */
 
 /* Get short filename but only if it is not uri-based */
-char* song_get_short_name( song_t *s )
+const char* song_get_short_name( song_t *s )
 {
 	return (s->m_filename ? util_short_name(s->m_filename) : s->m_fullname);
 }
@@ -248,7 +248,7 @@ void song_update_title( song_t *song )
 	/* Use specified title format */
 	fmt = cfg_get_var(cfg_list, "title-format");
 	str = song->m_title = str_new("");
-	char *filename = song_get_name(song);
+	const char *filename = song_get_name(song);
 	bool_t empty_title = TRUE;
 	if (fmt != NULL && (*fmt != 0))
 	{
@@ -259,7 +259,7 @@ void song_update_title( song_t *song )
 			if (*fmt == '%')
 			{
 				fmt ++;
-				char *item = NULL;
+				const char *item = NULL;
 				switch (*fmt)
 				{
 				case 'p':

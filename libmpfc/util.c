@@ -88,7 +88,7 @@ bool_t util_search_str( char *ptext, char *text )
 } /* End of 'util_search_str' function */
 
 /* Get file extension */
-char *util_extension( char *name )
+char *util_extension( const char *name )
 {
 	char *str = strrchr(name, '.');
 	if (str == NULL)
@@ -114,11 +114,11 @@ void util_wait( void )
 } /* End of 'util_wait' function */
 
 /* Get file name without full path */
-char *util_short_name( char *name )
+char *util_short_name( const char *name )
 {
 	char *str = strrchr(name, '/');
 	if (str == NULL)
-		return name;
+		return (char*)name;
 	else
 		return str + 1;
 } /* End of 'util_get_file_short_name' function */
@@ -250,9 +250,9 @@ void util_replace_char( char *str, char from, char to )
 } /* End of 'util_replace_char' function */
 
 /* Get file directory name */
-void util_get_dir_name( char *dir, char *filename )
+void util_get_dir_name( char *dir, const char *filename )
 {
-	char *s = strrchr(filename, '/');
+	const char *s = strrchr(filename, '/');
 
 	if (s == NULL)
 		strcpy(dir, "");
@@ -297,15 +297,14 @@ char *util_get_home_dir( char *user )
 } /* End of 'util_get_home_dir' function */
 
 /* Concatenate multiple strings */
-char *util_strcat( char *first, ... )
+char *util_strcat( const char *first, ... )
 {
 	va_list ap;
 	int len = 0, pos = 0;
-	char *ret, *str;
 
 	/* Calculate resulting string length */
 	va_start(ap, first);
-	str = first;
+	const char *str = first;
 	while (str != NULL)
 	{
 		len += strlen(str);
@@ -314,7 +313,7 @@ char *util_strcat( char *first, ... )
 	va_end(ap);
 
 	/* Build string */
-	ret = (char *)malloc(len + 1);
+	char *ret = (char *)malloc(len + 1);
 	if (ret == NULL)
 		return strdup("");
 	va_start(ap, first);

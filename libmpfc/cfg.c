@@ -32,7 +32,7 @@
 #include "util.h"
 
 /* Create a new configuration list */
-cfg_node_t *cfg_new_list( cfg_node_t *parent, char *name, 
+cfg_node_t *cfg_new_list( cfg_node_t *parent, const char *name, 
 		cfg_set_default_values_t set_def, dword flags, int hash_size )
 {
 	cfg_node_t *node;
@@ -71,7 +71,7 @@ cfg_node_t *cfg_new_list( cfg_node_t *parent, char *name,
 } /* End of 'cfg_new_list' function */
 
 /* Create a new variable */
-cfg_node_t *cfg_new_var_full( cfg_node_t *parent, char *name, 
+cfg_node_t *cfg_new_var_full( cfg_node_t *parent, const char *name, 
 		dword flags, char *value, cfg_var_handler_t handler, 
 		void *handler_data )
 {
@@ -84,7 +84,7 @@ cfg_node_t *cfg_new_var_full( cfg_node_t *parent, char *name,
 		return NULL;
 
 	/* Set variable data */
-	CFG_VAR(node)->m_value = (value == NULL ? NULL : strdup(value));
+	CFG_VAR(node)->m_value = value;
 	CFG_VAR(node)->m_handler = handler;
 	CFG_VAR(node)->m_handler_data = handler_data;
 
@@ -100,11 +100,11 @@ cfg_node_t *cfg_new_var_full( cfg_node_t *parent, char *name,
 
 /* Create a new node and leave node type specific information unset 
  * (don't use this function directly; use previous two instead) */
-cfg_node_t *cfg_new_node( cfg_node_t *parent, char *name, dword flags )
+cfg_node_t *cfg_new_node( cfg_node_t *parent, const char *name, dword flags )
 {
 	cfg_node_t *node;
 	cfg_node_t *real_parent;
-	char *real_name;
+	const char *real_name;
 
 	assert(name);
 
@@ -225,11 +225,11 @@ void cfg_insert_node( cfg_node_t *list, cfg_node_t *node )
 } /* End of 'cfg_insert_node' function */
 
 /* Search for the node */
-cfg_node_t *cfg_search_node( cfg_node_t *parent, char *name )
+cfg_node_t *cfg_search_node( cfg_node_t *parent, const char *name )
 {
 	cfg_node_t *real_parent;
 	cfg_node_t *node;
-	char *real_name;
+	const char *real_name;
 
 	assert(parent);
 	assert(name);
@@ -245,11 +245,11 @@ cfg_node_t *cfg_search_node( cfg_node_t *parent, char *name )
 } /* End of 'cfg_search_node' function */
 
 /* Apply operation to variable value */
-char *cfg_var_apply_op( cfg_node_t *node, char *value, cfg_var_op_t op )
+char *cfg_var_apply_op( cfg_node_t *node, const char *value, cfg_var_op_t op )
 {
 	/* Simply set variable value */
 	if (op == CFG_VAR_OP_SET)
-		return value;
+		return strdup(value);
 	/* Append new value */
 	else if (op == CFG_VAR_OP_ADD)
 	{
@@ -257,7 +257,7 @@ char *cfg_var_apply_op( cfg_node_t *node, char *value, cfg_var_op_t op )
 		if (existing_value != NULL)
 			return util_strcat(existing_value, ";", value, NULL);
 		else
-			return value;
+			return strdup(value);
 	}
 	/* Remove some value */
 	else if (op == CFG_VAR_OP_REM)
@@ -283,11 +283,11 @@ char *cfg_var_apply_op( cfg_node_t *node, char *value, cfg_var_op_t op )
 } /* End of 'cfg_var_apply_op' function */
 
 /* Full version of variable value setting */
-void cfg_set_var_full( cfg_node_t *parent, char *name, char *value, 
+void cfg_set_var_full( cfg_node_t *parent, const char *name, const char *value, 
 		cfg_var_op_t op )
 {
 	cfg_node_t *node;
-	char *orig_value;
+	const char *orig_value;
 	struct cfg_var_op_list_t *opl, *last;
 	
 	/* Search for this node */
@@ -295,24 +295,23 @@ void cfg_set_var_full( cfg_node_t *parent, char *name, char *value,
 
 	/* Construct new value */
 	orig_value = value;
-	value = cfg_var_apply_op(node, value, op);
+	char *new_value = cfg_var_apply_op(node, value, op);
 
 	/* Change value */
 	if (node != NULL && CFG_NODE_IS_VAR(node))
 	{
-		if (!cfg_call_var_handler(FALSE, node, value))
+		if (!cfg_call_var_handler(FALSE, node, new_value))
 			return;
 		free(CFG_VAR(node)->m_value);
 		if (value == NULL)
 			CFG_VAR(node)->m_value = NULL;
 		else
-			CFG_VAR(node)->m_value = ((value == orig_value) ? strdup(value) :
-					value);
-		cfg_call_var_handler(TRUE, node, value);
+			CFG_VAR(node)->m_value = new_value;
+		cfg_call_var_handler(TRUE, node, new_value);
 	}
 	/* Create node if not found */
 	else if (node == NULL)
-		node = cfg_new_var(parent, name, 0, value, NULL);
+		node = cfg_new_var(parent, name, 0, new_value, NULL);
 
 	/* Create operations list item */
 	opl = (struct cfg_var_op_list_t *)malloc(sizeof(*opl));
@@ -342,13 +341,13 @@ void cfg_set_var_full( cfg_node_t *parent, char *name, char *value,
 } /* End of 'cfg_set_var_full' function */
 
 /* Set variable value */
-void cfg_set_var( cfg_node_t *parent, char *name, char *value )
+void cfg_set_var( cfg_node_t *parent, const char *name, const char *value )
 {
 	cfg_set_var_full(parent, name, value, CFG_VAR_OP_SET);
 } /* End of 'cfg_set_var' function */
 
 /* Set variable integer value */
-void cfg_set_var_int( cfg_node_t *parent, char *name, int val )
+void cfg_set_var_int( cfg_node_t *parent, const char *name, int val )
 {
 	char str[32];
 	snprintf(str, sizeof(str), "%d", val);
@@ -356,7 +355,7 @@ void cfg_set_var_int( cfg_node_t *parent, char *name, int val )
 } /* End of 'cfg_set_var_int' function */
 
 /* Set variable pointer value */
-void cfg_set_var_ptr( cfg_node_t *parent, char *name, void *val )
+void cfg_set_var_ptr( cfg_node_t *parent, const char *name, void *val )
 {
 	char str[32];
 	snprintf(str, sizeof(str), "%p", val);
@@ -364,7 +363,7 @@ void cfg_set_var_ptr( cfg_node_t *parent, char *name, void *val )
 } /* End of 'cfg_set_var_ptr' function */
 
 /* Set variable integer float */
-void cfg_set_var_float( cfg_node_t *parent, char *name, float val )
+void cfg_set_var_float( cfg_node_t *parent, const char *name, float val )
 {
 	char str[32];
 	snprintf(str, sizeof(str), "%f", val);
@@ -372,7 +371,7 @@ void cfg_set_var_float( cfg_node_t *parent, char *name, float val )
 } /* End of 'cfg_set_var_float' function */
 
 /* Get variable value */
-char *cfg_get_var( cfg_node_t *parent, char *name )
+char *cfg_get_var( cfg_node_t *parent, const char *name )
 {
 	cfg_node_t *node;
 
@@ -384,14 +383,14 @@ char *cfg_get_var( cfg_node_t *parent, char *name )
 } /* End of 'cfg_get_var' function */
 
 /* Get variable integer value */
-int cfg_get_var_int( cfg_node_t *parent, char *name )
+int cfg_get_var_int( cfg_node_t *parent, const char *name )
 {
 	char *str = cfg_get_var(parent, name);
 	return (str == NULL) ? 0 : atoi(str);
 } /* End of 'cfg_get_var_int' function */
 
 /* Get variable pointer value */
-void *cfg_get_var_ptr( cfg_node_t *parent, char *name )
+void *cfg_get_var_ptr( cfg_node_t *parent, const char *name )
 {
 	void *value;
 	char *str = cfg_get_var(parent, name);
@@ -402,15 +401,15 @@ void *cfg_get_var_ptr( cfg_node_t *parent, char *name )
 } /* End of 'cfg_get_var_ptr' function */
 
 /* Get variable float value */
-float cfg_get_var_float( cfg_node_t *parent, char *name )
+float cfg_get_var_float( cfg_node_t *parent, const char *name )
 {
 	char *str = cfg_get_var(parent, name);
 	return (str == NULL) ? 0. : atof(str);
 } /* End of 'cfg_get_var_float' function */
 
 /* Find the real parent of node */
-cfg_node_t *cfg_find_real_parent( cfg_node_t *parent, char *name, 
-		char **real_name )
+cfg_node_t *cfg_find_real_parent( cfg_node_t *parent, const char *name, 
+		const char **real_name )
 {
 	cfg_node_t *real_parent;
 	char *item_name;
@@ -422,7 +421,7 @@ cfg_node_t *cfg_find_real_parent( cfg_node_t *parent, char *name,
 	/* Walk through parents */
 	for ( real_parent = parent;; )
 	{
-		char *next_name = strchr(name, '.');
+		const char *next_name = strchr(name, '.');
 		cfg_node_t *was_real = real_parent;
 
 		/* If no '.' found - stop (we've found last parent in hierarchy) */
@@ -449,7 +448,7 @@ cfg_node_t *cfg_find_real_parent( cfg_node_t *parent, char *name,
 } /* End of 'cfg_find_real_parent' function */
 
 /* Search list for a child node (name given is the exact name, without dots) */
-cfg_node_t *cfg_search_list( cfg_node_t *list, char *name )
+cfg_node_t *cfg_search_list( cfg_node_t *list, const char *name )
 {
 	struct cfg_list_hash_item_t *item;
 	int hash;
@@ -491,7 +490,7 @@ bool_t cfg_call_var_handler( bool_t after, cfg_node_t *node, char *value )
 } /* End of 'cfg_call_var_handler' function */
 
 /* Calculate string hash value */
-int cfg_calc_hash( char *str, int table_size )
+int cfg_calc_hash( const char *str, int table_size )
 {
 	int val = 0;
 
@@ -504,7 +503,7 @@ int cfg_calc_hash( char *str, int table_size )
 } /* End of 'cfg_calc_hash' function */
 
 /* Set variable's handler */
-void cfg_set_var_handler( cfg_node_t *parent, char *name, 
+void cfg_set_var_handler( cfg_node_t *parent, const char *name, 
 		cfg_var_handler_t handler, void *handler_data )
 {
 	cfg_node_t *node;
@@ -591,8 +590,7 @@ void cfg_copy_node( cfg_node_t *dest, cfg_node_t *src )
 			char *new_value = cfg_var_apply_op(dest, opl->m_arg, opl->m_op);
 			if (dv->m_value != NULL)
 				free(dv->m_value);
-			dv->m_value = (new_value == opl->m_arg ? strdup(new_value) : 
-					new_value);
+			dv->m_value = new_value;
 		}
 		cfg_free_node(src, FALSE);
 		return;

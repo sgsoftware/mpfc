@@ -52,7 +52,7 @@ typedef struct tag_file_t
 #define FILE_TYPE_HTTP		1
 
 /* Open a file */
-file_t *file_open( char *filename, char *mode, logger_t *log );
+file_t *file_open( const char *filename, char *mode, logger_t *log );
 
 /* Close file */
 int file_close( file_t *f );
@@ -88,7 +88,7 @@ void file_set_min_buf_size( file_t *f, int size );
 char *file_get_content_type( file_t *f );
 
 /* Get file type */
-byte file_get_type( char *name );
+byte file_get_type( const char *name );
 
 #endif
 

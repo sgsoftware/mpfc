@@ -108,7 +108,7 @@ static bool_t pmng_fill_media_file_exts( pmng_t *pmng )
 		if (!has_audio)
 			continue;
 
-		gchar **exts = gst_type_find_factory_get_extensions(tff);
+		const gchar * const*exts = gst_type_find_factory_get_extensions(tff);
 		if (!exts)
 			continue;
 		for ( ; *exts; ++exts )
@@ -243,7 +243,7 @@ void pmng_autostart_general( pmng_t *pmng )
 } /* End of 'pmng_autostart_general' function */
 
 /* Search for input plugin supporting given format */
-bool_t pmng_search_format( pmng_t *pmng, char *filename, char *format )
+bool_t pmng_search_format( pmng_t *pmng, const char *filename, const char *format )
 {
 	if (pmng == NULL || (!(*filename) && !(*format)))
 		return FALSE;
@@ -402,9 +402,9 @@ bool_t pmng_load_plugins( pmng_t *pmng )
 } /* End of 'pmng_load_plugins' function */
 
 /* Check if specified plugin is already loaded */
-bool_t pmng_is_loaded( pmng_t *pmng, char *name, plugin_type_t type )
+bool_t pmng_is_loaded( pmng_t *pmng, const char *name, plugin_type_t type )
 {
-	char *sn;
+	const char *sn;
 	pmng_iterator_t iter;
 
 	if (pmng == NULL)
@@ -515,15 +515,15 @@ logger_t *pmng_get_logger( pmng_t *pmng )
 } /* End of 'pmng_get_log' function */
 
 /* Create a plugin name */
-char *pmng_create_plugin_name( char *filename )
+char *pmng_create_plugin_name( const char *filename )
 {
-	char *sn = util_short_name(filename), *name, *ext;
+	const char *sn = util_short_name(filename);
 
 	if (strncmp(sn, "lib", 3))
 		return strdup(sn);
 	sn += 3;
-	name = strdup(sn);
-	ext = util_extension(name);
+	char *name = strdup(sn);
+	char *ext = util_extension(name);
 	if (ext != NULL)
 	{
 		ext --;

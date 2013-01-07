@@ -372,7 +372,7 @@ void wnd_next_focus( wnd_t *wnd );
 void wnd_prev_focus( wnd_t *wnd );
 
 /* Set window title */
-void wnd_set_title( wnd_t *wnd, char *title );
+void wnd_set_title( wnd_t *wnd, const char *title );
 
 /* Initialize color pairs array */
 void wnd_init_pairs( bool_t force_terminal_bg );

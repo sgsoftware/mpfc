@@ -195,7 +195,7 @@ static char cfg_rcfile_var_skipper( char **str )
 } /* End of 'cfg_rcfile_var_skipper' function */
 
 /* Full version of reading configuration file function */
-static void _cfg_rcfile_read( cfg_node_t *list, char *name, bool_t nonrec )
+static void _cfg_rcfile_read( cfg_node_t *list, const char *name, bool_t nonrec )
 {
 	file_t *fd;
 	assert(list);
@@ -241,7 +241,7 @@ static void _cfg_rcfile_read( cfg_node_t *list, char *name, bool_t nonrec )
 } /* End of '_cfg_rcfile_read' function */
 
 /* Read configuration file */
-void cfg_rcfile_read( cfg_node_t *list, char *name )
+void cfg_rcfile_read( cfg_node_t *list, const char *name )
 {
 	/* Call a low-level version of this function */
 	_cfg_rcfile_read(list, name, TRUE);
@@ -360,7 +360,7 @@ void cfg_rcfile_parse_line( cfg_node_t *list, char *str )
 } /* End of 'cfg_rcfile_parse_line' function */
 
 /* Save a node to file */
-void cfg_rcfile_save_node( FILE *fd, cfg_node_t *node, char *prefix )
+void cfg_rcfile_save_node( FILE *fd, cfg_node_t *node, const char *prefix )
 {
 	/* Save a variable */
 	if (CFG_NODE_IS_VAR(node))

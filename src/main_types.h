@@ -84,7 +84,7 @@ typedef struct tag_song_t
  * All these fields are optional */
 typedef struct tag_song_metadata_t
 {
-	char *m_title;
+	const char *m_title;
 	int m_len;
 	song_info_t *m_song_info;
 	int m_start_time;

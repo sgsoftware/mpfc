@@ -33,10 +33,10 @@ void util_log( char *format, ... );
 bool_t util_search_str( char *ptext, char *text );
 
 /* Get file extension */
-char *util_extension( char *name );
+char *util_extension( const char *name );
 
 /* Get file name without full path */
-char *util_short_name( char *name );
+char *util_short_name( const char *name );
 
 /* Delay */
 void util_delay( long s, long ns );
@@ -72,13 +72,13 @@ void util_del_nl( char *dest, char *src );
 void util_rem_slashes( char *name );
 
 /* Get file directory name */
-void util_get_dir_name( char *dir, char *filename );
+void util_get_dir_name( char *dir, const char *filename );
 
 /* A safe string copying (writes null to the end) */
 char *util_strncpy( char *dest, char *src, size_t n );
 
 /* Concatenate multiple strings */
-char *util_strcat( char *first, ... );
+char *util_strcat( const char *first, ... );
 
 int mbslen( char *str );
 

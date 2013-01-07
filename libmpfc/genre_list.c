@@ -97,7 +97,7 @@ char *glist_get_name_by_id( genre_list_t *l, int id )
 } /* End of 'glist_get_name_by_id' function */
 
 /* Convert genre string to id */
-int glist_str2num( char *str )
+int glist_str2num( const char *str )
 {
 	int num = -1;
 

@@ -29,7 +29,7 @@
 #include <dirent.h>
 #include "file_utils.h"
 
-static bool_t fu_file_type_recc( char *name, bool_t *is_dir, int rec_level )
+static bool_t fu_file_type_recc( const char *name, bool_t *is_dir, int rec_level )
 {
 	struct stat st;
 	if (stat(name, &st))
@@ -62,13 +62,13 @@ static bool_t fu_file_type_recc( char *name, bool_t *is_dir, int rec_level )
 } 
 
 /* Determine file type (regular or directory) resolving symlinks */
-bool_t fu_file_type(char *name, bool_t *is_dir)
+bool_t fu_file_type(const char *name, bool_t *is_dir)
 {
 	return fu_file_type_recc(name, is_dir, 0);
 }
 
 /* Open a directory */
-fu_dir_t *fu_opendir(char *name)
+fu_dir_t *fu_opendir(const char *name)
 {
 	fu_dir_t *dir = (fu_dir_t *)malloc(sizeof(fu_dir_t));
 
@@ -112,7 +112,7 @@ void fu_closedir(fu_dir_t *dir)
 }
 
 /* Is this a '.' or '..' ? */
-bool_t fu_is_special_dir(char *name)
+bool_t fu_is_special_dir(const char *name)
 {
 	return (name[0] == '.' &&
 			(name[1] == 0 || 
@@ -120,7 +120,7 @@ bool_t fu_is_special_dir(char *name)
 }
 
 /* Does path have a prefix? */
-bool_t fu_is_prefixed(char *name)
+bool_t fu_is_prefixed(const char *name)
 {
 	const char *p = strchr(name, '/');
 	return (p && p != name && *(p - 1) == ':' && *(p + 1) == '/');

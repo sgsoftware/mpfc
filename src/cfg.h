@@ -132,18 +132,18 @@ typedef void (*cfg_set_default_values_t)( cfg_node_t *list );
 #define CFG_VAR_HANDLER(node)		(CFG_VAR(node)->m_handler)
 
 /* Create a new configuration list */
-cfg_node_t *cfg_new_list( cfg_node_t *parent, char *name, 
+cfg_node_t *cfg_new_list( cfg_node_t *parent, const char *name, 
 		cfg_set_default_values_t set_def, dword flags, int hash_size );
 
 /* Create a new variable */
-cfg_node_t *cfg_new_var_full( cfg_node_t *parent, char *name, dword flags, 
+cfg_node_t *cfg_new_var_full( cfg_node_t *parent, const char *name, dword flags, 
 		char *value, cfg_var_handler_t handler, void *handler_data );
 #define cfg_new_var(parent, name, flags, value, handler) \
 	cfg_new_var_full(parent, name, flags, value, handler, NULL)
 
 /* Create a new node and leave node type specific information unset 
  * (don't use this function directly; use previous two instead) */
-cfg_node_t *cfg_new_node( cfg_node_t *parent, char *name, dword flags );
+cfg_node_t *cfg_new_node( cfg_node_t *parent, const char *name, dword flags );
 
 /* Insert a node into the list */
 void cfg_insert_node( cfg_node_t *list, cfg_node_t *node );
@@ -158,41 +158,41 @@ void cfg_free_node( cfg_node_t *node, bool_t recursively );
 void cfg_var_free_operations( cfg_node_t *node );
 
 /* Search for the node */
-cfg_node_t *cfg_search_node( cfg_node_t *parent, char *name );
+cfg_node_t *cfg_search_node( cfg_node_t *parent, const char *name );
 
 /* Apply operation to variable value */
-char *cfg_var_apply_op( cfg_node_t *node, char *value, cfg_var_op_t op );
+char *cfg_var_apply_op( cfg_node_t *node, const char *value, cfg_var_op_t op );
 
 /* Full version of variable value setting */
-void cfg_set_var_full( cfg_node_t *parent, char *name, char *val, 
+void cfg_set_var_full( cfg_node_t *parent, const char *name, char const *val, 
 		cfg_var_op_t op );
 
 /* Set variable value */
-void cfg_set_var( cfg_node_t *parent, char *name, char *val );
+void cfg_set_var( cfg_node_t *parent, const char *name, const char *val );
 
 /* Set variable integer value */
-void cfg_set_var_int( cfg_node_t *parent, char *name, int val );
+void cfg_set_var_int( cfg_node_t *parent, const char *name, int val );
 
 /* Set variable integer float */
-void cfg_set_var_float( cfg_node_t *parent, char *name, float val );
+void cfg_set_var_float( cfg_node_t *parent, const char *name, float val );
 
 /* Set variable pointer value */
-void cfg_set_var_ptr( cfg_node_t *parent, char *name, void *val );
+void cfg_set_var_ptr( cfg_node_t *parent, const char *name, void *val );
 
 /* Get variable value */
-char *cfg_get_var( cfg_node_t *parent, char *name );
+char *cfg_get_var( cfg_node_t *parent, const char *name );
 
 /* Get variable integer value */
-int cfg_get_var_int( cfg_node_t *parent, char *name );
+int cfg_get_var_int( cfg_node_t *parent, const char *name );
 
 /* Get variable float value */
-float cfg_get_var_float( cfg_node_t *parent, char *name );
+float cfg_get_var_float( cfg_node_t *parent, const char *name );
 
 /* Get variable pointer value */
-void *cfg_get_var_ptr( cfg_node_t *parent, char *name );
+void *cfg_get_var_ptr( cfg_node_t *parent, const char *name );
 
 /* Set variable's handler */
-void cfg_set_var_handler( cfg_node_t *parent, char *name, 
+void cfg_set_var_handler( cfg_node_t *parent, const char *name, 
 		cfg_var_handler_t handler, void *handler_data );
 
 /* Setters/getters for some other types */
@@ -202,17 +202,17 @@ void cfg_set_var_handler( cfg_node_t *parent, char *name,
 	((bool_t)cfg_get_var_int(parent, name))
 
 /* Find the real parent of node */
-cfg_node_t *cfg_find_real_parent( cfg_node_t *parent, char *name, 
-		char **real_name );
+cfg_node_t *cfg_find_real_parent( cfg_node_t *parent, const char *name, 
+		const char **real_name );
 
 /* Search list for a child node (name given is the exact name, without dots) */
-cfg_node_t *cfg_search_list( cfg_node_t *list, char *name );
+cfg_node_t *cfg_search_list( cfg_node_t *list, const char *name );
 
 /* Call variable handler */
 bool_t cfg_call_var_handler( bool_t after, cfg_node_t *node, char *value );
 
 /* Calculate string hash value */
-int cfg_calc_hash( char *str, int table_size );
+int cfg_calc_hash( const char *str, int table_size );
 
 /*
  * Configuration list iteration functions
@@ -242,13 +242,13 @@ cfg_node_t *cfg_list_iterate( cfg_list_iterator_t *iter );
  */
 
 /* Read configuration file */
-void cfg_rcfile_read( cfg_node_t *list, char *name );
+void cfg_rcfile_read( cfg_node_t *list, const char *name );
 
 /* Read one line from the configuration file */
 void cfg_rcfile_parse_line( cfg_node_t *list, char *str );
 
 /* Save a node to file */
-void cfg_rcfile_save_node( FILE *fd, cfg_node_t *node, char *prefix );
+void cfg_rcfile_save_node( FILE *fd, cfg_node_t *node, const char *prefix );
 
 #endif
 

@@ -1521,7 +1521,7 @@ void wnd_restore_curses( wnd_t *wnd_root )
 } /* End of 'wnd_restore_curses' function */
 
 /* Set window title */
-void wnd_set_title( wnd_t *wnd, char *title )
+void wnd_set_title( wnd_t *wnd, const char *title )
 {
 	free(wnd->m_title);
 	wnd->m_title = strdup(title);

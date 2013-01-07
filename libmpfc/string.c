@@ -34,7 +34,7 @@
 static void str_allocate( str_t *str, int new_len );
 
 /* Create a new string */
-str_t *str_new( char *s )
+str_t *str_new( const char *s )
 {
 	str_t *str;
 	int len;
@@ -58,7 +58,7 @@ str_t *str_new( char *s )
 } /* End of 'str_new' function */
 
 /* Duplicate string */
-str_t *str_dup( str_t *s )
+str_t *str_dup( const str_t *s )
 {
 	return str_new(s->m_data);
 } /* End of 'str_dup' function */
@@ -85,7 +85,7 @@ void str_clear( str_t *str )
 } /* End of 'str_clear' function */
 
 /* Copy string from (char *) */
-str_t *str_copy_cptr( str_t *dest, char *src )
+str_t *str_copy_cptr( str_t *dest, const char *src )
 {
 	int len;
 	
@@ -98,13 +98,13 @@ str_t *str_copy_cptr( str_t *dest, char *src )
 } /* End of 'str_copy_cptr' function */
 
 /* Copy string */
-str_t *str_copy( str_t *dest, str_t *src )
+str_t *str_copy( str_t *dest, const str_t *src )
 {
 	return str_copy_cptr(dest, src->m_data);
 } /* End of 'str_copy' function */
 
 /* Concatenate string with (char *) */
-str_t *str_cat_cptr( str_t *dest, char *src )
+str_t *str_cat_cptr( str_t *dest, const char *src )
 {
 	int len;
 
@@ -119,7 +119,7 @@ str_t *str_cat_cptr( str_t *dest, char *src )
 } /* End of 'str_cat_cptr' function */
 
 /* Concatenate strings */
-str_t *str_cat( str_t *dest, str_t *src )
+str_t *str_cat( str_t *dest, const str_t *src )
 {
 	return str_cat_cptr(dest, src->m_data);
 } /* End of 'str_cat' function */
@@ -167,7 +167,7 @@ void str_replace_char( str_t *str, char from, char to )
 } /* End of 'str_replace_char' function */
 
 /* Insert a (char *) */
-str_t *str_insert_cptr( str_t *dest, char *src, int index )
+str_t *str_insert_cptr( str_t *dest, const char *src, int index )
 {
 	int len;
 	
@@ -184,13 +184,13 @@ str_t *str_insert_cptr( str_t *dest, char *src, int index )
 } /* End of 'str_insert_cptr' function */
 
 /* Insert a string */
-str_t *str_insert_str( str_t *dest, str_t *src, int index )
+str_t *str_insert_str( str_t *dest, const str_t *src, int index )
 {
 	return str_insert_cptr(dest, src->m_data, index);
 } /* End of 'str_insert_str' function */
 
 /* Formatted print */
-int str_printf( str_t *str, char *fmt, ... )
+int str_printf( str_t *str, const char *fmt, ... )
 {
 	int n, size = 100;
 	va_list ap;
@@ -225,7 +225,7 @@ static void str_allocate( str_t *str, int new_len )
 } /* End of 'str_allocate' function */
 
 /* Extract a substring */
-str_t *str_substring( str_t *str, int start, int end )
+str_t *str_substring( const str_t *str, int start, int end )
 {
 	str_t *new_str;
 
@@ -251,7 +251,7 @@ str_t *str_substring( str_t *str, int start, int end )
 } /* End of 'str_substring' function */
 
 /* Extract a substring from (char *) */
-str_t *str_substring_cptr( char *str, int start, int end )
+str_t *str_substring_cptr( const char *str, int start, int end )
 {
 	str_t *new_str;
 

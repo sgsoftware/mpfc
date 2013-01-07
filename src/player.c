@@ -2164,7 +2164,7 @@ bool_t player_info_dialog_fill( dialog_t *dlg, bool_t first_call )
 	song_t *main_song;
 	int num_songs, i, j;
 	song_info_t *info;
-	char *file_name;
+	const char *file_name;
 	bool_t name_diff = FALSE, artist_diff = FALSE, album_diff = FALSE,
 		   year_diff = FALSE, track_diff = FALSE, comment_diff = FALSE,
 		   genre_diff = FALSE;

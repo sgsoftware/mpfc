@@ -28,7 +28,7 @@
 #include "file_reg.h"
 
 /* Open a file */
-file_t *file_open( char *filename, char *mode, logger_t *log )
+file_t *file_open( const char *filename, char *mode, logger_t *log )
 {
 	file_t *f;
 	
@@ -146,7 +146,7 @@ long file_tell( file_t *f )
 } /* End of 'file_tell' function */
 
 /* Get file type */
-byte file_get_type( char *name )
+byte file_get_type( const char *name )
 {
 	if (!strncmp(name, "http://", 7))
 		return FILE_TYPE_HTTP;

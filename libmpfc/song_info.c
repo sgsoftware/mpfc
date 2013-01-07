@@ -106,7 +106,7 @@ void si_free( song_info_t *si )
 } /* End of 'si_free' function */
 
 /* Set song name */
-void si_set_name( song_info_t *si, char *name )
+void si_set_name( song_info_t *si, const char *name )
 {
 	if (si == NULL)
 		return;
@@ -118,7 +118,7 @@ void si_set_name( song_info_t *si, char *name )
 } /* End of 'si_set_name' function */
 
 /* Set artist name */
-void si_set_artist( song_info_t *si, char *artist )
+void si_set_artist( song_info_t *si, const char *artist )
 {
 	if (si == NULL)
 		return;
@@ -130,7 +130,7 @@ void si_set_artist( song_info_t *si, char *artist )
 } /* End of 'si_set_artist' function */
 
 /* Set album name */
-void si_set_album( song_info_t *si, char *album )
+void si_set_album( song_info_t *si, const char *album )
 {
 	if (si == NULL)
 		return;
@@ -142,7 +142,7 @@ void si_set_album( song_info_t *si, char *album )
 } /* End of 'si_set_album' function */
 
 /* Set year */
-void si_set_year( song_info_t *si, char *year )
+void si_set_year( song_info_t *si, const char *year )
 {
 	if (si == NULL)
 		return;
@@ -154,7 +154,7 @@ void si_set_year( song_info_t *si, char *year )
 } /* End of 'si_set_year' function */
 
 /* Set track */
-void si_set_track( song_info_t *si, char *track )
+void si_set_track( song_info_t *si, const char *track )
 {
 	if (si == NULL)
 		return;
@@ -166,7 +166,7 @@ void si_set_track( song_info_t *si, char *track )
 } /* End of 'si_set_track' function */
 
 /* Set comments */
-void si_set_comments( song_info_t *si, char *comments )
+void si_set_comments( song_info_t *si, const char *comments )
 {
 	if (si == NULL)
 		return;
@@ -178,7 +178,7 @@ void si_set_comments( song_info_t *si, char *comments )
 } /* End of 'si_set_comments' function */
 
 /* Set genre */
-void si_set_genre( song_info_t *si, char *genre )
+void si_set_genre( song_info_t *si, const char *genre )
 {
 	int id;
 	char *s;
@@ -219,7 +219,7 @@ void si_set_genre( song_info_t *si, char *genre )
 } /* End of 'si_set_genre' function */
 
 /* Set own data */
-void si_set_own_data( song_info_t *si, char *own_data )
+void si_set_own_data( song_info_t *si, const char *own_data )
 {
 	if (si == NULL)
 		return;

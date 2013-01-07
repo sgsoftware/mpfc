@@ -48,10 +48,10 @@ typedef struct
 #define STR_AT(str, pos) ((str)->m_data[pos])
 
 /* Create a new string */
-str_t *str_new( char *s );
+str_t *str_new( const char *s );
 
 /* Duplicate string */
-str_t *str_dup( str_t *s );
+str_t *str_dup( const str_t *s );
 
 /* Free string */
 void str_free( str_t *str );
@@ -60,16 +60,16 @@ void str_free( str_t *str );
 void str_clear( str_t *str );
 
 /* Copy string from (char *) */
-str_t *str_copy_cptr( str_t *dest, char *src );
+str_t *str_copy_cptr( str_t *dest, const char *src );
 
 /* Copy string */
-str_t *str_copy( str_t *dest, str_t *src );
+str_t *str_copy( str_t *dest, const str_t *src );
 
 /* Concatenate string with (char *) */
-str_t *str_cat_cptr( str_t *dest, char *src );
+str_t *str_cat_cptr( str_t *dest, const char *src );
 
 /* Concatenate strings */
-str_t *str_cat( str_t *dest, str_t *src );
+str_t *str_cat( str_t *dest, const str_t *src );
 
 /* Insert a character to string */
 void str_insert_char( str_t *str, char ch, int index );
@@ -81,19 +81,19 @@ char str_delete_char( str_t *str, int index );
 void str_replace_char( str_t *str, char from, char to );
 
 /* Insert a (char *) */
-str_t *str_insert_cptr( str_t *dest, char *src, int index );
+str_t *str_insert_cptr( str_t *dest, const char *src, int index );
 
 /* Insert a string */
-str_t *str_insert_str( str_t *dest, str_t *src, int index );
+str_t *str_insert_str( str_t *dest, const str_t *src, int index );
 
 /* Extract a substring */
-str_t *str_substring( str_t *str, int start, int end );
+str_t *str_substring( const str_t *str, int start, int end );
 
 /* Extract a substring from (char *) */
-str_t *str_substring_cptr( char *str, int start, int end );
+str_t *str_substring_cptr( const char *str, int start, int end );
 
 /* Formatted print */
-int str_printf( str_t *str, char *fmt, ... );
+int str_printf( str_t *str, const char *fmt, ... );
 
 /* Escape the special symbols (assuming that string is a file name) */
 void str_fn_escape_specs( str_t *str, bool_t escape_slashes );

@@ -28,7 +28,7 @@
 #include "types.h"
 
 /* Determine file type (regular or directory) resolving symlinks */
-bool_t fu_file_type(char *name, bool_t *is_dir);
+bool_t fu_file_type(const char *name, bool_t *is_dir);
 
 typedef struct
 {
@@ -37,7 +37,7 @@ typedef struct
 } fu_dir_t;
 
 /* Open a directory */
-fu_dir_t *fu_opendir(char *name);
+fu_dir_t *fu_opendir(const char *name);
 
 /* Read directory entry */
 struct dirent *fu_readdir(fu_dir_t *dir);
@@ -46,10 +46,10 @@ struct dirent *fu_readdir(fu_dir_t *dir);
 void fu_closedir(fu_dir_t *dir);
 
 /* Is this a '.' or '..' ? */
-bool_t fu_is_special_dir(char *name);
+bool_t fu_is_special_dir(const char *name);
 
 /* Does path have a prefix? */
-bool_t fu_is_prefixed(char *name);
+bool_t fu_is_prefixed(const char *name);
 
 #endif
 
