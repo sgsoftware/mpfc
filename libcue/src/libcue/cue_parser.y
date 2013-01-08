@@ -2,6 +2,7 @@
 /*
  * Copyright (c) 2004, 2005, 2006, 2007, Svend Sorensen
  * Copyright (c) 2009, 2010 Jochen Keil
+ * Copyright (c) 2012, 2013 Sergey Galanov
  * For license terms, see the file COPYING in this distribution.
  */
 
@@ -322,6 +323,7 @@ time
 
 rem
 	: rem_item STRING '\n' { rem_set($1, $2, rem); }
+	| error '\n'
 	;
 
 rem_item

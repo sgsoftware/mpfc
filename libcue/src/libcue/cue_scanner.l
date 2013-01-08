@@ -2,6 +2,7 @@
 /*
  * Copyright (c) 2004, 2005, 2006, 2007, Svend Sorensen
  * Copyright (c) 2009, 2010 Jochen Keil
+ * Copyright (c) 2012, 2013 Sergey Galanov
  * For license terms, see the file COPYING in this distribution.
  */
 
@@ -28,6 +29,7 @@ nonws		[^ \t\r\n]
 %option nounput
 
 %s NAME
+%s NAME_TILL_EOL
 %x REM
 %x RPG
 %x SKIP
@@ -45,6 +47,15 @@ nonws		[^ \t\r\n]
 		}
 
 <NAME>{nonws}+	{
+		yylval.sval = strncpy(	buffer,
+					yytext,
+					(yyleng > sizeof(buffer) ? sizeof(buffer) : yyleng));
+		yylval.sval[yyleng] = '\0';
+		BEGIN(INITIAL);
+		return STRING;
+		}
+
+<NAME_TILL_EOL>{nonws}.*	{
 		yylval.sval = strncpy(	buffer,
 					yytext,
 					(yyleng > sizeof(buffer) ? sizeof(buffer) : yyleng));
@@ -105,7 +116,7 @@ ISRC		{ BEGIN(NAME); return TRACK_ISRC; }
 
 REM		{ BEGIN(REM); /* exclusive rules for special exceptions */ }
 
-<REM>DATE			{ BEGIN(NAME); yylval.ival = REM_DATE; return DATE; }
+<REM>DATE			{ BEGIN(NAME_TILL_EOL); yylval.ival = REM_DATE; return DATE; }
 <REM>REPLAYGAIN_ALBUM_GAIN 	{ BEGIN(RPG); yylval.ival = REM_REPLAYGAIN_ALBUM_GAIN;
 							return REPLAYGAIN_ALBUM_GAIN; }
 <REM>REPLAYGAIN_ALBUM_PEAK	{ BEGIN(RPG); yylval.ival = REM_REPLAYGAIN_ALBUM_PEAK;
