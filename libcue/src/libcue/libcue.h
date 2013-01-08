@@ -5,5 +5,5 @@
 
 #include "cd.h"
 
-Cd* cue_parse_file(FILE*);
+Cd* cue_parse_file(FILE*, const char *filename);
 Cd* cue_parse_string(const char*);

@@ -16,6 +16,7 @@
 char buffer[PARSER_BUFFER];
 
 int yylex(void);
+extern const char *yyfilename;
 %}
 
 ws		[ \t\r]
@@ -125,15 +126,15 @@ REM		{ BEGIN(REM); /* exclusive rules for special exceptions */ }
 
 <RPG>{ws}+	{ BEGIN(RPG); }
 
-<SKIP>.*\n	{ BEGIN(INITIAL); yylineno++; return '\n'; }
+<SKIP>.*\n	{ BEGIN(INITIAL); return '\n'; }
 
 {ws}+		{ /* ignore whitespace */ }
 
 [[:digit:]]+	{ yylval.ival = atoi(yytext); return NUMBER; }
 :		{ return yytext[0]; }
 
-^{ws}*\n	{ yylineno++; /* blank line */ }
-\n		{ yylineno++; return '\n'; }
-.		{ fprintf(stderr, "bad character '%c'\n", yytext[0]); }
+^{ws}*\n	{ /* blank line */ }
+\n		{ return '\n'; }
+.		{ fprintf(stderr, "bad character '%c' (in %s at %d)\n", yytext[0], yyfilename, yylineno); }
 
 %%

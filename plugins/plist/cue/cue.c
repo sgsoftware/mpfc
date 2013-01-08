@@ -74,7 +74,7 @@ plp_status_t cue_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 		logger_error(cue_log, 0, "cue: failed to load cue sheet %s", pl_name);
 		return PLP_STATUS_FAILED;
 	}
-	Cd *cd = cue_parse_file(fd);
+	Cd *cd = cue_parse_file(fd, pl_name);
 	if (!cd)
 	{
 		logger_error(cue_log, 0, "cue: failed to load cue sheet %s", pl_name);

@@ -29,6 +29,8 @@ char fnamebuf[PARSER_BUFFER];
 extern int yylineno;
 extern FILE* yyin;
 
+const char *yyfilename;
+
 static Cd *cd = NULL;
 static Track *track = NULL;
 static Track *prev_track = NULL;
@@ -50,7 +52,7 @@ void yy_delete_buffer(YY_BUFFER_STATE);
 
 /* parser interface */
 int yyparse(void);
-Cd *cue_parse_file(FILE *fp);
+Cd *cue_parse_file(FILE *fp, const char *filename);
 Cd *cue_parse_string(const char*);
 %}
 
@@ -325,14 +327,16 @@ rem_item
 
 void yyerror (const char *s)
 {
-	fprintf(stderr, "%d: %s\n", yylineno, s);
+	fprintf(stderr, "%d: %s (in %s)\n", yylineno, s, yyfilename);
 }
 
-Cd *cue_parse_file(FILE *fp)
+Cd *cue_parse_file(FILE *fp, const char *filename)
 {
 	YY_BUFFER_STATE buffer = NULL;
 
 	yyin = fp;
+	yyfilename = filename;
+	yylineno = 1;
 
 	buffer = yy_create_buffer(yyin, YY_BUF_SIZE);
 
@@ -353,6 +357,7 @@ Cd *cue_parse_string(const char* string)
 	YY_BUFFER_STATE buffer = NULL;
 
 	buffer = yy_scan_string(string);
+	yylineno = 1;
 
 	if (0 == yyparse())
 	{
