@@ -1,4 +1,4 @@
-AC_INIT([mpfc], [1.3.9-hg])
+AC_INIT([mpfc], [2.0-hg])
 AC_CONFIG_SRCDIR([src/main.c])
 AM_INIT_AUTOMAKE
 AC_PROG_CC_C99
