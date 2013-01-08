@@ -55,7 +55,7 @@ nonws		[^ \t\r\n]
 		return STRING;
 		}
 
-<NAME_TILL_EOL>{nonws}.*	{
+<NAME_TILL_EOL>{nonws}[^\r\n]*	{
 		yylval.sval = strncpy(	buffer,
 					yytext,
 					(yyleng > sizeof(buffer) ? sizeof(buffer) : yyleng));
@@ -63,6 +63,7 @@ nonws		[^ \t\r\n]
 		BEGIN(INITIAL);
 		return STRING;
 		}
+<NAME_TILL_EOL>\n { BEGIN(INITIAL); return '\n'; }
 
 CATALOG		{ BEGIN(NAME); return CATALOG; }
 CDTEXTFILE	{ BEGIN(NAME); return CDTEXTFILE; }
@@ -117,6 +118,8 @@ ISRC		{ BEGIN(NAME); return TRACK_ISRC; }
 REM		{ BEGIN(REM); /* exclusive rules for special exceptions */ }
 
 <REM>DATE			{ BEGIN(NAME_TILL_EOL); yylval.ival = REM_DATE; return DATE; }
+<REM>COMMENT		{ BEGIN(NAME_TILL_EOL); yylval.ival = REM_COMMENT; return COMMENT; }
+<REM>GENRE			{ BEGIN(NAME_TILL_EOL); yylval.ival = REM_GENRE; return RGENRE; }
 <REM>REPLAYGAIN_ALBUM_GAIN 	{ BEGIN(RPG); yylval.ival = REM_REPLAYGAIN_ALBUM_GAIN;
 							return REPLAYGAIN_ALBUM_GAIN; }
 <REM>REPLAYGAIN_ALBUM_PEAK	{ BEGIN(RPG); yylval.ival = REM_REPLAYGAIN_ALBUM_PEAK;

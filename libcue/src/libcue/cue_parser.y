@@ -130,6 +130,8 @@ Cd *cue_parse_string(const char*);
 /* REM */
 %type <ival> rem_item
 %token <ival> DATE
+%token <ival> COMMENT
+%token <ival> RGENRE
 %token <ival> REPLAYGAIN_ALBUM_GAIN
 %token <ival> REPLAYGAIN_ALBUM_PEAK
 %token <ival> REPLAYGAIN_TRACK_GAIN
@@ -323,11 +325,12 @@ time
 
 rem
 	: rem_item STRING '\n' { rem_set($1, $2, rem); }
-	| error '\n'
 	;
 
 rem_item
 	: DATE
+	| COMMENT
+	| RGENRE
 	| REPLAYGAIN_ALBUM_GAIN
 	| REPLAYGAIN_ALBUM_PEAK
 	| REPLAYGAIN_TRACK_GAIN

@@ -64,6 +64,39 @@ static long cue_get_track_begin( Track *track )
 	return track_get_start(track) + track_get_index(track, index);
 }
 
+static char *cue_get_genre(Cd *cd, Track *track)
+{
+	char *res;
+
+	res = cdtext_get(PTI_GENRE, track_get_cdtext(track));
+	if (res && *res)
+		return res;
+	res = rem_get(REM_GENRE, track_get_rem(track));
+	if (res && *res)
+		return res;
+
+	res = cdtext_get(PTI_GENRE, cd_get_cdtext(cd));
+	if (res && *res)
+		return res;
+	res = rem_get(REM_GENRE, cd_get_rem(cd));
+	if (res && *res)
+		return res;
+	return NULL;
+}
+
+static char *cue_get_comment(Cd *cd, Track *track)
+{
+	char *res;
+
+	res = rem_get(REM_COMMENT, track_get_rem(track));
+	if (res && *res)
+		return res;
+	res = rem_get(REM_COMMENT, cd_get_rem(cd));
+	if (res && *res)
+		return res;
+	return NULL;
+}
+
 /* Parse playlist and handle its contents */
 plp_status_t cue_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 {
@@ -114,6 +147,8 @@ plp_status_t cue_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 		si_set_year(si, rem_get(REM_DATE, cd_get_rem(cd)));
 		si_set_artist(si, cdtext_get(PTI_PERFORMER, cd_get_cdtext(cd)));
 		si_set_name(si, cdtext_get(PTI_TITLE, track_get_cdtext(track)));
+		si_set_genre(si, cue_get_genre(cd, track));
+		si_set_comments(si, cue_get_comment(cd, track));
 
 		char track_num_str[10];
 		snprintf(track_num_str, sizeof(track_num_str), "%02d", i);
