@@ -61,7 +61,9 @@ BINARY		{ return BINARY; }
 MOTOROLA	{ return MOTOROLA; }
 AIFF		{ return AIFF; }
 WAVE		{ return WAVE; }
-MP3		{ return MP3; }
+MP3			{ return MP3; }
+FLAC		{ return FLAC; }
+APE			{ return APE; }
 
 TRACK		{ return TRACK; }
 AUDIO		{ yylval.ival = MODE_AUDIO; return AUDIO; }
