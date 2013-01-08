@@ -65,6 +65,8 @@ MP3			{ return MP3; }
 FLAC		{ return FLAC; }
 APE			{ return APE; }
 
+\xEF\xBB\xBF { return BOM; }
+
 TRACK		{ return TRACK; }
 AUDIO		{ yylval.ival = MODE_AUDIO; return AUDIO; }
 MODE1\/2048	{ yylval.ival = MODE_MODE1; return MODE1_2048; }

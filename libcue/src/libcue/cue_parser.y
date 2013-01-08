@@ -104,6 +104,8 @@ Cd *cue_parse_string(const char*);
 %token INDEX
 %token POSTGAP
 
+%token BOM
+
 /* CD-TEXT */
 %token <ival> TITLE
 %token <ival> PERFORMER
@@ -134,8 +136,11 @@ Cd *cue_parse_string(const char*);
 %%
 
 cuefile
-	: new_cd global_statements track_list
+	: maybe_bom new_cd global_statements track_list
 	;
+
+maybe_bom
+	: BOM | /* empty */;
 
 new_cd
 	: /* empty */ {
