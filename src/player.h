@@ -195,10 +195,10 @@ void player_handle_signal( int signum );
  ***/
 
 /* Play song */
-void player_play( int song, int start_time );
+void player_play( int song, song_time_t start_time );
 
 /* Seek song */
-void player_seek( int sec, bool_t rel );
+void player_seek( song_time_t val, bool_t rel );
 
 /* Skip some songs */
 int player_skip_songs( int num, bool_t play );
@@ -225,7 +225,7 @@ void player_stop_timer( void );
 void *player_timer_func( void *arg );
 
 /* Translate projected song time to real time */
-int player_translate_time( song_t *s, int t, bool_t virtual2real );
+song_time_t player_translate_time( song_t *s, song_time_t t, bool_t virtual2real );
 
 /* Player thread function */
 void *player_thread( void *arg );
@@ -393,7 +393,7 @@ void player_set_search_string( char *str );
 void player_save_time( void );
 
 /* High-level start play */
-void player_start_play( int song, int start_time );
+void player_start_play( int song, song_time_t start_time );
 
 /* High-level pause/resume */
 void player_pause_resume( void );

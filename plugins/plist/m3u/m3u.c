@@ -110,12 +110,12 @@ plp_status_t m3u_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 
 		/* Extract song length and starting position from string read */
 		char *s = &str[8]; /* skip '#EXTINF:' */
-		int song_len = m3u_read_int(&s);
-		int song_start = -1;
+		song_time_t song_len = SECONDS_TO_TIME(m3u_read_int(&s));
+		song_time_t song_start = -1;
 		if ((*s) == '-')
 		{
 			++s;
-			song_start = m3u_read_int(&s);
+			song_start = SECONDS_TO_TIME(m3u_read_int(&s));
 		}
 		if ((*s) == ',')
 			++s;

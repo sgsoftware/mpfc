@@ -132,9 +132,9 @@ bool_t plist_save_m3u( plist_t *pl, char *filename )
 	for ( i = 0; i < pl->m_len; i ++ )
 	{
 		song_t *s = pl->m_list[i];
-		fprintf(fd, "#EXTINF:%i", s->m_len);
+		fprintf(fd, "#EXTINF:%i", TIME_TO_SECONDS(s->m_len));
 		if (s->m_start_time >= 0)
-			fprintf(fd, "-%i", s->m_start_time);
+			fprintf(fd, "-%i", TIME_TO_SECONDS(s->m_start_time));
 
 		fprintf(fd, ",%s\n%s\n", STR_TO_CPTR(s->m_title), song_get_name(s));
 	}
@@ -561,7 +561,7 @@ void plist_centrize( plist_t *pl, int index )
 /* Display play list */
 void plist_display( plist_t *pl, wnd_t *wnd )
 {
-	int i, j, start, end, l_time = 0, s_time = 0;
+	int i, j, start, end;
 	char time_text[80];
 
 	assert(pl);
@@ -604,7 +604,8 @@ void plist_display( plist_t *pl, wnd_t *wnd )
 				if(queued_songs[queueList] == j)
 					wnd_printf(wnd, 0, 0, "    #%i in queue...", queueList+1);
 			}
-			sprintf(len, "%i:%02i", s->m_len / 60, s->m_len % 60);
+			int l = TIME_TO_SECONDS(s->m_len);
+			sprintf(len, "%i:%02i", l / 60, l % 60);
 			wnd_move(wnd, WND_MOVE_ADVANCE, WND_WIDTH(wnd) - strlen(len) - 1, 
 					pl->m_start_pos + i);
 			wnd_printf(wnd, 0, 0, "%s", len);
@@ -612,6 +613,7 @@ void plist_display( plist_t *pl, wnd_t *wnd )
 	}
 
 	/* Display play list time */
+	song_time_t l_time = 0, s_time = 0;
 	if (pl->m_len)
 	{
 		for ( i = 0; i < pl->m_len; i ++ )
@@ -619,12 +621,14 @@ void plist_display( plist_t *pl, wnd_t *wnd )
 		for ( i = start; i <= end; i ++ )
 			s_time += pl->m_list[i]->m_len;
 	}
+	int l_seconds = TIME_TO_SECONDS(l_time);
+	int s_seconds = TIME_TO_SECONDS(s_time);
 	wnd_apply_style(wnd, "plist-time-style");
 	sprintf(time_text, ngettext("%i/%i song; %i:%02i:%02i/%i:%02i:%02i",
 				"%i/%i songs; %i:%02i:%02i/%i:%02i:%02i", pl->m_len),
 			(end >= 0 && pl->m_len > 0) ? end - start + 1 : 0, pl->m_len,
-			s_time / 3600, (s_time % 3600) / 60, s_time % 60,
-			l_time / 3600, (l_time % 3600) / 60, l_time % 60);
+			s_seconds / 3600, (s_seconds % 3600) / 60, s_seconds % 60,
+			l_seconds / 3600, (l_seconds % 3600) / 60, l_seconds % 60);
 	wnd_move(wnd, 0, WND_WIDTH(wnd) - strlen(time_text) - 1, 
 			pl->m_start_pos + PLIST_HEIGHT);
 	wnd_printf(wnd, 0, 0, "%s", time_text);
@@ -1324,9 +1328,13 @@ struct json_object *plist_export_to_json( plist_t *pl )
 		struct json_object *js_song = json_object_new_object();
 
 		json_object_object_add(js_song, "name", json_object_new_string(song_get_name(s)));
-		json_object_object_add(js_song, "length", json_object_new_int(s->m_full_len));
-		json_object_object_add(js_song, "start_time", json_object_new_int(s->m_start_time));
-		json_object_object_add(js_song, "end_time", json_object_new_int(s->m_end_time));
+
+		/* TODO: json/int64 */
+		json_object_object_add(js_song, "length", json_object_new_int(TIME_TO_SECONDS(s->m_full_len)));
+		json_object_object_add(js_song, "start_time", json_object_new_int(
+					s->m_start_time < 0 ? -1 : TIME_TO_SECONDS(s->m_start_time)));
+		json_object_object_add(js_song, "end_time", json_object_new_int(
+					s->m_end_time < 0 ? -1 : TIME_TO_SECONDS(s->m_end_time)));
 
 		if (s->m_default_title)
 			json_object_object_add(js_song, "title", json_object_new_string(s->m_default_title));
@@ -1373,6 +1381,15 @@ static int js_get_int( struct json_object *obj, char *key, int def )
 	return json_object_get_int(val);
 }
 
+static song_time_t js_get_time_int( struct json_object *obj, char *key, int def )
+{
+	int v = js_get_int(obj, key, def);
+	if (v < 0)
+		return v;
+	else
+		return SECONDS_TO_TIME(v);
+}
+
 /* Import play list from a json object */
 void plist_import_from_json( plist_t *pl, struct json_object *js_plist )
 {
@@ -1396,9 +1413,11 @@ void plist_import_from_json( plist_t *pl, struct json_object *js_plist )
 		const char *title = js_get_string(js_song, "title", NULL);
 		if (title)
 			metadata.m_title = title;
-		metadata.m_len = js_get_int(js_song, "length", 0);
-		metadata.m_start_time = js_get_int(js_song, "start_time", -1);
-		metadata.m_end_time = js_get_int(js_song, "end_time", -1);
+
+		/* TODO: json/int64 */
+		metadata.m_len = js_get_time_int(js_song, "length", 0);
+		metadata.m_start_time = js_get_time_int(js_song, "start_time", -1);
+		metadata.m_end_time = js_get_time_int(js_song, "end_time", -1);
 
 		struct json_object *js_si = json_object_object_get(js_song, "song_info");
 		song_info_t *si = NULL;

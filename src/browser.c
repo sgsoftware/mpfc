@@ -860,7 +860,7 @@ void fb_print_info_col( browser_t *fb, int id, struct browser_list_item *item )
 			wnd_printf(wnd, 0, right, _("Time"));
 		else
 			wnd_printf(wnd, 0, right, "%d:%02d", 
-					item->m_len / 60, item->m_len % 60);
+					TIME_TO_SECONDS(item->m_len) / 60, TIME_TO_SECONDS(item->m_len) % 60);
 		break;
 	}
 	wnd_move(wnd, WND_MOVE_ADVANCE, right, WND_MOVE_DONT_CHANGE);

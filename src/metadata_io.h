@@ -24,10 +24,11 @@
 #define __SG_MPFC_METADATA_IO_H__
 
 #include "types.h"
+#include "main_types.h"
 #include "song_info.h"
 
 /* Get song information function */
-song_info_t *md_get_info( const char *file_name, const char *full_uri, int *len );
+song_info_t *md_get_info( const char *file_name, const char *full_uri, song_time_t *len );
 	
 /* Save song information function */
 bool_t md_save_info( const char *file_name, song_info_t *info );

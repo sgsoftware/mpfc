@@ -24,6 +24,7 @@
 #define __SG_MPFC_BROWSER_H__
 
 #include "types.h"
+#include "main_types.h"
 #include "song_info.h"
 #include "wnd.h"
 
@@ -42,7 +43,7 @@ typedef struct
 		const char *m_name;
 		char *m_full_name;
 		song_info_t *m_info;
-		int m_len;
+		song_time_t m_len;
 		int m_y;
 		byte m_type;
 

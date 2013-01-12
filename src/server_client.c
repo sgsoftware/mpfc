@@ -319,10 +319,12 @@ bool_t server_conn_exec_command(server_conn_desc_t *d)
 			song_t *s = player_plist->m_list[cur_song];
 			json_object_object_add(js, "title", json_object_new_string(
 						STR_TO_CPTR(s->m_title)));
+
+			/* TODO: json/int64 */
 			json_object_object_add(js, "time", json_object_new_int(
-						player_context->m_cur_time));
+						TIME_TO_SECONDS(player_context->m_cur_time)));
 			json_object_object_add(js, "length", json_object_new_int(
-						s->m_len));
+						TIME_TO_SECONDS(s->m_len)));
 
 			if (player_context->m_status == PLAYER_STATUS_PLAYING)
 				status = "playing";
@@ -347,7 +349,11 @@ bool_t server_conn_exec_command(server_conn_desc_t *d)
 			song_t *s = player_plist->m_list[i];
 			json_object_object_add(js_child, "title", json_object_new_string(
 						STR_TO_CPTR(s->m_title)));
-			json_object_object_add(js_child, "length", json_object_new_int(s->m_len));
+
+			/* TODO: json/int64 */
+			json_object_object_add(js_child, "length",
+					json_object_new_int(TIME_TO_SECONDS(s->m_len)));
+
 			json_object_array_add(js, js_child);
 		}
 
@@ -394,8 +400,9 @@ bool_t server_conn_exec_command(server_conn_desc_t *d)
 	{
 		if (param_kind == PARAM_INT)
 		{
+			/* TODO: json/int64 */
 			int t = param.num_param;
-			player_seek(t, FALSE);
+			player_seek(SECONDS_TO_TIME(t), FALSE);
 		}
 	}
 	else if (!strcmp(cmd_name, "clear_playlist"))

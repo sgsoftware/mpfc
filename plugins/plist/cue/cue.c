@@ -138,8 +138,8 @@ plp_status_t cue_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 			if (next_name && !strcmp(filename, next_name))
 				end = cue_get_track_begin(next_track);
 		}
-		metadata.m_start_time = start / 75;
-		metadata.m_end_time = (end < 0 ? -1 : end / 75);
+		metadata.m_start_time = SECONDS_TO_TIME(start) / 75;
+		metadata.m_end_time = (end < 0 ? -1 : SECONDS_TO_TIME(end) / 75);
 
 		/* Set song info */
 		song_info_t *si = si_new();

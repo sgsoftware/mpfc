@@ -38,6 +38,8 @@ typedef enum
 	SONG_STATIC_INFO = 1 << 3
 } song_flags_t;
 
+typedef int64_t song_time_t;
+
 /* Song type */
 typedef struct tag_song_t
 {
@@ -51,13 +53,13 @@ typedef struct tag_song_t
 	char *m_filename;
 
 	/* Sliced song length */
-	int m_len;
+	song_time_t m_len;
 
 	/* Full song length */
-	int m_full_len;
+	song_time_t m_full_len;
 
 	/* Song start and end (for projected songs) */
-	int m_start_time, m_end_time;
+	song_time_t m_start_time, m_end_time;
 
 	/* Song information */
 	song_info_t *m_info;
@@ -75,15 +77,18 @@ typedef struct tag_song_t
 	pthread_mutex_t m_mutex;
 } song_t;
 
+static inline int TIME_TO_SECONDS(song_time_t x) { return x / 1000000000LL; }
+static inline song_time_t SECONDS_TO_TIME(int x) { return x * 1000000000LL; }
+
 /* Metadata for making a song 
  * All these fields are optional */
 typedef struct tag_song_metadata_t
 {
 	const char *m_title;
-	int m_len;
+	song_time_t m_len;
 	song_info_t *m_song_info;
-	int m_start_time;
-	int m_end_time;
+	song_time_t m_start_time;
+	song_time_t m_end_time;
 } song_metadata_t;
 
 #define SONG_METADATA_EMPTY { NULL, -1, NULL, -1, -1 }
@@ -125,7 +130,7 @@ typedef struct
 typedef struct
 {
 	/* Current song playing time */
-	int m_cur_time;
+	song_time_t m_cur_time;
 
 	/* Current audio parameters */
 	int m_bitrate, m_freq, m_channels;

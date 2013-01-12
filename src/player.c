@@ -122,7 +122,8 @@ int player_marks[PLAYER_NUM_MARKS];
 int player_last_pos = -1;
 
 /* Last position in song */
-int player_last_song = -1, player_last_song_time = -1;
+int player_last_song = -1;
+song_time_t player_last_song_time = -1;
 
 /* Plugins manager */
 pmng_t *player_pmng = NULL;
@@ -234,7 +235,8 @@ static void player_load_state( void )
 		player_end = js_get_int(js_root, "player-end", 0) - 1;
 		if (player_context->m_status != PLAYER_STATUS_STOPPED)
 			player_play(js_get_int(js_root, "cur-song", -1),
-					js_get_int(js_root, "cur-time", 0));
+					/* TODO: json/int64 */
+					SECONDS_TO_TIME(js_get_int(js_root, "cur-time", 0)));
 		player_context->m_volume = js_get_double(js_root, "volume", VOLUME_DEF);
 	}
 
@@ -264,7 +266,8 @@ static void player_save_state( void )
 
 	/* Save player state */
 	json_object_object_add(js_root, "cur-song", json_object_new_int(player_plist->m_cur_song));
-	json_object_object_add(js_root, "cur-time", json_object_new_int(player_context->m_cur_time));
+	/* TODO: json/int64 */
+	json_object_object_add(js_root, "cur-time", json_object_new_int(TIME_TO_SECONDS(player_context->m_cur_time)));
 	json_object_object_add(js_root, "player-status", json_object_new_int(player_context->m_status));
 	json_object_object_add(js_root, "player-start", json_object_new_int(player_start + 1));
 	json_object_object_add(js_root, "player-end", json_object_new_int(player_end + 1));
@@ -759,17 +762,15 @@ wnd_msg_retcode_t player_on_close( wnd_t *wnd )
 /* Handle action */
 wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action, int repval )
 {
-	int was_pos;
-	int was_song, was_time;
 	bool_t long_jump = FALSE;
 	int rp;
 
 	/* Clear message string */
 	player_msg = NULL;
 
-	was_pos = player_plist->m_sel_end;
-	was_song = player_plist->m_cur_song;
-	was_time = player_context->m_cur_time;
+	int was_pos = player_plist->m_sel_end;
+	int was_song = player_plist->m_cur_song;
+	song_time_t was_time = player_context->m_cur_time;
 
 	if (repval > 0)
 		rp = repval;
@@ -837,27 +838,27 @@ wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action, int repval )
 	/* Seek song forward */
 	else if (!strcasecmp(action, "time_fw"))
 	{
-		player_seek((rp == 0) ? 10 : 10 * rp, TRUE);
+		player_seek(SECONDS_TO_TIME((rp == 0) ? 10 : 10 * rp), TRUE);
 	}
 	/* Seek song backward */
 	else if (!strcasecmp(action, "time_bw"))
 	{
-		player_seek((rp == 0) ? -10 : -10 * rp, TRUE);
+		player_seek(SECONDS_TO_TIME((rp == 0) ? -10 : -10 * rp), TRUE);
 	}
 	/* Long seek song forward */
 	else if (!strcasecmp(action, "time_long_fw"))
 	{
-		player_seek((rp == 0) ? 60 : 60 * rp, TRUE);
+		player_seek(SECONDS_TO_TIME((rp == 0) ? 60 : 60 * rp), TRUE);
 	}
 	/* Long seek song backwards */
 	else if (!strcasecmp(action, "time_long_bw"))
 	{
-		player_seek((rp == 0) ? -60 : -60 * rp, TRUE);
+		player_seek(SECONDS_TO_TIME((rp == 0) ? -60 : -60 * rp), TRUE);
 	}
 	/* Seek to any position */
 	else if (!strcasecmp(action, "time_move"))
 	{
-		player_seek((rp == 0) ? 0 : rp, FALSE);
+		player_seek(SECONDS_TO_TIME((rp == 0) ? 0 : rp), FALSE);
 	}
 	/* Increase volume */
 	else if (!strcasecmp(action, "vol_fw"))
@@ -1275,7 +1276,7 @@ wnd_msg_retcode_t player_on_command( wnd_t *wnd, char *cmd,
 	{
 		int value = cmd_next_int_param(params);
 		int relative = cmd_next_int_param(params);
-		player_seek(value, relative);
+		player_seek(SECONDS_TO_TIME(value), relative);
 	}
 	/* Set option */
 	else if (!strcmp(cmd, "cfg"))
@@ -1358,7 +1359,6 @@ wnd_msg_retcode_t player_on_display( wnd_t *wnd )
 	}
 	else
 	{
-		int t;
 		bool_t show_rem;
 		char *shuffle_str, *loop_str;
 		
@@ -1389,13 +1389,14 @@ wnd_msg_retcode_t player_on_display( wnd_t *wnd )
 		}
 
 		/* Print current time */
-		t = (show_rem = cfg_get_var_int(cfg_list, "show-time-remaining")) ? 
+		song_time_t t = (show_rem = cfg_get_var_int(cfg_list, "show-time-remaining")) ? 
 			s->m_len - player_context->m_cur_time : player_context->m_cur_time;
+		int ts = TIME_TO_SECONDS(t);
+		int l = TIME_TO_SECONDS(s->m_len);
 		wnd_move(wnd, 0, 0, 1);
 		wnd_apply_style(wnd, "time-style");
 		wnd_printf(wnd, 0, 0, "%s%i:%02i/%i:%02i\n", 
-				show_rem ? "-" : "", t / 60, t % 60,
-				s->m_len / 60, s->m_len % 60);
+				show_rem ? "-" : "", ts / 60, ts % 60, l / 60, l % 60);
 	}
 
 	/* Display current audio parameters */
@@ -1471,25 +1472,21 @@ void player_on_log_msg( logger_t *log, void *data,
  *****/
 
 /* Seek song */
-void player_seek( int sec, bool_t rel )
+void player_seek( song_time_t val, bool_t rel )
 {
-	song_t *s;
-	int new_time;
-	guint64 tm;
-	
 	if (player_plist->m_cur_song == -1)
 		return;
 
-	s = player_plist->m_list[player_plist->m_cur_song];
+	song_t *s = player_plist->m_list[player_plist->m_cur_song];
 
-	new_time = (rel ? (player_context->m_cur_time + sec) : sec);
+	song_time_t new_time = (rel ? (player_context->m_cur_time + val) : val);
 	if (new_time < 0)
 		new_time = 0;
 	else if (new_time > s->m_len)
 		new_time = s->m_len;
 
 	player_save_time();
-	tm = (guint64)player_translate_time(s, new_time, TRUE) * 1000000000;
+	guint64 tm = player_translate_time(s, new_time, TRUE);
 	logger_debug(player_log, "gstreamer: seeking to time %lld", tm);
 	if (!gst_element_seek(player_pipeline, 1.0, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH,
 			GST_SEEK_TYPE_SET, tm, GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE))
@@ -1498,13 +1495,13 @@ void player_seek( int sec, bool_t rel )
 	}
 	player_context->m_cur_time = new_time;
 	wnd_invalidate(player_wnd);
-	logger_debug(player_log, "after player_seek timer is %d", player_context->m_cur_time);
+	logger_debug(player_log, "after player_seek timer is %lld", player_context->m_cur_time);
 
 	pmng_hook(player_pmng, "player-status");
 } /* End of 'player_seek' function */
 
 /* Play song */
-void player_play( int song, int start_time )
+void player_play( int song, song_time_t start_time )
 {
 	song_t *s;
 
@@ -1663,7 +1660,7 @@ int player_skip_songs( int num, bool_t play )
 } /* End of 'player_skip_songs' function */
 
 /* Translate projected song time to real time */
-int player_translate_time( song_t *s, int t, bool_t virtual2real )
+song_time_t player_translate_time( song_t *s, song_time_t t, bool_t virtual2real )
 {
 	if (s == NULL || s->m_start_time < 0)
 		return t;
@@ -1891,11 +1888,11 @@ void *player_thread( void *arg )
 		gst_element_get_state(player_pipeline, NULL, NULL, GST_CLOCK_TIME_NONE);
 
 		/* Seek to start time */
-		logger_debug(player_log, "start time is %d", song_played->m_start_time);
-		logger_debug(player_log, "cur_time is %d", player_context->m_cur_time);
+		logger_debug(player_log, "start time is %lld", song_played->m_start_time);
+		logger_debug(player_log, "cur_time is %lld", player_context->m_cur_time);
 		if (player_context->m_cur_time > 0 || song_played->m_start_time > -1)
 		{
-			guint64 tm = (guint64)player_translate_time(song_played, player_context->m_cur_time, TRUE) * 1000000000;
+			guint64 tm = player_translate_time(song_played, player_context->m_cur_time, TRUE);
 			logger_debug(player_log, "gstreamer: seeking to time %lld", tm);
 			if (!gst_element_seek(player_pipeline, 1.0, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH,
 					GST_SEEK_TYPE_SET, tm, GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE))
@@ -1935,7 +1932,6 @@ void *player_thread( void *arg )
 				/* Update time */
 				if (gst_element_query_position(player_pipeline, GST_FORMAT_TIME, &tm))
 				{
-					tm /= 1000000000;
 					tm = player_translate_time(song_played, tm, FALSE);
 					if (tm - player_context->m_cur_time)
 					{
@@ -1950,7 +1946,7 @@ void *player_thread( void *arg )
 						player_translate_time(song_played, player_context->m_cur_time, TRUE) >= 
 						song_played->m_end_time)
 				{
-					logger_debug(player_log, "stopping at time %d(%d) with end_time=%d.", 
+					logger_debug(player_log, "stopping at time %lld(%lld) with end_time=%lld.", 
 							player_context->m_cur_time,
 							player_translate_time(song_played, player_context->m_cur_time, TRUE),
 							song_played->m_end_time);
@@ -3355,7 +3351,7 @@ void player_save_time( void )
 } /* End of 'player_save_time' function */
 
 /* High-level start play */
-void player_start_play( int song, int start_time )
+void player_start_play( int song, song_time_t start_time )
 {
 	player_context->m_status = PLAYER_STATUS_PLAYING;
 	player_play(song, start_time);

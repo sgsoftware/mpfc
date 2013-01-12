@@ -28,7 +28,7 @@
 #include "util.h"
 	
 /* Get song information using gstreamer */
-static song_info_t *md_get_info_gst( const char *full_name, int *len )
+static song_info_t *md_get_info_gst( const char *full_name, song_time_t *len )
 {
 	GstElement *pipe = NULL;
 	song_info_t *si = NULL;
@@ -177,7 +177,7 @@ static song_info_t *md_get_info_gst( const char *full_name, int *len )
 		gint64 gst_len;
 		if (gst_element_query_duration(pipe, GST_FORMAT_TIME, &gst_len))
 		{
-			(*len) = gst_len / 1000000000;
+			(*len) = gst_len;
 			break;
 		}
 
@@ -201,7 +201,7 @@ finally:
 } /* End of 'md_get_info_gst' function */
 	
 /* Get song information using taglib */
-static song_info_t *md_get_info_taglib( const char *file_name, int *len )
+static song_info_t *md_get_info_taglib( const char *file_name, song_time_t *len )
 {
 	TagLib_File *file = taglib_file_new(file_name);
 	if (!file)
@@ -237,7 +237,7 @@ static song_info_t *md_get_info_taglib( const char *file_name, int *len )
 		si_set_track(si, t);
 	}
 
-	(*len) = taglib_audioproperties_length(taglib_file_audioproperties(file));
+	(*len) = SECONDS_TO_TIME(taglib_audioproperties_length(taglib_file_audioproperties(file)));
 
 	taglib_tag_free_strings();
 	taglib_file_free(file);
@@ -245,7 +245,7 @@ static song_info_t *md_get_info_taglib( const char *file_name, int *len )
 } /* End of 'md_get_info_taglib' function */
 	
 /* Get song information function */
-song_info_t *md_get_info( const char *file_name, const char *full_uri, int *len )
+song_info_t *md_get_info( const char *file_name, const char *full_uri, song_time_t *len )
 {
 	(*len) = 0;
 	

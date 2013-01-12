@@ -186,7 +186,7 @@ plp_status_t pls_for_each_item( char *pl_name, void *ctx, plp_func_t f )
 		{
 			song_metadata_t metadata = SONG_METADATA_EMPTY;
 			metadata.m_title = title;
-			metadata.m_len = len < 0 ? 0 : len;
+			metadata.m_len = len < 0 ? 0 : SECONDS_TO_TIME(len);
 			plp_status_t st = f(ctx, name, &metadata);
 
 			/* Free this entry */
