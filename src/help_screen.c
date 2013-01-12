@@ -185,6 +185,7 @@ void help_init_player( help_screen_t *help )
 	help_add(help, _("i:\t\t Song info editor"));
 	help_add(help, _("a:\t\t Add songs"));
 	help_add(help, _("B:\t\t Launch file browser"));
+	help_add(help, _("A:\t\t Audio output setup"));
 	help_add(help, _("r:\t\t Remove songs"));
 	help_add(help, _("s:\t\t Save play list"));
 	help_add(help, _("S:\t\t Sort play list"));

@@ -164,6 +164,7 @@ static void player_info_dialog_set_if_readonly( dialog_t *dlg );
 static bool_t player_handle_var_title_format( cfg_node_t *var, char *value, void *data );
 static bool_t player_handle_color_scheme( cfg_node_t *var, char *value, void *data );
 static bool_t player_handle_kbind_scheme( cfg_node_t *var, char *value, void *data );
+static void player_audio_setup_dlg( void );
 
 /*****
  *
@@ -721,7 +722,10 @@ void player_save_cfg( void )
 
 	/* Save plugins parameters if need */
 	if (cfg_get_var_bool(cfg_list, "autosave-plugins-params"))
+	{
 		cfg_rcfile_save_node(fd, cfg_search_node(cfg_list, "plugins"), NULL);
+		cfg_rcfile_save_node(fd, cfg_search_node(cfg_list, "gstreamer"), NULL);
+	}
 	fclose(fd);
 } /* End of 'player_save_cfg' function */
 
@@ -983,6 +987,11 @@ wnd_msg_retcode_t player_on_action( wnd_t *wnd, char *action, int repval )
 	else if (!strcasecmp(action, "var_manager"))
 	{
 		player_var_manager();
+	}
+	/* Audio output setup */
+	else if (!strcasecmp(action, "audio_setup"))
+	{
+		player_audio_setup_dlg();
 	}
 	/* Move play list down */
 	else if (!strcasecmp(action, "plist_down"))
@@ -1835,18 +1844,21 @@ void *player_thread( void *arg )
 		if (!loop)
 		{
 			logger_error(player_log, 1, "g_main_loop_new failed");
+			player_context->m_status = PLAYER_STATUS_STOPPED;
 			goto cleanup;
 		}
 		player_pipeline = gst_element_factory_make("playbin", "play");
 		if (!player_pipeline)
 		{
 			logger_error(player_log, 1, "gstreamer: unable to create playbin");
+			player_context->m_status = PLAYER_STATUS_STOPPED;
 			goto cleanup;
 		}
 
 		/* Set a user-specified audio sink */
 		if (!player_set_audio_sink())
 		{
+			player_context->m_status = PLAYER_STATUS_STOPPED;
 			goto cleanup;
 		}
 
@@ -2336,6 +2348,54 @@ void player_var_manager( void )
 	radio_new(WND_OBJ(vbox), _("&Remove"), "rem", 'r', FALSE);
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_var);
 	wnd_msg_add_handler(WND_OBJ(btn), "clicked", player_on_var_view);
+	dialog_arrange_children(dlg);
+} /* End of 'player_var_manager' function */
+
+static void player_audio_setup_sync_device_box( wnd_t *wnd )
+{
+	editbox_t *sink_eb = EDITBOX_OBJ(wnd);
+	dialog_t *dlg = DIALOG_OBJ(DLGITEM_OBJ(wnd)->m_dialog);
+	assert(dlg);
+	editbox_t *dev_eb = EDITBOX_OBJ(dialog_find_item(dlg, "device"));
+	assert(dev_eb);
+
+	/* Device is only active when sink is specified */
+	dev_eb->m_editable = (EDITBOX_LEN(sink_eb) > 0);
+}
+
+static void player_on_audio_setup( wnd_t *wnd )
+{
+	editbox_t *sink_eb = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "sink"));
+	assert(sink_eb);
+	editbox_t *dev_eb = EDITBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "device"));
+	assert(dev_eb);
+
+	cfg_set_var(cfg_list, "gstreamer.audio-sink", 
+			EDITBOX_LEN(sink_eb) > 0 ? EDITBOX_TEXT(sink_eb) : NULL);
+	cfg_set_var(cfg_list, "gstreamer.audio-sink-params.device", 
+			EDITBOX_LEN(dev_eb) > 0 ? EDITBOX_TEXT(dev_eb) : NULL);
+}
+
+/* Display audio output setup dialog */
+static void player_audio_setup_dlg( void )
+{
+	dialog_t *dlg = dialog_new(wnd_root, _("Audio output setup"));
+	editbox_t *sink_eb = editbox_new_with_label(WND_OBJ(dlg->m_vbox), _("&Sink name: "),
+			"sink", "", 's', PLAYER_EB_WIDTH);
+	editbox_set_text(sink_eb, cfg_get_var(cfg_list, "gstreamer.audio-sink"));
+	editbox_t *dev_eb = editbox_new_with_label(WND_OBJ(dlg->m_vbox), _("&Device name: "),
+			"device", "", 'd', PLAYER_EB_WIDTH);
+	editbox_set_text(dev_eb, cfg_get_var(cfg_list, "gstreamer.audio-sink-params.device"));
+	player_audio_setup_sync_device_box(WND_OBJ(sink_eb));
+	label_new(WND_OBJ(dlg->m_vbox),
+			_("\nYou can specify GStreamer sink (e.g. alsasink) and \n"
+			  "device here. Device can only be set if sink is specified.\n"
+			  "If the sink is configured by some other properties, you can set \n"
+			  "them directly with gstreamer.audio-sink-params.* variables.\n"),
+			"help", LABEL_NOBOLD);
+
+	wnd_msg_add_handler(WND_OBJ(sink_eb), "changed", player_audio_setup_sync_device_box);
+	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_audio_setup);
 	dialog_arrange_children(dlg);
 } /* End of 'player_var_manager' function */
 
@@ -3192,6 +3252,7 @@ void player_class_set_default_styles( cfg_node_t *list )
 	cfg_set_var(list, "kbind.help", "?");
 	cfg_set_var(list, "kbind.shuffle", "R");
 	cfg_set_var(list, "kbind.var_manager", "o");
+	cfg_set_var(list, "kbind.audio_setup", "A");
 	cfg_set_var(list, "kbind.plist_down", "J");
 	cfg_set_var(list, "kbind.plist_up", "K");
 	cfg_set_var(list, "kbind.plist_move", "M");
