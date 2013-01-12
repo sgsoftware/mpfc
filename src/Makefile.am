@@ -15,7 +15,7 @@ EXTRA_DIST = .mpfcrc
 localedir = $(datadir)/locale
 DEFS = -DLOCALEDIR=\"$(localedir)\" -DLIBDIR=\"$(libdir)\" \
 	   -DSYSCONFDIR=\"$(sysconfdir)\" @DEFS@
-AM_CPPFLAGS = -I$(top_srcdir)/libmpfcwnd/ @GSTREAMER_CFLAGS@ @TAGLIB_CFLAGS@
+AM_CPPFLAGS = -I$(top_srcdir)/libmpfcwnd/ @GSTREAMER_CFLAGS@ @GSTREAMER_AUDIO_CFLAGS@ @TAGLIB_CFLAGS@
 mpfc_LDADD = $(top_builddir)/libmpfc/libmpfc.la \
 			 $(top_builddir)/libmpfcwnd/libmpfcwnd.la \
-			 @GSTREAMER_LIBS@ @TAGLIB_LIBS@ @JSON_LIBS@ @COMMON_LIBS@ @PTHREAD_LIBS@ @DL_LIBS@ @MATH_LIBS@
+			 @GSTREAMER_LIBS@ @GSTREAMER_AUDIO_LIBS@ @TAGLIB_LIBS@ @JSON_LIBS@ @COMMON_LIBS@ @PTHREAD_LIBS@ @DL_LIBS@ @MATH_LIBS@

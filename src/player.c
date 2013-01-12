@@ -30,6 +30,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <gst/gst.h>
+#include <gst/audio/streamvolume.h>
 #include <json/json.h>
 #include "types.h"
 #include "browser.h"
@@ -1590,7 +1591,10 @@ void player_update_vol( void )
 	if (player_pipeline)
 	{
 		gdouble v = player_context->m_volume;
-		g_object_set(G_OBJECT(player_pipeline), "volume", v, NULL);
+		gdouble conv = gst_stream_volume_convert_volume(
+				GST_STREAM_VOLUME_FORMAT_CUBIC, GST_STREAM_VOLUME_FORMAT_LINEAR, v);
+		logger_debug(player_log, "setting volume to %lf (linear = %lf)", v, conv);
+		g_object_set(G_OBJECT(player_pipeline), "volume", conv, NULL);
 	}
 } /* End of 'player_update_vol' function */
 
