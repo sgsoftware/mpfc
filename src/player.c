@@ -1593,7 +1593,8 @@ void player_update_vol( void )
 		gdouble v = player_context->m_volume;
 		gdouble conv = gst_stream_volume_convert_volume(
 				GST_STREAM_VOLUME_FORMAT_CUBIC, GST_STREAM_VOLUME_FORMAT_LINEAR, v);
-		logger_debug(player_log, "setting volume to %lf (linear = %lf)", v, conv);
+		logger_message(player_log, 1, "setting volume to %lg%% (linear = %lg%%)",
+				v * 100, conv * 100);
 		g_object_set(G_OBJECT(player_pipeline), "volume", conv, NULL);
 	}
 } /* End of 'player_update_vol' function */
