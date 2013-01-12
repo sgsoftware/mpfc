@@ -28,8 +28,9 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <json/json.h>
+#include <json-glib/json-glib.h>
 #include "file_utils.h"
+#include "json_helpers.h"
 #include "player.h"
 #include "server_client.h"
 #include "util.h"
@@ -165,15 +166,20 @@ void server_conn_client_notify(server_conn_desc_t *d, char nv)
 } /* End of 'server_conn_client_notify' function */
 
 /* Send a response to client and free message memory */
-void server_conn_response(server_conn_desc_t *d, const char *msg)
+static void server_conn_response(server_conn_desc_t *d, JsonNode *node)
 {
-	int len = strlen(msg);
-	char header[128];
+	size_t len;
+	char *msg = js_to_string(node, &len);
 
-	snprintf(header, sizeof(header), "Msg-Length: %d\nMsg-Type: r\n", len);
+	char header[128];
+	snprintf(header, sizeof(header), "Msg-Length: %zd\nMsg-Type: r\n", len);
 	if (!server_conn_send_buf(d, header, strlen(header)))
-		return;
+		goto finally;
 	server_conn_send_buf(d, msg, len);
+
+finally:
+	g_free(msg);
+	json_node_free(node);
 } /* End of 'server_conn_response' function */
 
 /* Validate file name. It shall not contain '..' */
@@ -212,7 +218,7 @@ static char *translate_file_name(char *name)
 } /* End of 'translate_file_name' function */
 
 /* Execute 'list_dir' command */
-static void server_conn_list_dir(char *name, struct json_object *js)
+static void server_conn_list_dir(char *name, JsonArray *js)
 {
 	char *real_name = NULL;
 	fu_dir_t *dir = NULL;
@@ -247,11 +253,10 @@ static void server_conn_list_dir(char *name, struct json_object *js)
 				continue;
 		}
 
-		struct json_object *js_child = json_object_new_object();
-		json_object_object_add(js_child, "name", json_object_new_string(de->d_name));
-		json_object_object_add(js_child, "type",
-				json_object_new_string(is_dir ? "d" : "f"));
-		json_object_array_add(js, js_child);
+		JsonObject *js_child = json_object_new();
+		json_object_set_string_member(js_child, "name", de->d_name);
+		json_object_set_string_member(js_child, "type", is_dir ? "d" : "f");
+		json_array_add_object_element(js, js_child);
 	}
 
 finally:
@@ -309,22 +314,19 @@ bool_t server_conn_exec_command(server_conn_desc_t *d)
 	}
 	else if (!strcmp(cmd_name, "get_cur_song"))
 	{
-		struct json_object *js = json_object_new_object();
+		JsonObject *js = json_object_new();
 		int cur_song = player_plist->m_cur_song;
 
-		json_object_object_add(js, "position", json_object_new_int(cur_song));
+		json_object_set_int_member(js, "position", cur_song);
 		if (cur_song >= 0)
 		{
 			const char *status = "";
 			song_t *s = player_plist->m_list[cur_song];
-			json_object_object_add(js, "title", json_object_new_string(
-						STR_TO_CPTR(s->m_title)));
+			json_object_set_string_member(js, "title", STR_TO_CPTR(s->m_title));
 
 			/* TODO: json/int64 */
-			json_object_object_add(js, "time", json_object_new_int(
-						TIME_TO_SECONDS(player_context->m_cur_time)));
-			json_object_object_add(js, "length", json_object_new_int(
-						TIME_TO_SECONDS(s->m_len)));
+			json_object_set_int_member(js, "time", TIME_TO_SECONDS(player_context->m_cur_time));
+			json_object_set_int_member(js, "length", TIME_TO_SECONDS(s->m_len));
 
 			if (player_context->m_status == PLAYER_STATUS_PLAYING)
 				status = "playing";
@@ -332,41 +334,35 @@ bool_t server_conn_exec_command(server_conn_desc_t *d)
 				status = "paused";
 			else if (player_context->m_status == PLAYER_STATUS_STOPPED)
 				status = "stopped";
-			json_object_object_add(js, "play_status", json_object_new_string(status));
+			json_object_set_string_member(js, "play_status", status);
 		}
 
-		server_conn_response(d, json_object_get_string(js));
-		json_object_put(js);
+		server_conn_response(d, js_make_node(js));
 	}
 	else if (!strcmp(cmd_name, "get_playlist"))
 	{
-		int i;
-		struct json_object *js = json_object_new_array();
+		JsonArray *js = json_array_new();
 
-		for ( i = 0; i < player_plist->m_len; i++ )
+		for ( int i = 0; i < player_plist->m_len; i++ )
 		{
-			struct json_object *js_child = json_object_new_object();
+			JsonObject *js_child = json_object_new();
 			song_t *s = player_plist->m_list[i];
-			json_object_object_add(js_child, "title", json_object_new_string(
-						STR_TO_CPTR(s->m_title)));
+			json_object_set_string_member(js_child, "title", STR_TO_CPTR(s->m_title));
 
 			/* TODO: json/int64 */
-			json_object_object_add(js_child, "length",
-					json_object_new_int(TIME_TO_SECONDS(s->m_len)));
+			json_object_set_int_member(js_child, "length", TIME_TO_SECONDS(s->m_len));
 
-			json_object_array_add(js, js_child);
+			json_array_add_object_element(js, js_child);
 		}
 
-		server_conn_response(d, json_object_get_string(js));
-		json_object_put(js);
+		server_conn_response(d, js_make_array_node(js));
 	}
 	else if (!strcmp(cmd_name, "list_dir"))
 	{
-		struct json_object *js = json_object_new_array();
+		JsonArray *js = json_array_new();
 		if (param_kind == PARAM_STRING)
 			server_conn_list_dir(param.str_param, js);
-		server_conn_response(d, json_object_get_string(js));
-		json_object_put(js);
+		server_conn_response(d, js_make_array_node(js));
 	}
 	else if (!strcmp(cmd_name, "add"))
 	{

@@ -80,12 +80,9 @@ AC_SUBST(ICU_LIBS)
 LIBS=$LIBS_save
 
 # Check for json
-LIBS_save=$LIBS
-AC_CHECK_HEADERS([json/json.h],,[AC_MSG_ERROR(*** Can't find json.h ***)])
-AC_CHECK_LIB(json, json_object_new_object,,[AC_MSG_ERROR(*** Can't find json library ***)])
-JSON_LIBS="-ljson"
+PKG_CHECK_MODULES(JSON, json-glib-1.0,, [AC_MSG_ERROR(*** json-glib 1.0 not found ***)])
+AC_SUBST(JSON_CFLAGS)
 AC_SUBST(JSON_LIBS)
-LIBS=$LIBS_save
 
 # Check for math lib
 LIBS_save=$LIBS

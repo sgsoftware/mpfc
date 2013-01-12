@@ -31,12 +31,13 @@
 #include <unistd.h>
 #include <gst/gst.h>
 #include <gst/audio/streamvolume.h>
-#include <json/json.h>
+#include <json-glib/json-glib.h>
 #include "types.h"
 #include "browser.h"
 #include "cfg.h"
 #include "command.h"
 #include "help_screen.h"
+#include "json_helpers.h"
 #include "logger.h"
 #include "logger_view.h"
 #include "main_types.h"
@@ -173,22 +174,6 @@ static void player_audio_setup_dlg( void );
  *
  *****/
 
-static int js_get_int( struct json_object *obj, char *key, int def )
-{
-	struct json_object *val = json_object_object_get(obj, key);
-	if (!obj)
-		return def;
-	return json_object_get_int(val);
-}
-
-static double js_get_double( struct json_object *obj, char *key, double def )
-{
-	struct json_object *val = json_object_object_get(obj, key);
-	if (!obj)
-		return def;
-	return json_object_get_double(val);
-}
-
 /* Load player state */
 static void player_load_state( void )
 {
@@ -196,32 +181,21 @@ static void player_load_state( void )
 	if (!fname)
 		goto finally_fname;
 
-	/* Allocate buffer */
-	int sz = util_get_file_size(fname);
-	if (sz <= 0)
-		goto finally_fname;
-	char *buf = (char *)malloc(sz + 1);
-	if (!buf)
-		goto finally_buf;
-
-	/* Read */
-	FILE *fd = fopen(fname, "rt");
-	if (!fd)
-		goto finally_fd;
-	if (!fgets(buf, sz + 1, fd))
-		goto finally_fd;
-
 	/* Parse */
-	struct json_object *js_root = json_tokener_parse(buf);
-	if (is_error(js_root) || !json_object_is_type(js_root, json_type_object))
+	JsonParser *parser = json_parser_new();
+	if (!json_parser_load_from_file(parser, fname, NULL))
 	{
 		logger_error(player_log, 1, "unable to parse player state");
-		js_root = NULL;
-		goto finally_js;
+		goto finally_fname;
 	}
 
+	JsonNode *root_node = json_parser_get_root(parser);
+	if (!JSON_NODE_HOLDS_OBJECT(root_node))
+		goto finally_js;
+	JsonObject *js_root = json_node_get_object(root_node);
+
 	/* Load playlist */
-	struct json_object *js_plist = json_object_object_get(js_root, "plist");
+	JsonArray *js_plist = js_get_array(js_root, "plist");
 	if (js_plist)
 		plist_import_from_json(player_plist, js_plist);
 
@@ -234,19 +208,13 @@ static void player_load_state( void )
 		player_end = js_get_int(js_root, "player-end", 0) - 1;
 		if (player_context->m_status != PLAYER_STATUS_STOPPED)
 			player_play(js_get_int(js_root, "cur-song", -1),
-					/* TODO: json/int64 */
-					SECONDS_TO_TIME(js_get_int(js_root, "cur-time", 0)));
+					js_get_int(js_root, "cur-time", 0));
 		player_context->m_volume = js_get_double(js_root, "volume", VOLUME_DEF);
 	}
 
 finally_js:
-	if (js_root)
-		json_object_put(js_root);
-finally_fd:
-	if (fd)
-		fclose(fd);
-finally_buf:
-	free(buf);
+	g_object_unref(parser);
+
 finally_fname:
 	free(fname);
 }
@@ -254,31 +222,27 @@ finally_fname:
 /* Save player state */
 static void player_save_state( void )
 {
-	/* We use JSON */
-	struct json_object *js_root = json_object_new_object();
+	JsonObject *js_root = json_object_new();
 
 	/* Save playlist */
 	if (player_plist && cfg_get_var_int(cfg_list, "save-playlist-on-exit"))
 	{
-		json_object_object_add(js_root, "plist", plist_export_to_json(player_plist));
+		json_object_set_array_member(js_root, "plist", plist_export_to_json(player_plist));
 	}
 
 	/* Save player state */
-	json_object_object_add(js_root, "cur-song", json_object_new_int(player_plist->m_cur_song));
-	/* TODO: json/int64 */
-	json_object_object_add(js_root, "cur-time", json_object_new_int(TIME_TO_SECONDS(player_context->m_cur_time)));
-	json_object_object_add(js_root, "player-status", json_object_new_int(player_context->m_status));
-	json_object_object_add(js_root, "player-start", json_object_new_int(player_start + 1));
-	json_object_object_add(js_root, "player-end", json_object_new_int(player_end + 1));
-	json_object_object_add(js_root, "volume", json_object_new_double(player_context->m_volume));
+	json_object_set_int_member(js_root, "cur-song", player_plist->m_cur_song);
+	json_object_set_int_member(js_root, "cur-time", player_context->m_cur_time);
+	json_object_set_int_member(js_root, "player-status", player_context->m_status);
+	json_object_set_int_member(js_root, "player-start", player_start + 1);
+	json_object_set_int_member(js_root, "player-end", player_end + 1);
+	json_object_set_double_member(js_root, "volume", player_context->m_volume);
 
 	/* Save to a file */
-	FILE *fd = fopen(util_strcat(getenv("HOME"), "/.mpfc/state", NULL), "wt");
-	if (fd)
-	{
-		fputs(json_object_get_string(js_root), fd);
-		fclose(fd);
-	}
+	JsonGenerator *gen = json_generator_new();
+	json_generator_set_root(gen, js_make_node(js_root));
+	char *fname = util_strcat(getenv("HOME"), "/.mpfc/state", NULL);
+	json_generator_to_file(gen, fname, NULL);
 
 	/* Save some stuff through the cfg system */
 	player_save_cfg();

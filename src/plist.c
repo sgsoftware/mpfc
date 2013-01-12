@@ -32,9 +32,10 @@
 #include <sys/types.h>
 #define __USE_GNU
 #include <unistd.h>
-#include <json/json.h>
+#include <json-glib/json-glib.h>
 #include "types.h"
 #include "file_utils.h"
+#include "json_helpers.h"
 #include "player.h"
 #include "plist.h"
 #include "pmng.h"
@@ -1319,91 +1320,59 @@ void plist_clear( plist_t *pl )
 } /* End of 'plist_clear' function */
 
 /* Export play list to a json object */
-struct json_object *plist_export_to_json( plist_t *pl )
+JsonArray *plist_export_to_json( plist_t *pl )
 {
-	struct json_object *js_plist = json_object_new_array();
+	JsonArray *js_plist = json_array_new();
 	for ( int i = 0; i < pl->m_len; i ++ )
 	{
 		song_t *s = pl->m_list[i];
-		struct json_object *js_song = json_object_new_object();
+		JsonObject *js_song = json_object_new();
 
-		json_object_object_add(js_song, "name", json_object_new_string(song_get_name(s)));
-
-		/* TODO: json/int64 */
-		json_object_object_add(js_song, "length", json_object_new_int(TIME_TO_SECONDS(s->m_full_len)));
-		json_object_object_add(js_song, "start_time", json_object_new_int(
-					s->m_start_time < 0 ? -1 : TIME_TO_SECONDS(s->m_start_time)));
-		json_object_object_add(js_song, "end_time", json_object_new_int(
-					s->m_end_time < 0 ? -1 : TIME_TO_SECONDS(s->m_end_time)));
+		json_object_set_string_member(js_song, "name", song_get_name(s));
+		json_object_set_int_member(js_song, "length", s->m_full_len);
+		json_object_set_int_member(js_song, "start_time", s->m_start_time);
+		json_object_set_int_member(js_song, "end_time", s->m_end_time);
 
 		if (s->m_default_title)
-			json_object_object_add(js_song, "title", json_object_new_string(s->m_default_title));
+			json_object_set_string_member(js_song, "title", s->m_default_title);
 
 		if (s->m_info && (s->m_info->m_flags & SI_INITIALIZED))
 		{
 			song_info_t *si = s->m_info;
-			struct json_object *js_si = json_object_new_object();
-			json_object_object_add(js_si, "artist",		json_object_new_string(si->m_artist));
-			json_object_object_add(js_si, "name",		json_object_new_string(si->m_name));
-			json_object_object_add(js_si, "album",		json_object_new_string(si->m_album));
-			json_object_object_add(js_si, "year",		json_object_new_string(si->m_year));
-			json_object_object_add(js_si, "genre",		json_object_new_string(si->m_genre));
-			json_object_object_add(js_si, "comments",	json_object_new_string(si->m_comments));
-			json_object_object_add(js_si, "track",		json_object_new_string(si->m_track));
+			JsonObject *js_si = json_object_new();
+			json_object_set_string_member(js_si, "artist",		si->m_artist);
+			json_object_set_string_member(js_si, "name",		si->m_name);
+			json_object_set_string_member(js_si, "album",		si->m_album);
+			json_object_set_string_member(js_si, "year",		si->m_year);
+			json_object_set_string_member(js_si, "comments",	si->m_comments);
+			json_object_set_string_member(js_si, "track",		si->m_track);
 			if (si->m_own_data)
-				json_object_object_add(js_si, "own_data",	json_object_new_string(si->m_own_data));
+				json_object_set_string_member(js_si, "own_data",	si->m_own_data);
 			if (si->m_charset)
-				json_object_object_add(js_si, "charset",	json_object_new_string(si->m_charset));
-			json_object_object_add(js_song, "song_info", js_si);
+				json_object_set_string_member(js_si, "charset",	si->m_charset);
+			json_object_set_object_member(js_song, "song_info", js_si);
 
 			if (s->m_flags & SONG_STATIC_INFO)
-				json_object_object_add(js_song, "static_info", json_object_new_int(1));
+				json_object_set_int_member(js_song, "static_info", 1);
 		}
 
-		json_object_array_add(js_plist, js_song);
+		json_array_add_object_element(js_plist, js_song);
 	}
 	return js_plist;
 }
 
-static const char *js_get_string( struct json_object *obj, char *key, char *def )
-{
-	struct json_object *val = json_object_object_get(obj, key);
-	if (!obj)
-		return def;
-	return json_object_get_string(val);
-}
-
-static int js_get_int( struct json_object *obj, char *key, int def )
-{
-	struct json_object *val = json_object_object_get(obj, key);
-	if (!obj)
-		return def;
-	return json_object_get_int(val);
-}
-
-static song_time_t js_get_time_int( struct json_object *obj, char *key, int def )
-{
-	int v = js_get_int(obj, key, def);
-	if (v < 0)
-		return v;
-	else
-		return SECONDS_TO_TIME(v);
-}
-
 /* Import play list from a json object */
-void plist_import_from_json( plist_t *pl, struct json_object *js_plist )
+void plist_import_from_json( plist_t *pl, JsonArray *js_plist )
 {
-	if (!json_object_is_type(js_plist, json_type_array))
-		return;
-
-	int num_songs = json_object_array_length(js_plist);
+	int num_songs = json_array_get_length(js_plist);
 	for ( int i = 0; i < num_songs; ++i )
 	{
-		struct json_object *js_song = json_object_array_get_idx(js_plist, i);
-		if (!js_song)
+		JsonNode *js_song_node = json_array_get_element(js_plist, i);
+		if (!js_song_node)
 			continue;
-		if (!json_object_is_type(js_song, json_type_object))
+		if (!JSON_NODE_HOLDS_OBJECT(js_song_node))
 			continue;
+		JsonObject *js_song = json_node_get_object(js_song_node);
 
 		const char *name = js_get_string(js_song, "name", NULL);
 		if (!name)
@@ -1414,14 +1383,13 @@ void plist_import_from_json( plist_t *pl, struct json_object *js_plist )
 		if (title)
 			metadata.m_title = title;
 
-		/* TODO: json/int64 */
-		metadata.m_len = js_get_time_int(js_song, "length", 0);
-		metadata.m_start_time = js_get_time_int(js_song, "start_time", -1);
-		metadata.m_end_time = js_get_time_int(js_song, "end_time", -1);
+		metadata.m_len = js_get_int(js_song, "length", 0);
+		metadata.m_start_time = js_get_int(js_song, "start_time", -1);
+		metadata.m_end_time = js_get_int(js_song, "end_time", -1);
 
-		struct json_object *js_si = json_object_object_get(js_song, "song_info");
 		song_info_t *si = NULL;
-		if (js_si && json_object_is_type(js_si, json_type_object))
+		JsonObject *js_si = js_get_obj(js_song, "song_info");
+		if (js_si)
 		{
 			si = si_new();
 			si_set_artist	(si, js_get_string(js_si, "artist", ""));

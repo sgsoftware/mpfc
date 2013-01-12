@@ -172,10 +172,10 @@ void plist_set_free( plist_set_t *set );
 void plist_set_add( plist_set_t *set, char *name );
 
 /* Export play list to a json object */
-struct json_object *plist_export_to_json( plist_t *pl );
+struct _JsonArray *plist_export_to_json( plist_t *pl );
 
 /* Import play list from a json object */
-void plist_import_from_json( plist_t *pl, struct json_object *js );
+void plist_import_from_json( plist_t *pl, struct _JsonArray *js );
 
 #endif
 
