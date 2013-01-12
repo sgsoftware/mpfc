@@ -2375,6 +2375,10 @@ static void player_on_audio_setup( wnd_t *wnd )
 			EDITBOX_LEN(sink_eb) > 0 ? EDITBOX_TEXT(sink_eb) : NULL);
 	cfg_set_var(cfg_list, "gstreamer.audio-sink-params.device", 
 			EDITBOX_LEN(dev_eb) > 0 ? EDITBOX_TEXT(dev_eb) : NULL);
+
+	/* Restart playback */
+	if (player_plist->m_cur_song >= 0)
+		player_play(player_plist->m_cur_song, player_context->m_cur_time);
 }
 
 /* Display audio output setup dialog */
