@@ -190,7 +190,7 @@ static void player_load_state( void )
 	}
 
 	JsonNode *root_node = json_parser_get_root(parser);
-	if (!JSON_NODE_HOLDS_OBJECT(root_node))
+	if (!root_node || !JSON_NODE_HOLDS_OBJECT(root_node))
 		goto finally_js;
 	JsonObject *js_root = json_node_get_object(root_node);
 
