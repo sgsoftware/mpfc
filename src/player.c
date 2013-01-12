@@ -158,7 +158,6 @@ int num_queued_songs = 0;
 /* Main thread ID */
 pthread_t player_main_tid = 0; 
 
-/* TODO: make it logarithmic? */
 #define VOLUME_SLIDER_RANGE (VOLUME_DEF * 2)
 
 /* Forward decls */
@@ -479,7 +478,6 @@ player_wnd_t *player_wnd_new( wnd_t *parent )
 	wnd_msg_add_handler(wnd, "mouse_mdown", player_on_mouse_mdown);
 	wnd_msg_add_handler(wnd, "mouse_ldouble", player_on_mouse_ldouble);
 	wnd_msg_add_handler(wnd, "user", player_on_user);
-	wnd_msg_add_handler(wnd, "command", player_on_command);
 
 	/* Set fields */
 	wnd->m_cursor_hidden = TRUE;
@@ -1223,97 +1221,6 @@ wnd_msg_retcode_t player_on_user( wnd_t *wnd, int id, void *data )
 	}
 	return WND_MSG_RETCODE_OK;
 } /* End of 'player_on_user' function */
-
-/* Handle command message */
-wnd_msg_retcode_t player_on_command( wnd_t *wnd, char *cmd, 
-		cmd_params_list_t *params )
-{
-	logger_debug(player_log, "got message %s", cmd);
-
-	/* Clear play list */
-	if (!strcmp(cmd, "plist-clear"))
-	{
-		player_plist->m_sel_start = 0;
-		player_plist->m_sel_end = player_plist->m_len;
-		plist_rem(player_plist);
-	}
-	/* Add a file to play list */
-	else if (!strcmp(cmd, "plist-add"))
-	{
-		char *name = cmd_next_string_param(params);
-		if (name != NULL)
-		{
-			plist_add(player_plist, name);
-			free(name);
-
-			if (cmd_check_next_param(params))
-			{
-				int pos = cmd_next_int_param(params);
-				plist_move(player_plist, player_plist->m_len - 1, FALSE);
-				plist_move_sel(player_plist, pos, FALSE);
-			}
-		}
-	}
-	/* Delete song from play list */
-	else if (!strcmp(cmd, "plist-del"))
-	{
-		int index = cmd_next_int_param(params);
-		if (index >= 0 && index < player_plist->m_len)
-		{
-			plist_move(player_plist, index, FALSE);
-			plist_rem(player_plist);
-		}
-	}
-	/* Play track */
-	else if (!strcmp(cmd, "play"))
-	{
-		int track = cmd_next_int_param(params);
-		player_context->m_status = PLAYER_STATUS_PLAYING;
-		player_play(track, 0);
-	}
-	/* Seek to time in current song */
-	else if (!strcmp(cmd, "seek"))
-	{
-		int value = cmd_next_int_param(params);
-		int relative = cmd_next_int_param(params);
-		player_seek(SECONDS_TO_TIME(value), relative);
-	}
-	/* Set option */
-	else if (!strcmp(cmd, "cfg"))
-	{
-		char *name = cmd_next_string_param(params);
-		char *value = cmd_next_string_param(params);
-		if (name != NULL)
-		{
-			if (value != NULL)
-				cfg_set_var(cfg_list, name, value);
-			else 
-				cfg_set_var_bool(cfg_list, name, TRUE);
-		}
-	}
-	/* Set volume */
-	else if (!strcmp(cmd, "set-volume"))
-	{
-		player_context->m_volume = cmd_next_int_param(params);
-		player_update_vol();
-	}
-	/* Simulate an action */
-	else if (!strcmp(cmd, "action"))
-	{
-		char *action;
-
-		action = cmd_next_string_param(params);
-		logger_debug(player_log, "action is %s", action);
-		if (action != NULL)
-		{
-			int repval = cmd_next_int_param(params);
-			logger_debug(player_log, "repval is %d", repval);
-			wnd_msg_send(player_wnd, "action", wnd_msg_action_new(action, repval));
-			free(action);
-		}
-	}
-	return WND_MSG_RETCODE_OK;
-} /* End of 'player_on_command' function */
 
 /* Display player function */
 wnd_msg_retcode_t player_on_display( wnd_t *wnd )

@@ -183,10 +183,6 @@ wnd_msg_retcode_t player_on_mouse_ldouble( wnd_t *wnd, int x, int y,
 /* Handle user message */
 wnd_msg_retcode_t player_on_user( wnd_t *wnd, int id, void *data );
 
-/* Handle command message */
-wnd_msg_retcode_t player_on_command( wnd_t *wnd, char *cmd, 
-		cmd_params_list_t *params );
-
 /* Signal handler */
 void player_handle_signal( int signum );
 

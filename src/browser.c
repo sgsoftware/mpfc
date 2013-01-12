@@ -748,7 +748,6 @@ void fb_load_info( browser_t *fb )
 		if (!pmng_search_format(player_pmng, item->m_name, ext))
 			continue;
 
-		/* TODO: m_full_name has to have prefix */
 		/* Load info */
 		si_free(item->m_info);
 		item->m_info = md_get_info(item->m_full_name, NULL, &item->m_len);
