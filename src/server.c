@@ -124,7 +124,11 @@ bool_t server_start( void )
 
 	int server_port = cfg_get_var_int(cfg_list, "server-port");
 	if (!server_port)
-		server_port = 0x4D50; /* 'MP' */
+		server_port = 0x4D50; /* 'MP' / 19792 */
+
+	int server_port_pool_size = cfg_get_var_int(cfg_list, "server-port-pool-size");
+	if (!server_port_pool_size)
+		server_port_pool_size = 10;
 
 	logger_message(player_log, 0, "Starting the server at port %d", server_port);
 
@@ -139,16 +143,22 @@ bool_t server_start( void )
 	}
 
 	/* Bind */
-	addr.sin_addr.s_addr = INADDR_ANY;
-	addr.sin_port = htons(server_port);
-	addr.sin_family = AF_INET;
-	if (bind(server_socket, (struct sockaddr*)&addr, sizeof(addr)) == -1)
+	for ( int i = 0; i < server_port_pool_size; i++, server_port++ )
 	{
-		logger_error(player_log, 0,
-				_("Server socket bind failed: %s"),
-				strerror(errno));
-		goto failed;
+		addr.sin_addr.s_addr = INADDR_ANY;
+		addr.sin_port = htons(server_port);
+		addr.sin_family = AF_INET;
+		if (bind(server_socket, (struct sockaddr*)&addr, sizeof(addr)) != -1)
+			goto bind_succeeded;
+		else
+			logger_error(player_log, 0,
+					_("Server socket bind at port %d failed: %s"),
+					server_port, strerror(errno));
 	}
+
+bind_succeeded:
+
+	logger_message(player_log, 0, "Server listening at port %d", server_port);
 
 	/* Listen */
 	if (listen(server_socket, 5) == -1)
