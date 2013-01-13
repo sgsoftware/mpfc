@@ -42,6 +42,8 @@ static song_info_t *md_get_info_gst( const char *full_name, song_time_t *len )
 		goto finally;
 	g_object_set(G_OBJECT(pipe), "audio-sink", sink, NULL);
 	g_object_set(G_OBJECT(pipe), "uri", full_name, NULL);
+	GstElement *videosink = gst_element_factory_make("fakesink", "videosink");
+	g_object_set(G_OBJECT(pipe), "video-sink", videosink, NULL);
 	gst_element_set_state(pipe, GST_STATE_PAUSED);
 
 	si = si_new();
