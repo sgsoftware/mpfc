@@ -37,7 +37,7 @@
 
 typedef union
 {
-	long num_param;
+	long long num_param;
 	char *str_param;
 } param_t;
 
@@ -78,10 +78,10 @@ static bool_t server_client_parse_cmd( char *cmd, char **cmd_name,
 	if ((*cmd) == '-' || isdigit(*cmd))
 	{
 		char *endptr;
-		long v;
+		long long v;
 		
 		errno = 0;
-		v = strtol(cmd, &endptr, 10);
+		v = strtoll(cmd, &endptr, 10);
 		if (errno)
 			return FALSE;
 
@@ -323,10 +323,8 @@ bool_t server_conn_exec_command(server_conn_desc_t *d)
 			const char *status = "";
 			song_t *s = player_plist->m_list[cur_song];
 			json_object_set_string_member(js, "title", STR_TO_CPTR(s->m_title));
-
-			/* TODO: json/int64 */
-			json_object_set_int_member(js, "time", TIME_TO_SECONDS(player_context->m_cur_time));
-			json_object_set_int_member(js, "length", TIME_TO_SECONDS(s->m_len));
+			json_object_set_int_member(js, "time", player_context->m_cur_time);
+			json_object_set_int_member(js, "length", s->m_len);
 
 			if (player_context->m_status == PLAYER_STATUS_PLAYING)
 				status = "playing";
@@ -348,9 +346,7 @@ bool_t server_conn_exec_command(server_conn_desc_t *d)
 			JsonObject *js_child = json_object_new();
 			song_t *s = player_plist->m_list[i];
 			json_object_set_string_member(js_child, "title", STR_TO_CPTR(s->m_title));
-
-			/* TODO: json/int64 */
-			json_object_set_int_member(js_child, "length", TIME_TO_SECONDS(s->m_len));
+			json_object_set_int_member(js_child, "length", s->m_len);
 
 			json_array_add_object_element(js, js_child);
 		}
@@ -396,9 +392,8 @@ bool_t server_conn_exec_command(server_conn_desc_t *d)
 	{
 		if (param_kind == PARAM_INT)
 		{
-			/* TODO: json/int64 */
-			int t = param.num_param;
-			player_seek(SECONDS_TO_TIME(t), FALSE);
+			long long t = param.num_param;
+			player_seek(t, FALSE);
 		}
 	}
 	else if (!strcmp(cmd_name, "clear_playlist"))
