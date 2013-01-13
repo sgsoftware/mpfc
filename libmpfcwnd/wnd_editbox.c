@@ -134,7 +134,8 @@ void editbox_set_text( editbox_t *eb, const char *text )
 {
 	assert(eb);
 	str_copy_cptr(eb->m_text, text == NULL ? "" : text);
-	editbox_move(eb, /*EDITBOX_LEN(eb)*/0);
+	int len = EDITBOX_LEN(eb);
+	editbox_move(eb, len > eb->m_width ? 0 : len);
 	eb->m_modified = TRUE;
 	wnd_msg_send(WND_OBJ(eb), "changed", editbox_changed_new());
 	wnd_invalidate(WND_OBJ(eb));
