@@ -1804,11 +1804,17 @@ void *player_thread( void *arg )
 				if (gst_element_query_position(player_pipeline, GST_FORMAT_TIME, &tm))
 				{
 					tm = player_translate_time(song_played, tm, FALSE);
-					if (tm - player_context->m_cur_time)
+					if (tm != player_context->m_cur_time)
 					{
+						int was_seconds = TIME_TO_SECONDS(player_context->m_cur_time);
+						int new_seconds = TIME_TO_SECONDS(tm);
 						player_context->m_cur_time = tm;
-						pmng_hook(player_pmng, "player-time");
-						wnd_invalidate(player_wnd);
+
+						if (was_seconds != new_seconds)
+						{
+							pmng_hook(player_pmng, "player-time");
+							wnd_invalidate(player_wnd);
+						}
 					}
 				}
 
