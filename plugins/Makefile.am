@@ -1,1 +1,1 @@
-SUBDIRS = charset general plist
+SUBDIRS = general plist

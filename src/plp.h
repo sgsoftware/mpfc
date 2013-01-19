@@ -64,7 +64,7 @@ typedef struct
 	byte m_reserved1[64];
 } plp_data_t;
 
-/* Charset plugin type */
+/* Play list plugin type */
 typedef struct tag_plist_plugin_t
 {
 	/* Common plugin data */

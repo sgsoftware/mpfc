@@ -187,12 +187,6 @@ static song_info_t *md_get_info_gst( const char *full_name, song_time_t *len )
 		util_wait();
 	}
 
-	/* Convert charset*/
-	/* TODO: gstreamer
-	si_convert_cs(si, cfg_get_var(plugin_get_root_cfg(PLUGIN(p)),
-				"charset-output"), plugin_get_pmng(PLUGIN(p)));
-				*/
-
 finally:
 	if (pipe)
 	{
@@ -289,20 +283,6 @@ bool_t md_save_info( const char *file_name, song_info_t *info )
 	bool_t saved = taglib_file_save(file);
 	taglib_file_free(file);
 	return saved;
-
-	/* Convert charset */
-	/* TODO: gstreamer/taglib
-	char *was_cs = (info->m_charset == NULL ? NULL : 
-			strdup(info->m_charset));
-	pmng_t *pmng = plugin_get_pmng(PLUGIN(p));
-	
-	si_convert_cs(info, cfg_get_var(pmng_get_cfg(pmng), 
-				"charset-save-info"), pmng);
-	ret = p->m_pd.m_save_info(file_name, info);
-	si_convert_cs(info, was_cs, pmng);
-	if (was_cs != NULL)
-		free(was_cs);
-		*/
 } /* End of 'md_save_info' function */
 
 /* End of 'metadata_io.c' file */

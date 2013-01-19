@@ -2359,7 +2359,6 @@ enum
 {
 	PLAYER_PMNG_PLIST = 0,
 	PLAYER_PMNG_GENERAL,
-	PLAYER_PMNG_CHARSET,
 	PLAYER_PMNG_COUNT
 };
 typedef struct 
@@ -2397,10 +2396,6 @@ void player_pmng_dialog( void )
 	views[PLAYER_PMNG_GENERAL].m_btn_title = _("&General");
 	views[PLAYER_PMNG_GENERAL].m_name = "general";
 	views[PLAYER_PMNG_GENERAL].m_letter = 'g';
-	views[PLAYER_PMNG_CHARSET].m_title = _("Charset");
-	views[PLAYER_PMNG_CHARSET].m_btn_title = _("C&harset");
-	views[PLAYER_PMNG_CHARSET].m_name = "charset";
-	views[PLAYER_PMNG_CHARSET].m_letter = 'h';
 
 	/* Create dialog and views */
 	mvd = mview_dialog_new(wnd_root, _("Plugins manager"));
@@ -2444,8 +2439,6 @@ void player_pmng_dialog( void )
 			index = PLAYER_PMNG_PLIST;
 		else if (p->m_type == PLUGIN_TYPE_GENERAL)
 			index = PLAYER_PMNG_GENERAL;
-		else if (p->m_type == PLUGIN_TYPE_CHARSET)
-			index = PLAYER_PMNG_CHARSET;
 		listbox_add(views[index].m_list, p->m_name, p);
 	}
 

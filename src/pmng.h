@@ -25,7 +25,6 @@
 
 #include "types.h"
 #include "cfg.h"
-#include "csp.h"
 #include "command.h"
 #include "logger.h"
 #include "main_types.h"
@@ -102,9 +101,6 @@ plugin_t *pmng_search_by_name( pmng_t *pmng, char *name,
 
 /* Check if specified plugin is already loaded */
 bool_t pmng_is_loaded( pmng_t *pmng, const char *name, plugin_type_t type_mask );
-
-/* Find charset plugin which supports specified set */
-cs_plugin_t *pmng_find_charset( pmng_t *pmng, char *name, int *index );
 
 /* Get configuration variables list */
 cfg_node_t *pmng_get_cfg( pmng_t *pmng );

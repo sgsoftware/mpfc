@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "types.h"
-#include "charset.h"
 #include "genre_list.h"
 #include "pmng.h"
 #include "song_info.h"
@@ -48,7 +47,6 @@ song_info_t *si_new( void )
 	si->m_comments = strdup("");
 	si->m_own_data = strdup("");
 	si->m_genre = strdup("");
-	si->m_charset = NULL;
 	si->m_glist = NULL;
 	return si;
 } /* End of 'si_new' function */
@@ -76,10 +74,6 @@ song_info_t *si_dup( song_info_t *info )
 	si->m_comments = strdup(info->m_comments);
 	si->m_genre = strdup(info->m_genre);
 	si->m_own_data = strdup(info->m_own_data);
-	if (info->m_charset != NULL)
-		si->m_charset = strdup(info->m_charset);
-	else
-		si->m_charset = NULL;
 	si->m_flags = info->m_flags;
 	si->m_glist = info->m_glist;
 	return si;
@@ -100,8 +94,6 @@ void si_free( song_info_t *si )
 	free(si->m_comments);
 	free(si->m_own_data);
 	free(si->m_genre);
-	if (si->m_charset != NULL)
-		free(si->m_charset);
 	free(si);
 } /* End of 'si_free' function */
 
@@ -227,55 +219,6 @@ void si_set_own_data( song_info_t *si, const char *own_data )
 	free(si->m_own_data);
 	si->m_own_data = strdup(own_data == NULL ? "" : own_data);
 } /* End of 'si_set_own_data' function */
-
-/* Set charset */
-void si_set_charset( song_info_t *si, char *cs )
-{
-	if (si == NULL)
-		return;
-
-	if (si->m_charset != NULL)
-		free(si->m_charset);
-	if (cs == NULL)
-		si->m_charset = NULL;
-	else
-		si->m_charset = strdup(cs);
-} /* End of 'si_set_charset' function */
-
-/* Convert info fields from one charset to another */
-void si_convert_cs( song_info_t *si, char *new_cs, pmng_t *pmng )
-{
-	char *str;
-	
-	if (si == NULL || new_cs == NULL || pmng == NULL)
-		return;
-
-	si_convert_field(si, &si->m_name, new_cs, pmng);
-	si_convert_field(si, &si->m_artist, new_cs, pmng);
-	si_convert_field(si, &si->m_album, new_cs, pmng);
-	si_convert_field(si, &si->m_year, new_cs, pmng);
-	si_convert_field(si, &si->m_track, new_cs, pmng);
-	si_convert_field(si, &si->m_comments, new_cs, pmng);
-	si_set_charset(si, new_cs);
-} /* End of 'si_convert_cs' function */
-
-/* Convert one field */
-void si_convert_field( song_info_t *si, char **field, char *new_cs, 
-							pmng_t *pmng )
-{
-	char *cs;
-	char *str;
-	
-	cs = si->m_charset;
-	if (cs == NULL)
-		cs = cfg_get_var(pmng_get_cfg(pmng), "charset-input");
-	str = cs_convert(*field, cs, new_cs, pmng);
-	if (str != NULL)
-	{
-		free(*field);
-		*field = str;
-	}
-} /* End of 'si_convert_field' function */
 
 /* End of 'song_info.h' file */
 

@@ -61,8 +61,6 @@ plugin_t *plugin_init( pmng_t *pmng, char *name, plugin_type_t type, int size,
 	/* Create plugin configuration list */
 	if (type == PLUGIN_TYPE_PLIST)
 		prefix = "plugins.plist";
-	else if (type == PLUGIN_TYPE_CHARSET)
-		prefix = "plugins.charset";
 	else if (type == PLUGIN_TYPE_GENERAL)
 		prefix = "plugins.general";
 	else

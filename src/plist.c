@@ -1348,8 +1348,6 @@ JsonArray *plist_export_to_json( plist_t *pl )
 			json_object_set_string_member(js_si, "track",		si->m_track);
 			if (si->m_own_data)
 				json_object_set_string_member(js_si, "own_data",	si->m_own_data);
-			if (si->m_charset)
-				json_object_set_string_member(js_si, "charset",	si->m_charset);
 			json_object_set_object_member(js_song, "song_info", js_si);
 
 			if (s->m_flags & SONG_STATIC_INFO)

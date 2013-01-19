@@ -136,19 +136,6 @@ else
 	AC_MSG_RESULT([*** audiocd plugin disabled per user request ***])
 fi
 
-# Choose charset plugins
-ALL_CHARSET_PLUGINS=""
-for plugin in $ALL_CHARSET_PLUGINS; do
-	name="\$enable_charset_$plugin"
-	value=`eval echo $name`
-	SUMMARY_MSG="No"
-	if test "x${value}" = xyes; then
-		CHARSET_PLUGINS="$CHARSET_PLUGINS $plugin"
-		SUMMARY_MSG="Yes"
-	fi
-	CHARSET_SUMMARY="$CHARSET_SUMMARY\n$plugin: $SUMMARY_MSG"
-done
-
 # Choose general plugins
 ALL_GENERAL_PLUGINS=""
 for plugin in $ALL_GENERAL_PLUGINS; do
@@ -176,7 +163,6 @@ for plugin in $ALL_PLIST_PLUGINS; do
 done
 
 AC_SUBST(GENERAL_PLUGINS)
-AC_SUBST(CHARSET_PLUGINS)
 AC_SUBST(PLIST_PLUGINS)
 
 PKG_CHECK_MODULES(GSTREAMER, gstreamer-1.0,, [AC_MSG_ERROR(*** GStreamer 1.0 not found ***)])
@@ -201,7 +187,6 @@ AC_OUTPUT(Makefile \
 		  po/Makefile.in  \
 		  src/Makefile \
 		  plugins/Makefile \
-		  plugins/charset/Makefile \
 		  plugins/general/Makefile \
 		  plugins/plist/Makefile \
 		  plugins/plist/m3u/Makefile \
@@ -213,6 +198,5 @@ AC_OUTPUT(Makefile \
 
 # Print plugins summary
 echo -e "\n****** Plugins summary ******\n"
-echo -e "Charset plugins:$CHARSET_SUMMARY\n"
 echo -e "General plugins:$GENERAL_SUMMARY\n"
 echo -e "Playlist plugins:$PLIST_SUMMARY\n"

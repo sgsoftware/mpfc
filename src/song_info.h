@@ -40,7 +40,6 @@ typedef struct tag_song_info_t
 	char *m_comments;
 	char *m_track;
 	char *m_own_data;
-	char *m_charset;
 	genre_list_t *m_glist;
 	dword m_flags;
 } song_info_t;
@@ -81,16 +80,6 @@ void si_set_genre( song_info_t *si, const char *genre );
 
 /* Set own data */
 void si_set_own_data( song_info_t *si, const char *own_data );
-
-/* Set charset */
-void si_set_charset( song_info_t *si, char *cs );
-
-/* Convert info fields from one charset to another */
-void si_convert_cs( song_info_t *si, char *new_cs, struct tag_pmng_t *pmng );
-
-/* Convert one field */
-void si_convert_field( song_info_t *si, char **field, char *new_cs, 
-							struct tag_pmng_t *pmng );
 
 #endif
 

@@ -34,9 +34,8 @@ struct tag_pmng_t;
 /* Plugin types */
 typedef enum
 {
-	PLUGIN_TYPE_CHARSET = 1 << 1,
-	PLUGIN_TYPE_GENERAL = 1 << 2,
-	PLUGIN_TYPE_PLIST = 1 << 3,
+	PLUGIN_TYPE_GENERAL = 1 << 1,
+	PLUGIN_TYPE_PLIST = 1 << 2,
 	PLUGIN_TYPE_ALL = 0xFFFFFF
 } plugin_type_t;
 

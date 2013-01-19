@@ -29,7 +29,6 @@
 #include "types.h"
 #include "cfg.h"
 #include "command.h"
-#include "csp.h"
 #include "genp.h"
 #include "plugin.h"
 #include "pmng.h"
@@ -295,8 +294,6 @@ static void pmng_glob_handler( pmng_t *pmng, plugin_type_t type, const char *pat
 	/* Initialize plugin */
 	if (type == PLUGIN_TYPE_PLIST)
 		p = plp_init(name, pmng);
-	else if (type == PLUGIN_TYPE_CHARSET)
-		p = csp_init(name, pmng);
 	else if (type == PLUGIN_TYPE_GENERAL)
 		p = genp_init(name, pmng);
 	if (p == NULL)
@@ -314,8 +311,7 @@ bool_t pmng_load_plugins( pmng_t *pmng )
 	{
 		plugin_type_t m_type;
 		char *m_dir;
-	} types[] = { { PLUGIN_TYPE_CHARSET, "charset" },
-				  { PLUGIN_TYPE_PLIST, "plist" },
+	} types[] = { { PLUGIN_TYPE_PLIST, "plist" },
 				  { PLUGIN_TYPE_GENERAL, "general" } };
 	int num_types, i;
 	if (pmng == NULL)
@@ -374,40 +370,6 @@ bool_t pmng_is_loaded( pmng_t *pmng, const char *name, plugin_type_t type )
 	}
 	return FALSE;
 } /* End of 'pmng_is_loaded' function */
-
-/* Find charset plugin which supports specified set */
-cs_plugin_t *pmng_find_charset( pmng_t *pmng, char *name, int *index )
-{
-	pmng_iterator_t iter;
-	
-	if (pmng == NULL)
-		return NULL;
-
-	iter = pmng_start_iteration(pmng, PLUGIN_TYPE_CHARSET);
-	for ( ;; )
-	{
-		int num, j;
-		cs_plugin_t *csp = CHARSET_PLUGIN(pmng_iterate(&iter));
-		if (csp == NULL)
-			break;
-
-		num = csp_get_num_sets(csp);
-		for ( j = 0; j < num; j ++ )
-		{
-			char *sn;
-
-			if ((sn = csp_get_cs_name(csp, j)) != NULL)
-			{
-				if (!strcmp(sn, name))
-				{
-					*index = j;
-					return csp;
-				}
-			}
-		}
-	}
-	return NULL;
-} /* End of 'pmng_find_charset' function */
 
 /* Get configuration variables list */
 cfg_node_t *pmng_get_cfg( pmng_t *pmng )
