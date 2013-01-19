@@ -480,6 +480,9 @@ void wnd_set_default_styles( cfg_node_t *list );
 /* Get window's top-level ancestor */
 wnd_t *wnd_get_top_level_ancestor( wnd_t *wnd );
 
+/* Set global title */
+void wnd_set_global_title( const char *title );
+
 #endif
 
 /* End of 'wnd.h' file */

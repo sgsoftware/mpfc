@@ -31,6 +31,18 @@
 #include "wnd_root.h"
 #include "util.h"
 
+static const char *wnd_set_title_seq_start = NULL;
+static const char *wnd_set_title_seq_end = NULL;
+
+/* Check that this is an xterm or compatible terminal */
+static bool_t is_xterm( void )
+{
+	const char *term = getenv("TERM");
+	if (!term)
+		return FALSE;
+	return !strcmp(term, "xterm") || !strncmp(term, "rxvt", 4);
+} /* End of 'is_xterm' function */
+
 /* Initialize window system and create root window */
 wnd_t *wnd_init( cfg_node_t *cfg_list, logger_t *log )
 {
@@ -157,6 +169,19 @@ wnd_t *wnd_init( cfg_node_t *cfg_list, logger_t *log )
 		goto failed;
 	global->m_mouse_data = mouse_data;
 	
+	/* Initialize escape sequence for setting window title */
+	wnd_set_title_seq_start = cfg_get_var(global->m_root_cfg, "ti.ts");
+	if (!wnd_set_title_seq_start)
+	{
+		if (is_xterm())
+			wnd_set_title_seq_start = "\033]2;";
+	}
+	else if (!(*wnd_set_title_seq_start))
+		wnd_set_title_seq_start = NULL;
+	wnd_set_title_seq_end = cfg_get_var(global->m_root_cfg, "ti.fs");
+	if (!wnd_set_title_seq_end)
+		wnd_set_title_seq_end = "\007";
+
 	/* Send display message to this window */
 	wnd_postinit(wnd_root);
 	return wnd_root;
@@ -1578,6 +1603,13 @@ wnd_t *wnd_get_top_level_ancestor( wnd_t *wnd )
 		wnd = wnd->m_parent;
 	return wnd;
 } /* End of 'wnd_get_top_level_ancestor' function */
+
+/* Set global title */
+void wnd_set_global_title( const char *title )
+{
+	if (wnd_set_title_seq_start && title && *title)
+		printf("%s%s%s", wnd_set_title_seq_start, title, wnd_set_title_seq_end);
+} /* End of 'wnd_set_global_title' function */
 
 /* End of 'wnd.c' file */
 
