@@ -31,6 +31,7 @@
 #include <unistd.h>
 #include <gst/gst.h>
 #include <gst/audio/streamvolume.h>
+#include <gst/audio/audio.h>
 #include <json-glib/json-glib.h>
 #include "types.h"
 #include "browser.h"
@@ -294,6 +295,7 @@ bool_t player_init( int argc, char *argv[] )
 	player_context->m_cur_time = 0;
 	player_context->m_bitrate = 0;
 	player_context->m_freq = 0;
+	player_context->m_depth = 0;
 	player_context->m_channels = 0;
 	player_context->m_status = PLAYER_STATUS_STOPPED;
 	player_context->m_volume = VOLUME_DEF;
@@ -1285,8 +1287,26 @@ wnd_msg_retcode_t player_on_display( wnd_t *wnd )
 		aparams_ptr += sprintf(aparams_ptr, "%d kbps ", player_context->m_bitrate);
 	if (player_context->m_freq)
 		aparams_ptr += sprintf(aparams_ptr, "%d Hz ", player_context->m_freq);
+	if (player_context->m_depth)
+		aparams_ptr += sprintf(aparams_ptr, "%db ", player_context->m_depth);
 	if (player_context->m_channels)
-		aparams_ptr += sprintf(aparams_ptr, "%d-chan", player_context->m_channels);
+	{
+		switch (player_context->m_channels)
+		{
+		case 1:
+			aparams_ptr += sprintf(aparams_ptr, "Mono");
+			break;
+		case 2:
+			aparams_ptr += sprintf(aparams_ptr, "Stereo");
+			break;
+		case 4:
+			aparams_ptr += sprintf(aparams_ptr, "Quadro");
+			break;
+		default:
+			aparams_ptr += sprintf(aparams_ptr, "%d-chan", player_context->m_channels);
+			break;
+		}
+	}
 	wnd_move(wnd, 0, WND_WIDTH(player_wnd) - strlen(aparams) - 1, 
 			PLAYER_SLIDER_VOL_Y - 1);
 	wnd_apply_style(wnd, "audio-params-style");
@@ -1605,6 +1625,7 @@ static void player_on_caps_set(GObject *obj, GParamSpec *pspec, gpointer user_da
 	if (!caps)
 		return;
 
+	/*
 	GstStructure *s = gst_caps_get_structure(caps, 0);
 	if (s)
 	{
@@ -1620,6 +1641,25 @@ static void player_on_caps_set(GObject *obj, GParamSpec *pspec, gpointer user_da
 				wnd_invalidate(player_wnd);
 			}
 
+		}
+	}
+	*/
+
+	GstAudioInfo info;
+	gst_audio_info_init(&info);
+	if (gst_audio_info_from_caps(&info, caps))
+	{
+		int rate = GST_AUDIO_INFO_RATE(&info);
+		int channels = GST_AUDIO_INFO_CHANNELS(&info);
+		int depth = GST_AUDIO_INFO_DEPTH(&info);
+		if (player_context->m_freq != rate ||
+				player_context->m_channels != channels ||
+				player_context->m_depth != depth)
+		{
+			player_context->m_freq = rate;
+			player_context->m_channels = channels;
+			player_context->m_depth = depth;
+			wnd_invalidate(player_wnd);
 		}
 	}
 
@@ -1862,7 +1902,7 @@ void *player_thread( void *arg )
 		}
 
 		/* End playing */
-		player_context->m_bitrate = player_context->m_freq = player_context->m_channels = 0;
+		player_context->m_bitrate = player_context->m_freq = player_context->m_channels = player_context->m_depth = 0;
 
 		/* Update screen */
 		wnd_invalidate(player_wnd);

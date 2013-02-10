@@ -133,7 +133,7 @@ typedef struct
 	song_time_t m_cur_time;
 
 	/* Current audio parameters */
-	int m_bitrate, m_freq, m_channels;
+	int m_bitrate, m_freq, m_channels, m_depth;
 
 	/* Player status */
 	int m_status;
