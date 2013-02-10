@@ -1625,26 +1625,6 @@ static void player_on_caps_set(GObject *obj, GParamSpec *pspec, gpointer user_da
 	if (!caps)
 		return;
 
-	/*
-	GstStructure *s = gst_caps_get_structure(caps, 0);
-	if (s)
-	{
-		int rate = 0, channels = 0;
-		if (gst_structure_get_int(s, "rate", &rate) &&
-			gst_structure_get_int(s, "channels", &channels))
-		{
-			if (player_context->m_freq != rate ||
-					player_context->m_channels != channels)
-			{
-				player_context->m_freq = rate;
-				player_context->m_channels = channels;
-				wnd_invalidate(player_wnd);
-			}
-
-		}
-	}
-	*/
-
 	GstAudioInfo info;
 	gst_audio_info_init(&info);
 	if (gst_audio_info_from_caps(&info, caps))
