@@ -22,12 +22,9 @@ COMMON_LIBS=""
 AC_SUBST(COMMON_LIBS)
 
 # Check for ncurses
-LIBS_save=$LIBS
-AC_CHECK_HEADERS([ncursesw/curses.h],,[AC_MSG_ERROR(*** Can't find curses.h ***)])
-AC_CHECK_LIB(ncursesw, waddch,,[AC_MSG_ERROR(*** Can't find ncurses library ***)])
-CURSES_LIBS="-lncursesw"
+PKG_CHECK_MODULES(CURSES, ncursesw,, [AC_MSG_ERROR(*** ncursesw not found ***)])
+AC_SUBST(CURSES_CFLAGS)
 AC_SUBST(CURSES_LIBS)
-LIBS=$LIBS_save
 
 # Check for pthread
 LIBS_save=$LIBS

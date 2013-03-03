@@ -23,7 +23,7 @@
 #ifndef __SG_MPFC_WND_KBD_H__
 #define __SG_MPFC_WND_KBD_H__
 
-#include <ncursesw/curses.h>
+#include <curses.h>
 #include <pthread.h>
 #include "types.h"
 

@@ -21,7 +21,7 @@
  */
 
 #include <assert.h>
-#include <ncursesw/curses.h>
+#include <curses.h>
 #include <errno.h>
 #include <pthread.h>
 #include <sys/time.h>
