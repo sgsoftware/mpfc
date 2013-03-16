@@ -37,14 +37,14 @@
 
 typedef union
 {
-	long long num_param;
+	double num_param;
 	char *str_param;
 } param_t;
 
 typedef enum
 {
 	PARAM_NONE,
-	PARAM_INT,
+	PARAM_NUMBER,
 	PARAM_STRING
 } param_kind_t;
 
@@ -78,10 +78,9 @@ static bool_t server_client_parse_cmd( char *cmd, char **cmd_name,
 	if ((*cmd) == '-' || isdigit(*cmd))
 	{
 		char *endptr;
-		long long v;
 		
 		errno = 0;
-		v = strtoll(cmd, &endptr, 10);
+		double v = strtold(cmd, &endptr);
 		if (errno)
 			return FALSE;
 
@@ -89,7 +88,7 @@ static bool_t server_client_parse_cmd( char *cmd, char **cmd_name,
 		if (*endptr)
 			return FALSE;
 
-		(*param_kind) = PARAM_INT;
+		(*param_kind) = PARAM_NUMBER;
 		param->num_param = v;
 		return TRUE;
 	}
@@ -285,7 +284,7 @@ bool_t server_conn_exec_command(server_conn_desc_t *d)
 	/* Execute */
 	if (!strcmp(cmd_name, "play"))
 	{
-		int song = (param_kind == PARAM_INT ? param.num_param : 0);
+		int song = (param_kind == PARAM_NUMBER ? param.num_param : 0);
 		player_start_play(song, 0);
 	}
 	else if (!strcmp(cmd_name, "resume"))
@@ -353,6 +352,19 @@ bool_t server_conn_exec_command(server_conn_desc_t *d)
 
 		server_conn_response(d, js_make_array_node(js));
 	}
+	else if (!strcmp(cmd_name, "get_volume"))
+	{
+		JsonObject *js = json_object_new();
+		json_object_set_double_member(js, "volume", player_context->m_volume);
+		server_conn_response(d, js_make_node(js));
+	}
+	else if (!strcmp(cmd_name, "set_volume"))
+	{
+		if (param_kind == PARAM_NUMBER)
+		{
+			player_set_vol(param.num_param, FALSE);
+		}
+	}
 	else if (!strcmp(cmd_name, "list_dir"))
 	{
 		JsonArray *js = json_array_new();
@@ -372,7 +384,7 @@ bool_t server_conn_exec_command(server_conn_desc_t *d)
 	}
 	else if (!strcmp(cmd_name, "remove"))
 	{
-		if (param_kind == PARAM_INT)
+		if (param_kind == PARAM_NUMBER)
 		{
 			int pos = param.num_param;
 			plist_move(player_plist, pos, FALSE);
@@ -381,7 +393,7 @@ bool_t server_conn_exec_command(server_conn_desc_t *d)
 	}
 	else if (!strcmp(cmd_name, "queue"))
 	{
-		if (param_kind == PARAM_INT)
+		if (param_kind == PARAM_NUMBER)
 		{
 			int pos = param.num_param;
 			plist_move(player_plist, pos, FALSE);
@@ -390,7 +402,7 @@ bool_t server_conn_exec_command(server_conn_desc_t *d)
 	}
 	else if (!strcmp(cmd_name, "seek"))
 	{
-		if (param_kind == PARAM_INT)
+		if (param_kind == PARAM_NUMBER)
 		{
 			long long t = param.num_param;
 			player_seek(t, FALSE);
