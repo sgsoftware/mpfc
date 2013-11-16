@@ -1,1236 +1,834 @@
 # SOME DESCRIPTIVE TITLE.
-# Copyright (C) 2003 THE PACKAGE'S COPYRIGHT HOLDER
+# Copyright (C) 2003-2013 THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# Sergey E. Galanov <sgsoftware@mail.ru>, 2003.
+# Sergey E. Galanov <sergey.e.galanov@gmail.com>, 2003-2013.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: mpfc 1.3.5\n"
+"Project-Id-Version: mpfc 2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-01-07 17:31+0400\n"
-"PO-Revision-Date: 2003-02-13 09:15+0300\n"
-"Last-Translator: Sergey E. Galanov <sgsoftware@mail.ru>\n"
-"Language-Team: Russian <sgsoftware@mail.ru>\n"
+"POT-Creation-Date: 2013-05-03 16:47+0400\n"
+"PO-Revision-Date: 2013-11-16 19:47+0300\n"
+"Last-Translator: Sergey E. Galanov <sergey.e.galanov@gmail.com>\n"
+"Language-Team: Russian <sergey.e.galanov@gmail.com>\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=KOI8-R\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; \tplural=n%10==1 && n%100!=11 ? 0 : \tn%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 
-# c-format
-#: libmpfc/file_http.c:89
+#: libmpfc/plugin.c:83
 #, c-format
-msgid "Getting address of host %s"
-msgstr "Получаю адрес %s"
+msgid "Plugin %s has no 'plugin_exchange_data'"
+msgstr "п÷п╩п╟пЁп╦п╫ %s п╫п╣ п╦п╪п╣п╣я┌ 'plugin_exchange_data'"
 
-#: libmpfc/file_http.c:93
+#: libmpfc/plugin_mng.c:123
 #, c-format
-msgid "Failed to connect to %s: getaddrinfo: %s"
-msgstr ""
+msgid "Supported media file extensions: %s"
+msgstr "п÷п╬п╢п╢п╣я─п╤п╦п╡п╟п╣п╪я▀п╣ я─п╟я│я┬п╦я─п╣п╫п╦я▐ п╪п╣п╢п╦п╟ я└п╟п╧п╩п╬п╡: %s"
 
-#: libmpfc/file_http.c:101
-#, c-format
-msgid "Connecting to %s"
-msgstr "Подключаюсь к %s"
+#: libmpfcwnd/wnd.c:773
+msgid "No children\n"
+msgstr "п²п╣я┌ п╢п╣я┌п╣п╧\n"
 
-#: libmpfc/file_http.c:109
-#, fuzzy, c-format
-msgid "Failed to connect to %s"
-msgstr "Не могу сохранить информацию в файл %s"
-
-#: libmpfc/file_http.c:112 libmpfc/file_http.c:169 libmpfcwnd/wnd_dialog.c:89
+#: libmpfcwnd/wnd_dialog.c:89
 msgid "OK"
 msgstr "OK"
 
-# c-format
-#: libmpfc/file_http.c:115
-#, c-format
-msgid "Sending request for file %s"
-msgstr "Отправляю запрос на файл %s"
-
-#: libmpfc/file_http.c:124
-msgid "Getting HTTP header"
-msgstr "Получаю заголовок HTTP"
-
-# c-format
-#: libmpfc/file_http.c:185
-#, c-format
-msgid "Redirect to %s"
-msgstr "Перенаправление к %s"
-
-#: libmpfc/file_http.c:194
-msgid "Failure"
-msgstr "Облом!"
-
-#: libmpfc/file_http.c:262 libmpfc/file_http.c:267
-#, c-format
-msgid "Filling buffer: %d%% done"
-msgstr "Заполняю буфер: %d%%"
-
-#: libmpfc/plugin.c:85
-#, c-format
-msgid "Plugin %s has no 'plugin_exchange_data'"
-msgstr "Плагин %s не имеет 'plugin_exchange_data'"
-
-#: libmpfc/plugin_mng.c:124
-#, c-format
-msgid "Supported media file extensions: %s"
-msgstr ""
-
-#: libmpfcwnd/wnd.c:748
-msgid "No children\n"
-msgstr "Нет детей\n"
-
 #: libmpfcwnd/wnd_dialog.c:91
 msgid "Cancel"
-msgstr "Отмена"
+msgstr "п·я┌п╪п╣п╫п╟"
 
-#: src/browser.c:91
+#: src/browser.c:93
 msgid "File browser"
-msgstr "Браузер файлов"
+msgstr "п▒я─п╟я┐п╥п╣я─ я└п╟п╧п╩п╬п╡"
 
-#: src/browser.c:140
+#: src/browser.c:142
 #, c-format
 msgid "Current directory is %s\n"
-msgstr "Текущий каталог %s\n"
+msgstr "п╒п╣п╨я┐я┴п╦п╧ п╨п╟я┌п╟п╩п╬пЁ %s\n"
 
-#: src/browser.c:177
+#: src/browser.c:179
 msgid "Enter name you want to search: "
-msgstr "Введите имя, которое вы хотите искать: "
+msgstr "п▓п╡п╣п╢п╦я┌п╣ п╦п╪я▐, п╨п╬я┌п╬я─п╬п╣ п╡я▀ я┘п╬я┌п╦я┌п╣ п╦я│п╨п╟я┌я▄: "
 
-#: src/browser.c:644
+#: src/browser.c:646
 msgid "Select files matching pattern"
-msgstr "Выбрать файлы, удовлетворяющие шаблону"
-
-#: src/browser.c:645
-msgid "Deselect files matching pattern"
-msgstr "Снять выделение с файлов, удовлетворяющих шаблону"
+msgstr "п▓я▀п╠я─п╟я┌я▄ я└п╟п╧п╩я▀, я┐п╢п╬п╡п╩п╣я┌п╡п╬я─я▐я▌я┴п╦п╣ я┬п╟п╠п╩п╬п╫я┐"
 
 #: src/browser.c:647
+msgid "Deselect files matching pattern"
+msgstr "п║п╫я▐я┌я▄ п╡я▀п╢п╣п╩п╣п╫п╦п╣ я│ я└п╟п╧п╩п╬п╡, я┐п╢п╬п╡п╩п╣я┌п╡п╬я─я▐я▌я┴п╦я┘ я┬п╟п╠п╩п╬п╫я┐"
+
+#: src/browser.c:649
 msgid "P&attern: "
-msgstr "Шаблон (&a): "
+msgstr "п╗п╟п╠п╩п╬п╫ (&a): "
 
 #: src/browser.c:817
 msgid "File name"
-msgstr "Имя файла"
+msgstr "п≤п╪я▐ я└п╟п╧п╩п╟"
 
 #: src/browser.c:823
 msgid "Title"
-msgstr "Название"
+msgstr "п²п╟п╥п╡п╟п╫п╦п╣"
 
 #: src/browser.c:829
 msgid "Artist"
-msgstr "Исполнитель"
+msgstr "п≤я│п©п╬п╩п╫п╦я┌п╣п╩я▄"
 
 #: src/browser.c:835
 msgid "Album"
-msgstr "Альбом"
+msgstr "п░п╩я▄п╠п╬п╪"
 
 #: src/browser.c:841
 msgid "Year"
-msgstr "Год"
+msgstr "п⌠п╬п╢"
 
 #: src/browser.c:847
 msgid "Genre"
-msgstr "Жанр"
+msgstr "п√п╟п╫я─"
 
 #: src/browser.c:853
 msgid "Track"
-msgstr "Трек"
+msgstr "п╒я─п╣п╨"
 
 #: src/browser.c:859
 msgid "Time"
-msgstr "Время"
+msgstr "п▓я─п╣п╪я▐"
 
 #: src/browser.c:964
 msgid "Change directory"
-msgstr "Сменить каталог"
+msgstr "п║п╪п╣п╫п╦я┌я▄ п╨п╟я┌п╟п╩п╬пЁ"
 
 #: src/browser.c:965
 msgid "&Directory: "
-msgstr "Каталог (&d): "
-
-#: src/eqwnd.c:77
-msgid "MPFC Equalizer"
-msgstr "Эквалайзер MPFC"
-
-#: src/eqwnd.c:214
-msgid "Load preset from a Winamp EQF file"
-msgstr "Загрузить пресет из файла Winamp EQF"
-
-#: src/eqwnd.c:215 src/player.c:2098 src/player.c:2360
-msgid "&Name: "
-msgstr "Имя (&n): "
+msgstr "п п╟я┌п╟п╩п╬пЁ (&d): "
 
 #: src/help_screen.c:61
 msgid "MPFC Default Key Bindings"
-msgstr "Стандартные клавиши MPFC"
+msgstr "п║я┌п╟п╫п╢п╟я─я┌п╫я▀п╣ п╨п╩п╟п╡п╦я┬п╦ MPFC"
 
-#: src/help_screen.c:62
-msgid "Equalizer Key Bindings"
-msgstr "Клавиши эквалайзера"
-
-#: src/help_screen.c:63
+#: src/help_screen.c:61
 msgid "File Browser Key Bindings"
-msgstr "Клавиши файлового броузера"
+msgstr "п п╩п╟п╡п╦я┬п╦ я└п╟п╧п╩п╬п╡п╬пЁп╬ п╠я─п╬я┐п╥п╣я─п╟"
 
-#: src/help_screen.c:131
+#: src/help_screen.c:126
 msgid "Press <Space> to see next screen and <q> to exit\n"
-msgstr "Нажмите <Пробел>, чтобы увидеть следующий экран, и <q>, чтобы выйти\n"
+msgstr "п²п╟п╤п╪п╦я┌п╣ <п÷я─п╬п╠п╣п╩>, я┤я┌п╬п╠я▀ я┐п╡п╦п╢п╣я┌я▄ я│п╩п╣п╢я┐я▌я┴п╦п╧ я█п╨я─п╟п╫, п╦ <q>, я┤я┌п╬п╠я▀ п╡я▀п╧я┌п╦\n"
+
+#: src/help_screen.c:160
+msgid "q:\t\t Quit program"
+msgstr "q:\t\t п▓я▀п╧я┌п╦ п╦п╥ п©я─п╬пЁя─п╟п╪п╪я▀"
+
+#: src/help_screen.c:161 src/help_screen.c:234
+msgid "j or <Down>:\t Move one line down"
+msgstr "j п╦п╩п╦ <п▓п╫п╦п╥>:\t п║п©я┐я│я┌п╦я┌я▄я│я▐ п╫п╟ п╬п╢п╫я┐ я│я┌я─п╬п╨я┐"
+
+#: src/help_screen.c:162 src/help_screen.c:235
+msgid "k or <Up>:\t Move one line up"
+msgstr "k п╦п╩п╦ <п▓п╡п╣я─я┘>:\t п÷п╬п╢п╫я▐я┌я▄я│я▐ п╫п╟ п╬п╢п╫я┐ я│я┌я─п╬п╨я┐"
+
+#: src/help_screen.c:163 src/help_screen.c:236
+msgid "u or <PgUp>:\t Move one screen up"
+msgstr "u п╦п╩п╦ <PgUp>:\t п÷п╬п╢п╫я▐я┌я▄я│я▐ п╫п╟ п╬п╢п╦п╫ я█п╨я─п╟п╫"
+
+#: src/help_screen.c:164 src/help_screen.c:237
+msgid "d or <PgDn>:\t Move one screen down"
+msgstr "d п╦п╩п╦ <PgDn>:\t п║п©я┐я│я┌п╦я┌я▄я│я▐ п╫п╟ п╬п╢п╦п╫ я█п╨я─п╟п╫"
 
 #: src/help_screen.c:165
-msgid "q:\t\t Quit program"
-msgstr "q:\t\t Выйти из программы"
+msgid "gg:\t\t Move to play list begin"
+msgstr "gg:\t\t п÷п╣я─п╣п╪п╣я│я┌п╦я┌я▄я│я▐ п╡ п╫п╟я┤п╟п╩п╬ п©п╩п╣п╧-п╩п╦я│я┌п╟"
 
-#: src/help_screen.c:166 src/help_screen.c:239
-msgid "j or <Down>:\t Move one line down"
-msgstr "j или <Вниз>:\t Спуститься на одну строку"
+#: src/help_screen.c:166
+msgid "G:\t\t Move to play list end"
+msgstr "G:\t\t п÷п╣я─п╣п╪п╣я│я┌п╦я┌я▄я│я▐ п╡ п╨п╬п╫п╣я├ п©п╩п╣п╧-п╩п╦я│я┌п╟"
 
-#: src/help_screen.c:167 src/help_screen.c:240
-msgid "k or <Up>:\t Move one line up"
-msgstr "k или <Вверх>:\t Подняться на одну строку"
+#: src/help_screen.c:167
+msgid "<Number>G:\t Move to line <Number>"
+msgstr "<п╖п╦я│п╩п╬>G:\t п÷п╣я─п╣п╪п╣я│я┌п╦я┌я▄я│я▐ п╫п╟ я│я┌я─п╬п╨я┐ <п╖п╦я│п╩п╬>"
 
-#: src/help_screen.c:168 src/help_screen.c:241
-msgid "u or <PgUp>:\t Move one screen up"
-msgstr "u или <PgUp>:\t Подняться на один экран"
+#: src/help_screen.c:168
+msgid "J:\t\t Move play list one line down"
+msgstr "J:\t\t п·п©я┐я│я┌п╦я┌я▄ п©п╩п╣п╧-п╩п╦я│я┌ п╫п╟ я│я┌я─п╬п╨я┐"
 
-#: src/help_screen.c:169 src/help_screen.c:242
-msgid "d or <PgDn>:\t Move one screen down"
-msgstr "d или <PgDn>:\t Спуститься на один экран"
+#: src/help_screen.c:169
+msgid "K:\t\t Move play list one line up"
+msgstr "K:\t\t п÷п╬п╢п╫я▐я┌я▄ п©п╩п╣п╧-п╩п╦я│я┌ п╫п╟ я│я┌я─п╬п╨я┐"
 
 #: src/help_screen.c:170
-msgid "gg:\t\t Move to play list begin"
-msgstr "gg:\t\t Переместиться в начало плей-листа"
+msgid "<Number>M:\t Move play list to line <Number>"
+msgstr "<п╖п╦я│п╩п╬>M:\t п÷п╣я─п╣п╪п╣я│я┌п╦я┌я▄ п©п╩п╣п╧-п╩п╦я│я┌ п╡ я│я┌я─п╬п╨я┐ <п╖п╦я│п╩п╬>"
 
 #: src/help_screen.c:171
-msgid "G:\t\t Move to play list end"
-msgstr "G:\t\t Переместиться в конец плей-листа"
+msgid "<Ret>:\t\t Start playing"
+msgstr "<Ret>:\t\t п²п╟я┤п╟я┌я▄ п╡п╬я│п©я─п╬п╦п╥п╡п╣п╢п╣п╫п╦п╣"
 
 #: src/help_screen.c:172
-msgid "<Number>G:\t Move to line <Number>"
-msgstr "<Число>G:\t Переместиться на строку <Число>"
-
-#: src/help_screen.c:173
-msgid "J:\t\t Move play list one line down"
-msgstr "J:\t\t Опустить плей-лист на строку"
+msgid "x:\t\t Play stopped song or start playing from begin"
+msgstr "x:\t\t п▓п╬я│п©я─п╬п╦п╥п╡п╣я│я┌п╦ п╬я│я┌п╟п╫п╬п╡п╩п╣п╫п╫я┐я▌ п©п╣я│п╫я▌ п╦п╩п╦ п╫п╟я┤п╟я┌я▄ я│п╫п╟я┤п╟п╩п╟"
 
 #: src/help_screen.c:174
-msgid "K:\t\t Move play list one line up"
-msgstr "K:\t\t Поднять плей-лист на строку"
+msgid "c:\t\t Pause/unpause"
+msgstr "c:\t\t п÷п╟я┐п╥п╟/п©я─п╬п╢п╬п╩п╤п╣п╫п╦п╣"
 
 #: src/help_screen.c:175
-msgid "<Number>M:\t Move play list to line <Number>"
-msgstr "<Число>M:\t Переместить плей-лист в строку <Число>"
+msgid "v:\t\t Stop playing"
+msgstr "v:\t\t п·я│я┌п╟п╫п╬п╡п╦я┌я▄ п╡п╬я│п©я─п╬п╦п╥п╡п╣п╢п╣п╫п╦п╣"
 
 #: src/help_screen.c:176
-msgid "<Ret>:\t\t Start playing"
-msgstr "<Ret>:\t\t Начать воспроизведение"
+msgid "b:\t\t Next song"
+msgstr "b:\t\t п║п╩п╣п╢я┐я▌я┴п╟я▐ п©п╣я│п╫я▐"
 
 #: src/help_screen.c:177
-msgid "x:\t\t Play stopped song or start playing from begin"
-msgstr "x:\t\t Воспроизводит остановленную песню или начать сначала"
+msgid "z:\t\t Previous song"
+msgstr "z:\t\t п÷я─п╣п╢я▀п╢я┐я┴п╟я▐ п©п╣я│п╫я▐"
+
+#: src/help_screen.c:178
+msgid "<:\t\t Scroll song 10 seconds back"
+msgstr "<:\t\t п║п╪п╣я│я┌п╦я┌я▄я│я▐ п╫п╟ 10 я│п╣п╨я┐п╫п╢ п╫п╟п╥п╟п╢"
 
 #: src/help_screen.c:179
-msgid "c:\t\t Pause/unpause"
-msgstr "c:\t\t Пауза/продолжение"
+msgid ">:\t\t Scroll song 10 seconds forth"
+msgstr ">:\t\t п║п╪п╣я│я┌п╦я┌я▄я│я▐ п╫п╟ 10 я│п╣п╨я┐п╫п╢ п╡п©п╣я─п╣п╢"
 
 #: src/help_screen.c:180
-msgid "v:\t\t Stop playing"
-msgstr "v:\t\t Остановить воспроизведение"
+msgid "<Number>gt:\t Go to <Number>th second in song"
+msgstr "<п╖п╦я│п╩п╬>gt:\t п║п╪п╣я│я┌п╦я┌я▄я│я▐ п╨ я│п╣п╨я┐п╫п╢п╣ <п╖п╦я│п╩п╬>"
 
 #: src/help_screen.c:181
-msgid "b:\t\t Next song"
-msgstr "b:\t\t Следующая песня"
+msgid "+:\t\t Increase volume"
+msgstr "+:\t\t пёп╡п╣п╩п╦я┤п╦я┌я▄ пЁя─п╬п╪п╨п╬я│я┌я▄"
 
 #: src/help_screen.c:182
-msgid "z:\t\t Previous song"
-msgstr "z:\t\t Предыдущая песня"
+msgid "-:\t\t Decrease volume"
+msgstr "-:\t\t пёп╪п╣п╫я▄я┬п╦я┌я▄ пЁя─п╬п╪п╨п╬я│я┌я▄"
 
 #: src/help_screen.c:183
-msgid "<:\t\t Scroll song 10 seconds back"
-msgstr "<:\t\t Сместиться на 10 секунд назад"
+msgid "]:\t\t Increase balance"
+msgstr "]:\t\t пёп╡п╣п╩п╦я┤п╦я┌я▄ п╠п╟п╩п╟п╫я│"
 
 #: src/help_screen.c:184
-msgid ">:\t\t Scroll song 10 seconds forth"
-msgstr ">:\t\t Сместиться на 10 секунд вперед"
+msgid "[:\t\t Decrease balance"
+msgstr "]:\t\t пёп╪п╣п╫я▄я┬п╦я┌я▄ п╠п╟п╩п╟п╫я│"
 
 #: src/help_screen.c:185
-msgid "<Number>gt:\t Go to <Number>th second in song"
-msgstr "<Число>gt:\t Сместиться к секунде <Число>"
+msgid "i:\t\t Song info editor"
+msgstr "i:\t\t п═п╣п╢п╟п╨я┌п╬я─ п╦п╫я└п╬я─п╪п╟я├п╦п╦ п╬ п©п╣я│п╫п╣"
 
 #: src/help_screen.c:186
-msgid "+:\t\t Increase volume"
-msgstr "+:\t\t Увеличить громкость"
+msgid "a:\t\t Add songs"
+msgstr "a:\t\t п■п╬п╠п╟п╡п╦я┌я▄ п©п╣я│п╫п╦"
 
 #: src/help_screen.c:187
-msgid "-:\t\t Decrease volume"
-msgstr "-:\t\t Уменьшить громкость"
+msgid "B:\t\t Launch file browser"
+msgstr "B:\t\t п▓я▀п╥п╡п╟я┌я▄ п╠я─п╬я┐п╥п╣я─ я└п╟п╧п╩п╬п╡"
 
 #: src/help_screen.c:188
-msgid "]:\t\t Increase balance"
-msgstr "]:\t\t Увеличить баланс"
+msgid "A:\t\t Audio output setup"
+msgstr "A:\t\t п²п╟я│я┌я─п╬п╧п╨п╦ п╟я┐п╢п╦п╬ п╡я▀я┘п╬п╢п╟"
 
 #: src/help_screen.c:189
-msgid "[:\t\t Decrease balance"
-msgstr "]:\t\t Уменьшить баланс"
+msgid "r:\t\t Remove songs"
+msgstr "r:\t\t пёп╢п╟п╩п╦я┌я▄ п©п╣я│п╫п╦"
 
 #: src/help_screen.c:190
-msgid "i:\t\t Song info editor"
-msgstr "i:\t\t Редактор информации о песне"
+msgid "s:\t\t Save play list"
+msgstr "s:\t\t п║п╬я┘я─п╟п╫п╦я┌я▄ п©п╩п╣п╧-п╩п╦я│я┌"
 
 #: src/help_screen.c:191
-msgid "a:\t\t Add songs"
-msgstr "a:\t\t Добавить песни"
+msgid "S:\t\t Sort play list"
+msgstr "S:\t\t п║п╬я─я┌п╦я─п╬п╡п╟я┌я▄ п©п╩п╣п╧-п╩п╦я│я┌"
 
 #: src/help_screen.c:192
-msgid "B:\t\t Launch file browser"
-msgstr "B:\t\t Вызвать броузер файлов"
+msgid "P:\t\t Launch plugins manager"
+msgstr "P:\t\t п▓я▀п╥п╡п╟я┌я▄ п╪п╣п╫п╣п╢п╤п╣я─ п©п╩п╟пЁп╦п╫п╬п╡"
 
 #: src/help_screen.c:193
-msgid "r:\t\t Remove songs"
-msgstr "r:\t\t Удалить песни"
+msgid "V:\t\t Start visual mode"
+msgstr "V:\t\t п÷п╣я─п╣п╧я┌п╦ п╡ п╡п╦п╥я┐п╟п╩я▄п╫я▀п╧ я─п╣п╤п╦п╪"
 
 #: src/help_screen.c:194
-msgid "s:\t\t Save play list"
-msgstr "s:\t\t Сохранить плей-лист"
+msgid "C:\t\t Centrize view"
+msgstr "C:\t\t п╕п╣п╫я┌я─п╦я─п╬п╡п╟я┌я▄ я█п╨я─п╟п╫"
 
 #: src/help_screen.c:195
-msgid "S:\t\t Sort play list"
-msgstr "S:\t\t Сортировать плей-лист"
+msgid "/:\t\t Search"
+msgstr "/:\t\t п÷п╬п╦я│п╨"
 
 #: src/help_screen.c:196
-msgid "P:\t\t Launch plugins manager"
-msgstr "P:\t\t Вызвать менеджер плагинов"
+msgid "\\:\t\t Advanced search"
+msgstr "\\:\t\t п÷я─п╬п╢п╡п╦п╫я┐я┌я▀п╧ п©п╬п╦я│п╨"
 
 #: src/help_screen.c:197
-msgid "V:\t\t Start visual mode"
-msgstr "V:\t\t Перейти в визуальный режим"
+msgid "n:\t\t Go to next search match"
+msgstr "n:\t\t п÷п╣я─п╣п╧я┌п╦ п╨ я│п╩п╣п╢я┐я▌я┴п╣п╪я┐ я─п╣п╥я┐п╩я▄я┌п╟я┌я┐ п©п╬п╦я│п╨п╟"
 
 #: src/help_screen.c:198
-msgid "C:\t\t Centrize view"
-msgstr "C:\t\t Центрировать экран"
+msgid "N:\t\t Go to previous search match"
+msgstr "N:\t\t п÷п╣я─п╣п╧я┌п╦ п╡ п©я─п╣п╢я▀п╢я┐я┴п╣п╪я┐ я─п╣п╥я┐п╩я▄я┌п╟я┌я┐ п©п╬п╦я│п╨п╟"
 
 #: src/help_screen.c:199
-msgid "/:\t\t Search"
-msgstr "/:\t\t Поиск"
+msgid "R:\t\t Set/unset shuffle play mode"
+msgstr "R:\t\t пёя│я┌п╟п╫п╬я│п╦я┌я▄/я│п╠я─п╬я│п╦я┌я▄ я│п╩я┐я┤п╟п╧п╫я▀п╧ я─п╣п╤п╦п╪ п╡п╬я│п©я─п╬п╦п╥п╡п╣п╢п╣п╫п╦я▐"
 
 #: src/help_screen.c:200
-msgid "\\:\t\t Advanced search"
-msgstr "\\:\t\t Продвинутый поиск"
+msgid "L:\t\t Set/unset loop play mode"
+msgstr "L:\t\t пёя│я┌п╟п╫п╬п╡п╦я┌я▄/я│п╠я─п╬я│п╦я┌я▄ п╨п╬п╩я▄я├п╣п╡п╬п╧ я─п╣п╤п╦п╪ п╡п╬я│п©я─п╬п╦п╥п╡п╣п╢п╣п╫п╦я▐"
 
 #: src/help_screen.c:201
-msgid "n:\t\t Go to next search match"
-msgstr "n:\t\t Перейти к следующему результату поиска"
+msgid "o:\t\t Variables manager"
+msgstr "o:\t\t п°п╣п╫п╣п╢п╤п╣я─ п©п╣я─п╣п╪п╣п╫п╫я▀я┘"
 
 #: src/help_screen.c:202
-msgid "N:\t\t Go to previous search match"
-msgstr "N:\t\t Перейти в предыдущему результату поиска"
+msgid "O:\t\t Show logger window"
+msgstr "O:\t\t п÷п╬п╨п╟п╥п╟я┌я▄ п╬п╨п╫п╬ п╤я┐я─п╫п╟п╩п╟"
 
 #: src/help_screen.c:203
-msgid "e:\t\t Launch equalizer window"
-msgstr "e:\t\t Вызвать окно эквалайзера"
+msgid "U:\t\t Undo"
+msgstr "U:\t\t п·я┌п╪п╣п╫п╦я┌я▄"
 
 #: src/help_screen.c:204
-msgid "R:\t\t Set/unset shuffle play mode"
-msgstr "R:\t\t Устаносить/сбросить случайный режим воспроизведения"
+msgid "D:\t\t Redo"
+msgstr "D:\t\t п▓п╬я│я│я┌п╟п╫п╬п╡п╦я┌я▄"
 
 #: src/help_screen.c:205
-msgid "L:\t\t Set/unset loop play mode"
-msgstr "L:\t\t Установить/сбросить кольцевой режим воспроизведения"
+msgid "I:\t\t Reload songs information"
+msgstr "I:\t\t п÷п╣я─п╣п╥п╟пЁя─я┐п╥п╦я┌я▄ п╦п╫я└п╬я─п╪п╟я├п╦я▌ п╬ п©п╣я│п╫я▐я┘"
 
 #: src/help_screen.c:206
-msgid "o:\t\t Variables manager"
-msgstr "o:\t\t Менеджер переменных"
+msgid "ps:\t\t Set play bounds"
+msgstr "ps:\t\t пёя│я┌п╟п╫п╬п╡п╦я┌я▄ пЁя─п╟п╫п╦я├я▀ п╡п╬я│п©я─п╬п╦п╥п╡п╣п╢п╣п╫п╦я▐"
 
 #: src/help_screen.c:207
-msgid "O:\t\t Show logger window"
-msgstr "O:\t\t Показать окно журнала"
+msgid "p<Ret>:\t\t Set play bounds and play"
+msgstr "p<п▓п╡п╬п╢>:\t пёя│я┌п╟п╫п╬п╡п╦я┌я▄ пЁя─п╟п╫п╦я├я▀ п╦ п╫п╟я┤п╟я┌я▄ п╡п╬я│п©я─п╬п╦п╥п╡п╣п╢п╣п╫п╦п╣"
 
 #: src/help_screen.c:208
-msgid "U:\t\t Undo"
-msgstr "U:\t\t Отменить"
+msgid "pc:\t\t Clear play bounds"
+msgstr "pc:\t\t п║п╠я─п╬я│п╦я┌я▄ пЁя─п╟п╫п╦я├я▀ п╡п╬я│п©я─п╬п╦п╥п╡п╣п╢п╣п╫п╦я▐"
 
 #: src/help_screen.c:209
-msgid "D:\t\t Redo"
-msgstr "D:\t\t Восстановить"
+msgid "!:\t\t Execute command"
+msgstr "!:\t\t п▓я▀п©п╬п╩п╫п╦я┌я▄ п╨п╬п╪п╟п╫п╢я┐"
 
 #: src/help_screen.c:210
-msgid "I:\t\t Reload songs information"
-msgstr "I:\t\t Перезагрузить информацию о песнях"
+msgid "m<Letter>:\t Set mark <Letter>"
+msgstr "m<п▒я┐п╨п╡п╟>:\t пёя│я┌п╟п╫п╬п╡п╦я┌я▄ п╪п╣я┌п╨я┐ <п▒я┐п╨п╡п╟>"
 
 #: src/help_screen.c:211
-msgid "ps:\t\t Set play bounds"
-msgstr "ps:\t\t Установить границы воспроизведения"
+msgid "`<Letter>:\t Go to mark <Letter>"
+msgstr "`<п▒я┐п╨п╡п╟>:\t п÷п╣я─п╣п╧я┌п╦ п╨ п╪п╣я┌п╨п╣ <п▒я┐п╨п╡п╟>"
 
 #: src/help_screen.c:212
-msgid "p<Ret>:\t\t Set play bounds and play"
-msgstr "p<Ввод>:\t Установить границы и начать воспроизведение"
+msgid "``:\t\t Go to previous position"
+msgstr "``:\t\t п÷п╣я─п╣п╧я┌п╦ п╨ п©я─п╣п╢я▀п╢я┐я┴п╣п╧ п©п╬п╥п╦я├п╦п╦"
 
 #: src/help_screen.c:213
-msgid "pc:\t\t Clear play bounds"
-msgstr "pc:\t\t Сбросить границы воспроизведения"
-
-#: src/help_screen.c:214
-msgid "!:\t\t Execute command"
-msgstr "!:\t\t Выполнить команду"
+msgid "<Backspace>:\t Go to previous time"
+msgstr "<Backspace>:\t п÷п╣я─п╣п╧я┌п╦ п╨ п©я─п╣п╢я▀п╢я┐я┴п╣п╪я┐ п╡я─п╣п╪п╣п╫п╦"
 
 #: src/help_screen.c:215
-msgid "m<Letter>:\t Set mark <Letter>"
-msgstr "m<Буква>:\t Установить метку <Буква>"
+msgid "Window library bindings"
+msgstr "п п╩п╟п╡п╦я┬п╦ п╬п╨п╬п╫п╫п╬п╧ п╠п╦п╠п╩п╦п╬я┌п╣п╨п╦"
 
 #: src/help_screen.c:216
-msgid "`<Letter>:\t Go to mark <Letter>"
-msgstr "`<Буква>:\t Перейти к метке <Буква>"
+msgid "^l:\t\t Redisplay screen"
+msgstr "^l:\t\t п·п╠п╫п╬п╡п╦я┌я▄ я█п╨я─п╟п╫"
 
 #: src/help_screen.c:217
-msgid "``:\t\t Go to previous position"
-msgstr "``:\t\t Перейти к предыдущей позиции"
+msgid "<Alt>-,:\t Set focus to previous window"
+msgstr "<Alt>-,:\t п÷п╣я─п╣п╪п╣я│я┌п╦я┌я▄ я└п╬п╨я┐я│ п╨ п©я─п╣п╢я▀п╢я┐я┴п╣п╪я┐ п╬п╨п╫я┐"
 
 #: src/help_screen.c:218
-msgid "<Backspace>:\t Go to previous time"
-msgstr "<Backspace>:\t Перейти к предыдущему времени"
+msgid "<Alt>-.:\t Set focus to next window"
+msgstr "<Alt>-.:\t п÷п╣я─п╣п╪п╣я│я┌п╦я┌я▄ я└п╬п╨я┐я│ п╨ я│п╩п╣п╢я┐я▌я┴п╣п╪я┐ п╬п╨п╫я┐"
+
+#: src/help_screen.c:219
+msgid "<Alt>-c:\t Close window"
+msgstr "<Alt>-c:\t п≈п╟п╨я─я▀я┌я▄ п╬п╨п╫п╬"
 
 #: src/help_screen.c:220
-msgid "Window library bindings"
-msgstr "Клавиши оконной библиотеки"
+msgid "<Alt>-m:\t Maximize/minimize window"
+msgstr "<Alt>-m:\t п°п╟п╨я│п╦п╪п╦п╥п╦я─п╬п╡п╟я┌я▄/п╪п╦п╫п╦п╪п╦п╥п╦я─п╬п╡п╟я┌я▄ п╬п╨п╫п╬"
 
 #: src/help_screen.c:221
-msgid "^l:\t\t Redisplay screen"
-msgstr "^l:\t\t Обновить экран"
+msgid "<Alt>-p:\t Change window position"
+msgstr "<Alt>-p:\t п≤п╥п╪п╣п╫п╦я┌я▄ п©п╬п╩п╬п╤п╣п╫п╦п╣ п╬п╨п╫п╟"
 
 #: src/help_screen.c:222
-msgid "<Alt>-,:\t Set focus to previous window"
-msgstr "<Alt>-,:\t Переместить фокус к предыдущему окну"
+msgid "<Alt>-s:\t Change window size"
+msgstr "<Alt>-s:\t п≤п╥п╪п╣п╫п╦я┌я▄ я─п╟п╥п╪п╣я─ п╬п╨п╫п╟"
 
 #: src/help_screen.c:223
-msgid "<Alt>-.:\t Set focus to next window"
-msgstr "<Alt>-.:\t Переместить фокус к следующему окну"
-
-#: src/help_screen.c:224
-msgid "<Alt>-c:\t Close window"
-msgstr "<Alt>-c:\t Закрыть окно"
+msgid "<Alt>-<letter>:\t Set focus to a dialog item marked by letter"
+msgstr "<Alt>-<п╠я┐п╨п╡п╟>:\t пёя│я┌п╟п╫п╬п╡п╦я┌я▄ я└п╬п╨я┐я│ п╫п╟ п©я┐п╫п╨я┌ п╢п╦п╟п╩п╬пЁп╟, п©п╬п╪п╣я┤п╣п╫п╫я▀п╧ п╠я┐п╨п╡п╬п╧"
 
 #: src/help_screen.c:225
-msgid "<Alt>-m:\t Maximize/minimize window"
-msgstr "<Alt>-m:\t Максимизировать/минимизировать окно"
-
-#: src/help_screen.c:226
-msgid "<Alt>-p:\t Change window position"
-msgstr "<Alt>-p:\t Изменить положение окна"
-
-#: src/help_screen.c:227
-msgid "<Alt>-s:\t Change window size"
-msgstr "<Alt>-s:\t Изменить размер окна"
-
-#: src/help_screen.c:228
-msgid "<Alt>-<letter>:\t Set focus to a dialog item marked by letter"
-msgstr "<Alt>-<буква>:\t Установить фокус на пункт диалога, помеченный буквой"
-
-#: src/help_screen.c:230
 msgid "<Ctrl>-g:\t Close dialog window"
-msgstr "<Ctrl>-g:\t Закрыть диалог"
+msgstr "<Ctrl>-g:\t п≈п╟п╨я─я▀я┌я▄ п╢п╦п╟п╩п╬пЁ"
 
-#: src/help_screen.c:232 src/help_screen.c:254 src/help_screen.c:266
+#: src/help_screen.c:227 src/help_screen.c:249
 msgid "?:\t\t This help screen"
-msgstr "?:\t\t Этот экран помощи"
+msgstr "?:\t\t п╜я┌п╬я┌ я█п╨я─п╟п╫ п©п╬п╪п╬я┴п╦"
+
+#: src/help_screen.c:233
+msgid "q:\t\t Return to player"
+msgstr "q:\t\t п▓п╣я─п╫я┐я┌я▄я│я▐ п╨ п©п╩п╣п╧п╣я─я┐"
 
 #: src/help_screen.c:238
-msgid "q:\t\t Return to player"
-msgstr "q:\t\t Вернуться к плейеру"
+msgid "<Ret>:\t\t Go to the highlighted directory"
+msgstr "<Ret>:\t\t п≈п╟п╧я┌п╦ п╡ п©п╬п╢я│п╡п╣я┤п╣п╫п╫я┐я▌ п╢п╦я─п╣п╨я┌п╬я─п╦я▌"
+
+#: src/help_screen.c:239
+msgid "h:\t\t Go to home directory"
+msgstr "h:\t\t п≈п╟п╧я┌п╦ п╡ п╢п╬п╪п╟я┬п╫я▌я▌ п╢п╦я─п╣п╨я┌п╬я─п╦я▌"
+
+#: src/help_screen.c:240
+msgid "<Backspace>:\t Move to parent directory"
+msgstr "<Backspace>:\t п≈п╟п╧я┌п╦ п╡ я─п╬п╢п╦я┌п╣п╩я▄я│п╨п╦п╧ п╨п╟я┌п╟п╩п╬пЁ"
+
+#: src/help_screen.c:241
+msgid "<Insert>:\t Select/deselect file"
+msgstr "<Insert>:\t пёя│я┌п╟п╫п╬я│п╦я┌я▄/я│п╫я▐я┌я▄ п╡я▀п╢п╣п╩п╣п╫п╦п╣ я│ я└п╟п╧п╩п╟"
+
+#: src/help_screen.c:242
+msgid "+:\t\t Select files matching a pattern"
+msgstr "+:\t\t п▓я▀п╠я─п╟я┌я▄ я└п╟п╧п╩я▀, я┐п╢п╬п╡п╩п╣я┌п╡п╬я─я▐я▌я┴п╦п╣ я┬п╟п╠п╩п╬п╫я┐"
 
 #: src/help_screen.c:243
-msgid "<Ret>:\t\t Go to the highlighted directory"
-msgstr "<Ret>:\t\t Зайти в подсвеченную директорию"
+msgid "-:\t\t Deselect files matching a pattern"
+msgstr "-:\t\t п║п╫я▐я┌я▄ п╡я▀п╢п╣п╩п╣п╫п╦п╣ я│ я└п╟п╧п╩п╬п╡, я┐п╢п╬п╡п╩п╣я┌п╡п╬я─я▐я▌я┴п╦я┘ я┬п╟п╠п╩п╬п╫я┐"
 
 #: src/help_screen.c:244
-msgid "h:\t\t Go to home directory"
-msgstr "h:\t\t Зайти в домашнюю директорию"
+msgid "a:\t\t Add selected files to playlist"
+msgstr "a:\t\t п■п╬п╠п╟п╡п╦я┌я▄ п╡я▀п╢п╣п╩п╣п╫п╫я▀п╣ я└п╟п╧п╩я▀ п╨ п©п╩п╣п╧-п╩п╦я│я┌я┐"
 
 #: src/help_screen.c:245
-msgid "<Backspace>:\t Move to parent directory"
-msgstr "<Backspace>:\t Зайти в родительский каталог"
+msgid "r:\t\t Replace playlist files with the selected"
+msgstr "r:\t\t п≈п╟п╪п╣п╫п╦я┌я▄ я└п╟п╧п╩я▀ п╡ п©п╩п╣п╧-п╩п╦я│я┌п╣ п╫п╟ п╡я▀п╠я─п╟п╫п╫я▀п╣"
 
 #: src/help_screen.c:246
-msgid "<Insert>:\t Select/deselect file"
-msgstr "<Insert>:\t Устаносить/снять выделение с файла"
+msgid "c:\t\t Change directory"
+msgstr "c:\t\t п║п╪п╣п╫п╦я┌я▄ п╨п╟я┌п╟п╩п╬пЁ"
 
 #: src/help_screen.c:247
-msgid "+:\t\t Select files matching a pattern"
-msgstr "+:\t\t Выбрать файлы, удовлетворяющие шаблону"
+msgid "i:\t\t Toggle song info mode"
+msgstr "i:\t\t п÷п╣я─п╣п╨п╩я▌я┤п╦я┌я▄я│я▐ п╡ я─п╣п╤п╦п╪ п╦п╫я└п╬я─п╪п╟я├п╦п╦ п╬ п©п╣я│п╫п╣"
 
 #: src/help_screen.c:248
-msgid "-:\t\t Deselect files matching a pattern"
-msgstr "-:\t\t Снять выделение с файлов, удовлетворяющих шаблону"
-
-#: src/help_screen.c:249
-msgid "a:\t\t Add selected files to playlist"
-msgstr "a:\t\t Добавить выделенные файлы к плей-листу"
-
-#: src/help_screen.c:250
-msgid "r:\t\t Replace playlist files with the selected"
-msgstr "r:\t\t Заменить файлы в плей-листе на выбранные"
-
-#: src/help_screen.c:251
-msgid "c:\t\t Change directory"
-msgstr "c:\t\t Сменить каталог"
-
-#: src/help_screen.c:252
-msgid "i:\t\t Toggle song info mode"
-msgstr "i:\t\t Переключиться в режим информации о песне"
-
-#: src/help_screen.c:253
 msgid "s:\t\t Toggle search mode"
-msgstr "s:\t\t Переключиться в режим поиска"
-
-#: src/help_screen.c:260
-msgid "q or <Esc>:\t Return to player"
-msgstr "q or <Esc>:\t Вернуться к плейеру"
-
-#: src/help_screen.c:261
-msgid "h or <Left>:\t Move cursor left"
-msgstr "h или <Влево>:\t Переместить курсор влево"
-
-#: src/help_screen.c:262
-msgid "l or <Right>:\t Move cursor right"
-msgstr "l или <Вправо>:\t Переместить курсор вправо"
-
-#: src/help_screen.c:263
-msgid "j or <Down>:\t Move cursor down"
-msgstr "j или <Вниз>:\t Опустить курсор"
-
-#: src/help_screen.c:264
-msgid "k or <Up>:\t Move cursor up"
-msgstr "k или <Вверх>:\t Поднять курсор"
-
-#: src/help_screen.c:265
-msgid "p:\t\t Load Winamp EQF preset"
-msgstr "p:\t\t Загрузить пресет Winamp EQF"
+msgstr "s:\t\t п÷п╣я─п╣п╨п╩я▌я┤п╦я┌я▄я│я▐ п╡ я─п╣п╤п╦п╪ п©п╬п╦я│п╨п╟"
 
 #: src/logger_view.c:61
 msgid "Log"
-msgstr "Журнал"
+msgstr "п√я┐я─п╫п╟п╩"
 
 #: src/main.c:50
 #, c-format
 msgid ""
 "A fatal error occured during player initialization. See log for details\n"
 msgstr ""
-"Во время инициализации призошла фатальная ошибка. Посмотрите в журнал\n"
+"п▓п╬ п╡я─п╣п╪я▐ п╦п╫п╦я├п╦п╟п╩п╦п╥п╟я├п╦п╦ п©я─п╬п╦п╥п╬я┬п╩п╟ я└п╟я┌п╟п╩я▄п╫п╟я▐ п╬я┬п╦п╠п╨п╟. п÷п╬я│п╪п╬я┌я─п╦я┌п╣ п╡ п╤я┐я─п╫п╟п╩\n"
 
-#: src/player.c:310
+#: src/player.c:272
 #, c-format
 msgid "Unable to initialize configuration"
-msgstr "Не могу инициализировать конфигурацию"
+msgstr "п²п╣ п╪п╬пЁя┐ п╦п╫п╦я├п╦п╟п╩п╦п╥п╦я─п╬п╡п╟я┌я▄ п╨п╬п╫я└п╦пЁя┐я─п╟я├п╦я▌"
 
-#: src/player.c:318
+#: src/player.c:280
 #, c-format
 msgid "Unable to initialize log system"
-msgstr "Не могу инициализировать журнальную систему"
+msgstr "п²п╣ п╪п╬пЁя┐ п╦п╫п╦я├п╦п╟п╩п╦п╥п╦я─п╬п╡п╟я┌я▄ п╤я┐я─п╫п╟п╩я▄п╫я┐я▌ я│п╦я│я┌п╣п╪я┐"
 
-#: src/player.c:323
+#: src/player.c:285
 #, c-format
 msgid ""
 "MPFC %s Log\n"
 "%s"
 msgstr ""
-"Журнал MPFC %s\n"
+"п√я┐я─п╫п╟п╩ MPFC %s\n"
 "%s"
 
-#: src/player.c:330
+#: src/player.c:292
 msgid "No enough memory"
-msgstr "Недостаточно памяти"
+msgstr "п²п╣п╢п╬я│я┌п╟я┌п╬я┤п╫п╬ п©п╟п╪я▐я┌п╦"
+
+#: src/player.c:314
+msgid "Window system initialization failed"
+msgstr "п·п╨п╬п╫п╫п╟я▐ я│п╦я│я┌п╣п╪п╟ п╫п╣ п╦п╫п╦я├п╦п╟п╩п╦п╥п╦я─п╬п╡п╟п╫п╟"
+
+#: src/player.c:324
+msgid "Unable to initialize play list window"
+msgstr "п²п╣ п╪п╬пЁя┐ п╦п╫п╦я├п╦п╟п╩п╦п╥п╦я─п╬п╡п╟я┌я▄ п╬п╨п╫п╬ п©п╩п╣п╧-п╩п╦я│я┌п╟"
+
+#: src/player.c:340
+msgid "Unable to initialize plugin manager"
+msgstr "п²п╣ п╪п╬пЁя┐ п╦п╫п╦я├п╦п╟п╩п╦п╥п╦я─п╬п╡п╟я┌я▄ п╪п╣п╫п╣п╢п╤п╣я─ п©п╩п╟пЁп╦п╫п╬п╡"
 
 #: src/player.c:351
-msgid "Window system initialization failed"
-msgstr "Оконная система не инициализирована"
-
-#: src/player.c:361
-msgid "Unable to initialize play list window"
-msgstr "Не могу инициализировать окно плей-листа"
-
-#: src/player.c:377
-msgid "Unable to initialize plugin manager"
-msgstr "Не могу инициализировать менеджер плагинов"
-
-#: src/player.c:388
 msgid "Unable to initialize info read/write thread"
-msgstr "Не могу инициализировать поток чтения/записи информации"
+msgstr "п²п╣ п╪п╬пЁя┐ п╦п╫п╦я├п╦п╟п╩п╦п╥п╦я─п╬п╡п╟я┌я▄ п©п╬я┌п╬п╨ я┤я┌п╣п╫п╦я▐/п╥п╟п©п╦я│п╦ п╦п╫я└п╬я─п╪п╟я├п╦п╦"
 
-#: src/player.c:397
+#: src/player.c:360
 msgid "Unable to initialize undo list"
-msgstr "Не могу инициализировать список отмен"
+msgstr "п²п╣ п╪п╬пЁя┐ п╦п╫п╦я├п╦п╟п╩п╦п╥п╦я─п╬п╡п╟я┌я▄ я│п©п╦я│п╬п╨ п╬я┌п╪п╣п╫"
 
-#: src/player.c:405
+#: src/player.c:368
 msgid "Play list initialization failed"
-msgstr "Не могу инициализировать плей-лист"
+msgstr "п²п╣ п╪п╬пЁя┐ п╦п╫п╦я├п╦п╟п╩п╦п╥п╦я─п╬п╡п╟я┌я▄ п©п╩п╣п╧-п╩п╦я│я┌"
 
-#: src/player.c:416
+#: src/player.c:379
 msgid "Unable to initialize set of files for play list"
-msgstr "Не могу инициализировать набор файлов для плей-листа"
+msgstr "п²п╣ п╪п╬пЁя┐ п╦п╫п╦я├п╦п╟п╩п╦п╥п╦я─п╬п╡п╟я┌я▄ п╫п╟п╠п╬я─ я└п╟п╧п╩п╬п╡ п╢п╩я▐ п©п╩п╣п╧-п╩п╦я│я┌п╟"
 
-#: src/player.c:438
+#: src/player.c:401
 msgid "Unable to initialize player thread"
-msgstr "Не могу инициализировать поток плейера"
+msgstr "п²п╣ п╪п╬пЁя┐ п╦п╫п╦я├п╦п╟п╩п╦п╥п╦я─п╬п╡п╟я┌я▄ п©п╬я┌п╬п╨ п©п╩п╣п╧п╣я─п╟"
 
-#: src/player.c:453
+#: src/player.c:413
 msgid "Player initialized"
-msgstr "Плейер инициализирован"
+msgstr "п÷п╩п╣п╧п╣я─ п╦п╫п╦я├п╦п╟п╩п╦п╥п╦я─п╬п╡п╟п╫"
 
-#: src/player.c:472
+#: src/player.c:432
 msgid "Play list"
-msgstr "Плей-лист"
+msgstr "п÷п╩п╣п╧-п╩п╦я│я┌"
 
-#: src/player.c:578
+#: src/player.c:537
 msgid "Left MPFC"
-msgstr "Вышли из MPFC"
+msgstr "п▓я▀я┬п╩п╦ п╦п╥ MPFC"
 
-#: src/player.c:973 src/player.c:2904 src/player.c:2945
+#: src/player.c:932 src/player.c:2785 src/player.c:2826
 #, c-format
 msgid "String `%s' not found"
-msgstr "Строка `%s' не найдена"
+msgstr "п║я┌я─п╬п╨п╟ `%s' п╫п╣ п╫п╟п╧п╢п╣п╫п╟"
 
-#: src/player.c:977 src/player.c:2908 src/player.c:2949
+#: src/player.c:936 src/player.c:2789 src/player.c:2830
 #, c-format
 msgid "String `%s' found at position %d"
-msgstr "Строка `%s' найдена в позиции %d"
+msgstr "п║я┌я─п╬п╨п╟ `%s' п╫п╟п╧п╢п╣п╫п╟ п╡ п©п╬п╥п╦я├п╦п╦ %d"
 
-#: src/player.c:1339
+#: src/player.c:1207
 msgid "SG Software Media Player For Console"
-msgstr "Плейер для консоли от SG Software"
+msgstr "п÷п╩п╣п╧п╣я─ п╢п╩я▐ п╨п╬п╫я│п╬п╩п╦ п╬я┌ SG Software"
 
-#: src/player.c:1342 src/player.c:1379
+#: src/player.c:1213 src/player.c:1254
 msgid "Shuffle"
-msgstr "Случайно"
+msgstr "п║п╩я┐я┤п╟п╧п╫п╬"
 
-#: src/player.c:1343 src/player.c:1380
+#: src/player.c:1214 src/player.c:1255
 msgid "Loop"
-msgstr "Циклически"
+msgstr "п╕п╦п╨п╩п╦я┤п╣я│п╨п╦"
 
-#: src/player.c:1363
+#: src/player.c:1234
 #, c-format
 msgid "version %s"
-msgstr "версия %s"
+msgstr "п╡п╣я─я│п╦я▐ %s"
 
-#: src/player.c:1804
+#: src/player.c:1694
 #, c-format
 msgid "Audio sink %s could not be created"
-msgstr ""
+msgstr "п░я┐п╢п╦п╬ я│п╦п╫п╨ %s п╫п╣ п╪п╬п╤п╣я┌ п╠я▀я┌я▄ я│п╬п╥п╢п╟п╫"
 
-#: src/player.c:2020
+#: src/player.c:1918
 msgid "Add songs"
-msgstr "Добавить песни"
+msgstr "п■п╬п╠п╟п╡п╦я┌я▄ п©п╣я│п╫п╦"
 
-#: src/player.c:2021 src/player.c:2035
+#: src/player.c:1919 src/player.c:1933
 msgid "File &name: "
-msgstr "Имя файла (&n): "
+msgstr "п≤п╪я▐ я└п╟п╧п╩п╟ (&n): "
 
-#: src/player.c:2034
+#: src/player.c:1932
 msgid "Save play list"
-msgstr "Сохранить плей-лист"
+msgstr "п║п╬я┘я─п╟п╫п╦я┌я▄ п©п╩п╣п╧-п╩п╦я│я┌"
 
-#: src/player.c:2048
+#: src/player.c:1946
 msgid "Execute external command"
-msgstr "Выполнить команду"
+msgstr "п▓я▀п©п╬п╩п╫п╦я┌я▄ п╨п╬п╪п╟п╫п╢я┐"
 
-#: src/player.c:2049
+#: src/player.c:1947
 msgid "C&ommand: "
-msgstr "Команда (&o): "
+msgstr "п п╬п╪п╟п╫п╢п╟ (&o): "
 
-#: src/player.c:2063
+#: src/player.c:1961
 msgid "Sort play list"
-msgstr "Сортировать плей-лист"
+msgstr "п║п╬я─я┌п╦я─п╬п╡п╟я┌я▄ п©п╩п╣п╧-п╩п╦я│я┌"
 
-#: src/player.c:2064
+#: src/player.c:1962
 msgid "Sort by"
-msgstr "Сортировать по"
+msgstr "п║п╬я─я┌п╦я─п╬п╡п╟я┌я▄ п©п╬"
 
-#: src/player.c:2065 src/player.c:2389
+#: src/player.c:1963 src/player.c:2324
 msgid "&Title"
-msgstr "Название (&t)"
+msgstr "п²п╟п╥п╡п╟п╫п╦п╣ (&t)"
 
-#: src/player.c:2066
+#: src/player.c:1964
 msgid "&File name"
-msgstr "Имя файла (&f)"
+msgstr "п≤п╪я▐ я└п╟п╧п╩п╟ (&f)"
 
-#: src/player.c:2067
+#: src/player.c:1965
 msgid "P&ath and file name"
-msgstr "Путь и имя файла (&a)"
+msgstr "п÷я┐я┌я▄ п╦ п╦п╪я▐ я└п╟п╧п╩п╟ (&a)"
 
-#: src/player.c:2068 src/player.c:2395
+#: src/player.c:1966 src/player.c:2330
 msgid "T&rack"
-msgstr "Трек (&r)"
+msgstr "п╒я─п╣п╨ (&r)"
 
-#: src/player.c:2069
+#: src/player.c:1967
 msgid "&Only selected area"
-msgstr "Только выделенная область (o)"
+msgstr "п╒п╬п╩я▄п╨п╬ п╡я▀п╢п╣п╩п╣п╫п╫п╟я▐ п╬п╠п╩п╟я│я┌я▄ (o)"
 
-#: src/player.c:2100
+#: src/player.c:1995 src/player.c:2243
+msgid "&Name: "
+msgstr "п≤п╪я▐ (&n): "
+
+#: src/player.c:1997
 msgid "&Artist: "
-msgstr "Исполнитель (&a): "
+msgstr "п≤я│п©п╬п╩п╫п╦я┌п╣п╩я▄ (&a): "
 
-#: src/player.c:2102
+#: src/player.c:1999
 msgid "A&lbum: "
-msgstr "Альбом (&l): "
+msgstr "п░п╩я▄п╠п╬п╪ (&l): "
 
-#: src/player.c:2104
+#: src/player.c:2001
 msgid "&Year: "
-msgstr "Год (&y): "
+msgstr "п⌠п╬п╢ (&y): "
 
-#: src/player.c:2106
+#: src/player.c:2003
 msgid "&Track No: "
-msgstr "Номер трека (&t): "
+msgstr "п²п╬п╪п╣я─ я┌я─п╣п╨п╟ (&t): "
 
-#: src/player.c:2108
+#: src/player.c:2005
 msgid "C&omments: "
-msgstr "Комментарии (&o): "
+msgstr "п п╬п╪п╪п╣п╫я┌п╟я─п╦п╦ (&o): "
 
-#: src/player.c:2110
+#: src/player.c:2007
 msgid "&Genre: "
-msgstr "Жанр (&g): "
+msgstr "п√п╟п╫я─ (&g): "
 
-#: src/player.c:2113
+#: src/player.c:2010
+msgid "Full &path: "
+msgstr "п÷п╬п╩п╫я▀п╧ п©я┐я┌я▄ (&p)"
+
+#: src/player.c:2013
 msgid "&Reload info"
-msgstr "Перезагрузить информацию (&r)"
+msgstr "п÷п╣я─п╣п╥п╟пЁя─я┐п╥п╦я┌я▄ п╦п╫я└п╬я─п╪п╟я├п╦я▌ (&r)"
 
-#: src/player.c:2177
+#: src/player.c:2076
 msgid "Write in&fo in all the selected songs"
-msgstr "Записать во все выделенные песни (&a)"
+msgstr "п≈п╟п©п╦я│п╟я┌я▄ п╡п╬ п╡я│п╣ п╡я▀п╢п╣п╩п╣п╫п╫я▀п╣ п©п╣я│п╫п╦ (&a)"
 
-#: src/player.c:2343
+#: src/player.c:2226
 msgid "Search"
-msgstr "Поиск"
+msgstr "п÷п╬п╦я│п╨"
 
-#: src/player.c:2344 src/player.c:2385
+#: src/player.c:2227 src/player.c:2320
 msgid "S&tring: "
-msgstr "Строка (&t): "
+msgstr "п║я┌я─п╬п╨п╟ (&t): "
 
-#: src/player.c:2359
+#: src/player.c:2242
 msgid "Variables manager"
-msgstr "Менеджер переменных"
+msgstr "п°п╣п╫п╣п╢п╤п╣я─ п©п╣я─п╣п╪п╣п╫п╫я▀я┘"
 
-#: src/player.c:2363
+#: src/player.c:2246
 msgid "&Value: "
-msgstr "Значение (&v): "
+msgstr "п≈п╫п╟я┤п╣п╫п╦п╣ (&v): "
 
-#: src/player.c:2366
+#: src/player.c:2249
 msgid "Vie&w current value"
-msgstr "Посмотреть текущее значение (.w)"
+msgstr "п÷п╬я│п╪п╬я┌я─п╣я┌я▄ я┌п╣п╨я┐я┴п╣п╣ п╥п╫п╟я┤п╣п╫п╦п╣ (.w)"
 
-#: src/player.c:2368
+#: src/player.c:2251
 msgid "Operation"
-msgstr "Операция"
+msgstr "п·п©п╣я─п╟я├п╦я▐"
 
-#: src/player.c:2369
+#: src/player.c:2252
 msgid "S&et"
-msgstr "Установить (&e)"
+msgstr "пёя│я┌п╟п╫п╬п╡п╦я┌я▄ (&e)"
 
-#: src/player.c:2370
+#: src/player.c:2253
 msgid "&Add"
-msgstr "Добавить (&a)"
+msgstr "п■п╬п╠п╟п╡п╦я┌я▄ (&a)"
 
-#: src/player.c:2371
+#: src/player.c:2254
 msgid "&Remove"
-msgstr "Удалить (&r)"
+msgstr "пёп╢п╟п╩п╦я┌я▄ (&r)"
 
-#: src/player.c:2384
+#: src/player.c:2292
+msgid "Audio output setup"
+msgstr "п²п╟я│я┌я─п╬п╧п╨п╦ п╟я┐п╢п╦п╬ п╡я▀я┘п╬п╢п╟"
+
+#: src/player.c:2293
+#, fuzzy
+msgid "&Sink name: "
+msgstr "п≤п╪я▐ я│п╦п╫п╨п╟ (&n): "
+
+#: src/player.c:2296
+#, fuzzy
+msgid "&Device name: "
+msgstr "пёя│я┌я─п╬п╧я│я┌п╡п╬ (&d): "
+
+#: src/player.c:2301
+msgid ""
+"\n"
+"You can specify GStreamer sink (e.g. alsasink) and \n"
+"device here. Device can only be set if sink is specified.\n"
+"If the sink is configured by some other properties, you can set \n"
+"them directly with gstreamer.audio-sink-params.* variables.\n"
+msgstr ""
+"\n"
+"п≈п╢п╣я│я▄ п▓я▀ п╪п╬п╤п╣я┌п╣ я┐п╨п╟п╥п╟я┌я▄ GStreamer я│п╦п╫п╨ (п╫п╟п©я─п╦п╪п╣я─ alsasink) п╦ \n"
+"я┐я│я┌я─п╬п╧я│я┌п╡п╬. пёя│я┌я─п╬п╧я│я┌п╡п╬ п╪п╬п╤п╣я┌ п╠я▀я┌я▄ я┐я│я┌п╟п╫п╬п╡п╩п╣п╫п╬, я┌п╬п╩я▄п╨п╬ п╣я│п╩п╦ я┐п╨п╟п╥п╟п╫ я│п╦п╫п╨.\n"
+"п∙я│п╩п╦ я│п╦п╫п╨ п╦п╪п╣п╣я┌ п╢п╬п©п╬п╩п╫п╦я┌п╣п╩я▄п╫я▀п╣ п╨п╬п╫я└п╦пЁя┐я─п╦я─я┐п╣п╪я▀п╣ я│п╡п╬п╧я│я┌п╡п╟, п╬п╫п╦ \n"
+"п╪п╬пЁя┐я┌ п╠я▀я┌я▄ я┐я│я┌п╟п╫п╬п╡п╩п╣п╫я▀ п╫п╟п©я─я▐п╪я┐я▌ я┤п╣я─п╣п╥ п©п╣я─п╣п╪п╣п╫п╫я▀п╣ gstreamer.audio-sink-params.*\n"
+
+#: src/player.c:2319
 msgid "Advanced search"
-msgstr "Продвинутый поиск"
+msgstr "п÷я─п╬п╢п╡п╦п╫я┐я┌я▀п╧ п©п╬п╦я│п╨"
 
-#: src/player.c:2388
+#: src/player.c:2323
 msgid "Search in"
-msgstr "Искать в"
+msgstr "п≤я│п╨п╟я┌я▄ п╡"
 
-#: src/player.c:2390
+#: src/player.c:2325
 msgid "&Name"
-msgstr "Имя (&n)"
+msgstr "п≤п╪я▐ (&n)"
 
-#: src/player.c:2391
+#: src/player.c:2326
 msgid "&Artist"
-msgstr "Исполнитель (&a)"
+msgstr "п≤я│п©п╬п╩п╫п╦я┌п╣п╩я▄ (&a)"
 
-#: src/player.c:2392
+#: src/player.c:2327
 msgid "A&lbum"
-msgstr "Альбом (&l)"
+msgstr "п░п╩я▄п╠п╬п╪ (&l)"
 
-#: src/player.c:2393
+#: src/player.c:2328
 msgid "&Year"
-msgstr "Год (&y)"
+msgstr "п⌠п╬п╢ (&y)"
 
-#: src/player.c:2394
+#: src/player.c:2329
 msgid "&Genre"
-msgstr "Жанр (&g)"
+msgstr "п√п╟п╫я─ (&g)"
 
-#: src/player.c:2396
+#: src/player.c:2331
 msgid "C&omment"
-msgstr "Комментарии (&o)"
+msgstr "п п╬п╪п╪п╣п╫я┌п╟я─п╦п╦ (&o)"
 
-#: src/player.c:2410
+#: src/player.c:2345
 #, c-format
 msgid "Removed %d song"
 msgid_plural "Removed %d songs"
-msgstr[0] "Удалена %d песня"
-msgstr[1] "Удалено %d песни"
-msgstr[2] "Удалено %d песен"
+msgstr[0] "пёп╢п╟п╩п╣п╫п╟ %d п©п╣я│п╫я▐"
+msgstr[1] "пёп╢п╟п╩п╣п╫п╬ %d п©п╣я│п╫п╦"
+msgstr[2] "пёп╢п╟п╩п╣п╫п╬ %d п©п╣я│п╣п╫"
 
-#: src/player.c:2418
+#: src/player.c:2353
 msgid "Reload info"
-msgstr "Перезагрузить информацию"
+msgstr "п÷п╣я─п╣п╥п╟пЁя─я┐п╥п╦я┌я▄ п╦п╫я└п╬я─п╪п╟я├п╦я▌"
 
-#: src/player.c:2419
+#: src/player.c:2354
 msgid "&Only in selected area"
-msgstr "Только в выделенной области (&o)"
+msgstr "п╒п╬п╩я▄п╨п╬ п╡ п╡я▀п╢п╣п╩п╣п╫п╫п╬п╧ п╬п╠п╩п╟я│я┌п╦ (&o)"
 
-#: src/player.c:2432
+#: src/player.c:2367
 msgid "Run/stop test"
-msgstr "Запустить/остановить тест"
+msgstr "п≈п╟п©я┐я│я┌п╦я┌я▄/п╬я│я┌п╟п╫п╬п╡п╦я┌я▄ я┌п╣я│я┌"
 
-#: src/player.c:2433
+#: src/player.c:2368
 msgid "Tests"
-msgstr "Тесты"
+msgstr "п╒п╣я│я┌я▀"
 
-#: src/player.c:2434
+#: src/player.c:2369
 msgid "Test &1. Window library perfomance"
-msgstr "Тест &1. Производительность оконной библиотеки"
+msgstr "п╒п╣я│я┌ &1. п÷я─п╬п╦п╥п╡п╬п╢п╦я┌п╣п╩я▄п╫п╬я│я┌я▄ п╬п╨п╬п╫п╫п╬п╧ п╠п╦п╠п╩п╦п╬я┌п╣п╨п╦"
 
-#: src/player.c:2436
+#: src/player.c:2371
 msgid "&Stop job"
-msgstr "Остановить задачу (&s)"
+msgstr "п·я│я┌п╟п╫п╬п╡п╦я┌я▄ п╥п╟п╢п╟я┤я┐ (&s)"
 
-#: src/player.c:2477
+#: src/player.c:2411
 #, fuzzy
 msgid "Playlist"
-msgstr "Плей-лист"
+msgstr "п÷п╩п╣п╧-п╩п╦я│я┌я▀"
 
-#: src/player.c:2478
+#: src/player.c:2412
 #, fuzzy
 msgid "&Playlist"
-msgstr "Плей-лист"
+msgstr "п÷п╩п╣п╧-п╩п╦я│я┌я▀"
 
-#: src/player.c:2481
+#: src/player.c:2415
 #, fuzzy
 msgid "General"
-msgstr "Жанр"
+msgstr "п·п╠я┴п╦п╣"
 
-#: src/player.c:2482
+#: src/player.c:2416
 #, fuzzy
 msgid "&General"
-msgstr "Жанр (&g)"
+msgstr "п·п╠я┴п╦п╣ (&g)"
 
-#: src/player.c:2485
-msgid "Charset"
-msgstr "Кодировки"
-
-#: src/player.c:2486
-msgid "C&harset"
-msgstr "Кодировки (&h)"
-
-#: src/player.c:2491
+#: src/player.c:2421
 msgid "Plugins manager"
-msgstr "Менеджер плагинов"
+msgstr "п°п╣п╫п╣п╢п╤п╣я─ п©п╩п╟пЁп╦п╫п╬п╡"
 
-#: src/player.c:2545
+#: src/player.c:2473
 msgid "&Description: "
-msgstr "Описание (&d): "
+msgstr "п·п©п╦я│п╟п╫п╦п╣ (&d): "
 
-#: src/player.c:2549
+#: src/player.c:2477
 msgid "&Author: "
-msgstr "Автор (&a): "
+msgstr "п░п╡я┌п╬я─ (&a): "
 
-#: src/player.c:2552
+#: src/player.c:2480
 msgid "Con&figure"
-msgstr "Конфигурировать (&f)"
+msgstr "п п╬п╫я└п╦пЁя┐я─п╦я─п╬п╡п╟я┌я▄ (&f)"
 
-#: src/player.c:2559 src/player.c:2601
+#: src/player.c:2487 src/player.c:2529
 #, fuzzy
 msgid "S&tart"
-msgstr "Установить (&e)"
+msgstr "п≈п╟п©я┐я│я┌п╦я┌я▄ (&t)"
 
-#: src/player.c:2600
+#: src/player.c:2528
 #, fuzzy
 msgid "S&top"
-msgstr "Установить (&e)"
+msgstr "п·я│я┌п╟п╫п╬п╡п╦я┌я▄ (&t)"
 
-#: src/player.c:2631
+#: src/player.c:2559
 #, c-format
 msgid "Play list saved to %s"
-msgstr "Плей-лист сохранен в %s"
+msgstr "п÷п╩п╣п╧-п╩п╦я│я┌ я│п╬я┘я─п╟п╫п╣п╫ п╡ %s"
 
-#: src/player.c:2634
+#: src/player.c:2562
 #, fuzzy, c-format
 msgid "Unable to save play list to %s (try naming it as a .m3u file)"
-msgstr "Не могу сохранить плей-лист в %s"
+msgstr "п²п╣ п╪п╬пЁя┐ я│п╬я┘я─п╟п╫п╦я┌я▄ п©п╩п╣п╧-п╩п╦я│я┌ п╡ %s"
 
-#: src/player.c:2645
+#: src/player.c:2573
 msgid ""
 "\n"
 "[0;32;40mPress enter to continue"
 msgstr ""
 "\n"
-"[0;32;40mНажмите enter, чтобы продолжить"
+"[0;32;40mп²п╟п╤п╪п╦я┌п╣ enter, я┤я┌п╬п╠я▀ п©я─п╬п╢п╬п╩п╤п╦я┌я▄"
 
-#: src/player.c:2654
+#: src/player.c:2582
 msgid "Command execution failed"
-msgstr ""
+msgstr "п²п╣ я┐п╢п╟п╩п╬я│я▄ п╡я▀п©п╬п╩п╫п╦я┌я▄ п╨п╬п╪п╟п╫п╢я┐"
 
-#: src/player.c:2662
+#: src/player.c:2590
 msgid "Writing to console failed"
-msgstr ""
+msgstr "п²п╣ я┐п╢п╟п╩п╬я│я▄ п╥п╟п©п╦я│п╟я┌я▄ п╫п╟ п╨п╬п╫я│п╬п╩я▄"
 
-#: src/plist.c:623
+#: src/plist.c:628
 #, c-format
 msgid "%i/%i song; %i:%02i:%02i/%i:%02i:%02i"
 msgid_plural "%i/%i songs; %i:%02i:%02i/%i:%02i:%02i"
-msgstr[0] "%i/%i песня; %i:%02i:%02i/%i:%02i:%02i"
-msgstr[1] "%i/%i песни; %i:%02i:%02i/%i:%02i:%02i"
-msgstr[2] "%i/%i песен; %i:%02i:%02i/%i:%02i:%02i"
+msgstr[0] "%i/%i п©п╣я│п╫я▐; %i:%02i:%02i/%i:%02i:%02i"
+msgstr[1] "%i/%i п©п╣я│п╫п╦; %i:%02i:%02i/%i:%02i:%02i"
+msgstr[2] "%i/%i п©п╣я│п╣п╫; %i:%02i:%02i/%i:%02i:%02i"
 
-#: src/song.c:336
+#: src/song.c:335
 #, c-format
 msgid "Failed to save info to file %s"
-msgstr "Не могу сохранить информацию в файл %s"
+msgstr "п²п╣ п╪п╬пЁя┐ я│п╬я┘я─п╟п╫п╦я┌я▄ п╦п╫я└п╬я─п╪п╟я├п╦я▌ п╡ я└п╟п╧п╩ %s"
 
-#~ msgid "Configure AudioCD plugin"
-#~ msgstr "Конфигурация плагина AudioCD"
-
-#~ msgid "CD &device: "
-#~ msgstr "Устройство CD (&d): "
-
-#~ msgid "CDDB parameters"
-#~ msgstr "Параметры CDDB"
-
-#~ msgid "&Host: "
-#~ msgstr "Хост (&h): "
-
-#~ msgid "&Email: "
-#~ msgstr "&Email: "
-
-#~ msgid "Disc c&ategory: "
-#~ msgstr "Категория диска (&a): "
-
-#~ msgid "Reload info from CDDB"
-#~ msgstr "Загрузить информацию из CDDB"
-
-#~ msgid "Submit info to CDDB"
-#~ msgstr "Отправить информацию в CDDB"
-
-#~ msgid "Getting address of %s"
-#~ msgstr "Получаю адрес %s"
-
-#, fuzzy
-#~ msgid "Connected to %s"
-#~ msgstr "Подключаюсь к %s"
-
-#~ msgid "Sending query to server"
-#~ msgstr "Отправляю запрос серверу"
-
-#~ msgid "Saving data"
-#~ msgstr "Сохраняю данные"
-
-#~ msgid "Success"
-#~ msgstr "Успех"
-
-#~ msgid "Failed!"
-#~ msgstr "Облом!"
-
-#, fuzzy
-#~ msgid "Unable to open file %s for writing"
-#~ msgstr "Не могу создать файл %s"
-
-#~ msgid "CDDB submit error: no existing info found"
-#~ msgstr "Ошибка отправки CDDB: не найдено существующей информации"
-
-#~ msgid "CDDB submit error: you must specify your email address"
-#~ msgstr "Ошибка отправки CDDB: вы должны указать свой адрес email"
-
-#~ msgid "CDDB submit error: you must specify your category"
-#~ msgstr "Ошибка отправки CDDB: вы должны указать категорию"
-
-#~ msgid "Posting data to server"
-#~ msgstr "Отправляю данные к серверу"
-
-#~ msgid "Getting response"
-#~ msgstr "Получаю ответ"
-
-#~ msgid "Failure!"
-#~ msgstr "Облом!"
-
-#~ msgid "Only regular files are supported for writing info by mp3 plugin"
-#~ msgstr "Плагин mp3 может писать информацию только в обычные файлы"
-
-#~ msgid "Unable to create ID3 tag"
-#~ msgstr "Не могу создать тег ID3"
-
-#, fuzzy
-#~ msgid ""
-#~ "MPEG %s, layer %i\n"
-#~ "Bitrate: %lu kb/s\n"
-#~ "Samplerate: %i Hz\n"
-#~ "%s\n"
-#~ "Error protection: %s\n"
-#~ "Copyright: %s\n"
-#~ "Original: %s\n"
-#~ "Emphasis: %s"
-#~ msgstr ""
-#~ "MPEG %s, layer %i\n"
-#~ "Битрейт: %i кб/с\n"
-#~ "Частота сэмплов: %i Гц\n"
-#~ "%s\n"
-#~ "Защита от ошибок: %s\n"
-#~ "Копирайт: %s\n"
-#~ "Подлинный: %s\n"
-#~ "Акцент: %s"
-
-#~ msgid "Single channel"
-#~ msgstr "Один канал"
-
-#~ msgid "Dual channel"
-#~ msgstr "Два канала"
-
-#~ msgid "Joint Stereo"
-#~ msgstr "Объединенное стерео"
-
-#~ msgid "Stereo"
-#~ msgstr "Стерео"
-
-#~ msgid "Yes"
-#~ msgstr "Да"
-
-#~ msgid "No"
-#~ msgstr "Нет"
-
-#~ msgid "None"
-#~ msgstr "Нет"
-
-#~ msgid "50/15 microseconds"
-#~ msgstr "50/15 микросекунд"
-
-#~ msgid "CCITT J.17"
-#~ msgstr "CCITT J.17"
-
-# c-format
-#, fuzzy
-#~ msgid ""
-#~ "MPEG %s, layer %i\n"
-#~ "Bitrate: %lu kb/s\n"
-#~ "Samplerate: %i Hz\n"
-#~ "%s\n"
-#~ "Error protection: %s\n"
-#~ "Copyright: %s\n"
-#~ "Original: %s\n"
-#~ "Emphasis: %s\n"
-#~ "%s%i frames\n"
-#~ "Length: %i seconds\n"
-#~ "File size: %i bytes"
-#~ msgstr ""
-#~ "MPEG %s, layer %i\n"
-#~ "Битрейт: %i кб/с\n"
-#~ "Частота сэмплов: %i Гц\n"
-#~ "%s\n"
-#~ "Защита от ошибок: %s\n"
-#~ "Копирайт: %s\n"
-#~ "Подлинный: %s\n"
-#~ "Акцент: %s\n"
-#~ "%s%i фреймов\n"
-#~ "Длина: %i секунд\n"
-#~ "Размер файла: %i байт"
-
-#~ msgid "approx. "
-#~ msgstr "примерно "
-
-#~ msgid "Removing tag from file %s"
-#~ msgstr "Удаляю тег из файла %s"
-
-#~ msgid "Configure mp3 plugin"
-#~ msgstr "Конфигурация плагина mp3"
-
-#~ msgid "&Quick length calculation"
-#~ msgstr "Быстрое вычисление длины (&q)"
-
-#~ msgid "Remove ID3 tags"
-#~ msgstr "Удалить теги ID3"
-
-#~ msgid "Unable to open file %s"
-#~ msgstr "Не могу открыть файл %s"
-
-#, fuzzy
-#~ msgid ""
-#~ "Nominal bitrate: %li kb/s\n"
-#~ "Samplerate: %li Hz\n"
-#~ "Channels: %i"
-#~ msgstr ""
-#~ "Номинальный битрейт: %i кб/с\n"
-#~ "Частота сэмплов: %i Гц\n"
-#~ "Число каналов: %i"
-
-#, fuzzy
-#~ msgid ""
-#~ "Nominal bitrate: %li kb/s\n"
-#~ "Samplerate: %li Hz\n"
-#~ "Channels: %i\n"
-#~ "Length: %i seconds\n"
-#~ "File size: %i bytes"
-#~ msgstr ""
-#~ "Номинальный битрейт: %i кб/с\n"
-#~ "Частота сэмплов: %i Гц\n"
-#~ "Число каналов: %i\n"
-#~ "Длина: %i секунд\n"
-#~ "Размер файла: %i байт"
-
-#~ msgid "Configure OggVorbis plugin"
-#~ msgstr "Конфигурация плагина OggVorbis"
-
-#~ msgid "Always use &UTF-8"
-#~ msgstr "Всегда использовать &UTF-8"
-
-#~ msgid "Input truncated or empty."
-#~ msgstr "Ввод обрезан или пуст."
-
-#~ msgid "Input is not an Ogg bitstream."
-#~ msgstr "Ввод не является потоком Ogg."
-
-#~ msgid "Error reading first page of Ogg bitstream."
-#~ msgstr "Ошибка при чтении первой страницы потока Ogg."
-
-#~ msgid "Error reading initial header packet."
-#~ msgstr "Ошибка при чтении начального пакета заголовка."
-
-#~ msgid "Ogg bitstream does not contain vorbis data."
-#~ msgstr "Поток Ogg не содержит данных vorbis."
-
-#~ msgid "Corrupt secondary header."
-#~ msgstr "Вторичный заголовок поврежден."
-
-#~ msgid "EOF before end of vorbis headers."
-#~ msgstr "Конец файла перед концом заголовков vorbis."
-
-#~ msgid "Corrupt or missing data, continuing..."
-#~ msgstr "Данные повреждены или отсутствуют, продолжаю..."
-
-#~ msgid ""
-#~ "Error writing stream to output. Output stream may be corrupted or "
-#~ "truncated."
-#~ msgstr "Ошибка при записи потока. Выходной поток поврежден или обрезан."
-
-#~ msgid ""
-#~ "File size: %i bytes\n"
-#~ "Length: %i seconds\n"
-#~ "Bits/sample: %i\n"
-#~ "Format: PCM\n"
-#~ "Channels: %i\n"
-#~ "Samplerate: %i Hz\n"
-#~ "Bytes/sec: %i\n"
-#~ "Block align: %i"
-#~ msgstr ""
-#~ "Размер фала: %i байт\n"
-#~ "Длина: %i секунд\n"
-#~ "Бит/сэмпл: %i\n"
-#~ "Формат: PCM\n"
-#~ "Число каналов: %i\n"
-#~ "Частота сэмплов: %i\n"
-#~ "Байт/сек: %i\n"
-#~ "Выравнивание блока: %i"
-
-#~ msgid "Configure ALSA plugin"
-#~ msgstr "Конфигурация плагина alsa"
-
-#~ msgid "&Device: "
-#~ msgstr "Устройство (&d): "
-
-#~ msgid "Unable to create file %s"
-#~ msgstr "Не могу создать файл %s"
-
-#, fuzzy
-#~ msgid "Encoder command failed"
-#~ msgstr "Команда (&o): "
-
-#~ msgid "Configure disk writer plugin"
-#~ msgstr "Конфигурация плагина disk writer"
-
-#~ msgid "P&ath to store: "
-#~ msgstr "Путь к каталогу (&a): "
-
-#, fuzzy
-#~ msgid "Encoder c&ommand: "
-#~ msgstr "Команда (&o): "
-
-#~ msgid "Configure OSS plugin"
-#~ msgstr "Конфигурация плагина OSS"
-
-#~ msgid "Unable to initialize VFS module"
-#~ msgstr "Не могу инициализировать модуль VFS"
-
-#~ msgid "Input plugin for file %s failed"
-#~ msgstr "Входной плагин обломился с файлом %s"
-
-#~ msgid "Output plugin initialization failed"
-#~ msgstr "Не могу инициализировать выходной плагин"
-
-#~ msgid "Input"
-#~ msgstr "Входные"
-
-#~ msgid "&Input"
-#~ msgstr "Входные (&i)"
-
-#~ msgid "Output"
-#~ msgstr "Выходные"
-
-#~ msgid "&Output"
-#~ msgstr "Выходные (&o)"
-
-#~ msgid "Effect"
-#~ msgstr "Эффекты"
-
-#~ msgid "&Effect"
-#~ msgstr "Эффекты (&e)"
-
-#~ msgid "Effect is ena&bled"
-#~ msgstr "Эффект включен (&b)"
-
-#~ msgid "Unable to read %s file"
-#~ msgstr "Не могу прочитать файл %s"
-
-#~ msgid "%s: missing play list header"
-#~ msgstr "%s: отсутствует заголовок плей-листа"
-
-#~ msgid "%s: missing `numberofentries' tag"
-#~ msgstr "%s: отсутствует тег `numberofentries'"
-
-#~ msgid "Repeat value"
-#~ msgstr "Значение повтора"
-
-#~ msgid "Enter count &value for the next command: "
-#~ msgstr "Введите число повторений для следующей команды (&v): "
-
-#~ msgid "Configure echo plugin"
-#~ msgstr "Конфигурация плагина echo"
-
-#~ msgid "&Delay: "
-#~ msgstr "Задержка (&d): "
-
-#~ msgid "&Volume: "
-#~ msgstr "Громкость (&v): "
-
-#~ msgid "&Feedback: "
-#~ msgstr "Обратная связь (&f)"
-
-#~ msgid "Enable s&urround"
-#~ msgstr "Разрешить объемное звучание (&u)"
-
-#~ msgid "Microphone"
-#~ msgstr "Микрофон"
-
-#~ msgid "Line-in"
-#~ msgstr "Линейный вход"
-
-#~ msgid "Audio CD"
-#~ msgstr "Audio CD"
-
-#~ msgid "Configure ESD plugin"
-#~ msgstr "Конфигурация плагина esd"
-
-#~ msgid "Unable to initialize song adder thread"
-#~ msgstr "Не могу инициализировать поток добавления песен"
-
-#~ msgid "P:\t\t Reload plugins"
-#~ msgstr "P:\t\t Перезагрузить плагины"
