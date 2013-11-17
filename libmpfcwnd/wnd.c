@@ -94,13 +94,9 @@ wnd_t *wnd_init( cfg_node_t *cfg_list, logger_t *log )
 	db_data = (struct wnd_display_buf_symbol_t *)malloc(len * sizeof(*db_data));
 	if (db_data == NULL)
 		goto failed;
+	memset(db_data, 0, len * sizeof(*db_data));
 	for ( i = 0; i < len; i ++ )
-	{
-		db_data[i].m_char.m_normal_tag = TRUE;
-		db_data[i].m_char.m_normal = ' ';
-		db_data[i].m_attr = 0;
-		db_data[i].m_wnd = NULL;
-	}
+		db_data[i].m_char.chars[0] = L' ';
 	global->m_display_buf.m_width = COLS;
 	global->m_display_buf.m_height = LINES;
 	global->m_display_buf.m_data = db_data;
@@ -475,14 +471,12 @@ void wnd_main( wnd_t *wnd_root )
 				buf->m_height = LINES;
 				free(buf->m_data);
 				size = buf->m_width * buf->m_height;
-				buf->m_data = (struct wnd_display_buf_symbol_t *)malloc(size * 
-						sizeof(*buf->m_data));
+				size_t sz = size * sizeof(*buf->m_data);
+				buf->m_data = (struct wnd_display_buf_symbol_t *)malloc(sz);
+				memset(buf->m_data, 0, sz);
 				for ( i = 0; i < size; i ++ )
 				{
-					buf->m_data[i].m_char.m_normal_tag = TRUE;
-					buf->m_data[i].m_char.m_normal = ' ';
-					buf->m_data[i].m_attr = 0;
-					buf->m_data[i].m_wnd = NULL;
+					buf->m_data[i].m_char.chars[0] = L' ';
 				}
 				wnd_display_buf_unlock(buf);
 				wnd_repos(wnd_root, 0, 0, COLS, LINES);
@@ -639,10 +633,12 @@ void wnd_draw_decorations( wnd_t *wnd )
 		
 		/* Print top border */
 		wnd_move(wnd, WND_MOVE_ABSOLUTE, 0, 0);
-		wnd_put_special(wnd, wnd->m_height > 1 ? ACS_ULCORNER : ACS_LTEE);
+		wnd_put_special(wnd, wnd->m_height > 1 ?
+				WND_ACS_CODE(WACS_ULCORNER) : WND_ACS_CODE(WACS_LTEE));
 		for ( i = 1; i < wnd->m_width - 1; i ++ )
-			wnd_put_special(wnd, ACS_HLINE);
-		wnd_put_special(wnd, wnd->m_height > 1 ? ACS_URCORNER : ACS_RTEE);
+			wnd_put_special(wnd, WND_ACS_CODE(WACS_HLINE));
+		wnd_put_special(wnd, wnd->m_height > 1 ?
+				WND_ACS_CODE(WACS_URCORNER) : WND_ACS_CODE(WACS_RTEE));
 		
 		/* Print caption */
 		if (WND_FLAGS(wnd) & WND_FLAG_CAPTION)
@@ -666,19 +662,19 @@ void wnd_draw_decorations( wnd_t *wnd )
 		for ( i = 1; i < wnd->m_height - 1; i ++ )
 		{
 			wnd_move(wnd, WND_MOVE_ABSOLUTE, 0, i);
-			wnd_put_special(wnd, ACS_VLINE);
+			wnd_put_special(wnd, WND_ACS_CODE(WACS_VLINE));
 			wnd_move(wnd, WND_MOVE_ABSOLUTE, wnd->m_width - 1, i);
-			wnd_put_special(wnd, ACS_VLINE);
+			wnd_put_special(wnd, WND_ACS_CODE(WACS_VLINE));
 		}
 
 		/* Print bottom border */
 		if (wnd->m_height > 1)
 		{
 			wnd_move(wnd, WND_MOVE_ABSOLUTE, 0, wnd->m_height - 1);
-			wnd_put_special(wnd, ACS_LLCORNER);
+			wnd_put_special(wnd, WND_ACS_CODE(WACS_LLCORNER));
 			for ( i = 1; i < wnd->m_width - 1; i ++ )
-				wnd_put_special(wnd, ACS_HLINE);
-			wnd_put_special(wnd, ACS_LRCORNER);
+				wnd_put_special(wnd, WND_ACS_CODE(WACS_HLINE));
+			wnd_put_special(wnd, WND_ACS_CODE(WACS_LRCORNER));
 		}
 
 		/* Print maximize and close boxes */
@@ -1088,27 +1084,7 @@ void wnd_sync_screen( wnd_t *wnd )
 	wnd_display_buf_lock(buf);
 	for ( pos = buf->m_data;; pos ++ )
 	{
-		if (pos->m_char.m_normal_tag)
-		{
-			dword ch;
-			cchar_t cc;
-
-			/* Set symbol */
-			ch = pos->m_char.m_normal;
-			if (ch < 0x20 || ch == 0x7F)
-				ch = '?';
-			//util_log("waddch %x\n", ch);
-			memset(&cc, 0, sizeof(cc));
-			cc.attr = pos->m_attr;
-			cc.chars[0] = ch;
-	//		setcchar(&cc, &ch, pos->m_attr, 0, NULL);
-			add_wch(&cc);
-	//		waddch(WND_CURSES(wnd), pos->m_attr | /*pos->m_char*/ch);
-		}
-		else
-		{
-			waddch(WND_CURSES(wnd), pos->m_attr | pos->m_char.m_special);
-		}
+		wadd_wch(WND_CURSES(wnd), &pos->m_char);
 
 		/* Move to next symbol */
 		if (x >= buf->m_width - 1)

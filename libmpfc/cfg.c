@@ -25,7 +25,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <inttypes.h>
-#define __USE_GNU
 #include <string.h>
 #include "types.h"
 #include "cfg.h"

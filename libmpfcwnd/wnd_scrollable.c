@@ -102,12 +102,12 @@ wnd_msg_retcode_t scrollable_on_display( wnd_t *wnd )
 			if (i == slider_pos)
 			{
 				wnd_apply_style(wnd, "scroll-slider-style");
-				wnd_put_special(wnd, ACS_BLOCK);
+				wnd_put_special(wnd, WND_ACS_CODE(WACS_BLOCK));
 				wnd_apply_style(wnd, "scroll-bar-style");
 			}
 			else
 			{
-				wnd_put_special(wnd, ACS_VLINE);
+				wnd_put_special(wnd, WND_ACS_CODE(WACS_VLINE));
 			}
 		}
 		

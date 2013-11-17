@@ -1,5 +1,6 @@
 AC_INIT([mpfc], [2.0-hg])
 AC_CONFIG_SRCDIR([src/main.c])
+AC_GNU_SOURCE
 AM_INIT_AUTOMAKE
 AC_PROG_CC_C99
 AC_C_BIGENDIAN
@@ -15,6 +16,9 @@ PKG_PROG_PKG_CONFIG
 AC_CONFIG_HEADERS(mpfc-config.h)
 AM_GNU_GETTEXT
 AM_GNU_GETTEXT_VERSION(0.16.1)
+
+CFLAGS="$CFLAGS -D_GNU_SOURCE"
+AC_SUBST(CFLAGS)
 
 # Set up common libraries
 #COMMON_LIBS="-ldmalloc"
@@ -66,14 +70,6 @@ AC_CHECK_HEADERS([netdb.h],,[AC_MSG_ERROR(*** Can't find libresolv header ***)])
 AC_CHECK_LIB(resolv, gethostbyname,,[AC_MSG_ERROR(*** Can't find libresolv ***)])
 RESOLV_LIBS="-lresolv"
 AC_SUBST(RESOLV_LIBS)
-LIBS=$LIBS_save
-
-# Check for ICU library
-LIBS_save=$LIBS
-AC_CHECK_HEADERS([unicode/ucnv.h],,[AC_MSG_ERROR(*** Can't find libicu header ***)])
-#AC_CHECK_LIB(icuuc, ucnv_open,,[AC_MSG_ERROR(*** Can't find libicu ***)])
-ICU_LIBS="-licuuc"
-AC_SUBST(ICU_LIBS)
 LIBS=$LIBS_save
 
 # Check for json

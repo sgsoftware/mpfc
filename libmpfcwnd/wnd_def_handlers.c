@@ -23,6 +23,7 @@
 #include <strings.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 #include "types.h"
 #include "wnd.h"
 #include "wnd_def_handlers.h"
@@ -160,9 +161,8 @@ wnd_msg_retcode_t wnd_default_on_erase_back( wnd_t *wnd )
 			{
 				if (owning == wnd)
 				{
-					pos->m_char.m_normal = ' ';
-					pos->m_char.m_normal_tag = TRUE;
-					pos->m_attr = 0;
+					memset(&pos->m_char, 0, sizeof(pos->m_char));
+					pos->m_char.chars[0] = L' ';
 					break;
 				}
 			}

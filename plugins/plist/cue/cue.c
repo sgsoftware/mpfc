@@ -25,7 +25,6 @@
 #define __MPFC_OUTER__
 #include <stdio.h>
 #include <stdlib.h>
-#define __USE_GNU
 #include <string.h>
 #include <sys/types.h>
 #include <libgen.h>

@@ -26,7 +26,6 @@
 #include <sys/soundcard.h>
 #include <stdio.h>
 #include <stdlib.h>
-#define __USE_GNU
 #include <string.h>
 #include <unistd.h>
 #include <gst/gst.h>
@@ -1343,7 +1342,7 @@ void player_display_slider( wnd_t *wnd, int x, int y, int width,
 		if (i == slider_pos)
 			wnd_putchar(wnd, 0, 'O');
 		else 
-			wnd_put_special(wnd, ACS_HLINE);
+			wnd_put_special(wnd, WND_ACS_CODE(WACS_HLINE));
 	}
 } /* End of 'player_display_slider' function */
 

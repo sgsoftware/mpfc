@@ -100,13 +100,13 @@ typedef enum
 void wnd_move( struct tag_wnd_t *wnd, wnd_move_style_t style, int x, int y );
 
 /* Low-level character printing */
-void wnd_putc( struct tag_wnd_t *wnd, dword ch );
+void wnd_putc( struct tag_wnd_t *wnd, wchar_t ch );
 
 /* Low-level special (ACS_*) character printing */
-void wnd_put_special( struct tag_wnd_t *wnd, chtype ch );
+void wnd_put_special( struct tag_wnd_t *wnd, wchar_t ch );
 
 /* Put a character */
-void wnd_putchar( struct tag_wnd_t *wnd, wnd_print_flags_t flags, dword ch );
+void wnd_putchar( struct tag_wnd_t *wnd, wnd_print_flags_t flags, wchar_t ch );
 
 /* Print a string */
 void wnd_putstring( struct tag_wnd_t *wnd, wnd_print_flags_t flags,

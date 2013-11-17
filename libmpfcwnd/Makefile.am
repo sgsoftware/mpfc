@@ -17,6 +17,6 @@ libmpfcwnd_la_SOURCES = wnd.c wnd_print.c wnd_msg.c wnd_kbd.c \
 						wnd_views.c wnd_multiview_dialog.c wnd_listbox.c \
 						wnd_repval.c \
 						$(libmpfcwndhdr_HEADERS)
-libmpfcwnd_la_LIBADD = @COMMON_LIBS@ @GPM_LIBS@ @PTHREAD_LIBS@ @CURSES_LIBS@ @ICU_LIBS@
+libmpfcwnd_la_LIBADD = @COMMON_LIBS@ @GPM_LIBS@ @PTHREAD_LIBS@ @CURSES_LIBS@ 
 AM_CPPFLAGS = -I$(top_srcdir)/src @CURSES_CFLAGS@
 localedir = $(datadir)/locale

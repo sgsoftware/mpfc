@@ -23,7 +23,6 @@
 #ifndef __SG_MPFC_WND_H__
 #define __SG_MPFC_WND_H__
 
-#define _XOPEN_SOURCE_EXTENDED
 #include <curses.h>
 #include "types.h"
 #include "cfg.h"
@@ -122,19 +121,9 @@ struct tag_wnd_global_data_t
 		/* Screen image */
 		struct wnd_display_buf_symbol_t
 		{
-			/* Character code */
-			struct wnd_display_buf_symbol_char_t
-			{
-				union
-				{
-					dword m_normal;
-					chtype m_special;
-				};
-				bool_t m_normal_tag;
-			} m_char;
+			/* Character (possibly with combining codes) and attributes */
+			cchar_t m_char;
 
-			/* Character attribute */
-			int m_attr;
 			/* The window this position belongs to */
 			wnd_t *m_wnd;
 		} *m_data;
@@ -244,6 +233,11 @@ struct tag_wnd_t
 	/* Cursor position (in client coordinates) */
 	int m_cursor_x, m_cursor_y;
 
+	/* Maintain previous position wnd_putc was called at
+	 * so that subsequent combining chars go there */
+	struct wnd_display_buf_symbol_t *m_prev_print_pos;
+	unsigned m_prev_num_codes;
+
 	/* Window position before maximization */
 	struct
 	{
@@ -316,6 +310,9 @@ struct tag_wnd_t
 		WND_OBJ(wnd)->m_client_x + (x))
 #define WND_CLIENT2SCREEN_Y(wnd, y) (WND_OBJ(wnd)->m_screen_y + \
 		WND_OBJ(wnd)->m_client_y + (y))
+
+/* Get unicode out of a WACS_ symbol */
+#define WND_ACS_CODE(w) (w->chars[0])
 
 /* The maximal window level */
 #define WND_MAX_LEVEL	16
