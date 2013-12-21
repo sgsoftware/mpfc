@@ -114,6 +114,11 @@ static void wnd_putc_impl( wnd_t *wnd, wchar_t ch )
 		if (wnd->m_prev_num_codes < CCHARW_MAX - 1)
 			pos->m_char.chars[wnd->m_prev_num_codes++] = ch;
 
+		for (int i = 1; i < width; ++i)
+		{
+			(pos + i)->m_char.chars[0] = 0;
+		}
+
 		wnd->m_prev_print_pos = pos;
 	}
 

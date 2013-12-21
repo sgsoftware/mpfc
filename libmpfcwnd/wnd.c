@@ -1084,6 +1084,9 @@ void wnd_sync_screen( wnd_t *wnd )
 	wnd_display_buf_lock(buf);
 	for ( pos = buf->m_data;; pos ++ )
 	{
+		if (!pos->m_char.chars[0])
+			continue;
+
 		wadd_wch(WND_CURSES(wnd), &pos->m_char);
 
 		/* Move to next symbol */
