@@ -629,7 +629,7 @@ void plist_display( plist_t *pl, wnd_t *wnd )
 			(end >= 0 && pl->m_len > 0) ? end - start + 1 : 0, pl->m_len,
 			s_seconds / 3600, (s_seconds % 3600) / 60, s_seconds % 60,
 			l_seconds / 3600, (l_seconds % 3600) / 60, l_seconds % 60);
-	wnd_move(wnd, 0, WND_WIDTH(wnd) - strlen(time_text) - 1, 
+	wnd_move(wnd, 0, WND_WIDTH(wnd) - utf8_width(time_text) - 1, 
 			pl->m_start_pos + PLIST_HEIGHT);
 	wnd_printf(wnd, 0, 0, "%s", time_text);
 } /* End of 'plist_display' function */

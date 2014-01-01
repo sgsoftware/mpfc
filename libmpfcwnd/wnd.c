@@ -644,7 +644,7 @@ void wnd_draw_decorations( wnd_t *wnd )
 		if (WND_FLAGS(wnd) & WND_FLAG_CAPTION)
 		{
 			/* Determine title position */
-			text_pos = (int)(wnd->m_width - mbslen(wnd->m_title) - 2) / 2;
+			text_pos = (int)(wnd->m_width - utf8_width(wnd->m_title) - 2) / 2;
 			if (text_pos <= 0)
 				text_pos = 1;
 
@@ -1396,8 +1396,23 @@ void wnd_redisplay( wnd_t *wnd )
 	assert(wnd);
 	assert(WND_GLOBAL(wnd));
 
-	WND_DISPLAY_BUF(wnd).m_dirty = TRUE;
-	wnd_msg_send(WND_ROOT(wnd), "update_screen", wnd_msg_update_screen_new());
+	wnd_t *root = WND_ROOT(wnd);
+
+	/* Clear screen */
+	struct wnd_display_buf_t *buf = &WND_DISPLAY_BUF(wnd);
+	wnd_display_buf_lock(buf);
+	buf->m_dirty = TRUE;
+	unsigned size = buf->m_width * buf->m_height;
+	memset(buf->m_data, 0, size * sizeof(*buf->m_data));
+	for ( unsigned i = 0; i < size; i ++ )
+	{
+		buf->m_data[i].m_char.chars[0] = L' ';
+	}
+	wnd_display_buf_unlock(buf);
+	wnd_global_update_visibility(root);
+
+	wnd_send_repaint(root, TRUE);
+	wnd_msg_send(root, "update_screen", wnd_msg_update_screen_new());
 } /* End of 'wnd_redisplay' function */
 
 /* Update the whole visibility information */

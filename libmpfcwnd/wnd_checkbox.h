@@ -26,12 +26,16 @@
 #include "types.h"
 #include "wnd.h"
 #include "wnd_dlgitem.h"
+#include "wnd_label.h"
 
 /* Check box type */
 typedef struct
 {
 	/* Dialog item part */
 	dlgitem_t m_wnd;
+
+	/* Label */
+	label_text_t m_text;
 
 	/* Message handlers */
 	wnd_msg_handler_t *m_on_clicked;

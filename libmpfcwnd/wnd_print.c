@@ -212,8 +212,11 @@ void wnd_putstring( wnd_t *wnd, wnd_print_flags_t flags, int right_border,
 			n = 1;
 		}
 
+		/* Should not happen if locale is correct */
+		if (n == 0)
+			break;
+
 		/* Advance the input string */
-		assert(n > 0);
 		str += n;
 		nbytes -= n;
 
@@ -238,7 +241,10 @@ void wnd_putstring( wnd_t *wnd, wnd_print_flags_t flags, int right_border,
 		}
 		
 		/* Border is OK, so simply print this char */
-		if (wnd->m_cursor_x <= right_border)
+		int cw = wcwidth(ch);
+		if (cw < 0)
+			cw = 0;
+		if (wnd->m_cursor_x + cw - 1 <= right_border)
 		{
 			wnd_putchar(wnd, flags, ch);
 

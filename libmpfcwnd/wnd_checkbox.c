@@ -51,10 +51,18 @@ checkbox_t *checkbox_new( wnd_t *parent, char *title, char *id,
 	return cb;
 } /* End of 'checkbox_new' function */
 
+/* Destructor */
+static void checkbox_destructor( wnd_t *wnd )
+{
+	label_text_free(&CHECKBOX_OBJ(wnd)->m_text);
+} /* End of 'checkbox_destructor' function */
+
 /* Check box constructor */
 bool_t checkbox_construct( checkbox_t *cb, wnd_t *parent, char *title, 
 		char *id, char letter, bool_t checked )
 {
+	label_text_parse(&cb->m_text, title);
+
 	/* Initialize dialog item part */
 	if (!dlgitem_construct(DLGITEM_OBJ(cb), parent, title, id, 
 				checkbox_get_desired_size, NULL, letter, 0))
@@ -66,6 +74,7 @@ bool_t checkbox_construct( checkbox_t *cb, wnd_t *parent, char *title,
 	wnd_msg_add_handler(WND_OBJ(cb), "mouse_ldown", checkbox_on_mouse);
 	wnd_msg_add_handler(WND_OBJ(cb), "quick_change_focus", 
 			checkbox_on_quick_change_focus);
+	wnd_msg_add_handler(WND_OBJ(cb), "destructor", checkbox_destructor);
 
 	/* Set check box fields */
 	cb->m_checked = checked;
@@ -96,7 +105,7 @@ wnd_msg_retcode_t checkbox_on_display( wnd_t *wnd )
 	wnd_apply_style(wnd, WND_FOCUS(wnd) == wnd ? "focus-label-style" :
 			"label-style");
 	wnd_putchar(wnd, 0, ' ');
-	dlgitem_display_label_text(wnd, wnd->m_title);
+	label_text_display(wnd, &cb->m_text);
 	wnd_move(wnd, 0, 1, 0);
 	return WND_MSG_RETCODE_OK;
 } /* End of 'checkbox_on_display' function */
@@ -127,7 +136,7 @@ void checkbox_toggle( checkbox_t *cb )
 /* Get size desired by check box */
 void checkbox_get_desired_size( dlgitem_t *di, int *width, int *height )
 {
-	*width = dlgitem_label_text_len(WND_OBJ(di), WND_OBJ(di)->m_title) + 5;
+	*width = CHECKBOX_OBJ(di)->m_text.width + 5;
 	*height = 1;
 } /* End of 'checkbox_get_desired_size' function */
 

@@ -28,6 +28,7 @@
 #include "error.h"
 #include "player.h"
 #include "wnd.h"
+#include "util.h"
 
 /* Main function */
 int main( int argc, char *argv[] )
@@ -50,6 +51,12 @@ int main( int argc, char *argv[] )
 		fprintf(stderr, _("A fatal error occured during player initialization."
 					" See log for details\n"));
 		return 1;
+	}
+
+	/* Check that we have an utf8 locale */
+	if (!util_check_utf8_mode())
+	{
+		logger_fatal(player_log, 0, _("Your locale is not UTF-8! Text handling will work incorrectly"));
 	}
 
 	/* Run player */

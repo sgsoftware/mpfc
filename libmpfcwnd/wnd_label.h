@@ -34,6 +34,19 @@ typedef enum
 	LABEL_NOBOLD = 1 << 0,
 } label_flags_t;
 
+/* Parsed label text */
+typedef struct
+{
+	/* Effective text is "pre letter post"
+	 * but 'letter' will be highlighted */
+	char *pre;
+	char letter;
+	char *post;
+
+	int width;
+	int height;
+} label_text_t;
+
 /* Label type */
 typedef struct 
 {
@@ -41,7 +54,7 @@ typedef struct
 	dlgitem_t m_wnd;
 
 	/* Label text */
-	char *m_text;
+	label_text_t m_text;
 
 	/* Label flags */
 	label_flags_t m_flags;
@@ -57,6 +70,18 @@ label_t *label_new( wnd_t *parent, char *text, char *id, label_flags_t flags );
 bool_t label_construct( label_t *l, wnd_t *parent, char *text, char *id,
 		label_flags_t flags );
 
+/* Destructor */
+void label_destructor( wnd_t *wnd );
+
+/* Parse label title */
+void label_text_parse( label_text_t *text, char *str );
+
+/* Free label title struct */
+void label_text_free( label_text_t *text );
+
+/* Display a label-like text */
+void label_text_display( wnd_t *wnd, label_text_t *text );
+
 /* Create a label with another label */
 label_t *label_new_with_label( wnd_t *parent, char *title, char *text,
 		char *id, label_flags_t flags );
@@ -69,13 +94,6 @@ void label_get_desired_size( dlgitem_t *di, int *width, int *height );
 
 /* 'display' message handler */
 wnd_msg_retcode_t label_on_display( wnd_t *wnd );
-
-/* Display label-like text */
-void label_display_text( wnd_t *wnd, char *text, wnd_color_t fg, 
-		wnd_color_t bg, int attr );
-
-/* Get label-like text length */
-int label_text_len( wnd_t *wnd );
 
 /*
  * Class functions

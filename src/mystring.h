@@ -31,21 +31,26 @@ typedef struct
 	/* String data */
 	char *m_data;
 
-	/* String length */
+	/* String length in bytes */
 	int m_len;
 
 	/* Amount of memory allocated for string and size of allocation portion */
 	int m_allocated, m_portion_size;
+
+	/* Multibyte UTF-8 sequence insertion state */
+	int m_bytes_to_complete;
+	int m_utf8_seq_len;
+
+	/* Cached string width. -1 if not initialized */
+	int m_width;
 } str_t;
 
 /* Get string length */
-#define STR_LEN(str) ((str)->m_len)
+#define STR_BYTE_LEN(str) ((str)->m_len)
 
 /* Convert string to (char *) */
 #define STR_TO_CPTR(str) ((str)->m_data)
-
-/* Get string character at the specified position */
-#define STR_AT(str, pos) ((str)->m_data[pos])
+#define STR_AT(str, i) (STR_TO_CPTR(str)[i])
 
 /* Create a new string */
 str_t *str_new( const char *s );
@@ -71,11 +76,14 @@ str_t *str_cat_cptr( str_t *dest, const char *src );
 /* Concatenate strings */
 str_t *str_cat( str_t *dest, const str_t *src );
 
-/* Insert a character to string */
-void str_insert_char( str_t *str, char ch, int index );
+/* Insert a character into string 
+ * Returns number of inserted screen positions
+ * If string becomes temporarily inconsistent (because incomplete utf-8 sequence
+ * has been inserted) return value is negative */
+int str_insert_char( str_t *str, char ch, int index );
 
 /* Delete a character from string */
-char str_delete_char( str_t *str, int index );
+bool_t str_delete_char( str_t *str, int index, bool_t before );
 
 /* Replace all characters 'from' to 'to' */
 void str_replace_char( str_t *str, char from, char to );
@@ -97,6 +105,24 @@ int str_printf( str_t *str, const char *fmt, ... );
 
 /* Escape the special symbols (assuming that string is a file name) */
 void str_fn_escape_specs( str_t *str, bool_t escape_slashes );
+
+/* Decode multibyte sequence at the given position */
+wchar_t str_wchar_at( str_t *str, unsigned pos, int *nbytes );
+
+/* Calculate display width of the string */
+int str_calc_width( str_t *str );
+
+/* Get display width of the string */
+static inline int str_width( str_t *str )
+{
+	if (str->m_width >= 0)
+		return str->m_width;
+	return str_calc_width(str);
+}
+
+/* Skip 'delta' displayable positions from byte_pos
+ * sym_pos may be updated by a different delta if wide symbols are encountered */
+void str_skip_positions( str_t *str, int *byte_pos, int *sym_pos, int delta );
 
 #endif
 

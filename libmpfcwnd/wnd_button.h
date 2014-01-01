@@ -26,12 +26,15 @@
 #include "types.h"
 #include "wnd.h"
 #include "wnd_dlgitem.h"
+#include "wnd_label.h"
 
 /* Button window type */
 typedef struct 
 {
 	/* Dialog item part */
 	dlgitem_t m_wnd;
+
+	label_text_t m_text;
 
 	/* Messages */
 	wnd_msg_handler_t *m_on_clicked;

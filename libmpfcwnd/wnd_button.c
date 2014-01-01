@@ -59,6 +59,12 @@ button_t *button_new( wnd_t *parent, char *title, char *id, char letter )
 	return btn;
 } /* End of 'button_new' function */
 
+/* Destructor */
+static void button_destructor( wnd_t *wnd )
+{
+	label_text_free(&BUTTON_OBJ(wnd)->m_text);
+} /* End of 'button_destructor' function */
+
 /* Button initialization function */
 bool_t button_construct( button_t *btn, wnd_t *parent, char *title, char *id,
 		char letter )
@@ -66,6 +72,8 @@ bool_t button_construct( button_t *btn, wnd_t *parent, char *title, char *id,
 	wnd_t *wnd = WND_OBJ(btn);
 
 	assert(btn);
+
+	label_text_parse(&btn->m_text, title);
 
 	/* Initialize window part */
 	if (!dlgitem_construct(DLGITEM_OBJ(btn), parent, title, id, 
@@ -78,13 +86,14 @@ bool_t button_construct( button_t *btn, wnd_t *parent, char *title, char *id,
 	wnd_msg_add_handler(wnd, "mouse_ldown", button_on_mouse);
 	wnd_msg_add_handler(wnd, "quick_change_focus", 
 			button_on_quick_change_focus);
+	wnd_msg_add_handler(wnd, "destructor", button_destructor);
 	return TRUE;
 } /* End of 'button_construct' function */
 
 /* Get button desired size */
 void button_get_desired_size( dlgitem_t *di, int *width, int *height )
 {
-	*width = 2 + dlgitem_label_text_len(WND_OBJ(di), WND_OBJ(di)->m_title);
+	*width = 2 + BUTTON_OBJ(di)->m_text.width;
 	*height = 1;
 } /* End of 'button_get_desired_size' function */
 
@@ -94,7 +103,7 @@ wnd_msg_retcode_t button_on_display( wnd_t *wnd )
 	wnd_move(wnd, 0, 0, 0);
 	wnd_apply_default_style(wnd);
 	wnd_putchar(wnd, 0, ' ');
-	dlgitem_display_label_text(wnd, wnd->m_title);
+	label_text_display(wnd, &BUTTON_OBJ(wnd)->m_text);
 	wnd_putchar(wnd, 0, ' ');
 	return WND_MSG_RETCODE_OK;
 } /* End of 'button_on_display' function */

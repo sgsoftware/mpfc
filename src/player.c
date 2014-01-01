@@ -1213,8 +1213,8 @@ wnd_msg_retcode_t player_on_display( wnd_t *wnd )
 		loop_str = _("Loop");
 		if (cfg_get_var_int(cfg_list, "shuffle-play"))
 		{
-			wnd_move(wnd, 0, WND_WIDTH(wnd) - strlen(shuffle_str) - 
-					strlen(loop_str) - 2, 0);
+			wnd_move(wnd, 0, WND_WIDTH(wnd) - utf8_width(shuffle_str) - 
+					utf8_width(loop_str) - 2, 0);
 			wnd_apply_style(wnd, "play-modes-style");
 			wnd_printf(wnd, 0, 0, shuffle_str);
 		}
@@ -1222,7 +1222,7 @@ wnd_msg_retcode_t player_on_display( wnd_t *wnd )
 		/* Print loop mode */
 		if (cfg_get_var_int(cfg_list, "loop-play"))
 		{
-			wnd_move(wnd, 0, WND_WIDTH(wnd) - strlen(loop_str) - 1, 0);
+			wnd_move(wnd, 0, WND_WIDTH(wnd) - utf8_width(loop_str) - 1, 0);
 			wnd_apply_style(wnd, "play-modes-style");
 			wnd_printf(wnd, 0, 0, loop_str);
 		}
@@ -1254,8 +1254,8 @@ wnd_msg_retcode_t player_on_display( wnd_t *wnd )
 		loop_str = _("Loop");
 		if (cfg_get_var_int(cfg_list, "shuffle-play"))
 		{
-			wnd_move(wnd, 0, WND_WIDTH(wnd) - strlen(shuffle_str) - 
-					strlen(loop_str) - 2, 0);
+			wnd_move(wnd, 0, WND_WIDTH(wnd) - utf8_width(shuffle_str) - 
+					utf8_width(loop_str) - 2, 0);
 			wnd_apply_style(wnd, "play-modes-style");
 			wnd_printf(wnd, 0, 0, shuffle_str);
 		}
@@ -1263,7 +1263,7 @@ wnd_msg_retcode_t player_on_display( wnd_t *wnd )
 		/* Print loop mode */
 		if (cfg_get_var_int(cfg_list, "loop-play"))
 		{
-			wnd_move(wnd, 0, WND_WIDTH(wnd) - strlen(loop_str) - 1, 0);
+			wnd_move(wnd, 0, WND_WIDTH(wnd) - utf8_width(loop_str) - 1, 0);
 			wnd_apply_style(wnd, "play-modes-style");
 			wnd_printf(wnd, 0, 0, loop_str);
 		}
@@ -1306,7 +1306,7 @@ wnd_msg_retcode_t player_on_display( wnd_t *wnd )
 			break;
 		}
 	}
-	wnd_move(wnd, 0, WND_WIDTH(player_wnd) - strlen(aparams) - 1, 
+	wnd_move(wnd, 0, WND_WIDTH(player_wnd) - utf8_width(aparams) - 1, 
 			PLAYER_SLIDER_VOL_Y - 1);
 	wnd_apply_style(wnd, "audio-params-style");
 	wnd_printf(wnd, 0, 0, "%s", aparams);
@@ -2265,7 +2265,7 @@ static void player_audio_setup_sync_device_box( wnd_t *wnd )
 	assert(dev_eb);
 
 	/* Device is only active when sink is specified */
-	dev_eb->m_editable = (EDITBOX_LEN(sink_eb) > 0);
+	dev_eb->m_editable = !EDITBOX_EMPTY(sink_eb);
 }
 
 static void player_on_audio_setup( wnd_t *wnd )
@@ -2276,9 +2276,9 @@ static void player_on_audio_setup( wnd_t *wnd )
 	assert(dev_eb);
 
 	cfg_set_var(cfg_list, "gstreamer.audio-sink", 
-			EDITBOX_LEN(sink_eb) > 0 ? EDITBOX_TEXT(sink_eb) : NULL);
+			EDITBOX_EMPTY(sink_eb) ? EDITBOX_TEXT(sink_eb) : NULL);
 	cfg_set_var(cfg_list, "gstreamer.audio-sink-params.device", 
-			EDITBOX_LEN(dev_eb) > 0 ? EDITBOX_TEXT(dev_eb) : NULL);
+			EDITBOX_EMPTY(dev_eb) ? EDITBOX_TEXT(dev_eb) : NULL);
 
 	/* Restart playback */
 	if (player_plist->m_cur_song >= 0)

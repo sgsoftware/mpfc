@@ -50,10 +50,18 @@ radio_t *radio_new( wnd_t *parent, char *title, char *id,
 	return r;
 } /* End of 'radio_new' function */
 
+/* Destructor */
+static void radio_destructor( wnd_t *wnd )
+{
+	label_text_free(&RADIO_OBJ(wnd)->m_text);
+} /* End of 'radio_destructor' function */
+
 /* Radio button constructor */
 bool_t radio_construct( radio_t *r, wnd_t *parent, char *title, char *id, 
 		char letter, bool_t checked )
 {
+	label_text_parse(&r->m_text, title);
+
 	/* Initialize dialog item part */
 	if (!dlgitem_construct(DLGITEM_OBJ(r), parent, title, id, 
 				radio_get_desired_size, NULL, letter, 0))
@@ -65,6 +73,7 @@ bool_t radio_construct( radio_t *r, wnd_t *parent, char *title, char *id,
 	wnd_msg_add_handler(WND_OBJ(r), "mouse_ldown", radio_on_mouse);
 	wnd_msg_add_handler(WND_OBJ(r), "quick_change_focus", 
 			radio_on_quick_change_focus);
+	wnd_msg_add_handler(WND_OBJ(r), "destructor", radio_destructor);
 
 	/* Set fields */
 	r->m_checked = checked;
@@ -103,7 +112,7 @@ wnd_msg_retcode_t radio_on_display( wnd_t *wnd )
 	wnd_apply_style(wnd, WND_FOCUS(wnd) == wnd ? "focus-label-style" :
 			"label-style");
 	wnd_putchar(wnd, 0, ' ');
-	dlgitem_display_label_text(wnd, wnd->m_title);
+	label_text_display(wnd, &RADIO_OBJ(wnd)->m_text);
 	wnd_move(wnd, 0, 1, 0);
     return WND_MSG_RETCODE_OK;
 } /* End of 'radio_on_display' function */
@@ -142,7 +151,7 @@ void radio_check( radio_t *r )
 /* Get size desired by check box */
 void radio_get_desired_size( dlgitem_t *di, int *width, int *height )
 {
-	*width = dlgitem_label_text_len(WND_OBJ(di), WND_OBJ(di)->m_title) + 5;
+	*width = RADIO_OBJ(di)->m_text.width + 5;
 	*height = 1;
 } /* End of 'radio_get_desired_size' function */
 

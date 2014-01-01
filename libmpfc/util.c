@@ -28,6 +28,8 @@
 #include <pwd.h>
 #include <regex.h>
 #include <time.h>
+#include <wchar.h>
+#include <langinfo.h>
 #include "types.h"
 #include "util.h"
 
@@ -338,10 +340,58 @@ char *util_strcat( const char *first, ... )
 	return ret;
 } /* End of 'util_strcat' function */
 
-int mbslen( char *str )
+/* Calculate display width of an UTF-8 string */
+int utf8_width(char *str)
 {
-	return strlen(str);
-}
+	int w = 0;
+
+	size_t nbytes = strlen(str);
+	mbstate_t mbstate;
+	memset(&mbstate, 0, sizeof(mbstate));
+	while (nbytes > 0)
+	{
+		/* Convert to unicode */
+		wchar_t ch;
+		size_t n = mbrtowc(&ch, str, nbytes, &mbstate);
+		if (n >= (size_t)(-2))
+		{
+			++w;
+			++str;
+			continue;
+		}
+
+		/* Should not happen if locale is correct */
+		if (n == 0)
+			break;
+
+		str += n;
+		nbytes -= n;
+
+		int cw = wcwidth(ch);
+		if (cw > 0)
+			w += cw;
+	}
+	return w;
+} /* End of 'utf8_width' function */
+
+/* Decode UTF-8 sequence length using the first byte */
+int utf8_decode_num_bytes(char c)
+{
+	int n = 0;
+	int mask = 1 << 7;
+	while (mask && (c & mask))
+	{
+		++n;
+		mask >>= 1;
+	}
+	return n;
+} /* End of 'utf8_decode_num_bytes' function */
+
+/* Check that the locale is in UTF-8 mode */
+bool_t util_check_utf8_mode( void )
+{
+	return (strcmp(nl_langinfo(CODESET), "UTF-8") == 0);
+} /* End of 'util_check_utf8_mode' function */
 
 /* End of 'util.c' file */
 

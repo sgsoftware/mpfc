@@ -89,7 +89,7 @@ static void filebox_scandir( filebox_t *fb, char *dirname )
 
 		/* Filter file */
 		if (name[0] == '.' ||
-				strncmp(STR_TO_CPTR(fb->m_pattern), name, STR_LEN(fb->m_pattern)))
+				strncmp(STR_TO_CPTR(fb->m_pattern), name, STR_BYTE_LEN(fb->m_pattern)))
 			goto next;
 		if (fb->m_command_box && !fb->m_not_first)
 		{
@@ -147,7 +147,7 @@ finally:
 static void filebox_load_names( filebox_t *fb )
 {
 	str_t *text = EDITBOX_OBJ(fb)->m_text, *dirname = NULL;
-	int cursor = EDITBOX_OBJ(fb)->m_cursor;
+	int cursor = EDITBOX_OBJ(fb)->m_cursor_byte;
 	int i;
 	int field_begin = 0;
 	bool_t not_first = FALSE;
@@ -245,9 +245,8 @@ static void filebox_insert_next( filebox_t *fb )
 		editbox_t *eb = EDITBOX_OBJ(fb);
 
 		/* Delete current insertion first */
-		cursor = eb->m_cursor;
-		for ( i = fb->m_insert_start; i < cursor; i ++ )
-			editbox_delch(eb, fb->m_insert_start);
+		while (eb->m_cursor_byte != fb->m_insert_start)
+			editbox_delch(eb, TRUE);
 
 		/* Insert this name */
 		for ( ch = fb->m_names->m_name; (*ch) != 0; ch ++ )
@@ -344,7 +343,7 @@ filebox_t *filebox_new_with_label( wnd_t *parent, char *title, char *id,
 	hbox_t *hbox;
 	hbox = hbox_new(parent, NULL, 0);
 	label_new(WND_OBJ(hbox), title, "", 0);
-	return filebox_new(WND_OBJ(hbox), id, text, letter - mbslen(title), width);
+	return filebox_new(WND_OBJ(hbox), id, text, letter, width - utf8_width(title));
 } /* End of 'filebox_new_with_label' function */
 
 /* End of 'filebox.c' file */

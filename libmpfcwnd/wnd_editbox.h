@@ -53,9 +53,11 @@ typedef struct
 
 	/* Cursor position */
 	int m_cursor;
+	int m_cursor_byte;
 
 	/* Scroll value */
 	int m_scrolled;
+	int m_scrolled_byte;
 
 	/* The desired width */
 	int m_width;
@@ -83,8 +85,9 @@ typedef struct
 #define EDITBOX_OBJ(wnd)	((editbox_t *)wnd)
 
 /* Access edit box data */
-#define EDITBOX_TEXT(wnd)	(STR_TO_CPTR(EDITBOX_OBJ(wnd)->m_text))
-#define EDITBOX_LEN(wnd)	(STR_LEN(EDITBOX_OBJ(wnd)->m_text))
+#define EDITBOX_TEXT(wnd)	    (STR_TO_CPTR(EDITBOX_OBJ(wnd)->m_text))
+#define EDITBOX_BYTE_LEN(wnd)	(STR_BYTE_LEN(EDITBOX_OBJ(wnd)->m_text))
+#define EDITBOX_EMPTY(wnd)	    (*EDITBOX_TEXT(wnd) != 0)
 
 /* Create a new edit box */
 editbox_t *editbox_new( wnd_t *parent, char *id, char *text, char letter,
@@ -111,10 +114,10 @@ void editbox_set_text( editbox_t *eb, const char *text );
 void editbox_addch( editbox_t *eb, char ch );
 
 /* Delete character from the current or previous cursor position */
-void editbox_delch( editbox_t *eb, int pos );
+void editbox_delch( editbox_t *eb, bool_t before_cursor );
 
 /* Move cursor */
-void editbox_move( editbox_t *eb, int new_pos );
+bool_t editbox_move( editbox_t *eb, int new_pos );
 
 /* 'display' message handler */
 wnd_msg_retcode_t editbox_on_display( wnd_t *wnd );

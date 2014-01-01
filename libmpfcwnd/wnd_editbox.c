@@ -20,9 +20,9 @@
  * MA 02111-1307, USA.
  */
 
-#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <wctype.h>
 #include "types.h"
 #include "mystring.h"
 #include "wnd.h"
@@ -30,8 +30,7 @@
 #include "wnd_editbox.h"
 #include "wnd_hbox.h"
 #include "wnd_label.h"
-
-extern int mbslen( char *str );
+#include "util.h"
 
 /* Create a new edit box */
 editbox_t *editbox_new( wnd_t *parent, char *id, char *text, char letter,
@@ -87,7 +86,8 @@ bool_t editbox_construct( editbox_t *eb, wnd_t *parent, char *id, char *text,
 	eb->m_text = str_new(text == NULL ? "" : text);
 	eb->m_width = width;
 	eb->m_editable = TRUE;
-	editbox_move(eb, STR_LEN(eb->m_text));
+	int len = str_width(eb->m_text);
+	editbox_move(eb, len > eb->m_width ? 0 : len);
 	eb->m_text_before_hist = str_new("");
 	return TRUE;
 } /* End of 'editbox_construct' function */
@@ -99,7 +99,7 @@ editbox_t *editbox_new_with_label( wnd_t *parent, char *title, char *id,
 	hbox_t *hbox;
 	hbox = hbox_new(parent, NULL, 0);
 	label_new(WND_OBJ(hbox), title, "", 0);
-	return editbox_new(WND_OBJ(hbox), id, text, letter, width - mbslen(title));
+	return editbox_new(WND_OBJ(hbox), id, text, letter, width - utf8_width(title));
 } /* End of 'editbox_new_with_label' function */
 
 /* Destructor */
@@ -134,7 +134,7 @@ void editbox_set_text( editbox_t *eb, const char *text )
 {
 	assert(eb);
 	str_copy_cptr(eb->m_text, text == NULL ? "" : text);
-	int len = EDITBOX_LEN(eb);
+	int len = str_width(eb->m_text);
 	editbox_move(eb, len > eb->m_width ? 0 : len);
 	eb->m_modified = TRUE;
 	wnd_msg_send(WND_OBJ(eb), "changed", editbox_changed_new());
@@ -145,42 +145,44 @@ void editbox_set_text( editbox_t *eb, const char *text )
 void editbox_addch( editbox_t *eb, char ch )
 {
 	assert(eb);
-	str_insert_char(eb->m_text, ch, eb->m_cursor);
-	editbox_move(eb, eb->m_cursor + 1);
+	int inserted_width = str_insert_char(eb->m_text, ch, eb->m_cursor_byte);
+	if (inserted_width >= 0)
+		/* If == 0, we still want to correct cursor_byte */
+		editbox_move(eb, eb->m_cursor + inserted_width);
 	eb->m_modified = TRUE;
 } /* End of 'editbox_addch' function */
 
 /* Delete character from the current or previous cursor position */
-void editbox_delch( editbox_t *eb, int pos )
+void editbox_delch( editbox_t *eb, bool_t before_cursor )
 {
 	assert(eb);
-	if (str_delete_char(eb->m_text, pos))
-		editbox_move(eb, pos);
+
+	if (before_cursor)
+		if (!editbox_move(eb, eb->m_cursor - 1))
+			return;
+
+	str_delete_char(eb->m_text, eb->m_cursor_byte, FALSE);
 	eb->m_modified = TRUE;
 } /* End of 'editbox_delch' function */
 
 /* Move cursor */
-void editbox_move( editbox_t *eb, int new_pos )
+bool_t editbox_move( editbox_t *eb, int new_pos )
 {
-	int old_cur = eb->m_cursor;
-	int len = EDITBOX_LEN(eb);
-
 	/* Set cursor position */
-	eb->m_cursor = new_pos;
-	if (eb->m_cursor < 0)
-		eb->m_cursor = 0;
-	else if (eb->m_cursor > len)
-		eb->m_cursor = len;
+	int old_cursor = eb->m_cursor;
+	str_skip_positions(eb->m_text, &eb->m_cursor_byte, &eb->m_cursor,
+			new_pos - eb->m_cursor);
 
 	/* Handle scrolling */
-	while (eb->m_cursor < eb->m_scrolled + 1)
-		eb->m_scrolled -= 5;
-	while (eb->m_cursor >= eb->m_scrolled + eb->m_width)
-		eb->m_scrolled ++;
-	if (eb->m_scrolled < 0)
-		eb->m_scrolled = 0;
-	else if (eb->m_scrolled >= EDITBOX_LEN(eb))
-		eb->m_scrolled = EDITBOX_LEN(eb) - 1;
+	int new_scroll = eb->m_scrolled;
+	while (eb->m_cursor < new_scroll + 1)
+		new_scroll -= 5;
+	while (eb->m_cursor >= new_scroll + eb->m_width)
+		new_scroll++;
+	str_skip_positions(eb->m_text, &eb->m_scrolled_byte, &eb->m_scrolled,
+			new_scroll - eb->m_scrolled);
+
+	return (eb->m_cursor != old_cursor);
 } /* End of 'editbox_move' function */
 
 /* 'display' message handler */
@@ -196,7 +198,7 @@ wnd_msg_retcode_t editbox_on_display( wnd_t *wnd )
 		wnd_apply_style(wnd, "gray-style");
 	else
 		wnd_apply_default_style(wnd);
-	wnd_printf(wnd, 0, 0, "%s", STR_TO_CPTR(eb->m_text) + eb->m_scrolled);
+	wnd_printf(wnd, 0, 0, "%s", STR_TO_CPTR(eb->m_text) + eb->m_scrolled_byte);
 
 	/* Move cursor */
 	wnd_move(wnd, 0, eb->m_cursor - eb->m_scrolled, 0);
@@ -230,7 +232,7 @@ wnd_msg_retcode_t editbox_on_action( wnd_t *wnd, char *action )
 	{
 		if (eb->m_editable)
 		{
-			editbox_delch(eb, eb->m_cursor - 1);
+			editbox_delch(eb, TRUE);
 			wnd_msg_send(WND_OBJ(eb), "changed", editbox_changed_new());
 		}
 	}
@@ -239,7 +241,7 @@ wnd_msg_retcode_t editbox_on_action( wnd_t *wnd, char *action )
 	{
 		if (eb->m_editable)
 		{
-			editbox_delch(eb, eb->m_cursor);
+			editbox_delch(eb, FALSE);
 			wnd_msg_send(WND_OBJ(eb), "changed", editbox_changed_new());
 		}
 	}
@@ -249,7 +251,7 @@ wnd_msg_retcode_t editbox_on_action( wnd_t *wnd, char *action )
 		if (eb->m_editable)
 		{
 			while (eb->m_cursor != 0)
-				editbox_delch(eb, eb->m_cursor - 1);
+				editbox_delch(eb, TRUE);
 			wnd_msg_send(WND_OBJ(eb), "changed", editbox_changed_new());
 		}
 	}
@@ -258,11 +260,8 @@ wnd_msg_retcode_t editbox_on_action( wnd_t *wnd, char *action )
 	{
 		if (eb->m_editable)
 		{
-			int count = EDITBOX_LEN(eb) - eb->m_cursor;
-			int was_cursor = eb->m_cursor;
-			for ( ; count > 0; count -- )
-				editbox_delch(eb, was_cursor);
-			editbox_move(eb, was_cursor);
+			while (STR_TO_CPTR(eb->m_text)[eb->m_cursor_byte])
+				editbox_delch(eb, FALSE);
 			wnd_msg_send(WND_OBJ(eb), "changed", editbox_changed_new());
 		}
 	}
@@ -285,30 +284,47 @@ wnd_msg_retcode_t editbox_on_action( wnd_t *wnd, char *action )
 	/* Move cursor one word left */
 	else if (!strcasecmp(action, "word_left"))
 	{
-		int cursor = eb->m_cursor - 1;
-		char *text = EDITBOX_TEXT(eb);
-		while (cursor >= 0 && !isalnum(text[cursor]))
-			cursor --;
-		while (cursor >= 0 && isalnum(text[cursor]))
-			cursor --;
-		cursor ++;
-		editbox_move(eb, cursor);
+		bool_t moved = editbox_move(eb, eb->m_cursor - 1);
+		while (moved)
+		{
+			wchar_t c = str_wchar_at(eb->m_text, eb->m_cursor_byte, NULL);
+			if (!iswalnum(c))
+				moved = editbox_move(eb, eb->m_cursor - 1);
+			else break;
+		}
+		while (moved)
+		{
+			wchar_t c = str_wchar_at(eb->m_text, eb->m_cursor_byte, NULL);
+			if (iswalnum(c))
+				moved = editbox_move(eb, eb->m_cursor - 1);
+			else break;
+		}
+		if (moved)
+			editbox_move(eb, eb->m_cursor + 1);
 	}
 	/* Move cursor one word right */
 	else if (!strcasecmp(action, "word_right"))
 	{
-		int cursor = eb->m_cursor + 1, len = EDITBOX_LEN(eb);
-		char *text = EDITBOX_TEXT(eb);
-		while (cursor <= len && !isalnum(text[cursor]))
-			cursor ++;
-		while (cursor <= len && isalnum(text[cursor]))
-			cursor ++;
-		editbox_move(eb, cursor);
+		bool_t moved = TRUE;
+		while (moved)
+		{
+			wchar_t c = str_wchar_at(eb->m_text, eb->m_cursor_byte, NULL);
+			if (!iswalnum(c))
+				moved = editbox_move(eb, eb->m_cursor + 1);
+			else break;
+		}
+		while (moved)
+		{
+			wchar_t c = str_wchar_at(eb->m_text, eb->m_cursor_byte, NULL);
+			if (iswalnum(c))
+				moved = editbox_move(eb, eb->m_cursor + 1);
+			else break;
+		}
 	}
 	/* Move cursor to text end */
 	else if (!strcasecmp(action, "move_to_end"))
 	{
-		editbox_move(eb, EDITBOX_LEN(eb));
+		editbox_move(eb, str_width(eb->m_text));
 	}
 	/* History stuff */
 	else if (!strcasecmp(action, "history_prev"))
@@ -433,7 +449,7 @@ void editbox_hist_move( editbox_t *eb, bool_t up )
 		else if (!up)
 			editbox_set_text(eb, STR_TO_CPTR(eb->m_text_before_hist));
 		eb->m_modified = FALSE;
-		editbox_move(eb, EDITBOX_LEN(eb));
+		editbox_move(eb, str_width(eb->m_text));
 	}
 } /* End of 'editbox_hist_move' function */
 

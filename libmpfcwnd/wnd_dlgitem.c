@@ -162,49 +162,6 @@ wnd_msg_retcode_t dlgitem_on_action( wnd_t *wnd, char *action )
 	return WND_MSG_RETCODE_OK;
 } /* End of 'dlgitem_on_action' function */
 
-/* Display a label-like text */
-void dlgitem_display_label_text( wnd_t *wnd, char *text )
-{
-	bool_t mark_next = FALSE;
-
-	for ( ; (*text) != 0; text ++ )
-	{
-		if ((*text) == '&')
-			mark_next = TRUE;
-		else
-		{
-			/* Mark current char */
-			if (mark_next)
-			{
-				char *color = wnd_get_style(wnd, "letter-color");
-				wnd_push_state(wnd, WND_STATE_COLOR);
-				if (color != NULL)
-					wnd_set_fg_color(wnd, wnd_string2color(color));
-				wnd_putchar(wnd, 0, *text);
-				wnd_pop_state(wnd);
-				mark_next = FALSE;
-			}
-			else
-				wnd_putchar(wnd, 0, (byte)(*text));
-		}
-	}
-} /* End of 'dlgitem_display_label_text' function */
-
-/* Get length of label-like text */
-int dlgitem_label_text_len( wnd_t *wnd, char *text )
-{
-	int len = 0;
-
-	if (text == NULL)
-		return 0;
-	for ( ; (*text) != 0; text ++ )
-	{
-		if ((*text) != '&')
-			len ++;
-	}
-	return len;
-} /* End of 'dlgitem_label_text_len' function */
-
 /* Initialize dialog item class */
 wnd_class_t *dlgitem_class_init( wnd_global_data_t *global )
 {

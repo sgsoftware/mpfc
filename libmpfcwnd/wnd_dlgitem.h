@@ -94,12 +94,6 @@ wnd_msg_retcode_t dlgitem_on_keydown( wnd_t *wnd, wnd_key_t key );
 /* 'action' message handler */
 wnd_msg_retcode_t dlgitem_on_action( wnd_t *wnd, char *action );
 
-/* Display a label-like text */
-void dlgitem_display_label_text( wnd_t *wnd, char *text );
-
-/* Get length of label-like text */
-int dlgitem_label_text_len( wnd_t *wnd, char *text );
-
 /*
  * Class functions
  */

@@ -84,10 +84,44 @@ char *util_strncpy( char *dest, char *src, size_t n );
 /* Concatenate multiple strings */
 char *util_strcat( const char *first, ... );
 
-int mbslen( char *str );
-
 /* Determine file type (regular or directory) resolving symlinks */
 bool_t util_file_type(char *name, bool_t *is_dir);
+
+/*
+ * UTF-8 helpers
+ */
+
+static inline bool_t utf8_is_ascii_byte(char c)
+{
+	/* 0b00xxxxxx */
+	return (c & 0x80) == 0;
+}
+
+static inline bool_t utf8_is_lead_byte(char c)
+{
+	/* 0b11xxxxxx */
+	return (c & 0xC0) == 0xC0;
+}
+
+static inline bool_t utf8_is_cont_byte(char c)
+{
+	/* 0b10xxxxxx */
+	return (c & 0xC0) == 0x80;
+}
+
+static inline bool_t utf8_is_start_byte(char c)
+{
+	return !utf8_is_cont_byte(c);
+}
+
+/* Decode UTF-8 sequence length using the first byte */
+int utf8_decode_num_bytes(char c);
+
+/* Calculate display width of an UTF-8 string */
+int utf8_width( char *str );
+
+/* Check that the locale is in UTF-8 mode */
+bool_t util_check_utf8_mode( void );
 
 #endif
 

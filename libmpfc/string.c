@@ -24,14 +24,17 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+#include <wchar.h>
 #include "types.h"
 #include "mystring.h"
+#include "util.h"
 
 /* String portion size */
 #define STR_PORTION_SIZE 64
 
 /* Some private functions */
 static void str_allocate( str_t *str, int new_len );
+static int str_move_back( str_t *str, int pos );
 
 /* Create a new string */
 str_t *str_new( const char *s )
@@ -52,6 +55,9 @@ str_t *str_new( const char *s )
 	str->m_data = NULL;
 	str->m_allocated = 0;
 	str->m_portion_size = STR_PORTION_SIZE;
+	str->m_bytes_to_complete = 0;
+	str->m_utf8_seq_len = 0;
+	str->m_width = ((*s) == 0) ? 0 : -1;
 	str_allocate(str, str->m_len);
 	strcpy(str->m_data, s);
 	return str;
@@ -82,6 +88,9 @@ void str_clear( str_t *str )
 
 	*str->m_data = 0;
 	str->m_len = 0;
+	str->m_width = -1;
+	str->m_bytes_to_complete = 0;
+	str->m_utf8_seq_len = 0;
 } /* End of 'str_clear' function */
 
 /* Copy string from (char *) */
@@ -94,13 +103,16 @@ str_t *str_copy_cptr( str_t *dest, const char *src )
 
 	str_allocate(dest, dest->m_len = strlen(src));
 	strcpy(dest->m_data, src);
+	dest->m_width = -1;
 	return dest;
 } /* End of 'str_copy_cptr' function */
 
 /* Copy string */
 str_t *str_copy( str_t *dest, const str_t *src )
 {
-	return str_copy_cptr(dest, src->m_data);
+	str_t *new_str = str_copy_cptr(dest, src->m_data);
+	new_str->m_width = src->m_width;
+	return new_str;
 } /* End of 'str_copy' function */
 
 /* Concatenate string with (char *) */
@@ -114,6 +126,7 @@ str_t *str_cat_cptr( str_t *dest, const char *src )
 	len = strlen(src);
 	str_allocate(dest, dest->m_len + len);
 	dest->m_len += len;
+	dest->m_width = -1;
 	strcat(dest->m_data, src);
 	return dest;
 } /* End of 'str_cat_cptr' function */
@@ -121,36 +134,99 @@ str_t *str_cat_cptr( str_t *dest, const char *src )
 /* Concatenate strings */
 str_t *str_cat( str_t *dest, const str_t *src )
 {
-	return str_cat_cptr(dest, src->m_data);
+	int was_width = dest->m_width;
+	str_t *new_str = str_cat_cptr(dest, src->m_data);
+	if (was_width >= 0 && src->m_width >= 0)
+		new_str->m_width = was_width + src->m_width;
+	return new_str;
 } /* End of 'str_cat' function */
 
-/* Insert a character to string */
-void str_insert_char( str_t *str, char ch, int index )
+/* Is the string in consistent state? */
+static inline bool_t str_is_consistent( str_t *str )
 {
+	return str->m_bytes_to_complete == 0;
+} /* End of 'str_is_consistent' function */
+
+/* Insert a character to string */
+int str_insert_char( str_t *str, char ch, int index )
+{
+	index += str->m_utf8_seq_len;
 	if (str == NULL || index < 0 || index > str->m_len)
-		return;
+		return 0;
 
 	str_allocate(str, str->m_len + 1);
 	memmove(&str->m_data[index + 1], &str->m_data[index],
 			str->m_len - index + 1);
 	str->m_data[index] = ch;
 	str->m_len ++;
+
+	/* Easy case: normal ASCII char */
+	if (utf8_is_ascii_byte(ch))
+	{
+		if (str->m_width >= 0)
+			++str->m_width;
+		return 1;
+	}
+	else
+	{
+		/* Analyze utf8 completeness */
+		if (str_is_consistent(str))
+		{
+			/* If we receive a non-ascii byte, enter the incomplete state */
+			str->m_bytes_to_complete = utf8_decode_num_bytes(ch) - 1;
+		}
+		else
+		{
+			--str->m_bytes_to_complete;
+		}
+		++str->m_utf8_seq_len;
+
+		if (str_is_consistent(str))
+		{
+			str->m_utf8_seq_len = 0;
+
+			wchar_t c = str_wchar_at(str, str_move_back(str, index + 1), NULL);
+			int w = wcwidth(c);
+			if (w < 0)
+				w = 0;
+
+			if (str->m_width >= 0)
+				str->m_width += w;
+
+			return w;
+		}
+
+		/* In inconsistent state */
+		return -1;
+	}
 } /* End of 'str_insert_char' function */
 
 /* Delete a character from string */
-char str_delete_char( str_t *str, int index )
+bool_t str_delete_char( str_t *str, int index, bool_t before )
 {
-	char ch;
-	
-	if (str == NULL || index < 0 || index >= str->m_len)
-		return 0;
+	/* Find byte positions to delete */
+	int bp = index;
+	int sp = 0; /* dummy */
+	str_skip_positions(str, &bp, &sp, before ? -1 : 1);
+	if (bp == index)
+		return FALSE;
+	if (bp < index)
+	{
+		int t = bp;
+		bp = index;
+		index = t;
+	}
 
-	ch = str->m_data[index];
-	memmove(&str->m_data[index], &str->m_data[index + 1],
-			str->m_len - index);
-	str_allocate(str, str->m_len - 1);
-	str->m_len --;
-	return ch;
+	memmove(&str->m_data[index], &str->m_data[bp],
+			str->m_len - bp + 1);
+
+	if (str->m_width >= 0)
+		--str->m_width;
+
+	int new_len = str->m_len - (bp - index);
+	str_allocate(str, new_len);
+	str->m_len = new_len;
+	return TRUE;
 } /* End of 'str_delete_char' function */
 
 /* Replace all characters 'from' to 'to' */
@@ -180,13 +256,18 @@ str_t *str_insert_cptr( str_t *dest, const char *src, int index )
 			dest->m_len - index + 1);
 	memcpy(&dest->m_data[index], src, len);
 	dest->m_len += len;
+	dest->m_width = -1;
 	return dest;
 } /* End of 'str_insert_cptr' function */
 
 /* Insert a string */
 str_t *str_insert_str( str_t *dest, const str_t *src, int index )
 {
-	return str_insert_cptr(dest, src->m_data, index);
+	int was_width = dest->m_width;
+	str_t *new_str = str_insert_cptr(dest, src->m_data, index);
+	if (was_width >= 0 && src->m_width >= 0)
+		new_str->m_width = was_width + src->m_width;
+	return new_str;
 } /* End of 'str_insert_str' function */
 
 /* Formatted print */
@@ -198,6 +279,7 @@ int str_printf( str_t *str, const char *fmt, ... )
 	if (str == NULL)
 		return 0;
 
+	str->m_width = -1;
 	str_allocate(str, size);
 	for ( ;; )
 	{
@@ -244,6 +326,9 @@ str_t *str_substring( const str_t *str, int start, int end )
 	new_str->m_data = NULL;
 	new_str->m_allocated = 0;
 	new_str->m_portion_size = STR_PORTION_SIZE;
+	new_str->m_bytes_to_complete = 0;
+	new_str->m_utf8_seq_len = 0;
+	new_str->m_width = -1;
 	str_allocate(new_str, new_str->m_len);
 	memcpy(new_str->m_data, &str->m_data[start], new_str->m_len);
 	new_str->m_data[new_str->m_len] = 0;
@@ -270,6 +355,9 @@ str_t *str_substring_cptr( const char *str, int start, int end )
 	new_str->m_data = NULL;
 	new_str->m_allocated = 0;
 	new_str->m_portion_size = STR_PORTION_SIZE;
+	new_str->m_bytes_to_complete = 0;
+	new_str->m_utf8_seq_len = 0;
+	new_str->m_width = -1;
 	str_allocate(new_str, new_str->m_len);
 	memcpy(new_str->m_data, &str[start], new_str->m_len);
 	new_str->m_data[new_str->m_len] = 0;
@@ -292,6 +380,112 @@ void str_fn_escape_specs( str_t *str, bool_t escape_slashes )
 			str_insert_char(str, '\\', i ++);
 	}
 } /* End of 'str_fn_escape_specs' function */
+
+/* Decode multibyte sequence at the given position */
+wchar_t str_wchar_at( str_t *str, unsigned pos, int *nbytes )
+{
+	mbstate_t mbstate;
+	memset(&mbstate, 0, sizeof(mbstate));
+
+	size_t n = str->m_len - pos;
+	wchar_t ch;
+	n = mbrtowc(&ch, str->m_data + pos, n, &mbstate);
+	if (n >= (size_t)(-2))
+	{
+		ch = L'?';
+		n = 1;
+	}
+	else if (n == 0)
+	{
+		ch = 0;
+		n = 1;
+	}
+
+	if (nbytes)
+		(*nbytes) = n;
+	return ch;
+} /* End of 'str_wchar_at' function */
+
+/* Move to start of a previous char */
+static int str_move_back( str_t *str, int pos )
+{
+	while (pos > 0)
+	{
+		--pos;
+		if (utf8_is_start_byte(str->m_data[pos]))
+			break;
+	}
+	return pos;
+} /* End of 'str_move_back' function */
+
+/* Skip 'delta' displayable positions from byte_pos
+ * sym_pos may be updated by a different delta if wide symbols are encountered */
+void str_skip_positions( str_t *str, int *byte_pos, int *sym_pos, int delta )
+{
+	if (!str)
+		return;
+
+	int bp = *byte_pos;
+	int sp = *sym_pos;
+
+	/* Scan forward */
+	if (delta >= 0)
+	{
+		while (delta > 0 && bp < str->m_len)
+		{
+			int nbytes;
+			wchar_t c = str_wchar_at(str, bp, &nbytes);
+			int w = wcwidth(c);
+			if (w < 0)
+				w = 0;
+
+			delta -= w;
+			sp += w;
+			bp += nbytes;
+		} 
+
+		/* Skip remaining zero-width chars */
+		while (bp < str->m_len)
+		{
+			int nbytes;
+			wchar_t c = str_wchar_at(str, bp, &nbytes);
+			int w = wcwidth(c);
+			if (w > 0)
+				break;
+
+			bp += nbytes;
+		}
+
+		(*byte_pos) = bp;
+		(*sym_pos) = sp;
+	}
+	/* Scan backwards */
+	else if (delta < 0)
+	{
+		while (bp > 0 && delta < 0)
+		{
+			bp = str_move_back(str, bp);
+
+			int nbytes;
+			wchar_t c = str_wchar_at(str, bp, &nbytes);
+			int w = wcwidth(c);
+			if (w < 0)
+				w = 0;
+
+			delta += w;
+			sp -= w;
+		}
+
+		(*byte_pos) = bp;
+		(*sym_pos) = sp;
+	}
+} /* End of 'str_skip_positions' function*/
+
+/* Calculate display width of the string */
+int str_calc_width( str_t *str )
+{
+	return (str->m_width = utf8_width(str->m_data));
+} /* End of 'str_calc_width' function */
 
 /* End of 'string.c' file */
 
