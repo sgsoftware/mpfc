@@ -24,7 +24,6 @@
 #define __SG_MPFC_SONG_INFO_H__
 
 #include "types.h"
-#include "genre_list.h"
 
 /* Some types */
 struct tag_pmng_t;
@@ -40,7 +39,6 @@ typedef struct tag_song_info_t
 	char *m_comments;
 	char *m_track;
 	char *m_own_data;
-	genre_list_t *m_glist;
 	dword m_flags;
 } song_info_t;
 

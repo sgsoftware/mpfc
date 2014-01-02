@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "types.h"
-#include "genre_list.h"
 #include "pmng.h"
 #include "song_info.h"
 
@@ -47,7 +46,6 @@ song_info_t *si_new( void )
 	si->m_comments = strdup("");
 	si->m_own_data = strdup("");
 	si->m_genre = strdup("");
-	si->m_glist = NULL;
 	return si;
 } /* End of 'si_new' function */
 
@@ -75,7 +73,6 @@ song_info_t *si_dup( song_info_t *info )
 	si->m_genre = strdup(info->m_genre);
 	si->m_own_data = strdup(info->m_own_data);
 	si->m_flags = info->m_flags;
-	si->m_glist = info->m_glist;
 	return si;
 } /* End of 'si_dup' function */
 
@@ -172,42 +169,13 @@ void si_set_comments( song_info_t *si, const char *comments )
 /* Set genre */
 void si_set_genre( song_info_t *si, const char *genre )
 {
-	int id;
-	char *s;
-
 	if (si == NULL)
 		return;
 
-	/* Free memory */
 	free(si->m_genre);
-	if (genre == NULL)
-	{
-		si->m_genre = strdup("");
-		return;
-	}
-	
-	/* Genre string is a number */
-	id = glist_str2num(genre);
-	if (id >= 0 && si->m_glist != NULL)
-	{
-		char *name;
-		
-		/* Get this genre name */
-		name = glist_get_name_by_id(si->m_glist, id);
-		if (name != NULL)
-			si->m_genre = strdup(name);
-		else
-			si->m_genre = strdup(genre);
+	si->m_genre = strdup(genre == NULL ? "" : genre);
+	if (genre != NULL)
 		si->m_flags |= SI_INITIALIZED;
-		return;
-	}
-
-	/* If not - set this string as genre and remove its id (if exists) */
-	si->m_genre = strdup(genre);
-	s = strrchr(si->m_genre, '(');
-	if (s != NULL)
-		*s = 0;
-	si->m_flags |= SI_INITIALIZED;
 } /* End of 'si_set_genre' function */
 
 /* Set own data */

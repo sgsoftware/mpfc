@@ -2,14 +2,12 @@ lib_LTLIBRARIES = libmpfc.la
 
 libmpfchdrdir = $(includedir)/mpfc
 libmpfchdr_HEADERS = ../mpfc-config.h ../src/types.h ../src/cfg.h \
-					 ../src/genre_list.h ../src/pmng.h \
-					 ../src/util.h ../src/song_info.h ../src/mystring.h \
+					 ../src/pmng.h ../src/util.h ../src/song_info.h ../src/mystring.h \
 					 ../src/logger.h ../src/plugin.h \
 					 ../src/genp.h ../src/command.h ../src/main_types.h \
 					 ../src/plp.h
 
-libmpfc_la_SOURCES = cfg.c genre_list.c \
-					 plugin_mng.c util.c \
+libmpfc_la_SOURCES = cfg.c plugin_mng.c util.c \
 					 song_info.c string.c logger.c cfg_rcfile.c \
 					 plugin.c plugin_general.c plugin_plist.c command.c \
 					 $(libmpfchdr_HEADERS)
