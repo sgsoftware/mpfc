@@ -1,6 +1,5 @@
 libmpfc/cfg.c
 libmpfc/cfg_rcfile.c
-libmpfc/genre_list.c
 libmpfc/logger.c
 libmpfc/plugin.c
 libmpfc/plugin_mng.c
