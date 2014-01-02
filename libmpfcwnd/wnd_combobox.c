@@ -119,7 +119,7 @@ void combo_move_cursor( combo_t *combo, int pos, bool_t synchronize_text )
 	combo->m_cursor = pos;
 	if (combo->m_cursor < 0)
 		combo->m_cursor = 0;
-	else if (combo->m_cursor >= combo->m_list_size)
+	if (combo->m_cursor >= combo->m_list_size)
 		combo->m_cursor = combo->m_list_size - 1;
 
 	/* Scroll the list */
@@ -132,7 +132,7 @@ void combo_move_cursor( combo_t *combo, int pos, bool_t synchronize_text )
 
 	/* Synchronize text */
 	if (synchronize_text)
-		editbox_set_text(EDITBOX_OBJ(combo), combo->m_list[combo->m_cursor]);
+		editbox_set_text(EDITBOX_OBJ(combo), combo->m_cursor >= 0 ? combo->m_list[combo->m_cursor] : "");
 	wnd_invalidate(WND_OBJ(combo));
 } /* End of 'combo_move_cursor' function */
 
@@ -179,7 +179,7 @@ wnd_msg_retcode_t combo_on_display( wnd_t *wnd )
 	combo_t *combo = COMBO_OBJ(wnd);
 
 	/* Display list */
-	if (combo->m_expanded)
+	if (combo->m_expanded && combo->m_list_size)
 	{
 		int i, j;
 		wnd_apply_default_style(wnd);

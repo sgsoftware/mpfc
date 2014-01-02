@@ -135,6 +135,10 @@ void editbox_set_text( editbox_t *eb, const char *text )
 	assert(eb);
 	str_copy_cptr(eb->m_text, text == NULL ? "" : text);
 	int len = str_width(eb->m_text);
+	eb->m_cursor = 0;
+	eb->m_cursor_byte = 0;
+	eb->m_scrolled = 0;
+	eb->m_scrolled_byte = 0;
 	editbox_move(eb, len > eb->m_width ? 0 : len);
 	eb->m_modified = TRUE;
 	wnd_msg_send(WND_OBJ(eb), "changed", editbox_changed_new());
