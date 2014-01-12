@@ -362,6 +362,7 @@ bool_t wnd_construct( wnd_t *wnd, wnd_t *parent, char *title, int x, int y,
 	/* Initialize message map */
 	wnd_msg_add_handler(wnd, "display", wnd_default_on_display);
 	wnd_msg_add_handler(wnd, "keydown", wnd_default_on_keydown);
+	wnd_msg_add_handler(wnd, "mouse_ldown", wnd_default_on_mouse);
 	wnd_msg_add_handler(wnd, "action", wnd_default_on_action);
 	wnd_msg_add_handler(wnd, "close", wnd_default_on_close);
 	wnd_msg_add_handler(wnd, "erase_back", wnd_default_on_erase_back);

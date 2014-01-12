@@ -45,6 +45,27 @@ wnd_msg_retcode_t wnd_default_on_keydown( wnd_t *wnd, wnd_key_t key )
 	return WND_MSG_RETCODE_STOP;
 } /* End of 'wnd_default_on_keydown' function */
 
+/* Default 'mouse_ldown' message handler */
+wnd_msg_retcode_t wnd_default_on_mouse( wnd_t *wnd, int x, int y, 
+		wnd_mouse_button_t btn, wnd_mouse_event_t type )
+{
+	/* Handle click on the close/maximize box */
+	if (!(WND_FLAGS(wnd) & WND_FLAG_OWN_DECOR) && (WND_FLAGS(wnd) & WND_FLAG_BORDER))
+	{
+		if (y == -1)
+		{
+			if (x == wnd->m_width - 4)
+				if (WND_FLAGS(wnd) & WND_FLAG_MAX_BOX)
+					wnd_toggle_maximize(wnd);
+
+			if (x == wnd->m_width - 3)
+				if (WND_FLAGS(wnd) & WND_FLAG_CLOSE_BOX)
+					wnd_close(wnd);
+		}
+	}
+	return WND_MSG_RETCODE_OK;
+} /* End of 'wnd_default_on_mouse' function */
+
 /* Default 'action' message handler */
 wnd_msg_retcode_t wnd_default_on_action( wnd_t *wnd, char *action )
 {
@@ -223,13 +244,6 @@ wnd_msg_retcode_t wnd_default_on_parent_repos( wnd_t *wnd,
 	wnd_repos_internal(wnd, x, y, w, h);
 	return WND_MSG_RETCODE_OK;
 } /* End of 'wnd_default_on_parent_repos' function */
-
-/* Default mouse messages handler */
-wnd_msg_retcode_t wnd_default_on_mouse( wnd_t *wnd,
-		int x, int y, wnd_mouse_button_t btn, wnd_mouse_event_t type )
-{
-	return WND_MSG_RETCODE_OK;
-} /* End of 'wnd_default_on_mouse' function */
 
 /* End of 'wnd_def_handlers.c' file */
 

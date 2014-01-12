@@ -34,6 +34,10 @@ wnd_msg_retcode_t wnd_default_on_display( wnd_t *wnd );
 /* Default 'keydown' message handler */
 wnd_msg_retcode_t wnd_default_on_keydown( wnd_t *wnd, wnd_key_t key );
 
+/* Default 'mouse_ldown' message handler */
+wnd_msg_retcode_t wnd_default_on_mouse( wnd_t *wnd, int x, int y, 
+		wnd_mouse_button_t btn, wnd_mouse_event_t type );
+
 /* Default 'action' message handler */
 wnd_msg_retcode_t wnd_default_on_action( wnd_t *wnd, char *action );
 
@@ -46,10 +50,6 @@ wnd_msg_retcode_t wnd_default_on_erase_back( wnd_t *wnd );
 /* Default 'parent_repos' message handler */
 wnd_msg_retcode_t wnd_default_on_parent_repos( wnd_t *wnd,
 		int px, int py, int pw, int ph, int nx, int ny, int nw, int nh );
-
-/* Default mouse messages handler */
-wnd_msg_retcode_t wnd_default_on_mouse( wnd_t *wnd,
-		int x, int y, wnd_mouse_button_t btn, wnd_mouse_event_t type );
 
 /* Default window destructor */
 void wnd_default_destructor( wnd_t *wnd );
