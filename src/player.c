@@ -2034,7 +2034,7 @@ void player_info_eb_set( editbox_t *eb, char *val, bool_t diff )
 
 static void player_add_genres(combo_t *cb)
 {
-	const char *genres[] = {
+	char *genres[] = {
 		"Blues", "Classic Rock", "Country", "Dance", "Disco", "Funk", "Grunge",
 		"Hip-Hop", "Jazz", "Metal", "New Age", "Oldies", "Other", "Pop", "R&B",
 		"Rap", "Reggae", "Rock", "Techno", "Industrial", "Alternative", "Ska",
