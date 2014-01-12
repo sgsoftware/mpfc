@@ -168,6 +168,7 @@ static bool_t player_handle_color_scheme( cfg_node_t *var, char *value, void *da
 static bool_t player_handle_kbind_scheme( cfg_node_t *var, char *value, void *data );
 static void player_audio_setup_dlg( void );
 static void player_welcome_dialog( void );
+static void player_utf8_dialog( void );
 
 /*****
  *
@@ -256,6 +257,7 @@ bool_t player_init( int argc, char *argv[] )
 	plist_set_t *set;
 	time_t t;
 	char *str_time;
+	bool_t is_utf8 = TRUE;
 
 	/* Set signal handlers */
 	player_main_tid = pthread_self();
@@ -315,6 +317,13 @@ bool_t player_init( int argc, char *argv[] )
 		return FALSE;
 	}
 	wnd_msg_add_handler(wnd_root, "destructor", player_root_destructor);
+
+	/* Check that we have an utf8 locale */
+	if (!util_check_utf8_mode())
+	{
+		is_utf8 = FALSE;
+		logger_fatal(player_log, 0, _("Your locale is not UTF-8! Text handling will work incorrectly"));
+	}
 
 	/* Initialize play list window */
 	logger_debug(player_log, "Initializing play list window");
@@ -412,7 +421,11 @@ bool_t player_init( int argc, char *argv[] )
 	/* Exit */
 	logger_message(player_log, 0, _("Player initialized"));
 
+	/* Show startup dialogs */
 	player_welcome_dialog();
+	if (!is_utf8)
+		player_utf8_dialog();
+
 	return TRUE;
 } /* End of 'player_init' function */
 
@@ -2370,6 +2383,13 @@ static void player_welcome_dialog( void )
 		      "To close this window, press <Enter>, and then '?' to see key bindings.\n"
 			  "For more help please see the full documentation."),
 			"dont_show.welcome");
+}
+
+static void player_utf8_dialog( void )
+{
+	player_startup_msg_dialog(_("Error"), 
+			_("Your locale is not UTF-8! Text handling will work incorrectly"),
+			"dont_show.utf8");
 }
 
 /* Launch advanced search dialog */

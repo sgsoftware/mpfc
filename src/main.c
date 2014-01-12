@@ -53,12 +53,6 @@ int main( int argc, char *argv[] )
 		return 1;
 	}
 
-	/* Check that we have an utf8 locale */
-	if (!util_check_utf8_mode())
-	{
-		logger_fatal(player_log, 0, _("Your locale is not UTF-8! Text handling will work incorrectly"));
-	}
-
 	/* Run player */
 	player_run();
 
