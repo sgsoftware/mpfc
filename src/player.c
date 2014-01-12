@@ -167,6 +167,7 @@ static bool_t player_handle_var_title_format( cfg_node_t *var, char *value, void
 static bool_t player_handle_color_scheme( cfg_node_t *var, char *value, void *data );
 static bool_t player_handle_kbind_scheme( cfg_node_t *var, char *value, void *data );
 static void player_audio_setup_dlg( void );
+static void player_welcome_dialog( void );
 
 /*****
  *
@@ -410,6 +411,8 @@ bool_t player_init( int argc, char *argv[] )
 
 	/* Exit */
 	logger_message(player_log, 0, _("Player initialized"));
+
+	player_welcome_dialog();
 	return TRUE;
 } /* End of 'player_init' function */
 
@@ -693,6 +696,10 @@ void player_save_cfg( void )
 		cfg_rcfile_save_node(fd, cfg_search_node(cfg_list, "plugins"), NULL);
 		cfg_rcfile_save_node(fd, cfg_search_node(cfg_list, "gstreamer"), NULL);
 	}
+
+	/* Save 'dont_show' values for startup information dialogs */
+	cfg_rcfile_save_node(fd, cfg_search_node(cfg_list, "dont_show"), NULL);
+
 	fclose(fd);
 } /* End of 'player_save_cfg' function */
 
@@ -2333,6 +2340,37 @@ static void player_audio_setup_dlg( void )
 	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_audio_setup);
 	dialog_arrange_children(dlg);
 } /* End of 'player_var_manager' function */
+
+static void player_on_startup_msg_ok( wnd_t *wnd )
+{
+	char *var = cfg_get_var(wnd->m_cfg_list, "dont_show_cfg_name");
+	cfg_set_var_bool(cfg_list, var, CHECKBOX_OBJ(dialog_find_item(DIALOG_OBJ(wnd), "dont_show"))->m_checked);
+}
+
+/* Display audio output setup dialog */
+static void player_startup_msg_dialog( char *title, char *text, char *dont_show_cfg_name )
+{
+	if (cfg_get_var_bool(cfg_list, dont_show_cfg_name))
+		return;
+
+	dialog_t *dlg = dialog_new(wnd_root, title);
+	label_new(WND_OBJ(dlg->m_vbox), text, "text", LABEL_NOBOLD);
+	checkbox_new(WND_OBJ(dlg->m_vbox), _("&Don't show this anymore"), 
+			"dont_show", 'd', FALSE);
+	cfg_set_var(WND_OBJ(dlg)->m_cfg_list, "dont_show_cfg_name", dont_show_cfg_name);
+
+	wnd_msg_add_handler(WND_OBJ(dlg), "ok_clicked", player_on_startup_msg_ok);
+	dialog_arrange_children(dlg);
+} /* End of 'player_var_manager' function */
+
+static void player_welcome_dialog( void ) 
+{
+	player_startup_msg_dialog(_("Welcome"), 
+			_("Welcome to MPFC, Music Player For Console!\n"
+		      "To close this window, press <Enter>, and then '?' to see key bindings.\n"
+			  "For more help please see the full documentation."),
+			"dont_show.welcome");
+}
 
 /* Launch advanced search dialog */
 void player_advanced_search_dialog( void )
