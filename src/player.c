@@ -2005,7 +2005,7 @@ void player_info_dialog( void )
 	combo_new_with_label(vbox, _("&Genre: "), "genre", "", 'g',
 			PLAYER_EB_WIDTH, 10);
 	label_new(WND_OBJ(hbox), "", "own_data", LABEL_NOBOLD);
-	editbox_t *path = editbox_new_with_label(vbox, _("Full &path: "), "full_path", "", 'p',
+	editbox_t *path = editbox_new_with_label(vbox, _("Full path: "), "full_path", "", 0,
 			PLAYER_EB_WIDTH);
 	path->m_editable = FALSE;
 	button_t *reload = button_new(WND_OBJ(dlg->m_hbox), _("&Reload info"), "reload", 'r');
