@@ -422,9 +422,9 @@ bool_t player_init( int argc, char *argv[] )
 	logger_message(player_log, 0, _("Player initialized"));
 
 	/* Show startup dialogs */
-	player_welcome_dialog();
 	if (!is_utf8)
 		player_utf8_dialog();
+	player_welcome_dialog();
 
 	return TRUE;
 } /* End of 'player_init' function */
