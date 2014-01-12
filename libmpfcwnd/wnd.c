@@ -68,6 +68,7 @@ wnd_t *wnd_init( cfg_node_t *cfg_list, logger_t *log )
 	cbreak();
 	noecho();
 	nodelay(wnd, TRUE);
+	keypad(wnd, TRUE);
 	force_terminal_bg = cfg_get_var_bool(cfg_list, "force-terminal-bg");
 	if (force_terminal_bg)
 	{
