@@ -1,25 +1,39 @@
-.TH MPFC 1 "4 July 2003" "Version 0.1" "MPFC Manual Page"
+.TH MPFC 1 "14 January 2014" "Version 2.0" "MPFC Manual Page"
 .SH NAME
 MPFC \- Music Player For Console
 .SH SYNOPSIS
 .B mpfc 
 [\fIoptions\fR] [\fIfiles\fR]
 .SH DESCRIPTION
-\fIMPFC\fR is the Music Player For Console. It is used to play audio files
-in console text mode. 
-.br
-The complete documentation on MPFC is maintained in Texinfo format, so refer
+\fIMPFC\fR is a gstreamer-based audio player with curses interface featuring:
+.IP \[bu] 2
+Support for all popular formats and output systems (by virtue of gstreamer)
+.IP \[bu]
+Standard playlist paradigm
+.IP \[bu]
+Windowed text user interface
+.IP \[bu]
+Full cuesheet support
+.IP \[bu]
+Integrated tags editor
+.IP \[bu]
+Remote control for Android
+.IP \[bu]
+High configurability
+
+.PP
+The complete documentation on MPFC is maintained in Texinfo format. Please refer
 to it if you want to know more (type \fIinfo mpfc\fR). 
 .SH FILES
 .TP
-~/.mpfcrc
+~/.mpfc/mpfcrc
 MPFC configuration file
 .SH COPYRIGHT
-Copyright \(co 2003 by SG Software.
+Copyright \(co 2003-2014 by Sergey Galanov.
 .br
 This is free software; see the source for copying conditions. There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 .SH AUTHORS
-MPFC is written by Sergey E. Galanov.
+MPFC is written by Sergey E. Galanov and a number of contributors (see AUTHORS file for details).
 .SH REPORTING BUGS
-Report bugs to <sgsoftware@mail.ru>.
+Report bugs to http://code.google.com/p/mpfc/issues/.
