@@ -263,6 +263,7 @@ bool_t player_init( int argc, char *argv[] )
 	player_main_tid = pthread_self();
 	signal(SIGINT, player_handle_signal);
 	signal(SIGTERM, player_handle_signal);
+	signal(SIGPIPE, player_handle_signal);
 	
 	/* Initialize configuration */
 	snprintf(player_cfg_file, sizeof(player_cfg_file), 
