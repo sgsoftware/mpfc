@@ -567,6 +567,8 @@ void plist_display( plist_t *pl, wnd_t *wnd )
 	assert(pl);
 	PLIST_GET_SEL(pl, start, end);
 
+	plist_lock(pl);
+
 	/* Display each song */
 	for ( i = 0, j = pl->m_scrolled; i < PLIST_HEIGHT; i ++, j ++ )
 	{
@@ -632,6 +634,8 @@ void plist_display( plist_t *pl, wnd_t *wnd )
 	wnd_move(wnd, 0, WND_WIDTH(wnd) - utf8_width(time_text) - 1, 
 			pl->m_start_pos + PLIST_HEIGHT);
 	wnd_printf(wnd, 0, 0, "%s", time_text);
+
+	plist_unlock(pl);
 } /* End of 'plist_display' function */
 
 /* Lock play list */
