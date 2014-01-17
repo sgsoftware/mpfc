@@ -1,13 +1,13 @@
 \input texinfo @c -*-texinfo-*-
 @c %**start of header
 @setfilename mpfc.info
-@settitle MPFC 1.3.6
+@settitle MPFC 2.0
 @c %**end of header
 
 @copying
-This manual describes the SG Music Player For Linux Console, version 1.3.6
+This manual describes the SG Music Player For Linux Console, version 2.0
 
-Copyright @copyright{} 2003-2005 SG Software.
+Copyright @copyright{} 2003-2014 by Sergey Galanov.
 @end copying
 
 @titlepage
@@ -27,11 +27,11 @@ Copyright @copyright{} 2003-2005 SG Software.
 
 @ifinfo
 @node Top, Introduction, (dir), (dir)
-@top MPFC 1.3.6
+@top MPFC 2.0
 
-This manual documents version 1.3.6 of SG MPFC, media player for Linux console.
+This manual documents version 2.0 of SG MPFC, media player for Linux console.
 
-Copyright @copyright{} 2003-2005 SG Software
+Copyright @copyright{} 2003-2014 SG Software
 
 @menu
 * Introduction::		
@@ -45,12 +45,17 @@ Copyright @copyright{} 2003-2005 SG Software
 @node Introduction, Getting Started, Top, Top
 @chapter Introduction to MPFC
 
-MPFC is an abbrevation for Music Player For Console. It is a full-featured
-curses-based playlist-oriented player.
+MPFC is an abbrevation for Music Player For Console. It is a gstreamer-based audio player with curses interface featuring:
 
-MPFC supports a number of input file formats. This support is organised through
-input plugins model. It means that the formats list is expandable---you
-must simply add a new plugin. Also there are plugins for output and effects.
+@itemize
+@item Support for all popular formats and output systems (by virtue of gstreamer);
+@item Standard playlist paradigm;
+@item Windowed text user interface;
+@item Full cuesheet support;
+@item Integrated tags editor;
+@item Remote control for Android;
+@item High configurability.
+@end itemize
 
 To get a brief help on MPFC commands you may press @kbd{?} key in MPFC 
 main window.
@@ -82,29 +87,18 @@ mpfc [options] [files]
 
 Here [options]
 is a list of variables you set directly (@pxref{Using Variables}) and [files]
-is a list of files you want to play. For example, to play file song.mp3 type:
+is a list of files you want to play. For example, to play file song.mp3 and all
+files found recursively under directory artist_dir type:
 
 @example
-mpfc file.mp3
+mpfc file.mp3 artist_dir
 @end example
+
+For more info on how file adding behaves see @pxref{Add/remove}.
 
 File list may be empty, this means
 you will either continue playing the previous play list (if the respective
 option is set), or start with an empty play list.
-
-You may also specify a plugin that will be used for playing file. This notation
-with special plugins that play virtual files (e.g audiocd plugin) and also
-if file has non-standard extesion. For example:
-
-@example
-mpfc audiocd://track0* mp3://some-file-with-no-mp3-extension audiocd://
-@end example
-
-First pattern in this list specifies all the Audio-CD tracks from 1 to 9,
-second is simply a hint for MPFC to use mp3 plugin, and the last means to
-add total Audio-CD.
-
-Note that ``objects'' system is no longer used.
 
 If you want to exit MPFC use command @kbd{q}.
 
@@ -147,7 +141,7 @@ meaning---it is the number of line you want to move to (without repeat value
 To specify this value simply print it before the
 command. As soon as you start entering digits, a prompt will appear and you
 will be able to correct your input or even cancel entering this value by 
-pressing ESC. For example, to move 5 lines down type: @kbd{5j}, and to 
+pressing @kbd{@key{CTRL}-g}. For example, to move 5 lines down type: @kbd{5j}, and to 
 move to the 30-th line of playlist type: @kbd{30G}.
 
 @node Search, Marks, Basic cursor movement operations, Moving around
@@ -187,8 +181,7 @@ so if you want to return to it type: @kbd{``}.
 * Play modes::
 * Boundaries::
 * Time back::
-* Volume and balance::
-* Equalizer::
+* Volume::
 @end menu
 
 @node Play/pause/stop, Play modes, Playing files, Playing files
@@ -238,37 +231,19 @@ area in visual mode (@pxref{Visual mode}). Then you can use one of two commands:
 
 To clear boundaries use command @kbd{pc}.
 
-@node Time back, Volume and balance, Boundaries, Playing files
+@node Time back, Volume, Boundaries, Playing files
 @subsection Time back
 Time back is a feature in MPFC that helps you to return to the place in song
 where you have been the last time before jump (not that here manual jump is
 meant, e.g. with a @kbd{@key{RET}} command). To do it use command 
 @kbd{@key{BS}}.
 
-@node Volume and balance, Equalizer, Time back, Playing files
-@subsection Volume and balance
-You can see current volume and balance in the top right corner of the screen
-as two slidebars (the upper is volume). To increase or decrease volume and 
-balance levels use @kbd{-} and @kbd{+} commands for volume and @kbd{[} and 
-@kbd{]} commands for balance.
-
-@node Equalizer,, Volume and balance, Playing files
-@subsection Equalizer
-MPFC supports equalizer. To launch equalizer panel use command @kbd{e}. Here
-you are able to adjust equalizer band levels. To exit panel press @kbd{q} or
-@kbd{@key{ESC}}. To move between bands press @kbd{h} or @kbd{@key{Left}} and 
-@kbd{l} or @kbd{@key{Right}}, to change level press @kbd{j} or @kbd{@key{Down}}
-and @kbd{k} or @kbd{@key{Up}}.
-
-You are able also to load preset from a Winamp EQF file. To do this press
-@kbd{@key{p}} and enter file name.
-
-Equalizer's parameters are configurable. They are represented by variables
-in configuration list ``equalizer''.  ``enabled'' variable controls whether
-equalizer is enabled. ``band1'', @dots{}, ``band10'' and ``preamp'' hold
-band values. Also there is ``enable-on-change'' (default is 1). If it is set,
-equalizer is automatically enabled when you change any band value in the
-equalizer window.
+@node Volume,, Time back, Playing files
+@subsection Volume
+You can see current volume slidebar in the top right corner of the screen.
+To increase or decrease volume use @kbd{-} and @kbd{+}. Volume modification
+is done in cubic steps, so for example setting volume to 50% makes sound
+output 8 times quieter.
 
 @node Playlist management, Window system, Playing files, Getting Started
 @section Playlist management
@@ -294,14 +269,64 @@ you can switch back to normal mode (by entering this command one more time).
 
 @node Add/remove, File browser, Visual mode, Playlist management
 @subsection Add/remove
-There are three commands for add/remove purposes. To add song use @kbd{a}.
-After you enter 
-this command the edit box will appear where you are able to enter file name.
-Name autocompletion is supported (by @kbd{@key{TAB}} key). 
-Note that MPFC allows you to play streaming audio. To do it place ``http://''
-in the beginning of file name.
+Besides adding songs from command line you can do it after MPFC has launched
+using the 'Add song' dialog. To display it press @kbd{a}. Name autocompletion
+(using @kbd{@key{TAB}} key) is supported. Name may also feature standard shell
+wildcards (thus multiple files may be added from a single dialog).
+The subsections below describe various types of objects which can be added.
 
 Remove command (@kbd{r}) removes the currently selected group of files.
+
+@menu
+* Regular files and directories::
+* URIs::
+* Playlists::
+* Smart directory adding::
+@end menu
+
+@node Regular files and directories, URIs, Add/remove, Add/remove
+@subsection Regular files and directories
+The simplest song to add is a regular file. MPFC supports files of all formats
+supported by your GStreamer installation provided they have appropriate
+extensions. The list of extensions recognized by MPFC is displayed in the log (@pxref{Log}).
+You can add support for additional formats by installing plugins to GStreamer.
+This is out of MPFC's scope.
+
+If you add a directory, all regular files, playlists and subdirectories found within it
+will be added. You can skip hidden files (with names starting with a dot) by setting
+``skip-hidden-files'' variable.
+
+@node URIs, Playlists, Regular files and directories, Add/remove
+@subsection URIs
+You can add songs identified by GStreamer URIs (i.e. with a prefix), for example:
+``http://somewhere'', or ``cdda://1''.
+
+@node Playlists, Smart directory adding, URIs, Add/remove
+@subsection Playlists
+MPFC supports several popular play list formats, namely m3u, pls and cue.
+There is also a handy virtual play list type for adding all tracks of
+an Audio CD: to do that just add ``audiocd://'' URI.
+
+@node Smart directory adding,, Playlists, Add/remove
+@subsection Smart directory adding
+Often a directory would contain duplicate items: regular files (or a single
+CD image) and playlist (or even multiple playlists, e.g. cue and m3u).
+To prevent adding duplicates, MPFC has a smart mode, activated by setting
+``smart-dir-add'' variable (by default it is disabled).
+
+In this mode, if a
+playlist is found inside a directory, nothing else would be added. If 
+there are multiple playlists, the one with the biggest rank is added
+(or the first encountered if ranks are equal). Ranks are determined on
+a per-type basis. By default all ranks are zero, but you can increase
+the rank of you favorite playlist type, for example:
+
+@example
+# In ~/.mpfc/mpfcrc
+plugins.plist.cueplist.rank = 1
+@end example
+
+Here ``cueplist'' is the name of playlist plugin for cue files.
 
 @node File browser, Save, Add/remove, Playlist management
 @subsection File browser
@@ -327,10 +352,10 @@ appear exactly in this order and you can't change it. To switch between normal
 and song info modes press @kbd{i}.
 
 You can navigate in a directory more easily using search mode. To set it
-press @kbd{s} key and the enter name of file (or its title if you are in
+press @kbd{s} key and enter name of file (or its title if you are in
 info mode) you want to jump to. As you will type the name cursor will move
 to the respective file. If you want to stop this process press 
-@kbd{@key{ESCAPE}}.
+@kbd{@key{CTRL}-G}.
 
 To exit browser press @kbd{q}.
 
@@ -384,13 +409,13 @@ can make advantage of them (e.g. for MP3 this information is written in its
 ID3 tag). 
 
 You can view and edit this information using song info editor dialog. To 
-call it place cursor to the respective song and use @kbd{i} command. 
+call it place cursor to the song and use @kbd{i} command. 
 You can also edit info for multiple songs. To do it select these songs in
 visual mode and answer ``No'' to the appearing question. The dialog
 will appear (if the format allows you). Then you will be able to change its
 contents by setting focus to the respective edit box (press @kbd{@key{TAB}}
 several times to reach it). If you want to save changes press @kbd{@key{RET}},
-otherwise press @kbd{@key{ESC}}. If some of the selected songs have different
+otherwise press @kbd{@key{CTRL}-G}. If some of the selected songs have different
 values for an info field it will remain the same unless you change it. If you
 change any field its value will be saved to each of the selected songs.
 
@@ -421,11 +446,7 @@ string including some format sequences:
 The default value is ``%p - %t'' that means that title contains artist and 
 song names divided by dash sign.
 
-Some plugins may have special functions associated with their respective
-songs (e.g. function of removing tags for mp3 plugin). This function is called
-by clicking respective button in the song info dialog.
-
-Also there is a command that reloads all selected playlist songs 
+There is a command that reloads all selected playlist songs 
 information---@kbd{I}.
 
 @node Window system, Other features, Playlist management, Getting Started
@@ -440,7 +461,13 @@ information---@kbd{I}.
 
 @node Overview, Using dialogs, Window system, Window system
 @subsection Overview
-MPFC has an advanced window system. When you start MPFC there always appears
+MPFC has an advanced window system. Please note that MPFC does not support
+non-UTF8 locales. If you have such a locale, non-ASCII characaters (including
+pseudo-graphics) will be displayed incorrectly. Also please note that
+most window system key bindings use @key{ALT} key which may conflict with
+your window manager.
+
+When you start MPFC there always appears
 play list window. As a result of some events there can appear other windows
 (e.g. file browser, help screen or various dialogs). 
 
@@ -469,11 +496,11 @@ There is number of special keys for navigating through the dialog items.
 First of all, you can use @kbd{@key{TAB}} key to move to the next item.
 But in big dialogs it is better to use special shortcuts to items. Many of
 the items have a letter associated with them. This letter is usually marked
-red on the label. So when you press @kbd{@key{ALT}} with this letter you
+red on the label. When you press @kbd{@key{ALT}} with this letter you
 jump to it.
 
 Also there are @kbd{@key{ENTER}} key connected with the ``OK'' button and
-@kbd{@key{ESCAPE}} or @kbd{@key{CTRL}-G} connected with the ``Cancel'' button.
+@kbd{@key{CTRL}-G} or @kbd{@key{ESCAPE}} connected with the ``Cancel'' button.
 
 @node Styles, Key bindings, Using dialogs, Window system
 @subsection Styles
@@ -525,7 +552,6 @@ Here is a list of some window classes and their styles.
 * player::
 * browser::
 * help::
-* eqwnd::
 * logger_view::
 * dialog::
 * dlgitem::
@@ -561,7 +587,7 @@ Here is a list of some window classes and their styles.
 @item time-style: current time style;
 @item audio-params-style: audio parameters style;
 @item about-style: about string style;
-@item slider-style: sliders style (for time, volume and balance);
+@item slider-style: sliders style (for time and volume);
 @item play-modes-style: ``Loop'' and ``Shuffle'' strings style;
 @item status-style: status line style.
 @end itemize
@@ -582,7 +608,7 @@ Here is a list of some window classes and their styles.
 @item header-style.
 @end itemize
 
-@node help, eqwnd, browser, Styles
+@node help, logger_view, browser, Styles
 ``help'' class is class of help screen. Styles:
 
 @itemize
@@ -590,17 +616,7 @@ Here is a list of some window classes and their styles.
 @item prompt-style.
 @end itemize
 
-@node eqwnd, logger_view, help, Styles
-``eqwnd'' class is class of equalizer window. Styles:
-
-@itemize
-@item band-style;
-@item focus-band-style;
-@item label-style;
-@item focus-label-style.
-@end itemize
-
-@node logger_view, dialog, eqwnd, Styles
+@node logger_view, dialog, help, Styles
 ``logger_view'' is child of ``scrollable'' class. Styles of ``scrollable'':
 
 @itemize
@@ -710,7 +726,6 @@ Here is the list of available key bindings for various window classes.
 * player keybinds::
 * browser keybinds::
 * help keybinds::
-* equalizer keybinds::
 * logger_view keybinds::
 * dlgitem keybinds::
 * button keybinds::
@@ -763,8 +778,6 @@ Here is the list of available key bindings for various window classes.
 @item time_move: seek to any position in the song (default is ``gt'');
 @item vol_fw: increase volume (default is ``+;lv'');
 @item vol_bw: decrease volume (default is ``-;hv'');
-@item bal_fw: increase balance (default is ``];lb'');
-@item bal_bw: decrease balance (default is ``[;hb'');
 @item info: launch song info dialog (default is ``i'');
 @item add: launch song adding dialog (default is ``a'');
 @item rem: remove song (default is ``r'');
@@ -778,7 +791,6 @@ Here is the list of available key bindings for various window classes.
 @item next_match: move to the next search match (default is ``n'');
 @item prev_match: move to the previous search match (default is ``N'');
 @item help: launch help screen (default is ``?'');
-@item equalizer: launch equalizer window (default is ``e'');
 @item shuffle: toggle shuffle mode (default is ``R'');
 @item var_manager: launch variable manager (default is ``o'');
 @item plist_down: shift play list item down (default is ``J'');
@@ -829,27 +841,14 @@ Here is the list of available key bindings for various window classes.
 @item help: launch help screen (default is ``?'').
 @end itemize
 
-@node help keybinds, equalizer keybinds, browser keybinds, Key bindings
+@node help keybinds, logger_view keybinds, browser keybinds, Key bindings
 @subsection help keybinds
 @itemize
 @item quit: close window (default is ``q;<Escape>'');
 @item next_page: show next page (default is ``<Enter>;<Space>'').
 @end itemize
 
-@node equalizer keybinds, logger_view keybinds, help keybinds, Key bindings
-@subsection equalizer keybinds
-@itemize
-@item quit: close window (default is ``q;<Escape>'');
-@item move_left: highlight band to the left (default is ``h;<Left>;<Ctrl-b>'');
-@item move_right: highlight band to the right (default is 
-``l;<Right>;<Ctrl-f>'');
-@item increase: increase band value (default is ``k;<Up>;<Ctrl-p>'');
-@item decrease: decrease band value (default is ``j;<Down>;<Ctrl-n>'');
-@item load_eqf: launch loading EQF file dialog (default is ``p'');
-@item help: launch help screen (default is ``?'').
-@end itemize
-
-@node logger_view keybinds, dlgitem keybinds, equalizer keybinds, Key bindings
+@node logger_view keybinds, dlgitem keybinds, help keybinds, Key bindings
 @subsection logger_view keybinds
 @itemize
 @item quit: close window (default is ``q;<Escape>'');
@@ -949,23 +948,6 @@ Here is the list of available key bindings for various window classes.
 @end itemize
 
 @node Other window system features,, Key bindings, Window system
-@subsection Terminfo hints
-MPFC uses terminfo(5) for translating escape sequences into real keys.
-Unfortunately, terminfo table does not always contain all of needed 
-capabilities. For example, values for @key{Ctrl-Left} and @key{Ctrl-Right}
-are often missed.
-
-To use these keys you may specify a value for this capability in 
-variable ``windows.ti.<cap_name>''. The full list of capabilities may be
-found in manpage for terminfo(5).
-
-For example, to set values for @key{Ctrl-Left} and @key{Ctrl-Right}:
-
-@example
-windows.ti.%i = "\e[5C"
-windows.ti.#4 = "\e[5D"
-@end example
-
 @subsection Using terminal background
 Sometimes you want to use background color of your terminal instead of
 default MPFC background (black). To do this set ``force-terminal-bg''
@@ -1077,7 +1059,7 @@ Here is a short example of MPFC configuration file:
 @verbatim
 # MPFC configuration file
 lib-dir=/usr/local/lib/mpfc
-output-plugin=oss
+gstreamer.audio-sink = alsasink
 play-from-stop
 
 include(some_file)
@@ -1111,7 +1093,7 @@ Also there is a way to specify include-file from the command line. Use
 Here is an example:
 
 @example
-mpfc --lib-dir=/usr/local/lib/mpfc --output-plugin=oss --play-from-stop 
+mpfc --lib-dir=/usr/local/lib/mpfc --gstreamer.audio-sink=alsasink --play-from-stop 
 -f some_file list.m3u
 @end example
 
@@ -1129,8 +1111,6 @@ respective sections of manual.
 @table @option
 @item autosave-plugins-params
 Automatically save plugins parameters (default is 1)
-@item charset-input
-Charset to use as input when reading songs information (@pxref{Charsets})
 @item convert-underscores2spaces
 Convert underscores to spaces in songs titles (default is 0)
 @item log-file
@@ -1141,16 +1121,22 @@ Log level (@pxref{Log})
 Turns on loop play mode (default is 0)
 @item play-from-stop
 At the beginning play from the point you stopped last time (default is 1)
+@item remote-dir-root
+Root directory for file browsing in the remote control (unset by default)
 @item save-playlist-on-exit
-Save play list to @file{~/.mpfc/list.m3u} on exit (default is 1)
+Save play list on exit (default is 1)
 @item search-nocase
 Make play list search case-insensitive (default is 1)
+@item server-port and server-port-pool-size
+Port range where server tries to listen to remotes (by default 10 ports starting with 19792 are tried)
 @item show-time-remaining
 Show remaining song time instead of play time (default is 0)
 @item shuffle-play
 Turns on shuffle play mode (default is 0)
-@item silent-mode
-Don't use output plugin (default is 0)
+@item skip-hidden-files
+Don't add hidden files (default is 0)
+@item smart-dir-add
+Smart directory adding (default is 0; see @pxref{Smart directory adding})
 @item sort-on-load
 Sort play list after loading (default is 0)
 @item sort-on-load-type
@@ -1165,168 +1151,25 @@ If current song escapes view, centrize it automatically (default is 1)
 @node Plugins, Copying, Using Variables, Top
 @chapter Plugins usage
 
-Plugins are used to expand MPFC functionality. There are four kinds of
-plugins: input, output, effect and charset. Input plugins are used to play 
-files of some kind of format. Output plugins are used to work with sound 
-output devices. Effect plugins are used to add effects to playing. Charset
-plugins are used to support various charsets and convert between them.
+In the old versions (pre 2.0) MPFC had a system of plugins which handled
+all sound processing. Now that GStreamer is used they are no longer needed.
+The only type of plugins in use today is playlist plugins for parsing
+various playlist file formats (e.g. m3u or cue).
 
 Plugins are stored commonly in @file{/usr/lib/mpfc/} or 
 @file{/usr/local/lib/mpfc}.
-There are four directories for each of these plugins types: @file{input},
-@file{output}, @file{effect} and @file{charset}. Each plugin is a shared 
-library (.so file). To install plugin simply copy it to the respective 
-directory.
+Playlist plugins are stored in the @file{plist} subdirectory.
+Each plugin is a shared 
+library (.so file). To install plugin simply copy it to the directory.
 
 Plugins have special configuration lists hierarchy. Root list is ``plugins''.
-It has children for each of plugin types (``input'', ``output'', ``effect'',
-``charset''). Configuration for a speficic plugin is stored in list with 
+It has children for each of plugin types (only ``plist'' for now).
+Configuration for a speficic plugin is stored in list with 
 name same with plugin name and placed in respective list (e.g. 
-``plugins.input.mp3.quick_get_len''). Variable names given further in
-connection with the listed plugins are without ``plugins.<type>.<name>.''
-prefix.
+``plugins.plist.cueplist.rank'').
 
-Here these types are described in a greater detail and also some standard
-plugins are considered.
-
-@menu
-* Input::
-* Output::
-* Effect::
-* Charsets::
-* Plugins manager::
-@end menu
-
-@node Input, Output, Plugins, Plugins
-@section Input plugins
-@menu
-* Common formats::
-* Audio CD::
-@end menu
-
-@node Common formats, Audio CD, Input, Input
-@subsection Common formats
-MPFC has four built-in plugins for common formats: MP3, Ogg Vorbis, WAV.
-These plugins have nothing special. The only aspect to note is connected 
-with MP3 plugin. 
-
-There are two methods to calculate MP3 song length: quick 
-and correct. In most cases quick method works correctly but for some songs with
-variable bitrate their length would be improper. Correct method calculates
-all songs length absolutely correctly but it is rather long. It is quick
-method that is turned on by default. To change this set variable
-``quick-get-len'' to ``0''.
-Also there is a note on Ogg Vorbis plugin behaviour. By default it always
-uses UTF-8 as output charset but you may override this behaviour by setting
-``always-use-utf8'' variable to ``0'', so it would save tags in your
-common output charset (@pxref{Charsets}).
-
-@node Audio CD,, Common formats, Input
-@subsection Audio CD
-Audio CD plugin supports Audio CDs. Audio-CD uses a special virtual file
-system with files named @file{track01}, ..., @file{trackNN}, where ``NN'' is
-total number of tracks on the disc. To specify such a file you must put 
-plugin prefix (``audiocd://'' before the name). You may also use patterns
-(e.g. @file{audiocd://track0[4-7]}) or even put @file{audiocd://}---this
-means total CD.
-
-By default CD-ROM device is @file{/dev/cdrom}, but you can change this
-behaviour by setting ``device'' variable.
-
-Song info for Audio CD is supported through CDDB. If you want to obtain
-this information you must be connected to the Internet. CDDB server is set
-through ``cddb-host'' variable. The default value is ``freedb.freedb.org''.
-After MPFC gets 
-information it stores it on your local machine and further loads it from this
-machine. Alternatively you may specify info by your own and store it. CDDB
-submission is not supported yet. Note that to use info for Audio CD you must
-have @file{cddb} directory in your @file{~/.mpfc}.
-
-Also you can submit info to CDDB. To do it click on the respective button
-in info editor for any of this CD songs. Note that you must have two variables
-set. First is ``cddb-email'' and it holds your e-mail address. Second is
-``cddb-category'' and it holds the category of disc you are about to submit.
-Possible values are: ``blues'', ``classical'', ``country'', ``data'', ``folk'',
-``jazz'', ``misc'', ``newage'', ``reggae'', ``rock'' and ``soundtrack''.
-
-@node Output, Effect, Input, Plugins
-@section Output plugins
-There may be only one active output plugin at the time. This name is set
-using variable ``output-plugin'' where the plugin name is stored (by default
-``alsa'' or ``oss'', depending on kernel version and configuration options).
-
-Here is description for standard MPFC plugins.
-
-@menu
-* ALSA and OSS::
-* Disk Writer::
-@end menu
-
-@node ALSA and OSS, Disk Writer, Output, Output
-@subsection ALSA and OSS
-ALSA and OSS are standard output plugins that you probably will use.
-ALSA is default for 2.6.* kernels, while OSS is default for former versions.
-Both of them can play music using different audio devices. For OSS default
-device is ``/dev/dsp'', for ALSA---``plughw:0,0''. You may set another
-devices through ``device'' variable in the respective configuration list.
-The value of this variable is a list of devices that MPFC should use to
-interact with audio system (the first device in this list is probed, then if it
-fails the second, and so on). For example:
-@example
-plugins.output.oss.device = "/dev/dsp1;/dev/dsp"
-plugins.output.alsa.device = "plughw:0,1;plughw:0,0"
-@end example
-
-@node Disk Writer,, ALSA and OSS, Output
-@subsection Disk Writer
-Disk Writer plugin is used to save the audio output to disk. Each song that 
-you play is stored in a WAV file. The name of this file is same with the file
-name of the song you play and path is read from ``path'' variable.
-
-This plugin can also encode this file using some external program (by default
-``oggenc''). This behaviour is controlled by ``encode'' variable. The file
-being encoded is split into parts of fixed length (in time units; by default
-10 minutes). Use ``fragment-size'' to set another value (in seconds).
-Also you can specify any other encoder with variable ``encode-command''.
-This variable should contain a shell command containing ``%i'' and ``%o''
-patterns (they expand into the input file name and output file name without
-extension respectively). For example:
-@example
-lame --quiet "%i" "%o.mp3"
-@end example
-
-@node Effect, Charsets, Output, Plugins
-@section Effect plugins
-To enable effect plugin ``plugin'' set variable ``enable-effect-plugin''.
-
-@node Charsets, Plugins manager, Effect, Plugins
-@section Charset plugins
-Charsets are used in song info management. Suppose you have song with info
-written in charset A and your display charset is B. This is where charsets
-management is used. Display charset is set with variable ``charset-output''.
-Input charset may be stored with the text in song info, so in this case you
-don't need to specify it. But in many cases it is not, that's why you may
-want to set it. It is done with variable ``charset-input''. Also there is
-a variable ``charset-save-info'' that controls the charset is written down in.
-
-And what about charset plugins? They are used to support various charsets.
-In fact, MPFC internally supports only one charset---UTF-8 (respective 
-variable value is ``utf-8''). So each one-byte
-charset that is used by you should be supported by some plugin. One plugin
-may support many charset (e.g. charsets for some language). Also there are
-special charsets called automatic. They expand to other charsets. These 
-charsets are useful when you have songs with different charsets, so MPFC
-will try to guess charset in each case. This certainly makes sense only for
-input charsets.
-
-@node Plugins manager,, Charsets, Plugins
-@section Plugins manager
-Plugins manager is a useful tool for configuring plugins system. It is called
-with @kbd{P} key (by default). Plugins manager allows you to view the 
-loaded plugins list along with their descriptions, 
-select output plugin (by pressing @kbd{@key{Space}} at the respective item
-in plugins list box, enable/disable effects and do plugin-specific 
-configuration.
+@kbd{P} key launches the Plugins manager dialog where you can view the 
+loaded plugins list along with their descriptions.
 
 @node Copying,, Plugins, Top
 @chapter Copying information
