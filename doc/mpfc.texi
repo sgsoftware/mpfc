@@ -38,7 +38,8 @@ Copyright @copyright{} 2003-2014 SG Software
 * Getting Started::	
 * Using Variables::
 * Audio processing::
-* Plugins::		
+* Plugins::
+* Remote Control::
 * Copying::	
 @end menu
 @end ifinfo
@@ -1129,8 +1130,10 @@ Root directory for file browsing in the remote control (unset by default)
 Save play list on exit (default is 1)
 @item search-nocase
 Make play list search case-insensitive (default is 1)
-@item server-port and server-port-pool-size
-Port range where server tries to listen to remotes (by default 10 ports starting with 19792 are tried)
+@item server-port 
+Port number the server listens on (default is 19792)
+@item server-port-pool-size
+Number of ports which are tried if the primary one fails (default is 10)
 @item show-time-remaining
 Show remaining song time instead of play time (default is 0)
 @item shuffle-play
@@ -1179,7 +1182,7 @@ By default variables in ``gstreamer.*'' are autosaved on exit.
 Please refer to the GStreamer documentation for more information on available
 sinks and their properties.
 
-@node Plugins, Copying, Audio processing, Top
+@node Plugins, Remote Control, Audio processing, Top
 @chapter Plugins usage
 
 In the old versions (pre 2.0) MPFC had a system of plugins which handled
@@ -1202,7 +1205,20 @@ name same with plugin name and placed in respective list (e.g.
 @kbd{P} key launches the Plugins manager dialog where you can view the 
 loaded plugins list along with their descriptions.
 
-@node Copying,, Plugins, Top
+@node Remote Control, Copying, Plugins, Top
+@chapter Remote Control
+MPFC implements a server allowing to control the player remotely. At the moment
+there is one such remote control app for Android. The server starts automatically
+when MPFC launches and listens on port specified in ``server-port'' configuration
+variable (default value is 19792). If the port is unavailable several consecutive
+values are tried (the number is specified in ``server-port-pool-size'' variable, default
+is 10).
+
+By default remote will not be allowed to add files to the play list. If you want
+to allow that, set ``remote-dir-root'' variable to the full path of local directory
+which can be browsed for songs.
+
+@node Copying,, Remote Control, Top
 @chapter Copying information
 MPFC is licensed under GNU GPL license. To read it view @file{COPYING} file in
 MPFC distribution.
