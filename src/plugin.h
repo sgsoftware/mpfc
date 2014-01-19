@@ -26,7 +26,7 @@
 #include "types.h"
 #include "cfg.h"
 #include "logger.h"
-#include "wnd.h"
+#include "wnd_types.h"
 
 /* Forward declarations */
 struct tag_pmng_t;

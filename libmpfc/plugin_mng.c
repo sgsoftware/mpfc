@@ -33,6 +33,7 @@
 #include "plugin.h"
 #include "pmng.h"
 #include "util.h"
+#include "wnd.h"
 
 /* Build supported media file extensions list */
 static bool_t pmng_fill_media_file_exts( pmng_t *pmng )

@@ -25,7 +25,7 @@
 
 #include <stdarg.h>
 #include "types.h"
-#include "wnd.h"
+#include "wnd_types.h"
 
 /* Command parameter */
 typedef struct

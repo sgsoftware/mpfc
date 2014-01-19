@@ -30,7 +30,7 @@
 #include "main_types.h"
 #include "plp.h"
 #include "plugin.h"
-#include "wnd.h"
+#include "wnd_types.h"
 
 /* Plugin manager type */
 typedef struct tag_pmng_t
