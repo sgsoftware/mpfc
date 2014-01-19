@@ -132,6 +132,7 @@ pmng_t *player_pmng = NULL;
 /* User configuration file name */
 char player_cfg_file[MAX_FILE_NAME] = "";
 char player_cfg_autosave_file[MAX_FILE_NAME] = "";
+char player_cfg_dir[MAX_FILE_NAME] = "";
 
 /* Previous file browser session directory name */
 char player_fb_dir[MAX_FILE_NAME] = "";
@@ -266,10 +267,12 @@ bool_t player_init( int argc, char *argv[] )
 	signal(SIGPIPE, player_handle_signal);
 	
 	/* Initialize configuration */
+	snprintf(player_cfg_dir, sizeof(player_cfg_dir), 
+			"%s/.mpfc", getenv("HOME"));
 	snprintf(player_cfg_file, sizeof(player_cfg_file), 
-			"%s/.mpfc/mpfcrc", getenv("HOME"));
+			"%s/mpfcrc", player_cfg_dir);
 	snprintf(player_cfg_autosave_file, sizeof(player_cfg_autosave_file), 
-			"%s/.mpfc/autosave", getenv("HOME"));
+			"%s/autosave", player_cfg_dir);
 	if (!player_init_cfg())
 	{
 		fprintf(stderr, _("Unable to initialize configuration"));
@@ -697,10 +700,18 @@ bool_t player_init_cfg( void )
 /* Save some variables to file */
 void player_save_cfg( void )
 {
-	FILE *fd;
+	/* See if ~/.mpfc/ directory exists */
+	DIR *dir = opendir(player_cfg_dir);
+	if (!dir)
+	{
+		logger_message(player_log, 1, "creating directory %s\n", player_cfg_dir);
+		mkdir(player_cfg_dir, 0770);
+	}
+	else
+		closedir(dir);
 
 	/* Open file */
-	fd = fopen(player_cfg_autosave_file, "wt");
+	FILE *fd = fopen(player_cfg_autosave_file, "wt");
 	if (fd == NULL)
 		return;
 

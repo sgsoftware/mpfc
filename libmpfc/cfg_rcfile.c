@@ -358,6 +358,9 @@ void cfg_rcfile_parse_line( cfg_node_t *list, char *str )
 /* Save a node to file */
 void cfg_rcfile_save_node( FILE *fd, cfg_node_t *node, const char *prefix )
 {
+	if (!node)
+		return;
+
 	/* Save a variable */
 	if (CFG_NODE_IS_VAR(node))
 	{
