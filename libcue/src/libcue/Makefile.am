@@ -1,6 +1,6 @@
 AM_YFLAGS		= -d
 
-EXTRA_DIST		= # libcue.pc.in
+EXTRA_DIST		= libcue.h cd.h cdtext.h rem.h time.h config.h # libcue.pc.in
 
 #pkgconfigdir		= $(libdir)/pkgconfig
 #pkgconfig_DATA		= libcue.pc
