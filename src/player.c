@@ -1691,7 +1691,7 @@ static void player_on_audio_changed( GstElement *playbin, gpointer user_data )
 bool_t player_set_audio_sink( void )
 {
 	char *audio_sink_name = cfg_get_var(cfg_list, "gstreamer.audio-sink");
-	if (audio_sink_name)
+	if (audio_sink_name && *audio_sink_name)
 	{
 		GstElement *sink = gst_element_factory_make(audio_sink_name, "sink");
 		if (sink)
@@ -1711,9 +1711,12 @@ bool_t player_set_audio_sink( void )
 						char *name = cfg_node->m_name;
 						char *val = CFG_VAR_VALUE(cfg_node);
 
-						logger_debug(player_log, "gstreamer: setting audio sink param %s to %s",
-								name, val);
-						g_object_set(G_OBJECT(sink), name, val, NULL);
+						if (val && *val)
+						{
+							logger_debug(player_log, "gstreamer: setting audio sink param %s to %s",
+									name, val);
+							g_object_set(G_OBJECT(sink), name, val, NULL);
+						}
 					}
 				}
 			}
@@ -2334,9 +2337,9 @@ static void player_on_audio_setup( wnd_t *wnd )
 	assert(dev_eb);
 
 	cfg_set_var(cfg_list, "gstreamer.audio-sink", 
-			EDITBOX_EMPTY(sink_eb) ? EDITBOX_TEXT(sink_eb) : NULL);
+			!EDITBOX_EMPTY(sink_eb) ? EDITBOX_TEXT(sink_eb) : "");
 	cfg_set_var(cfg_list, "gstreamer.audio-sink-params.device", 
-			EDITBOX_EMPTY(dev_eb) ? EDITBOX_TEXT(dev_eb) : NULL);
+			!EDITBOX_EMPTY(dev_eb) ? EDITBOX_TEXT(dev_eb) : "");
 
 	/* Restart playback */
 	if (player_plist->m_cur_song >= 0)

@@ -87,7 +87,7 @@ typedef struct
 /* Access edit box data */
 #define EDITBOX_TEXT(wnd)	    (STR_TO_CPTR(EDITBOX_OBJ(wnd)->m_text))
 #define EDITBOX_BYTE_LEN(wnd)	(STR_BYTE_LEN(EDITBOX_OBJ(wnd)->m_text))
-#define EDITBOX_EMPTY(wnd)	    (*EDITBOX_TEXT(wnd) != 0)
+#define EDITBOX_EMPTY(wnd)	    (*EDITBOX_TEXT(wnd) == 0)
 
 /* Create a new edit box */
 editbox_t *editbox_new( wnd_t *parent, char *id, char *text, char letter,
