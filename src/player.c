@@ -188,7 +188,7 @@ static void player_load_state( void )
 	JsonParser *parser = json_parser_new();
 	if (!json_parser_load_from_file(parser, fname, NULL))
 	{
-		logger_error(player_log, 1, "unable to parse player state");
+		logger_error(player_log, 1, _("unable to parse player state"));
 		goto finally_fname;
 	}
 
@@ -326,7 +326,7 @@ bool_t player_init( int argc, char *argv[] )
 	if (!util_check_utf8_mode())
 	{
 		is_utf8 = FALSE;
-		logger_fatal(player_log, 0, _("Your locale is not UTF-8! Text handling will work incorrectly"));
+		logger_fatal(player_log, 0, "Your locale is not UTF-8! Text handling will work incorrectly");
 	}
 
 	/* Initialize play list window */
@@ -704,7 +704,7 @@ void player_save_cfg( void )
 	DIR *dir = opendir(player_cfg_dir);
 	if (!dir)
 	{
-		logger_message(player_log, 1, "creating directory %s\n", player_cfg_dir);
+		logger_message(player_log, 1, _("creating directory %s\n"), player_cfg_dir);
 		mkdir(player_cfg_dir, 0770);
 	}
 	else
@@ -1421,7 +1421,7 @@ void player_seek( song_time_t val, bool_t rel )
 	if (!gst_element_seek(player_pipeline, 1.0, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH,
 			GST_SEEK_TYPE_SET, tm, GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE))
 	{
-		logger_error(player_log, 1, "gstreamer: gst_element_seek returned FALSE");
+		logger_error(player_log, 1, _("gstreamer: gst_element_seek returned FALSE"));
 	}
 	player_context->m_cur_time = new_time;
 	wnd_invalidate(player_wnd);
@@ -1520,7 +1520,7 @@ void player_update_vol( void )
 		gdouble v = player_context->m_volume;
 		gdouble conv = gst_stream_volume_convert_volume(
 				GST_STREAM_VOLUME_FORMAT_CUBIC, GST_STREAM_VOLUME_FORMAT_LINEAR, v);
-		logger_message(player_log, 1, "setting volume to %lg%% (linear = %lg%%)",
+		logger_message(player_log, 1, _("setting volume to %lg%% (linear = %lg%%)"),
 				v * 100, conv * 100);
 		g_object_set(G_OBJECT(player_pipeline), "volume", conv, NULL);
 	}
@@ -1637,7 +1637,7 @@ static gboolean player_gst_bus_call( GstBus *bus, GstMessage *msg, gpointer data
 		gst_message_parse_error(msg, &error, &debug);
 		g_free(debug);
 
-		logger_error(player_log, 1, "gstreamer error: %s", error->message);
+		logger_error(player_log, 1, _("gstreamer error: %s"), error->message);
 		g_error_free(error);
 		break;
 
@@ -1778,14 +1778,14 @@ void *player_thread( void *arg )
 		loop = g_main_loop_new(NULL, FALSE);
 		if (!loop)
 		{
-			logger_error(player_log, 1, "g_main_loop_new failed");
+			logger_error(player_log, 1, _("g_main_loop_new failed"));
 			player_context->m_status = PLAYER_STATUS_STOPPED;
 			goto cleanup;
 		}
 		player_pipeline = gst_element_factory_make("playbin", "play");
 		if (!player_pipeline)
 		{
-			logger_error(player_log, 1, "gstreamer: unable to create playbin");
+			logger_error(player_log, 1, _("gstreamer: unable to create playbin"));
 			player_context->m_status = PLAYER_STATUS_STOPPED;
 			goto cleanup;
 		}
@@ -1808,7 +1808,7 @@ void *player_thread( void *arg )
 		bus = gst_pipeline_get_bus(GST_PIPELINE(player_pipeline));
 		if (!bus)
 		{
-			logger_error(player_log, 1, "gst_pipeline_get_bus failed");
+			logger_error(player_log, 1, _("gst_pipeline_get_bus failed"));
 		}
 		gst_bus_add_watch(bus, player_gst_bus_call, NULL);
 		gst_object_unref(bus);
@@ -1830,7 +1830,7 @@ void *player_thread( void *arg )
 			if (!gst_element_seek(player_pipeline, 1.0, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH,
 					GST_SEEK_TYPE_SET, tm, GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE))
 			{
-				logger_error(player_log, 1, "gstreamer: gst_element_seek returned FALSE");
+				logger_error(player_log, 1, _("gstreamer: gst_element_seek returned FALSE"));
 			}
 		}
 
@@ -1885,7 +1885,7 @@ void *player_thread( void *arg )
 						player_translate_time(song_played, player_context->m_cur_time, TRUE) >= 
 						song_played->m_end_time)
 				{
-					logger_debug(player_log, "stopping at time %lld(%lld) with end_time=%lld.", 
+					logger_debug(player_log, _("stopping at time %lld(%lld) with end_time=%lld."), 
 							player_context->m_cur_time,
 							player_translate_time(song_played, player_context->m_cur_time, TRUE),
 							song_played->m_end_time);
@@ -2403,7 +2403,7 @@ static void player_welcome_dialog( void )
 static void player_utf8_dialog( void )
 {
 	player_startup_msg_dialog(_("Error"), 
-			_("Your locale is not UTF-8! Text handling will work incorrectly"),
+			"Your locale is not UTF-8! Text handling will work incorrectly",
 			"dont_show.utf8");
 }
 

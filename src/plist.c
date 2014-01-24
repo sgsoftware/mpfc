@@ -1021,8 +1021,8 @@ static int plist_report_if_too_nested_and_continue( int res, char *path )
 	if (res == PLIST_TOO_NESTED)
 	{
 		logger_error(player_log, 0,
-				"Unable to add '%s' because nesting level is too high. "
-				"It is likely to be a recursive playlist", path);
+				_("Unable to add '%s' because nesting level is too high. "
+				  "It is likely to be a recursive playlist"), path);
 		return 0;
 	}
 	return res;

@@ -130,7 +130,7 @@ bool_t server_start( void )
 	if (!server_port_pool_size)
 		server_port_pool_size = 10;
 
-	logger_message(player_log, 0, "Starting the server at port %d", server_port);
+	logger_message(player_log, 0, _("Starting the server at port %d"), server_port);
 
 	/* Create socket */
 	server_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -158,7 +158,7 @@ bool_t server_start( void )
 
 bind_succeeded:
 
-	logger_message(player_log, 0, "Server listening at port %d", server_port);
+	logger_message(player_log, 0, _("Server listening at port %d"), server_port);
 
 	/* Listen */
 	if (listen(server_socket, 5) == -1)
@@ -289,7 +289,7 @@ static void *server_thread( void *p )
 				goto failure;
 			}
 
-			logger_message(player_log, 0, "Received a connection");
+			logger_message(player_log, 0, _("Received a connection"));
 
 			/* Start the connection thread */
 			conn_desc = server_conn_desc_new(conn_socket);
@@ -422,7 +422,7 @@ static void *server_conn_thread( void *p )
 		}
 	}
 
-	logger_message(player_log, 0, "Closing connection");
+	logger_message(player_log, 0, _("Closing connection"));
 
 	/* Destroy the connection */
 	server_conn_desc_free(conn_desc);
