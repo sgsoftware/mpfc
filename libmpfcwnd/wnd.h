@@ -135,6 +135,10 @@ struct tag_wnd_global_data_t
 		 * repainted discarding all the optimization information */
 		bool_t m_dirty;
 
+		/* The terminal title */
+		char *m_title;
+		bool_t m_title_dirty;
+
 		/* Buffer mutex */
 		pthread_mutex_t m_mutex;
 	} m_display_buf;
@@ -478,7 +482,7 @@ void wnd_set_default_styles( cfg_node_t *list );
 wnd_t *wnd_get_top_level_ancestor( wnd_t *wnd );
 
 /* Set global title */
-void wnd_set_global_title( const char *title );
+void wnd_set_global_title( wnd_t *wnd, const char *title );
 
 #endif
 

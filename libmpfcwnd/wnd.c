@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#include <unistd.h>
 #include "types.h"
 #include "cfg.h"
 #include "logger.h"
@@ -40,7 +41,7 @@ static bool_t is_xterm( void )
 	const char *term = getenv("TERM");
 	if (!term)
 		return FALSE;
-	return !strcmp(term, "xterm") || !strncmp(term, "rxvt", 4);
+	return !strncmp(term, "xterm", 5) || !strncmp(term, "rxvt", 4);
 } /* End of 'is_xterm' function */
 
 /* Initialize window system and create root window */
@@ -1129,6 +1130,18 @@ void wnd_sync_screen( wnd_t *wnd )
 	/* Refresh screen */
 	refresh();
 	buf->m_dirty = FALSE;
+
+	if (buf->m_title_dirty && wnd_set_title_seq_start)
+	{
+		char *title = buf->m_title;
+		if (title && *title)
+		{
+			write(1, wnd_set_title_seq_start, strlen(wnd_set_title_seq_start));
+			write(1, title, strlen(title));
+			write(1, wnd_set_title_seq_end, strlen(wnd_set_title_seq_end));
+		}
+	}
+
 	pthread_mutex_unlock(&WND_CURSES_MUTEX(wnd));
 } /* End of 'wnd_sync_screen' function */
 
@@ -1601,10 +1614,15 @@ wnd_t *wnd_get_top_level_ancestor( wnd_t *wnd )
 } /* End of 'wnd_get_top_level_ancestor' function */
 
 /* Set global title */
-void wnd_set_global_title( const char *title )
+void wnd_set_global_title( wnd_t *wnd, const char *title )
 {
-	if (wnd_set_title_seq_start && title && *title)
-		printf("%s%s%s", wnd_set_title_seq_start, title, wnd_set_title_seq_end);
+	char *cur_title = WND_DISPLAY_BUF(wnd).m_title;
+	if (!cur_title || strcmp(title, cur_title))
+	{
+		free(cur_title);
+		WND_DISPLAY_BUF(wnd).m_title = strdup(title);
+		WND_DISPLAY_BUF(wnd).m_title_dirty = TRUE;
+	}
 } /* End of 'wnd_set_global_title' function */
 
 /* End of 'wnd.c' file */

@@ -1238,7 +1238,7 @@ wnd_msg_retcode_t player_on_display( wnd_t *wnd )
 		wnd_printf(wnd, 0, 0, _("SG Software Media Player For Console"));
 
 		/* Set root title */
-		wnd_set_global_title("MPFC");
+		wnd_set_global_title(wnd, "MPFC");
 		
 		/* Print shuffle mode */
 		shuffle_str = _("Shuffle");
@@ -1278,7 +1278,7 @@ wnd_msg_retcode_t player_on_display( wnd_t *wnd )
 
 		/* Set root title */
 		char *root_title = util_strcat("MPFC :: ", STR_TO_CPTR(s->m_title), NULL);
-		wnd_set_global_title(root_title);
+		wnd_set_global_title(wnd, root_title);
 		free(root_title);
 		
 		/* Print shuffle mode */
