@@ -25,7 +25,7 @@ libmpfccue_la_SOURCES	=				\
 #			rem.h				\
 #			time.h
 
-lib_LTLIBRARIES		= libmpfccue.la
+noinst_LTLIBRARIES		= libmpfccue.la
 
-libmpfccue_la_LDFLAGS	= -version-info 2:0
+#libmpfccue_la_LDFLAGS	= -version-info 2:0 
 #libmpfccueincludedir	= $(includedir)/@LIBMPFCCUE_LIBRARY_NAME@
