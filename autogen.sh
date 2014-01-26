@@ -7,4 +7,4 @@ autoheader
 libtoolize
 autopoint
 cp po/Makevars.template po/Makevars
-automake -a
+automake -a --foreign
