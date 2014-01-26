@@ -1,0 +1,15 @@
+MPFC depends on several libraries. To build MPFC you will need to install development packages for:
+  * ncursesw
+  * gpm
+  * gstreamer and gstreamer-plugins-base (version 1.x)
+  * taglib_c (C bindings for TagLib)
+  * json-glib
+
+After you have installed them just issue:
+  $ ./configure [--prefix=<where-to-install>] && make
+
+Then (as root):
+  # make install
+  # ldconfig 
+
+The last command is required on some systems to update the shared libraries cache.
