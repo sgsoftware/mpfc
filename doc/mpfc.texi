@@ -1038,7 +1038,8 @@ whitespaces, so you can't use whitespaces in these values. In second form
 you place the value inside double quotes, so that there is no such restriction.
 Also in that form you may use special characters: ``\n'' (new line), 
 ``\t'' (tabulation), ``\e'' (escape), ``\"'' (double quote itself), 
-``\\'' (backslash).
+``\\'' (backslash) as well as octal (``\NNN'') and hexadecimal (``\xNN'') codes
+for a character.
 
 Operation type points to what will be done with the value. Assignment (``='')
 simply assigns variable this value. Addition (``+='') replaces current 
