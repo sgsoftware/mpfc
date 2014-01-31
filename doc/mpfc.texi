@@ -180,13 +180,13 @@ so if you want to return to it type: @kbd{``}.
 @section Playing files
 @menu
 * Play/pause/stop::
-* Play modes::
+* Playback order::
 * Boundaries::
 * Time back::
 * Volume::
 @end menu
 
-@node Play/pause/stop, Play modes, Playing files, Playing files
+@node Play/pause/stop, Playback order, Playing files, Playing files
 @subsection Play/pause/stop
 There are four basic playing commands:
 
@@ -208,20 +208,21 @@ for moving 10 seconds back or forth and command @kbd{gt} to move to any
 specified position (these commands support repeat values, for @kbd{gt} its
 meaning is the same as for @kbd{G}, @pxref{Basic cursor movement operations}).
 
-@node Play modes, Boundaries, Play/pause/stop, Playing files
-@subsection Play modes
+@node Playback order, Boundaries, Play/pause/stop, Playing files
+@subsection Playback order
 Normally after the song you specified to play finishes MPFC begins to play 
-the next song in playlist and so on until it reaches the playlist end when it
-stops. 
+the next song in playlist and so on until it reaches the playlist end and then it
+stops. The next song is normally the one right after the current one in the playlist
+but you may queue songs to be played next using the @kbd{'} (single quote) command.
 
-This behaviour may be changed by setting any of two play modes: shuffle or 
+Order may also be altered by setting one of the two play modes: shuffle and 
 loop. In shuffle mode (@kbd{R} command) the next song to play is selected by
 random. In loop mode (@kbd{L} command) the play order is as in the normal mode
 but MPFC begins playing from the beginning when it reaches end. Also you may
 set these modes by variables ``shuffle-play'' and ``loop-play'' 
 (@pxref{Using Variables}).
- 
-@node Boundaries, Time back, Play modes, Playing files
+
+@node Boundaries, Time back, Playback order, Playing files
 @subsection Boundaries
 Normally the beginning of playlist is the first song and the end is the last 
 one. But you can change them by setting boundaries. First select a playlist
