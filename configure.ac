@@ -1,4 +1,4 @@
-AC_INIT([mpfc], [2.0-hg])
+AC_INIT([mpfc], [2.0])
 AC_CONFIG_SRCDIR([src/main.c])
 AC_GNU_SOURCE
 AM_INIT_AUTOMAKE
