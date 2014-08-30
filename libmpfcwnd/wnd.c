@@ -34,6 +34,8 @@
 
 static const char *wnd_set_title_seq_start = NULL;
 static const char *wnd_set_title_seq_end = NULL;
+static const char *wnd_push_title_seq = NULL;
+static const char *wnd_pop_title_seq = NULL;
 
 /* Check that this is an xterm or compatible terminal */
 static bool_t is_xterm( void )
@@ -179,6 +181,16 @@ wnd_t *wnd_init( cfg_node_t *cfg_list, logger_t *log )
 	wnd_set_title_seq_end = cfg_get_var(global->m_root_cfg, "ti.fs");
 	if (!wnd_set_title_seq_end)
 		wnd_set_title_seq_end = "\007";
+	wnd_push_title_seq = cfg_get_var(global->m_root_cfg, "ti.push_title");
+	if (!wnd_push_title_seq && is_xterm())
+		wnd_push_title_seq = "\033[22;0t";
+	wnd_pop_title_seq = cfg_get_var(global->m_root_cfg, "ti.pop_title");
+	if (!wnd_pop_title_seq && is_xterm())
+		wnd_pop_title_seq = "\033[23;0t";
+
+	/* Save window title on stack */
+	if (wnd_push_title_seq)
+		write(1, wnd_push_title_seq, strlen(wnd_push_title_seq));
 
 	/* Send display message to this window */
 	wnd_postinit(wnd_root);
@@ -393,6 +405,10 @@ void wnd_deinit( wnd_t *wnd_root )
 	wnd_global_data_t *global;
 	struct wnd_display_buf_t *db;
 	wnd_class_t *klass;
+
+	/* Restore window title on stack */
+	if (wnd_pop_title_seq)
+		write(1, wnd_pop_title_seq, strlen(wnd_pop_title_seq));
 
 	if (wnd_root == NULL)
 		return;
