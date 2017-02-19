@@ -170,18 +170,20 @@ char *util_get_plugin_short_name( char *dest, char *src )
 {
 	int i, j;
 	
-	for ( i = strlen(src) - 1; i >= 0 && src[i] != '.'; i -- );
+	for ( i = strlen(src) - 1; i >= 0 && src[i] != '.'; i -- )
+		;
 	if (i <= 0)
 	{
 		strcpy(dest, src);
 		return dest;
 	}
-	for ( j = i - 1; j >= 0 && src[j] != '/'; j -- );
-		if (j < 0)
-		{
-			strcpy(dest, src);
-			return dest;
-		}
+	for ( j = i - 1; j >= 0 && src[j] != '/'; j -- )
+		;
+	if (j < 0)
+	{
+		strcpy(dest, src);
+		return dest;
+	}
 	memcpy(dest, &src[j + 4], i - j - 4);
 	dest[i - j - 4] = 0;
 	return dest;

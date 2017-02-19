@@ -48,7 +48,7 @@ char *audiocd_get_prefix( void )
 /* Determine the number of tracks in AudioCD */
 guint64 audiocd_get_num_tracks( void )
 {
-	guint64 num_tracks = 0;
+	gint64 num_tracks = 0;
 
 	/* Create cdda element */
 	GstElement *cdda = gst_element_make_from_uri(GST_URI_SRC, "cdda://", NULL, NULL);

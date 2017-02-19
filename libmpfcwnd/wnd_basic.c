@@ -280,7 +280,7 @@ wnd_msg_retcode_t wnd_basic_callback_mouse( wnd_t *wnd,
 {
 	wnd_msg_mouse_t *d = (wnd_msg_mouse_t *)(msg_data->m_data);
 	return WND_MSG_MOUSE_HANDLER(handler)(wnd, d->m_x, d->m_y, 
-			d->m_type, d->m_button);
+			 d->m_button, d->m_type);
 } /* End of 'wnd_basic_callback_mouse' function */
 
 /* Callback for destructor */

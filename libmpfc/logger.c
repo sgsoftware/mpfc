@@ -79,6 +79,7 @@ static bool_t logger_redirect_stderr( logger_t *log )
 	/* Create thread listening on the read side */
 	if (pthread_create(&log->m_stderr_tid, NULL, logger_stderr_thread, log))
 		goto failed;
+    log->m_has_stderr_tid = TRUE;
 
 	return TRUE;
 failed:
@@ -110,7 +111,7 @@ logger_t *logger_new( cfg_node_t *cfg_list, char *file_name )
 	if (log == NULL)
 		return NULL;
 	memset(log, 0, sizeof(*log));
-	log->m_stderr_tid = -1;
+	log->m_has_stderr_tid = FALSE;
 	log->m_cfg = cfg_list;
 	log->m_level = logger_get_level(log);
 	cfg_set_var_handler(log->m_cfg, "log-level", logger_on_change_level, log);
@@ -137,7 +138,7 @@ void logger_free( logger_t *log )
 	assert(log);
 
 	/* Close stderr redirection */
-	if (log->m_stderr_tid >= 0)
+	if (log->m_has_stderr_tid)
 	{
 		char msg = 0;
 		assert(log->m_stderr_rdwn);
@@ -352,8 +353,6 @@ char *logger_get_type_prefix( logger_msg_type_t type, int level )
 {
 	static char *prefixes[] = { "", "(==) ", "(WW) ", "(EE) ", "(FF) ", 
 		"(DD) " };
-	if (type < 0 || type >= (sizeof(prefixes) / sizeof(*prefixes)))
-		return NULL;
 	return prefixes[type];
 } /* End of 'logger_get_type_prefix' function */
 

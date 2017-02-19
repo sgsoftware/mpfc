@@ -482,7 +482,7 @@ bool_t cfg_call_var_handler( bool_t after, cfg_node_t *node, char *value )
 	if (value == NULL)
 		return TRUE;
 
-	if (after && (node->m_flags & CFG_NODE_HANDLE_AFTER_CHANGE) ||
+	if ((after && (node->m_flags & CFG_NODE_HANDLE_AFTER_CHANGE)) ||
 			CFG_VAR_HANDLER(node) == NULL)
 		return TRUE;
 	return CFG_VAR_HANDLER(node)(node, value, CFG_VAR(node)->m_handler_data);

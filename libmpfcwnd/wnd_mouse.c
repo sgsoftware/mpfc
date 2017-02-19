@@ -56,6 +56,8 @@ wnd_mouse_data_t *wnd_mouse_init( wnd_global_data_t *global )
 	case WND_MOUSE_XTERM:
 		ret = wnd_mouse_init_xterm(data);
 		break;
+	default:
+		break;
 	}
 
 	/* Start with no mouse */
@@ -114,6 +116,8 @@ void wnd_mouse_free( wnd_mouse_data_t *data )
 #endif
 	case WND_MOUSE_XTERM:
 		wnd_mouse_free_xterm(data);
+		break;
+	default:
 		break;
 	}
 	free(data);
@@ -292,7 +296,7 @@ void wnd_mouse_handle_event( wnd_mouse_data_t *data,
 	}		
 	if (msg != NULL)
 	{
-		wnd_msg_send(wnd, msg, wnd_msg_mouse_new(x, y, btn, type));
+		wnd_msg_send(wnd, msg, wnd_msg_mouse_new(x, y, type, btn));
 	}
 //	if (wnd != wnd_focus && msg >= 0)
 //		wnd_send_msg(wnd_focus, WND_MSG_MOUSE_OUTSIDE_FOCUS, 0);

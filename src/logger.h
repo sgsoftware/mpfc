@@ -80,6 +80,7 @@ typedef struct tag_logger_t
 	int m_stderr_pipe[2];
 	rd_with_notify_t *m_stderr_rdwn;
 	pthread_t m_stderr_tid;
+	bool_t m_has_stderr_tid;
 
 	/* Handlers list */
 	struct logger_handler_t

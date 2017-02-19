@@ -593,6 +593,8 @@ int wnd_color_our2curses( wnd_color_t col )
 		return COLOR_CYAN;
 	case WND_COLOR_WHITE:
 		return COLOR_WHITE;
+	default:
+		break;
 	}
 	return COLOR_WHITE;
 } /* End of 'wnd_color_our2curses' function */
@@ -1209,10 +1211,10 @@ void wnd_set_mode( wnd_t *wnd, wnd_mode_t mode )
 	assert(real_wnd);
 
 	/* Only windows with border may change position or size */
-	if ((mode == WND_MODE_REPOSITION || mode == WND_MODE_RESIZE) &&
-			!(real_wnd->m_flags & WND_FLAG_BORDER) ||
-			(mode == WND_MODE_RESIZE && 
-			 (real_wnd->m_flags & WND_FLAG_NORESIZE)))
+	if (((mode == WND_MODE_REPOSITION || mode == WND_MODE_RESIZE) &&
+			!(real_wnd->m_flags & WND_FLAG_BORDER)) ||
+			((mode == WND_MODE_RESIZE && 
+			 (real_wnd->m_flags & WND_FLAG_NORESIZE))))
 		return;
 	
 	/* Set new mode */
