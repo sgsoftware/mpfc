@@ -366,7 +366,7 @@ bool_t server_conn_parse_input(server_conn_desc_t *d)
 			str_clear(d->m_cur_cmd);
 		}
 		else
-			str_insert_char(d->m_cur_cmd, *p, d->m_cur_cmd->m_len);
+			str_insert_char(d->m_cur_cmd, *p, d->m_cur_cmd->m_len - d->m_cur_cmd->m_utf8_seq_len);
 	}
 	return res;
 } /* End of 'server_conn_parse_input' function */
