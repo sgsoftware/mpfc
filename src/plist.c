@@ -796,14 +796,14 @@ void plist_flush_scheduled( plist_t *pl )
 #define PLP_STATUS_TOO_NESTED -1
 
 /* First see if this is a playlist prefix */
-static int plist_add_prefixed(plist_t *pl, char *name, song_metadata_t *metadata, int recc_level)
+static int plist_add_prefixed(plist_t *pl, char *name, song_metadata_t *metadata, int recc_level, bool_t dry_run)
 {
 	/* First see if this is a playlist prefix */
 	plist_plugin_t *plp = pmng_is_playlist_prefix(player_pmng, name);
 	if (plp)
-		return plist_add_plist(pl, plp, name, recc_level);
+		return plist_add_plist(pl, plp, name, recc_level, dry_run);
 
-	return plist_add_uri(pl, name, metadata);
+	return plist_add_uri(pl, name, metadata, dry_run);
 }
 
 typedef struct
@@ -812,6 +812,7 @@ typedef struct
 	char *m_pl_name;
 	int num_added;
 	int recc_level;
+	bool_t dry_run;
 } plist_cb_ctx_t;
 
 /* Cue sheets often have a .wav file specified
@@ -865,7 +866,7 @@ static plp_status_t plist_add_playlist_item( void *ctxv, char *name, song_metada
 	/* Handle URI in a playlist */
 	if (fu_is_prefixed(name))
 	{
-		int res = plist_add_prefixed(ctx->pl, name, metadata, ctx->recc_level);
+		int res = plist_add_prefixed(ctx->pl, name, metadata, ctx->recc_level, ctx->dry_run);
 		if (res == PLIST_TOO_NESTED)
 			return PLP_STATUS_TOO_NESTED;
 
@@ -906,7 +907,7 @@ static plp_status_t plist_add_playlist_item( void *ctxv, char *name, song_metada
 			goto finish;
 	}
 
-	int res = plist_add_one_file(ctx->pl, full_name, metadata, -1, ctx->recc_level);
+	int res = plist_add_one_file(ctx->pl, full_name, metadata, -1, ctx->recc_level, ctx->dry_run);
 	if (res == PLIST_TOO_NESTED)
 		ret = PLP_STATUS_TOO_NESTED;
 	else
@@ -971,13 +972,13 @@ static plist_plugin_t *is_playlist(char *file)
 	return pmng_is_playlist_extension(player_pmng, ext);
 }
 
-int plist_add_plist( plist_t *pl, plist_plugin_t *plp, char *file, int recc_level )
+int plist_add_plist( plist_t *pl, plist_plugin_t *plp, char *file, int recc_level, bool_t dry_run )
 {
 	/* Check recursion level */
 	if (recc_level++ > 16)
 		return PLIST_TOO_NESTED;
 
-	plist_cb_ctx_t ctx = { pl, file, 0, recc_level };
+	plist_cb_ctx_t ctx = { pl, file, 0, recc_level, dry_run };
 	plp_status_t status = plp_for_each_item(plp, file, &ctx,
 			plist_add_playlist_item);
 	if (status != PLP_STATUS_OK)
@@ -988,7 +989,7 @@ int plist_add_plist( plist_t *pl, plist_plugin_t *plp, char *file, int recc_leve
 
 /* Add single file to play list */
 int plist_add_one_file( plist_t *pl, char *file, song_metadata_t *metadata,
-		int where, int recc_level )
+		int where, int recc_level, bool_t dry_run )
 {
 	song_t *song;
 	int was_len;
@@ -997,7 +998,11 @@ int plist_add_one_file( plist_t *pl, char *file, song_metadata_t *metadata,
 	/* Choose if file is play list */
 	plist_plugin_t *plp = is_playlist(file);
 	if (plp)
-		return plist_add_plist(pl, plp, file, recc_level);
+		return plist_add_plist(pl, plp, file, recc_level, dry_run);
+
+	/* Dry run: pretend to add this song */
+	if (dry_run)
+		return 1;
 
 	/* Initialize new song and add it to list */
 	song = song_new_from_file(file, metadata);
@@ -1028,19 +1033,19 @@ static int plist_report_if_too_nested_and_continue( int res, char *path )
 	return res;
 }
 
-static int plist_add_file( plist_t *pl, char *full_path )
+static int plist_add_file( plist_t *pl, char *full_path, bool_t dry_run )
 {
 	song_metadata_t metadata = SONG_METADATA_EMPTY;
-	int res = plist_add_one_file(pl, full_path, &metadata, -1, 0);
+	int res = plist_add_one_file(pl, full_path, &metadata, -1, 0, dry_run);
 	res = plist_report_if_too_nested_and_continue(res, full_path);
 
 	assert(res >= 0);
 	return res;
 }
 
-static int plist_add_dir( plist_t *pl, char *dir_path );
+static int plist_add_dir( plist_t *pl, char *dir_path, bool_t dry_run );
 
-static int plist_add_real_path( plist_t *pl, char *full_path )
+static int plist_add_real_path( plist_t *pl, char *full_path, bool_t dry_run )
 {
 	/* Check if this is a directory */
 	bool_t is_dir;
@@ -1048,12 +1053,12 @@ static int plist_add_real_path( plist_t *pl, char *full_path )
 		return 0;
 
 	if (is_dir)
-		return plist_add_dir(pl, full_path);
+		return plist_add_dir(pl, full_path, dry_run);
 	else
-		return plist_add_file(pl, full_path);
+		return plist_add_file(pl, full_path, dry_run);
 }
 
-static int plist_add_dir( plist_t *pl, char *dir_path )
+static int plist_add_dir( plist_t *pl, char *dir_path, bool_t dry_run )
 {
 	/* Get sorted directory contents */
 	struct dirent **namelist;
@@ -1076,9 +1081,17 @@ static int plist_add_dir( plist_t *pl, char *dir_path )
 		for ( int i = 0; i < n; i++ )
 		{
 			char *name = namelist[i]->d_name;
+			int num_added;
 
 			plist_plugin_t *plp = is_playlist(name);
 			if (!plp)
+				continue;
+
+			/* See if this playlist will add anything */
+			char *full_path = util_strcat(dir_path, "/", name, NULL);
+			num_added = plist_add_real_path(pl, full_path, TRUE /* dry run */);
+			free(full_path);
+			if (!num_added)
 				continue;
 
 			int this_rank = PLIST_RANK(plp);
@@ -1106,7 +1119,7 @@ static int plist_add_dir( plist_t *pl, char *dir_path )
 			goto finally;
 
 		char *full_path = util_strcat(dir_path, "/", name, NULL);
-		num_added += plist_add_real_path(pl, full_path);
+		num_added += plist_add_real_path(pl, full_path, dry_run);
 		free(full_path);
 
 	finally:
@@ -1118,8 +1131,12 @@ static int plist_add_dir( plist_t *pl, char *dir_path )
 	return num_added;
 }
 
-int plist_add_uri( plist_t *pl, char *uri, song_metadata_t *metadata )
+int plist_add_uri( plist_t *pl, char *uri, song_metadata_t *metadata, bool_t dry_run )
 {
+	/* Dry run: pretend to add this song */
+	if (dry_run)
+		return 1;
+
 	song_t *s = song_new_from_uri(uri, metadata);
 	assert(s);
 
@@ -1137,7 +1154,7 @@ static int plist_add_path( plist_t *pl, char *path )
 	if (fu_is_prefixed(path))
 	{
 		song_metadata_t metadata = SONG_METADATA_EMPTY;
-		int res = plist_add_prefixed(pl, path, &metadata, 0);
+		int res = plist_add_prefixed(pl, path, &metadata, 0, FALSE);
 		res = plist_report_if_too_nested_and_continue(res, path);
 
 		assert(res >= 0);
@@ -1161,7 +1178,7 @@ static int plist_add_path( plist_t *pl, char *path )
 		free(dirname);
 	}
 
-	int res = plist_add_real_path(pl, full_path);
+	int res = plist_add_real_path(pl, full_path, FALSE);
 	if (full_path != path)
 		free(full_path);
 
