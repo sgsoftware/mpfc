@@ -183,7 +183,7 @@ void cfg_set_var_ptr( cfg_node_t *parent, const char *name, void *val );
 char *cfg_get_var( cfg_node_t *parent, const char *name );
 
 /* Get variable integer value */
-int cfg_get_var_int( cfg_node_t *parent, const char *name );
+int cfg_get_var_int_def( cfg_node_t *parent, const char *name, int default_val );
 
 /* Get variable float value */
 float cfg_get_var_float( cfg_node_t *parent, const char *name );
@@ -200,6 +200,8 @@ void cfg_set_var_handler( cfg_node_t *parent, const char *name,
 	(cfg_set_var_int(parent, name, (int)val))
 #define cfg_get_var_bool(parent, name)	\
 	((bool_t)cfg_get_var_int(parent, name))
+#define cfg_get_var_int(parent, name) \
+    cfg_get_var_int_def(parent, name, 0)
 
 /* Find the real parent of node */
 cfg_node_t *cfg_find_real_parent( cfg_node_t *parent, const char *name, 

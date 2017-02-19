@@ -1126,6 +1126,8 @@ Log level (@pxref{Log})
 Turns on loop play mode (default is 0)
 @item play-from-stop
 At the beginning play from the point you stopped last time (default is 1)
+@item buffer-duration
+Size of the buffer in milliseconds (default is 10000). If set to 0, buffering is disabled.
 @item remote-dir-root
 Root directory for file browsing in the remote control (unset by default)
 @item save-playlist-on-exit

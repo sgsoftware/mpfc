@@ -382,10 +382,10 @@ char *cfg_get_var( cfg_node_t *parent, const char *name )
 } /* End of 'cfg_get_var' function */
 
 /* Get variable integer value */
-int cfg_get_var_int( cfg_node_t *parent, const char *name )
+int cfg_get_var_int_def( cfg_node_t *parent, const char *name, int def_val )
 {
 	char *str = cfg_get_var(parent, name);
-	return (str == NULL) ? 0 : atoi(str);
+	return (str == NULL) ? def_val : atoi(str);
 } /* End of 'cfg_get_var_int' function */
 
 /* Get variable pointer value */

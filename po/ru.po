@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: mpfc 2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-01-25 01:25+0400\n"
+"POT-Creation-Date: 2017-02-19 20:08+0300\n"
 "PO-Revision-Date: 2013-11-16 19:47+0300\n"
 "Last-Translator: Sergey E. Galanov <sergey.e.galanov@gmail.com>\n"
 "Language-Team: Russian <sergey.e.galanov@gmail.com>\n"
@@ -28,7 +28,7 @@ msgstr "Плагин %s не имеет 'plugin_exchange_data'"
 msgid "Supported media file extensions: %s"
 msgstr "Поддерживаемые расширения медиа файлов: %s"
 
-#: libmpfcwnd/wnd.c:772
+#: libmpfcwnd/wnd.c:788
 msgid "No children\n"
 msgstr "Нет детей\n"
 

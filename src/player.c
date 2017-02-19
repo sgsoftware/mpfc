@@ -1644,6 +1644,9 @@ static gboolean player_gst_bus_call( GstBus *bus, GstMessage *msg, gpointer data
 	case GST_MESSAGE_TAG:
 		player_handle_tag_msg(msg);
 		break;
+
+	default:
+		break;
 	}
 
 	return TRUE;
@@ -1752,6 +1755,7 @@ void *player_thread( void *arg )
 		GstBus *bus = NULL;
 		int was_status;
 		char *uri = NULL;
+		int buffer_dur = 0;
 
 		/* Skip to next iteration if there is nothing to play */
 		if (player_plist->m_cur_song < 0 || 
@@ -1800,6 +1804,18 @@ void *player_thread( void *arg )
 		/* Set fake videosink */
 		GstElement *videosink = gst_element_factory_make("fakesink", "videosink");
 		g_object_set(G_OBJECT(player_pipeline), "video-sink", videosink, NULL);
+
+		/* Enable buffering
+		 * Default is 10s of buffering */
+		if ((buffer_dur = cfg_get_var_int_def(cfg_list, "buffer-duration", 10000)))
+		{
+			int pipeline_flags;
+			g_object_get(G_OBJECT(player_pipeline), "flags", &pipeline_flags, NULL);
+			pipeline_flags |= (1 << 8); /* GST_PLAY_FLAG_BUFFERING */
+			g_object_set(G_OBJECT(player_pipeline), "flags", pipeline_flags, NULL);
+			gint64 dur_ns = buffer_dur * 1000000LL;
+			g_object_set(G_OBJECT(player_pipeline), "buffer-duration", dur_ns, NULL);
+		}
 
 		/* Set volume */
 		player_update_vol();
@@ -1860,7 +1876,7 @@ void *player_thread( void *arg )
 
 			if (player_context->m_status == PLAYER_STATUS_PLAYING)
 			{
-				guint64 tm;
+				gint64 tm;
 
 				/* Update time */
 				if (gst_element_query_position(player_pipeline, GST_FORMAT_TIME, &tm))
